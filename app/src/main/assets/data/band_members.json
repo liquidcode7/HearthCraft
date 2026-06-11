@@ -1,0 +1,106 @@
+[
+  {
+    "id": "aelindra",
+    "bandId": "druid_circle",
+    "name": "Aelindra",
+    "personality": "Ancient and precise. She speaks in careful sentences, as though each word costs something. She has outlived three groves and is not sentimental about it.",
+    "preferredBuffType": "endurance",
+    "quirkNote": "Roots keep better than steel. Feed her something that lasts."
+  },
+  {
+    "id": "thornwick",
+    "bandId": "druid_circle",
+    "name": "Thornwick",
+    "personality": "Young by druid reckoning, which means he is merely old by human standards. Curious about everything. Asks too many questions. Has not yet learned that silence is also an answer.",
+    "preferredBuffType": "focus",
+    "quirkNote": "He thinks clearly on a full stomach. Give him something that sharpens the mind."
+  },
+  {
+    "id": "old_mossback",
+    "bandId": "druid_circle",
+    "name": "Old Mossback",
+    "personality": "Speaks rarely. When he does, people listen. He feels the cold now in a way he did not when he was younger, and he would never mention it.",
+    "preferredBuffType": "warmth",
+    "quirkNote": "The cold slows him. Keep him warm and he is formidable."
+  },
+  {
+    "id": "borin_ironmantle",
+    "bandId": "dwarven_company",
+    "name": "Borin Ironmantle",
+    "personality": "Has never complained once in forty years of hard service. Reliable as bedrock. If you ask how he is, he will say fine, and mean it, and be back at work before you have finished asking.",
+    "preferredBuffType": "endurance",
+    "quirkNote": "Built for the long haul. Dense, sustaining food keeps him at his best."
+  },
+  {
+    "id": "dagra_copperhelm",
+    "bandId": "dwarven_company",
+    "name": "Dagra Copperhelm",
+    "personality": "Laughs at everything. Danger, hardship, bad odds — all equally funny to her. The band finds this either inspiring or alarming depending on the day.",
+    "preferredBuffType": "warmth",
+    "quirkNote": "Runs cold in mountain conditions. Something warming keeps the edge off."
+  },
+  {
+    "id": "keldra",
+    "bandId": "dwarven_company",
+    "name": "Keldra",
+    "personality": "Youngest in the company. Ambitious in a way she hasn't yet learned to hide. She wants to be the best and is, on her better days, not far off.",
+    "preferredBuffType": "agility",
+    "quirkNote": "Fast and precise when properly provisioned. Needs food that keeps her light on her feet."
+  },
+  {
+    "id": "snorri_saltbeard",
+    "bandId": "dwarven_company",
+    "name": "Snorri Saltbeard",
+    "personality": "Veteran. Suspicious of new things, new people, and favorable weather. Has a gift for finding the one thing that could go wrong in any plan. Often correct.",
+    "preferredBuffType": "luck",
+    "quirkNote": "His pessimism is a survival strategy. Lucky food helps more than he admits."
+  },
+  {
+    "id": "reva_tidecaller",
+    "bandId": "corsair_fleet",
+    "name": "Reva Tidecaller",
+    "personality": "Charismatic and completely unpredictable. Makes decisions in three seconds flat and is right often enough that no one argues anymore. The fleet follows her because she is usually worth following.",
+    "preferredBuffType": "agility",
+    "quirkNote": "Her edge is speed. Fast food for a fast mind — she hates anything heavy before a job."
+  },
+  {
+    "id": "silas_thorn",
+    "bandId": "corsair_fleet",
+    "name": "Silas Thorn",
+    "personality": "Quiet. Watchful. Knows things he has not explained and will not. The fleet uses him as a compass. He always knows when something is wrong before it becomes wrong.",
+    "preferredBuffType": "focus",
+    "quirkNote": "Sharpness is everything to him. He wants food that clears the head."
+  },
+  {
+    "id": "marta_wavebreaker",
+    "bandId": "corsair_fleet",
+    "name": "Marta Wavebreaker",
+    "personality": "Loud, boastful, and terrifyingly capable. The stories she tells about herself are exaggerated. The actual events were worse. She has survived things that should not be survivable.",
+    "preferredBuffType": "endurance",
+    "quirkNote": "Built like a sea wall. She needs food that matches."
+  },
+  {
+    "id": "zara_al_dust",
+    "bandId": "nomadic_confederation",
+    "name": "Zara al-Dust",
+    "personality": "Weathered and precise. She has traveled every road worth traveling and several that weren't. Gives advice only when asked, and only once. Wastes nothing, including words.",
+    "preferredBuffType": "focus",
+    "quirkNote": "Every decision deliberate. She values food that sharpens her thinking."
+  },
+  {
+    "id": "karim_the_wanderer",
+    "bandId": "nomadic_confederation",
+    "name": "Karim the Wanderer",
+    "personality": "Cheerful, generous, always in the middle of a trade. Knows someone everywhere. Has a gift for being in the right place, which he attributes to luck and other people attribute to careful planning.",
+    "preferredBuffType": "luck",
+    "quirkNote": "Luck is a skill he has cultivated. The right meal reinforces what he already has."
+  },
+  {
+    "id": "yena_ashveil",
+    "bandId": "nomadic_confederation",
+    "name": "Yena Ashveil",
+    "personality": "Sharp and ambitious. Keeps her own counsel. The Confederation respects her because she has earned it, and she has earned it the hard way, through speed and silence.",
+    "preferredBuffType": "agility",
+    "quirkNote": "Light provisions, fast movement. She is at her best when nothing slows her down."
+  }
+]

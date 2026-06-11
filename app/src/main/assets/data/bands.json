@@ -1,0 +1,30 @@
+[
+  {
+    "id": "druid_circle",
+    "name": "Druid Circle",
+    "region": "Forest",
+    "description": "Ancient keepers of the old growth. Patient, unhurried, connected to living things in ways outsiders never quite understand. They do not conquer land — they tend it. Their missions feel like stewardship: protecting what exists, restoring what was lost.",
+    "flavorNote": "They call you the Hearthkeeper. Your fire is the only fire they trust."
+  },
+  {
+    "id": "dwarven_company",
+    "name": "Dwarven Company",
+    "region": "Mountain",
+    "description": "A tight unit of mountain dwarves who have worked together long enough that words are mostly unnecessary. Gruff, loyal, direct. They will not complain about a hard march or a bad night, but they will notice — and remember — who kept them fed.",
+    "flavorNote": "They call you the Provender. Among dwarves, that is high praise."
+  },
+  {
+    "id": "corsair_fleet",
+    "name": "Corsair Fleet",
+    "region": "Sea",
+    "description": "Free sailors who answer to no flag and no crown. Chaotic, adaptable, willing to try anything once. Their world is salt air and opportunity. They eat what they can get and go where the money is — but they have learned that the right meal before a hard job changes everything.",
+    "flavorNote": "They call you the Galley Witch. They mean it as a compliment."
+  },
+  {
+    "id": "nomadic_confederation",
+    "name": "Nomadic Confederation",
+    "region": "Desert",
+    "description": "A coalition of desert tribes held together by ancient agreements and mutual necessity. Djinn-touched bloodlines run through half of them. They trade in rare things — spices, knowledge, silence. They have been everywhere and forgotten nothing.",
+    "flavorNote": "They call you the Salt Sage. In the Confederation, salt is more valuable than gold."
+  }
+]

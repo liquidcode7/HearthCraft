@@ -1,0 +1,86 @@
+[
+  {
+    "id": "hearthgrain",
+    "name": "Hearthgrain",
+    "type": "cultivated",
+    "gatheringMode": "farm",
+    "flavor": "A short-stalked grain that thrives in kitchen gardens and sheltered plots. Dense, nutty, forgiving to cook with. The foundation of half the dishes in any hearth cook's repertoire."
+  },
+  {
+    "id": "ironroot",
+    "name": "Ironroot",
+    "type": "cultivated",
+    "gatheringMode": "farm",
+    "flavor": "A thick, deep-purple root vegetable that has to be coaxed out of the earth. Earthy, slightly bitter raw, but slow-cooked it becomes something rich and sustaining."
+  },
+  {
+    "id": "sunpetal_herb",
+    "name": "Sunpetal Herb",
+    "type": "cultivated",
+    "gatheringMode": "farm",
+    "flavor": "Bright yellow herb that grows readily in kitchen gardens with enough sun. Slightly sweet fragrance, used fresh in teas and tinctures. Good for the mind."
+  },
+  {
+    "id": "forest_honey",
+    "name": "Forest Honey",
+    "type": "cultivated",
+    "gatheringMode": "farm",
+    "flavor": "Thick amber honey kept from tended hives. Darker and more complex than ordinary honey — the bees range far and bring back something of the world they visit."
+  },
+  {
+    "id": "duskberry",
+    "name": "Duskberry",
+    "type": "cultivated",
+    "gatheringMode": "farm",
+    "flavor": "Small dark berries, tart and faintly sweet, that ripen at the end of the growing season. Preserved or fresh, they lend a particular brightness to whatever they go into."
+  },
+  {
+    "id": "pale_cap",
+    "name": "Pale Cap",
+    "type": "cultivated",
+    "gatheringMode": "farm",
+    "flavor": "A cultivated mushroom variety — mild, savory, reliable. Not interesting on its own, but it takes on the character of whatever it's cooked with. A useful ingredient."
+  },
+  {
+    "id": "moonpetal",
+    "name": "Moonpetal",
+    "type": "wild",
+    "gatheringMode": "forage",
+    "flavor": "A wild herb that blooms at dusk, leaves faintly luminous in low light. Something in it opens the mind to precision and stillness. Gathered at the right moment, it is extraordinary."
+  },
+  {
+    "id": "ironbark_resin",
+    "name": "Ironbark Resin",
+    "type": "wild",
+    "gatheringMode": "forage",
+    "flavor": "Thick amber sap from old ironbark trees, harvested slowly over multiple visits. Pungent raw, but in small amounts it adds a deep, rooted quality to anything prepared with it."
+  },
+  {
+    "id": "stormcap",
+    "name": "Stormcap",
+    "type": "wild",
+    "gatheringMode": "forage",
+    "flavor": "A wild mushroom that springs up overnight after heavy rain, then vanishes just as quickly. Earthy and faintly electric in flavor. The timing of the harvest matters."
+  },
+  {
+    "id": "wanderer_fig",
+    "name": "Wanderer Fig",
+    "type": "wild",
+    "gatheringMode": "forage",
+    "flavor": "A small wild fruit that grows along old roads and forgotten paths, as though it follows the movement of travelers. Sweet, slightly smoky. Makes you feel like keeping moving."
+  },
+  {
+    "id": "heartflame_pepper",
+    "name": "Heartflame Pepper",
+    "type": "wild",
+    "gatheringMode": "forage",
+    "flavor": "Tiny wild peppers with a delayed, intense heat that builds from the inside out. In the right proportion, they create a warmth that lasts for hours. Used with care."
+  },
+  {
+    "id": "cave_truffle",
+    "name": "Cave Truffle",
+    "type": "wild",
+    "gatheringMode": "forage",
+    "flavor": "Found at the base of old growth and in cave mouths, growing where light barely reaches. Earthy, complex, faintly sweet. Rare enough that finding one feels like the world offering something."
+  }
+]
