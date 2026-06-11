@@ -18,5 +18,6 @@ object DatabaseModule {
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): HearthCraftDatabase =
         Room.databaseBuilder(context, HearthCraftDatabase::class.java, "hearthcraft.db")
+            .fallbackToDestructiveMigration(true)
             .build()
 }
