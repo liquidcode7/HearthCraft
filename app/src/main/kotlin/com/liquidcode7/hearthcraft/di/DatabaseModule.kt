@@ -3,6 +3,13 @@ package com.liquidcode7.hearthcraft.di
 import android.content.Context
 import androidx.room.Room
 import com.liquidcode7.hearthcraft.data.db.HearthCraftDatabase
+import com.liquidcode7.hearthcraft.data.db.dao.BandMemberStateDao
+import com.liquidcode7.hearthcraft.data.db.dao.CookingSessionDao
+import com.liquidcode7.hearthcraft.data.db.dao.GatheringSessionDao
+import com.liquidcode7.hearthcraft.data.db.dao.InventoryDao
+import com.liquidcode7.hearthcraft.data.db.dao.MissionSessionDao
+import com.liquidcode7.hearthcraft.data.db.dao.PlayerStateDao
+import com.liquidcode7.hearthcraft.data.db.dao.PreparedFoodDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -20,4 +27,12 @@ object DatabaseModule {
         Room.databaseBuilder(context, HearthCraftDatabase::class.java, "hearthcraft.db")
             .fallbackToDestructiveMigration(true)
             .build()
+
+    @Provides fun providePlayerStateDao(db: HearthCraftDatabase): PlayerStateDao = db.playerStateDao()
+    @Provides fun provideInventoryDao(db: HearthCraftDatabase): InventoryDao = db.inventoryDao()
+    @Provides fun providePreparedFoodDao(db: HearthCraftDatabase): PreparedFoodDao = db.preparedFoodDao()
+    @Provides fun provideGatheringSessionDao(db: HearthCraftDatabase): GatheringSessionDao = db.gatheringSessionDao()
+    @Provides fun provideCookingSessionDao(db: HearthCraftDatabase): CookingSessionDao = db.cookingSessionDao()
+    @Provides fun provideMissionSessionDao(db: HearthCraftDatabase): MissionSessionDao = db.missionSessionDao()
+    @Provides fun provideBandMemberStateDao(db: HearthCraftDatabase): BandMemberStateDao = db.bandMemberStateDao()
 }
