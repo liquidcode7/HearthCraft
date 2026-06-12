@@ -56,7 +56,11 @@
   systems.
 
 - **Additional bands** — Norse warband (Tundra), Hedge witch coven
-  (Swamp), Halfling militia (Plains), Dark elf house (Volcanic).
+  (Swamp), Dark elf house (Volcanic), Halfling militia (Plains/luck).
+  Halflings would be the natural luck band — their missions are things
+  like "borrow mushrooms," "pickpocket big folk," "pipeweed tending,"
+  and "second breakfast." The player character, who also never fights,
+  is basically a Hobbit. There is something to this.
 
 ## Technical / Platform
 

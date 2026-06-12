@@ -21,10 +21,10 @@
     "flavorNote": "They call you the Galley Witch. They mean it as a compliment."
   },
   {
-    "id": "nomadic_confederation",
-    "name": "Nomadic Confederation",
-    "region": "Desert",
-    "description": "A coalition of desert tribes held together by ancient agreements and mutual necessity. Djinn-touched bloodlines run through half of them. They trade in rare things — spices, knowledge, silence. They have been everywhere and forgotten nothing.",
-    "flavorNote": "They call you the Salt Sage. In the Confederation, salt is more valuable than gold."
+    "id": "greycloaks",
+    "name": "The Greycloaks",
+    "region": "Borderlands",
+    "description": "Wandering wardens who answer to no crown and hold no land. They have been at the edges of civilization long enough that the edges feel like home. They know where the threats are before anyone else does, and they move through the world as though they belong to it in a way others do not.",
+    "flavorNote": "They don't give you a name. Among the Greycloaks, trusting someone with your provisions is enough."
   }
 ]
