@@ -7,6 +7,14 @@
 
 ## Gameplay Systems
 
+- **Band management as a second pillar** — the game currently has deep
+  player-side systems (gathering, cooking, provisioning) but a thin band
+  side (pick food, send, wait). V2 should give the band side equal weight:
+  mission-specific member selection (choose who goes, not just what they
+  eat), recruiting to replace losses, member training and growth arcs,
+  equipment that complements provisioning, and inter-member dynamics.
+  The vision: two interlocking halves — the hearth and the company.
+
 - **Alchemy** — full parallel crafting track. Takes unusual inputs
   (minerals, foraged oddities, mission components), produces special
   ingredients and eventually potions. Low levels: infusions and enhancers.
