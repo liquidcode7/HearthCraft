@@ -4,7 +4,8 @@
     "name": "Hearthbread",
     "description": "Dense, slightly sweet bread baked low and slow. The kind of food that keeps a person upright through a hard day. Not exciting. Deeply reliable.",
     "buffType": "endurance",
-    "buffStrength": 10,
+    "baseBuffStrength": 10,
+    "buffStrengthPerLevel": 0.4,
     "durationMs": 1800000,
     "ingredients": [
       { "id": "hearthgrain", "qty": 2 },
@@ -16,7 +17,8 @@
     "name": "Iron Stew",
     "description": "A long-cooked stew that takes most of an afternoon and rewards the patience. The ironroot breaks down into something almost melting. It fills the body like ballast.",
     "buffType": "endurance",
-    "buffStrength": 25,
+    "baseBuffStrength": 12,
+    "buffStrengthPerLevel": 0.65,
     "durationMs": 5400000,
     "ingredients": [
       { "id": "ironroot", "qty": 2 },
@@ -29,7 +31,8 @@
     "name": "Wanderer's Supper",
     "description": "A light meal built for people who eat on the move. The figs and berries keep well, the whole thing comes together quickly, and it leaves no heaviness behind.",
     "buffType": "agility",
-    "buffStrength": 10,
+    "baseBuffStrength": 10,
+    "buffStrengthPerLevel": 0.4,
     "durationMs": 1800000,
     "ingredients": [
       { "id": "wanderer_fig", "qty": 2 },
@@ -41,7 +44,8 @@
     "name": "Stormcap Sauté",
     "description": "Wild mushrooms cooked fast and hot with a handful of pale caps and a few heartflame peppers. Something about the combination produces a particular sharpness of movement.",
     "buffType": "agility",
-    "buffStrength": 25,
+    "baseBuffStrength": 12,
+    "buffStrengthPerLevel": 0.65,
     "durationMs": 5400000,
     "ingredients": [
       { "id": "stormcap", "qty": 2 },
@@ -54,7 +58,8 @@
     "name": "Scholar's Tea",
     "description": "A simple infusion brewed from sunpetal herb and a few moonpetal leaves. Pale gold in the cup. Clears the mind like opening a window.",
     "buffType": "focus",
-    "buffStrength": 10,
+    "baseBuffStrength": 10,
+    "buffStrengthPerLevel": 0.4,
     "durationMs": 900000,
     "ingredients": [
       { "id": "sunpetal_herb", "qty": 2 },
@@ -66,7 +71,8 @@
     "name": "Moonpetal Tisane",
     "description": "A stronger preparation — three full measures of moonpetal with ironbark resin to fix the effect. It requires patience to brew and smells like a forest at midnight. The focus it produces is complete and unnerving.",
     "buffType": "focus",
-    "buffStrength": 25,
+    "baseBuffStrength": 12,
+    "buffStrengthPerLevel": 0.65,
     "durationMs": 5400000,
     "ingredients": [
       { "id": "moonpetal", "qty": 3 },
@@ -78,7 +84,8 @@
     "name": "Ember Porridge",
     "description": "Hearthgrain cooked long with a careful hand of heartflame peppers — enough to warm, not enough to burn. Sits in the belly like a coal. Good for cold mornings and cold work.",
     "buffType": "warmth",
-    "buffStrength": 10,
+    "baseBuffStrength": 10,
+    "buffStrengthPerLevel": 0.4,
     "durationMs": 1800000,
     "ingredients": [
       { "id": "hearthgrain", "qty": 2 },
@@ -90,7 +97,8 @@
     "name": "Heartflame Broth",
     "description": "A deep, dark broth that takes skill to make without making it undrinkable. The ironroot provides body, the hearthgrain thickens it, and the peppers do what they always do. Keeps a person warm in conditions that have no business being survived.",
     "buffType": "warmth",
-    "buffStrength": 25,
+    "baseBuffStrength": 12,
+    "buffStrengthPerLevel": 0.65,
     "durationMs": 5400000,
     "ingredients": [
       { "id": "heartflame_pepper", "qty": 2 },
@@ -103,7 +111,8 @@
     "name": "Lucky Dumplings",
     "description": "The recipe makes no practical sense and yet it works, consistently, in the way that a few things in the world simply do. Cave truffle and pale cap wrapped in hearthgrain dough. Eat them before something uncertain. Outcomes improve.",
     "buffType": "luck",
-    "buffStrength": 15,
+    "baseBuffStrength": 10,
+    "buffStrengthPerLevel": 0.4,
     "durationMs": 3600000,
     "ingredients": [
       { "id": "cave_truffle", "qty": 1 },
