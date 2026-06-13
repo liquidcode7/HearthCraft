@@ -80,3 +80,23 @@
   Noted as a natural mechanic, not a planned feature.
 
 - **F-Droid submission** — submit to F-Droid once V1 is stable.
+
+---
+
+## Design Identity Constraints (Battlegrounds, V5+)
+
+These rules must be honored when the Battlegrounds endgame mode is eventually
+built. Captured here so they aren't forgotten during V2/V3 design decisions.
+
+- **Member growth must route through the player.** Stats, strength, and
+  capability must improve because of what the player provides (better food,
+  alchemical enhancement, gear) — never through members training independently.
+  The whole game is that the band is nothing without you. Any mechanic that lets
+  members become self-sufficient breaks the identity.
+
+- **Provisioning as sustain, not a pre-battle buff.** In Battlegrounds, food
+  is consumed continuously over hours — you stock a supply train, not one dish.
+  This is the connective tissue between the provisioning game and the raid RPG.
+  Do not dilute it into a simpler pre-battle buff model when the time comes.
+
+Full Battlegrounds design: `design/battlegrounds.md`

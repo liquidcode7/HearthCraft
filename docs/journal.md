@@ -326,3 +326,34 @@ call it to compute progress-to-next-level for the XP bar display.
 **What's next:**
 - Phase 6 — Band Selection Screen: first-launch screen, player picks a band,
   choice persisted to Room, never shown again
+
+---
+
+## Session 8 — June 13, 2026
+**Battlegrounds design captured; navigation dependencies added**
+
+**What was built:**
+- `design/battlegrounds.md`: full Battlegrounds endgame design document — V5+
+  scratchpad, not authoritative, do not act on without promotion to docs/
+- `docs/wishlist.md`: added Design Identity Constraints section with two
+  non-negotiable rules for when Battlegrounds is eventually built
+- `gradle/libs.versions.toml` + `app/build.gradle.kts`: added
+  `navigation-compose 2.9.8` and `hilt-navigation-compose 1.3.0` in preparation
+  for Phase 6 screens
+
+**Decisions made:**
+- Battlegrounds is correctly scoped at V5+. Zero V1 or V2 code changes required.
+- The two identity constraints (member growth routes through player; provisioning
+  as sustain not pre-battle buff) are saved to wishlist.md so they survive into
+  future design sessions and aren't designed around accidentally.
+- `BandMemberState.isAlive: Boolean` is correct for V1. The wound system will
+  eventually change this to `woundsRemaining: Int` — trivial future migration,
+  no action now.
+- Navigation Compose added now rather than mid-Phase 6 to keep dependency
+  changes as their own clean commit.
+
+**Anything that diverged from docs/design.md:**
+- Nothing. Battlegrounds goes in `design/` (scratchpad), not `docs/` (authoritative).
+
+**What's next:**
+- Phase 6 — Band Selection Screen
