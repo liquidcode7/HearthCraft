@@ -1,7 +1,7 @@
 # HearthCraft — Game Design Document
 
 > Status: Living document. Update as decisions are made.
-> Last revised: session 1
+> Last revised: session 6 (June 13, 2026)
 
 ---
 
@@ -97,6 +97,20 @@ The primary loop. Produces food and preparations that buff the band.
   early, but its ingredients are the natural gate
 - At high levels, preparations blur the line between food and magic
 
+**Buff types (V1):** endurance, agility, acuity, warmth, luck. Each recipe
+produces exactly one buff type. Missions require a specific buff type — the
+wrong type counts as a miss regardless of strength.
+
+**Buff strength scaling:** `baseBuffStrength + (cookingLevel - 1) × buffStrengthPerLevel`.
+Simple recipes (30-min cook): base 10, scale 0.4/level. Complex recipes
+(90-min cook): base 12, scale 0.65/level. Skill matters continuously —
+every level makes your provisions meaningfully better.
+
+**Food flavor tags:** Every recipe has a `flavorTag` — one of: sweet, hearty,
+light, spicy, herbal, earthy. This vocabulary is shared with band member
+`foodPreference` (see Band Members below). Not mechanically linked in V1
+but the data is in place for future use.
+
 #### Alchemy
 The weird science track. Produces special ingredients that normal cooking
 cannot make, and eventually potions.
@@ -151,9 +165,10 @@ dense and sustaining.
 deep water, sea caves, exotic ports. Provisions must survive salt air and
 long voyages.
 
-**Nomadic Confederation** — Desert. Ancient knowledge, djinn-touched,
-trade connections everywhere. Rare resins, desert flowers, spices worth
-more than gold.
+**The Greycloaks** — Borderlands. Wandering wardens who answer to no crown
+and hold no land. They move through the margins of the world as though they
+belong there. Their missions demand perception and careful observation —
+all three are acuity missions. Members: Aldric, Mira, Cael.
 
 ### Future Bands (later phases)
 Norse warband (Tundra), Hedge witch coven (Swamp), Halfling militia
@@ -161,23 +176,33 @@ Norse warband (Tundra), Hedge witch coven (Swamp), Halfling militia
 
 ### Band Members
 The band is not faceless. Members are named individuals with personalities
-and one mechanical quirk each — a food preference, a dietary need, a
-particular buff they respond to better than others. Keeping them well-fed
-and well-provisioned is personal, not abstract.
+and a `foodPreference` — one of the six flavor tags (sweet, hearty, light,
+spicy, herbal, earthy). This is characterization, not a mechanical stat:
+it tells you something true about who they are. Dagra Copperhelm wants
+spicy food because she laughs at mild food the same way she laughs at
+everything else. Keeping them well-fed and well-provisioned is personal,
+not abstract.
+
+In V1, `foodPreference` is flavor only — it does not affect mission outcomes.
+Future phases can use it to add minor bonuses or personality-driven reactions.
 
 Members can be lost on missions that fail badly enough. Loss is permanent.
 This makes provisioning feel consequential.
 
 ### Missions
 - Missions run in parallel with your gathering and crafting sessions
-- Each mission has a required buff type and a required strength threshold
-- The food and preparations you provided either meet the threshold or not
-- Meet it → success, full rewards (money + regional ingredients)
-- Miss it → outright failure, no rewards, possible member loss
+- Each mission requires a specific buff **type** and a minimum buff **strength**
+- Both must be met — wrong buff type counts as a miss regardless of strength
+- Meet both → success: money reward (random within a range) + 1–3 ingredient
+  drops from the mission's reward table
+- Miss either → outright failure: no rewards
+- Member loss: only possible if buff strength is below 60% of the required
+  threshold AND a 33% random roll succeeds. Failure is always costly;
+  losing someone is rarer and more severe.
 - The player always knows the requirements before sending the band out
 - Harder missions return rarer ingredients and more money
 - Mission difficulty scales with buff threshold — harder missions require
-  stronger preparations or multiple buff types
+  stronger preparations
 
 ---
 
@@ -185,8 +210,11 @@ This makes provisioning feel consequential.
 
 Three independent axes that reinforce each other:
 
-1. **Skill levels** — Gathering, Cooking, Alchemy XP. Reflects time and
-   sessions invested.
+1. **Skill levels** — Gathering and Cooking XP (Alchemy in V2). Reflects
+   time and sessions invested. XP curve: each level costs `level × 100` XP
+   — level 2 costs 100 total, level 3 costs 300 total, level 4 costs 600
+   total. One forage session = 50 XP, so roughly 2 sessions to level 2.
+   Pacing subject to revision after playtesting.
 2. **Recipe book** — what you have discovered. Reflects curiosity and
    willingness to experiment and lose ingredients trying.
 3. **Ingredient access** — what your gathering sessions and missions
@@ -233,6 +261,11 @@ Full list in `docs/wishlist.md`.
 - How many ingredient combination slots does the experimentation
   interface have?
 - Does Alchemy have its own discovery system or are recipes level-gated?
-- How are band member losses triggered — random chance on failure, or
-  determined by how far below threshold the provisioning was?
-- How many named band members does the player start with?
+
+**Resolved:**
+- *How are band member losses triggered?* — Below 60% of required buff
+  strength AND 33% random roll. Implemented in MissionWorker.
+- *How many named band members does the player start with?* — 3 per band
+  (Druid Circle: Aelindra, Thornwick, Old Mossback; Dwarven Company: Borin,
+  Dagra, Keldra, Snorri — 4; Corsair Fleet: Reva, Silas, Marta — 3;
+  Greycloaks: Aldric, Mira, Cael — 3).
