@@ -291,3 +291,38 @@ call it to compute progress-to-next-level for the XP bar display.
 **What's next:**
 - Phase 5 — ViewModels: GatheringViewModel, KitchenViewModel, BandViewModel,
   InventoryViewModel, PlayerViewModel
+
+---
+
+## Session 7 — June 13, 2026
+**Phase 5 complete: ViewModels**
+
+**What was built:**
+- `ui/viewmodel/UiModels.kt`: shared data classes — `XpProgress`, `PreparedFoodDetail`, `BandMemberWithState`
+- `ui/viewmodel/PlayerViewModel.kt`: observes `PlayerState`, computes XP progress for gathering and cooking
+- `ui/viewmodel/GatheringViewModel.kt`: session state, mode selection, starts gathering sessions via WorkManager
+- `ui/viewmodel/KitchenViewModel.kt`: recipe list, ingredient availability check, starts cooking sessions
+- `ui/viewmodel/InventoryViewModel.kt`: ingredients, money, prepared food with computed buff strength
+- `ui/viewmodel/BandViewModel.kt`: band members with alive/dead state, missions, provisioning selection, sends on mission
+
+**Decisions made:**
+- Gathering session durations: Farm = 5 minutes, Forage = 10 minutes. These are
+  placeholder values defined as constants — easy to tune after playtesting.
+- `UiModels.kt` holds shared data classes used across ViewModels rather than
+  defining them inside individual ViewModel files. Avoids awkward cross-file imports.
+- `canCook()` in `KitchenViewModel` is a pure function that takes the current
+  inventory list rather than reading state internally — makes it easy for the UI
+  to call with the current `inventoryItems` value.
+- `BandMemberWithState` flattens `BandMember` fields directly rather than nesting
+  the object — simpler for the UI to consume.
+
+**Anything that diverged from docs/design.md:**
+- Nothing. The ViewModels implement exactly what design.md describes.
+
+**Phase 5 TODOs for Phase 8:**
+- `KitchenViewModel.startCooking()`: deduct recipe ingredients from inventory before starting
+- `BandViewModel.sendOnMission()`: remove the used prepared food item from inventory after sending
+
+**What's next:**
+- Phase 6 — Band Selection Screen: first-launch screen, player picks a band,
+  choice persisted to Room, never shown again
