@@ -59,6 +59,7 @@ No Google Play Services dependency. F-Droid compatible. Minimum SDK: API 26.
   `app/src/main/assets/data/`
 - Kotlin source lives in
   `app/src/main/kotlin/com/liquidcode7/hearthcraft/`
+- All Kotlin source lives under `kotlin/`, never under `java/`
 
 ---
 
@@ -67,17 +68,42 @@ No Google Play Services dependency. F-Droid compatible. Minimum SDK: API 26.
 ### Session Start — do these in order
 1. Read this file
 2. Read `docs/design.md`
-3. Read `docs/wishlist.md`
-4. Read `docs/v1-plan.md`
-5. State the current task and your plan before writing any code
+3. Read `docs/v1-plan.md`
+4. Read `docs/wishlist.md`
+5. Read the latest entry in `docs/journal.md`
+6. State the current task and your plan before writing any code
 
-### Session End
-- Summarize what changed in plain English
-- List every touched file
-- Append an entry to `docs/journal.md` — what was built, decisions made and
-  why, anything that diverged from the plan, what's next. Written to be pasted
-  into claude.ai to keep the design conversation in sync.
-- Provide a commit message prefixed with `[v1]`, `[v2]`, etc.
+### Session End — do these in order
+1. Summarize what changed in plain English
+2. List every touched file
+3. Write a journal entry in `docs/journal.md` (see format below)
+4. Provide a commit message prefixed with `[v1]`, `[v2]`, etc.
+
+### Journal Entry Format
+Append to `docs/journal.md` at the end of every session:
+
+```
+## Session N — [Date]
+**Phase X: [what this session covered]**
+
+**What was built:**
+- [file or feature]: [one line description]
+
+**Decisions made:**
+- [decision]: [why]
+
+**Anything that diverged from docs/design.md:**
+- [what changed and why — then update docs/design.md to match]
+
+**What's next:**
+- [next task]
+```
+
+### Design Decisions
+If you make any design decision not already covered in `docs/design.md` —
+including renames, new mechanics, data structure changes, or behavior choices —
+you must update `docs/design.md` to reflect it before committing. The docs
+and the code must always agree.
 
 ### Before Editing Any File
 Read:
@@ -95,21 +121,16 @@ For every substantial change:
 2. **The code** — the actual Kotlin
 3. **Walkthrough** — plain English, chunk by chunk
 4. **New concepts** — any Kotlin syntax or pattern not previously seen
-   in this project, briefly explained. Examples:
-   - "`?:` is the Elvis operator — if the left side is null, use the right side."
-   - "A `data class` just holds data. The compiler auto-generates equality
-     checks and a copy method for free."
+   in this project, briefly explained
 5. **Why this approach** — why this pattern over the alternative
 
-For small changes (rename, typo, single field) a one-liner is fine.
-Track concepts already taught — don't re-explain from scratch, just name them.
-Re-explain gently if Wes seems to have forgotten.
+For small changes a one-liner is fine. Track concepts already taught —
+don't re-explain from scratch, just name them.
 
 ### When Stuck
 - Find the existing pattern in the codebase before inventing a new one
 - Use Context7 MCP for current library documentation — do not guess at APIs
-- If something is broken after two attempts, stop and report. Do not dig
-  deeper holes.
+- If something is broken after two attempts, stop and report
 
 ### Commits
 - One logical change per commit
@@ -145,11 +166,10 @@ If a feature implies any of these, flag it immediately.
 
 ## Reference Files
 
-- `docs/design.md` — full game vision and system design
+- `docs/design.md` — authoritative game design, always current
 - `docs/v1-plan.md` — V1 task list and scope
 - `docs/wishlist.md` — deferred ideas, add freely, never act on during V1
-- `docs/journal.md` — session-by-session log of what was built and decided;
-  paste into claude.ai to keep the design conversation in sync
+- `docs/journal.md` — session log, append only, one entry per session
 - `docs/learning-notes.md` — Kotlin concepts with examples, append as needed
-- `design/` — idea log and annotated drafts, for human reference only.
-  Do not treat as authoritative. Do not make decisions based on this folder.
+- `design/` — idea log and annotated drafts, human reference only,
+  do not treat as authoritative, do not make decisions based on this folder
