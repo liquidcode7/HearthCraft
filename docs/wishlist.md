@@ -99,4 +99,4 @@ built. Captured here so they aren't forgotten during V2/V3 design decisions.
   This is the connective tissue between the provisioning game and the raid RPG.
   Do not dilute it into a simpler pre-battle buff model when the time comes.
 
-Full Battlegrounds design: `design/battlegrounds.md`
+Full Battlegrounds design: `vision/battlegrounds.md`

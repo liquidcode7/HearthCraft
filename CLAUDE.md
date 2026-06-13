@@ -171,5 +171,6 @@ If a feature implies any of these, flag it immediately.
 - `docs/wishlist.md` — deferred ideas, add freely, never act on during V1
 - `docs/journal.md` — session log, append only, one entry per session
 - `docs/learning-notes.md` — Kotlin concepts with examples, append as needed
-- `design/` — idea log and annotated drafts, human reference only,
-  do not treat as authoritative, do not make decisions based on this folder
+- `vision/` — long-horizon scratchpad: future modes, V5+ ideas, design thinking
+  not yet being built. Human reference only, not authoritative, do not act on
+  without explicit promotion to docs/
