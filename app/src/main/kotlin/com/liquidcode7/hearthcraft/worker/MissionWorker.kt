@@ -33,10 +33,11 @@ class MissionWorker @AssistedInject constructor(
 
     override suspend fun doWork(): Result {
         val missionId = inputData.getString(KEY_MISSION_ID) ?: return Result.failure()
+        val buffType = inputData.getString(KEY_BUFF_TYPE) ?: ""
         val buffStrength = inputData.getInt(KEY_BUFF_STRENGTH, 0)
 
         val mission = gameData.missions.find { it.id == missionId } ?: return Result.failure()
-        val succeeded = buffStrength >= mission.requiredBuffStrength
+        val succeeded = buffType == mission.requiredBuffType && buffStrength >= mission.requiredBuffStrength
 
         if (succeeded) {
             val money = Random.nextInt(mission.rewardMoneyMin, mission.rewardMoneyMax + 1)
@@ -88,13 +89,15 @@ class MissionWorker @AssistedInject constructor(
 
     companion object {
         const val KEY_MISSION_ID = "missionId"
+        const val KEY_BUFF_TYPE = "buffType"
         const val KEY_BUFF_STRENGTH = "buffStrength"
         const val NOTIFICATION_ID = 3
 
-        fun buildRequest(missionId: String, buffStrength: Int, durationMs: Long): OneTimeWorkRequest =
+        fun buildRequest(missionId: String, buffType: String, buffStrength: Int, durationMs: Long): OneTimeWorkRequest =
             OneTimeWorkRequestBuilder<MissionWorker>()
                 .setInputData(workDataOf(
                     KEY_MISSION_ID to missionId,
+                    KEY_BUFF_TYPE to buffType,
                     KEY_BUFF_STRENGTH to buffStrength
                 ))
                 .setInitialDelay(durationMs, TimeUnit.MILLISECONDS)

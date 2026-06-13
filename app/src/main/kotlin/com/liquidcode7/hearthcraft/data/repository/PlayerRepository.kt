@@ -19,16 +19,31 @@ class PlayerRepository @Inject constructor(
     }
 
     suspend fun addMoney(amount: Int) = dao.addMoney(amount)
-    suspend fun addGatheringXp(xp: Int) = dao.addGatheringXp(xp)
-    suspend fun addCookingXp(xp: Int) = dao.addCookingXp(xp)
 
-    suspend fun setGatheringLevel(level: Int) {
-        val current = dao.get() ?: return
-        dao.upsert(current.copy(gatheringLevel = level))
+    suspend fun addGatheringXp(xp: Int) {
+        dao.addGatheringXp(xp)
+        val state = dao.get() ?: return
+        val newLevel = levelForXp(state.gatheringXp)
+        if (newLevel != state.gatheringLevel) dao.upsert(state.copy(gatheringLevel = newLevel))
     }
 
-    suspend fun setCookingLevel(level: Int) {
-        val current = dao.get() ?: return
-        dao.upsert(current.copy(cookingLevel = level))
+    suspend fun addCookingXp(xp: Int) {
+        dao.addCookingXp(xp)
+        val state = dao.get() ?: return
+        val newLevel = levelForXp(state.cookingXp)
+        if (newLevel != state.cookingLevel) dao.upsert(state.copy(cookingLevel = newLevel))
+    }
+
+    companion object {
+        // XP required per level increases by 100 each level: 100 to reach 2, 200 to reach 3, etc.
+        fun levelForXp(xp: Int): Int {
+            var level = 1
+            var threshold = 0
+            while (xp >= threshold + level * 100) {
+                threshold += level * 100
+                level++
+            }
+            return level
+        }
     }
 }

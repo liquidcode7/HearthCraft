@@ -74,6 +74,9 @@ No Google Play Services dependency. F-Droid compatible. Minimum SDK: API 26.
 ### Session End
 - Summarize what changed in plain English
 - List every touched file
+- Append an entry to `docs/journal.md` — what was built, decisions made and
+  why, anything that diverged from the plan, what's next. Written to be pasted
+  into claude.ai to keep the design conversation in sync.
 - Provide a commit message prefixed with `[v1]`, `[v2]`, etc.
 
 ### Before Editing Any File
@@ -145,6 +148,8 @@ If a feature implies any of these, flag it immediately.
 - `docs/design.md` — full game vision and system design
 - `docs/v1-plan.md` — V1 task list and scope
 - `docs/wishlist.md` — deferred ideas, add freely, never act on during V1
+- `docs/journal.md` — session-by-session log of what was built and decided;
+  paste into claude.ai to keep the design conversation in sync
 - `docs/learning-notes.md` — Kotlin concepts with examples, append as needed
-- - `design/` — idea log and annotated drafts, for human reference only.
+- `design/` — idea log and annotated drafts, for human reference only.
   Do not treat as authoritative. Do not make decisions based on this folder.
