@@ -215,44 +215,6 @@ is rarer and more severe.
 
 ---
 
-## Session 6 — June 13, 2026
-**Repo cleanup and doc sync — no new features**
-
-**What was built:**
-- `app/src/main/kotlin/com/liquidcode7/hearthcraft/MainActivity.kt`: moved from `java/`
-- `app/src/main/kotlin/com/liquidcode7/hearthcraft/ui/theme/`: moved Color.kt, Theme.kt, Type.kt from `java/`
-- `app/src/main/java/`: deleted entirely
-- `docs/design.md`: updated to reflect all decisions made since session 1
-- `CLAUDE.md`: tightened — structured journal format, design doc sync rule, numbered session-end steps
-
-**Decisions made:**
-- All Kotlin source lives under `kotlin/`, never `java/`. The split was an
-  Android Studio scaffold artifact, not intentional. Consolidated.
-- `docs/design.md` is now the authoritative record of every design decision.
-  Any decision made in code must be reflected there before committing.
-  This is now enforced in CLAUDE.md.
-
-**Anything that diverged from docs/design.md:**
-- This session *fixed* the drift rather than adding to it. The full list of
-  what was synced:
-  - Fourth band: Nomadic Confederation → The Greycloaks (Borderlands)
-  - Buff type "focus" → "acuity" everywhere
-  - Buff types now listed explicitly: endurance, agility, acuity, warmth, luck
-  - Buff strength scaling formula documented: `baseBuffStrength + (cookingLevel - 1) × buffStrengthPerLevel`
-  - Food flavor tag system documented (`flavorTag` on recipes, `foodPreference` on members)
-  - `foodPreference` clarified as characterization only in V1, not mechanical
-  - Mission success rule: both buff type AND strength must match
-  - Member loss rule: below 60% threshold + 33% random roll
-  - XP curve documented: level × 100 per level
-  - Open Questions: two answered and moved to Resolved section
-  - design.md "Last revised" updated
-
-**What's next:**
-- Phase 5 — ViewModels: GatheringViewModel, KitchenViewModel, BandViewModel,
-  InventoryViewModel, PlayerViewModel
-
----
-
 ## Session 5 — June 13, 2026
 **Phase 5 prep: Code review and bug fixes**
 
@@ -291,3 +253,41 @@ call it to compute progress-to-next-level for the XP bar display.
 - `BandViewModel` — member state, provisioning, mission selection, mission history
 - `InventoryViewModel` — ingredient quantities, food items, money
 - `PlayerViewModel` — overall player state, skill levels, XP progress
+
+---
+
+## Session 6 — June 13, 2026
+**Repo cleanup and doc sync — no new features**
+
+**What was built:**
+- `app/src/main/kotlin/com/liquidcode7/hearthcraft/MainActivity.kt`: moved from `java/`
+- `app/src/main/kotlin/com/liquidcode7/hearthcraft/ui/theme/`: moved Color.kt, Theme.kt, Type.kt from `java/`
+- `app/src/main/java/`: deleted entirely
+- `docs/design.md`: updated to reflect all decisions made since session 1
+- `CLAUDE.md`: tightened — structured journal format, design doc sync rule, numbered session-end steps
+
+**Decisions made:**
+- All Kotlin source lives under `kotlin/`, never `java/`. The split was an
+  Android Studio scaffold artifact, not intentional. Consolidated.
+- `docs/design.md` is now the authoritative record of every design decision.
+  Any decision made in code must be reflected there before committing.
+  This is now enforced in CLAUDE.md.
+
+**Anything that diverged from docs/design.md:**
+- This session *fixed* the drift rather than adding to it. The full list of
+  what was synced:
+  - Fourth band: Nomadic Confederation → The Greycloaks (Borderlands)
+  - Buff type "focus" → "acuity" everywhere
+  - Buff types now listed explicitly: endurance, agility, acuity, warmth, luck
+  - Buff strength scaling formula documented: `baseBuffStrength + (cookingLevel - 1) × buffStrengthPerLevel`
+  - Food flavor tag system documented (`flavorTag` on recipes, `foodPreference` on members)
+  - `foodPreference` clarified as characterization only in V1, not mechanical
+  - Mission success rule: both buff type AND strength must match
+  - Member loss rule: below 60% threshold + 33% random roll
+  - XP curve documented: level × 100 per level
+  - Open Questions: two answered and moved to Resolved section
+  - design.md "Last revised" updated
+
+**What's next:**
+- Phase 5 — ViewModels: GatheringViewModel, KitchenViewModel, BandViewModel,
+  InventoryViewModel, PlayerViewModel
