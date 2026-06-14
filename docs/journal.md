@@ -7,12 +7,12 @@
 
 ## Current Status — June 14, 2026
 
-**Phase:** 8 complete — the full loop is wired  
-**V1 progress:** Phases 1–8 done. Phase 9 next (polish and stability).  
-**What's working:** Full core loop — gather ingredients → cook recipes (deducts ingredients) → send band on mission (consumes food) → receive money and ingredient rewards → repeat. All three workers fire completion notifications and update Room. Member loss on badly failed missions is active.  
-**What's not wired yet:** Everything in Phase 9 — edge case handling, notification tap routing, crash/stability pass.  
-**Next session:** Phase 9 — polish and stability: edge cases (session already running, no ingredients, all members lost), notification deep-links, fresh install check, background survival test.  
-**Open questions:** Band rename (Mithlost / Undermarch / Freewake) still pending. 8-member roster expansion pending.
+**Phase:** 9 complete — edge cases fixed, notifications tap to open app  
+**V1 progress:** Phases 1–9 done. Phase 10 next (play it).  
+**What's working:** Full loop with correct edge case handling — member kill bug fixed, band members initialized on first launch, all-fallen state shown in UI, notification taps open the app.  
+**What's not wired yet:** Nothing blocking. The loop is complete and stable.  
+**Next session:** Phase 10 — install on device and play for a week. Note what feels good, what's missing, what's confusing. Fill future/wishlist.md. Decide V2 priorities.  
+**Open questions:** Band rename (Mithlost / Undermarch / Freewake) still pending. 8-member roster expansion pending. Both are V2 decisions.
 
 ---
 
@@ -469,4 +469,29 @@ Three new design scratchpads saved to `vision/`. All V5+ — zero code impact.
 **Coming up:**
 - Next session: Phase 9 — edge cases, notification deep-links, stability pass.
 - Near term: Phase 10 — install and play for a week, fill wishlist, decide V2 priorities.
+- Future ideas logged: none this session.
+
+---
+
+## Session 12 — June 14, 2026
+**Phase 9: Edge cases, member kill bug, notification routing**
+
+**What was built:**
+- `BandRepository.killMember()`: changed from a bare SQL UPDATE (which silently did nothing if the row didn't exist) to an upsert — gets the existing record or creates a new live one, then marks it dead. Member loss now actually persists.
+- `BandSelectionViewModel.confirmSelection()`: injected `BandRepository`, added `band.initMembers(id)` call after `player.init(id)`. Band member states now exist in the DB from the moment the player chooses their band.
+- `BandViewModel.hasAliveMembers`: new `StateFlow<Boolean>` derived from `members`. Returns `true` while the list is loading or any member is alive, `false` only when the list is non-empty and everyone is fallen.
+- `BandScreen`: added `!hasAliveMembers` branch between the active-mission card and the provisioning UI. Shows a red "The band has fallen" card when the condition is met. Provisioning UI is hidden entirely.
+- `GatheringWorker`, `CookingWorker`, `MissionWorker`: added `PendingIntent` to each notification. Tapping any completion notification now opens the app.
+
+**Decisions made:**
+- `killMember` uses upsert instead of raw UPDATE as a defensive fix — even if `initMembers` was never called for some reason, killing a member now works correctly.
+- `hasAliveMembers` defaults to `true` and treats an empty members list as "still loading" rather than "all fallen" — avoids a false-positive error state on app startup before Room data arrives.
+- Notification PendingIntent uses `FLAG_ACTIVITY_NEW_TASK or FLAG_ACTIVITY_CLEAR_TASK` — brings the existing app to the foreground (or restarts it) and always lands on the home screen. Deep-linking to a specific tab is a V2 polish item.
+
+**Anything that diverged from docs/design.md:**
+- Nothing.
+
+**Coming up:**
+- Next session: Phase 10 — install on device, play the loop, gather observations.
+- Near term: V2 planning based on what playing actually feels like.
 - Future ideas logged: none this session.
