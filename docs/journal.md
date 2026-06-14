@@ -405,3 +405,37 @@ Three new design scratchpads saved to `vision/`. All V5+ — zero code impact.
 
 **What's next:**
 - Phase 6 — Band Selection Screen
+
+---
+
+## Session 10 — June 14, 2026
+**Phase 7: All core screens built — the game is now navigable**
+
+**What was built:**
+- `gradle/libs.versions.toml`, `app/build.gradle.kts`: Added `material-icons-extended` dependency for full Material icon set (Forest, Groups, LocalDining, Inventory).
+- `MainActivity.kt`: Removed outer Scaffold; the `"main"` route now delegates entirely to `MainScreen`. Cleaner separation of concerns.
+- `ui/screen/BandSelectionScreen.kt`: Added `statusBarsPadding()` + `navigationBarsPadding()` so content doesn't clip under system bars now that enableEdgeToEdge has no outer Scaffold to compensate.
+- `ui/viewmodel/UiModels.kt`: Added `IngredientStock(ingredientId, name, quantity)` — a joined view of `InventoryItem` + `Ingredient.name`.
+- `ui/viewmodel/InventoryViewModel.kt`: Added `namedIngredients: StateFlow<List<IngredientStock>>` computed from `observeIngredients()` + `gameData.ingredients` name lookup.
+- `ui/viewmodel/HomeViewModel.kt`: New ViewModel. Aggregates player XP progress + all three session StateFlows so HomeScreen stays self-contained.
+- `ui/screen/MainScreen.kt`: Bottom NavigationBar with five tabs (Home, Gather, Kitchen, Band, Pantry). Owns its own Scaffold + nested NavHost. Recipe Book and Mission Board are sub-routes; bottom bar hides on those screens.
+- `ui/screen/HomeScreen.kt`: Skill cards with LinearProgressIndicator XP bars, active session status row.
+- `ui/screen/GatheringScreen.kt`: TabRow mode picker (Farm/Garden vs Forage/Wild) with descriptions, active session countdown timer.
+- `ui/screen/KitchenScreen.kt`: Recipe list with can-cook indicators (✓/✗), ingredient detail panel, active cooking timer, Recipe Book button.
+- `ui/screen/RecipeBookScreen.kt`: Full recipe list with buff strength computed at current cooking level. TopAppBar with back nav.
+- `ui/screen/PantryScreen.kt`: Gold display, named ingredient stock list, prepared food list with buff info.
+- `ui/screen/BandScreen.kt`: Member list with alive/fallen status, food selector, mission selector, Send button, active mission countdown.
+- `ui/screen/MissionBoardScreen.kt`: All band missions with requirement highlighted green/red based on best available buff. TopAppBar with back nav.
+
+**Decisions made:**
+- `HomeViewModel` aggregates PlayerRepository + SessionRepository directly rather than depending on other ViewModels. Keeps Home self-contained.
+- `MainScreen` owns its own Scaffold; MainActivity's outer Scaffold removed. BandSelectionScreen manually adds statusBarsPadding + navigationBarsPadding to compensate.
+- Recipe Book and Mission Board are sub-routes under the main NavHost, not separate top-level destinations. They share the parent NavController for back navigation.
+- `IngredientStock` added to `UiModels.kt` alongside the other projected UI data classes.
+- `formatMs()` duplicated as a private function in each screen that needs a timer. Three small copies beats a shared utility file at this scale.
+
+**Anything that diverged from docs/design.md:**
+- Nothing structural. All screens are consistent with the V1 plan.
+
+**What's next:**
+- Phase 8 — Wire up game logic: deduct ingredients on cook start, consume prepared food on mission send, populate inventory from gathering worker output. Sessions start and timers tick but nothing flows in or out of the pantry yet.
