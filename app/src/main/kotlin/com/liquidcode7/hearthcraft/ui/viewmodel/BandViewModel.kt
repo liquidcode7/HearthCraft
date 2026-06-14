@@ -8,6 +8,7 @@ import com.liquidcode7.hearthcraft.data.db.MissionSession
 import com.liquidcode7.hearthcraft.data.model.Mission
 import com.liquidcode7.hearthcraft.data.repository.BandRepository
 import com.liquidcode7.hearthcraft.data.repository.GameDataRepository
+import com.liquidcode7.hearthcraft.data.repository.InventoryRepository
 import com.liquidcode7.hearthcraft.data.repository.PlayerRepository
 import com.liquidcode7.hearthcraft.data.repository.SessionRepository
 import com.liquidcode7.hearthcraft.worker.MissionWorker
@@ -28,6 +29,7 @@ class BandViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val gameData: GameDataRepository,
     private val band: BandRepository,
+    private val inventory: InventoryRepository,
     private val sessions: SessionRepository,
     private val player: PlayerRepository
 ) : ViewModel() {
@@ -97,7 +99,7 @@ class BandViewModel @Inject constructor(
                     workRequestId = request.id.toString()
                 )
             )
-            // TODO Phase 8: remove the used prepared food item from inventory here
+            inventory.removePreparedFood(food.recipeId)
         }
     }
 }

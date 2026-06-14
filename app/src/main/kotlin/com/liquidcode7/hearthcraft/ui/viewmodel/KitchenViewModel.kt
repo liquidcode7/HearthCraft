@@ -53,7 +53,7 @@ class KitchenViewModel @Inject constructor(
         val recipe = _selectedRecipe.value ?: return
         viewModelScope.launch {
             if (sessions.activeCooking() != null) return@launch
-            // TODO Phase 8: deduct recipe ingredients from inventory before starting
+            recipe.ingredients.forEach { inventory.removeIngredient(it.id, it.qty) }
             val request = CookingWorker.buildRequest(recipe.id, recipe.durationMs)
             WorkManager.getInstance(context).enqueue(request)
             sessions.startCooking(
