@@ -72,8 +72,8 @@ The player aligns with one band at the start. The choice is permanent and sets t
 
 - **The Mithlost** — Ancient forest elves. Patient, sorrowful, deadlier than their gentleness suggests. They stayed to fight a long defeat when others sailed West.
 - **The Undermarch** — Mountain dwarves. Grim, loyal, stone-deep. They will not complain about a hard march, but they notice — and remember — who kept them fed.
-- **The Freewake** — Sea corsairs. Chaotic, adaptable, opportunistic. Answer to no flag. Learned the right meal before a hard job changes everything.
-- **The Greycloaks** — Borderland wardens. Watchful, unaffiliated, worn. At the edges of civilization long enough that the edges feel like home.
+- **The Freewake** — Ancient mariners of Númenórean descent. Proud, long-memoried, formal in ways that surprise newcomers. They answer to no current king because they remember kings who have been dust for three thousand years. Of all the bands, only the Greycloaks carry the same old blood — the same lineage split long ago between those who followed the sea and those who stayed on the land.
+- **The Greycloaks** — Borderland wardens of Númenórean descent. Watchful, unaffiliated, worn. At the edges of civilization long enough that the edges feel like home. The Freewake are the only band they meet without explanation — two branches of the same ancient tree, grown in different directions.
 
 Each band has eight fully named members — 32 characters across the full roster — with distinct personalities, food preferences, and roles. They are not faceless stats. They are people. Keeping them well-provisioned is personal.
 
