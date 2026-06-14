@@ -7,12 +7,12 @@
 
 ## Current Status — June 14, 2026
 
-**Phase:** 9 complete — edge cases fixed, notifications tap to open app  
-**V1 progress:** Phases 1–9 done. Phase 10 next (play it).  
-**What's working:** Full loop with correct edge case handling — member kill bug fixed, band members initialized on first launch, all-fallen state shown in UI, notification taps open the app.  
-**What's not wired yet:** Nothing blocking. The loop is complete and stable.  
-**Next session:** Phase 10 — install on device and play for a week. Note what feels good, what's missing, what's confusing. Fill future/wishlist.md. Decide V2 priorities.  
-**Open questions:** Band rename (Mithlost / Undermarch / Freewake) still pending. 8-member roster expansion pending. Both are V2 decisions.
+**Phase:** Post-audit iteration complete — farming, wounds, missions, intro screen all rebuilt  
+**V1 progress:** Core loop is now fully playable and significantly more interesting than pre-audit.  
+**What's working:** Farm plot + 4 independent garden slots + forage (with seed drops). Probability-based missions with wound consequences. Color-coded difficulty + flavor text. Cookable-recipes-first kitchen sort. Intro screen with opening lore → band selection → welcome quote. Corsair Fleet reworked as Númenórean lineage.  
+**What's not wired yet:** Kitchen recipe detail panel still shows raw ingredient IDs (not display names). Mission unlock tiers (harder missions unlock after successful runs) designed but not built.  
+**Next session:** Install and play the redesigned loop. Focus on: does farming feel rewarding? Do missions feel risky vs safe correctly? Does the intro land?  
+**Open questions:** When to unlock harder mission tiers. Kitchen ingredient name display (small polish). Band rename (Mithlost / Undermarch / Freewake) remains a V2 decision.
 
 ---
 
@@ -494,4 +494,81 @@ Three new design scratchpads saved to `vision/`. All V5+ — zero code impact.
 **Coming up:**
 - Next session: Phase 10 — install on device, play the loop, gather observations.
 - Near term: V2 planning based on what playing actually feels like.
+- Future ideas logged: none this session.
+
+---
+
+## Session 13 — June 14, 2026
+**Post-audit redesign: farming, wounds, missions, README**
+
+Wes played the game on a Pixel 7 Pro and submitted a detailed first-play audit. This session addressed every finding.
+
+**What was built:**
+- `SeedStock.kt` + `SeedStockDao.kt`: new entity tracking seed inventory per ingredient
+- `GrowingSlot.kt` + `GrowingSlotDao.kt`: entity for farm plot and 4 independent garden slots
+- `GrowingRepository.kt`: observeFarmPlot, observeGardenSlots, plantSlot, clearSlot
+- `FarmWorker.kt`: HiltWorker; base yield 6, scales with gathering level, XP=40
+- `GardenWorker.kt`: HiltWorker; base yield 3, XP=25
+- `GatheringWorker.kt`: rewritten as forage-only; 25% chance to drop 1–2 seeds of a random plantable ingredient; buildRequest signature changed to (level, durationMs)
+- `HearthCraftDatabase.kt`: bumped to version 3; added SeedStock and GrowingSlot entities; fallbackToDestructiveMigration(true)
+- `DatabaseModule.kt`: added providers for SeedStockDao and GrowingSlotDao
+- `InventoryRepository.kt`: injected SeedStockDao; added observeSeeds, addSeed, removeSeed, seedQty
+- `BandMemberState.kt`: added woundStatus (healthy/wounded/grievously_wounded) and woundedSinceMs
+- `BandMemberStateDao.kt`: added updateWound and healWound queries
+- `BandRepository.kt`: added woundMember, healWound, woundableMemberIds
+- `MissionWorker.kt`: full rewrite — probability-based success (easy 80%, medium 55%, hard 25%; +10% type match, +up to 10% strength ratio); wounds on failure; reward multiplier scales gold and drop count
+- `UiModels.kt`: added woundStatus to BandMemberWithState; added SeedDetail data class
+- `GatheringViewModel.kt`: major rewrite — forageSession, farmPlot, gardenSlots, seeds StateFlows; plantFarm, plantGarden, startForage functions; durations FARM=8min, GARDEN=4min, FORAGE=3min
+- `BandSelectionViewModel.kt`: injected InventoryRepository; added giveStarterSeeds() called in confirmSelection (3× each of duskberry_seed, pale_cap_seed, hearthgrain_seed)
+- `BandViewModel.kt`: passes woundStatus; added treatWound(memberId, food)
+- `KitchenViewModel.kt`: added sortedRecipes StateFlow (cookable recipes first partition)
+- `HomeViewModel.kt`: added activeGrowingCount StateFlow combining farm + garden active slots
+- `GatheringScreen.kt`: complete rewrite — farm section, 4 garden slots, forage timer, SeedPickerDialog
+- `BandScreen.kt`: wound status color-coded in member rows; Treat Wounds section with applicable food options
+- `KitchenScreen.kt`: uses sortedRecipes instead of recipes
+- `HomeScreen.kt`: shows "Growing (N plots)" row when active; "Gathering" renamed "Foraging"
+- `MissionBoardScreen.kt`: color-coded difficulty dot, flavorLine in difficulty color, multiplied gold reward range; removed hard requirements display
+- `Mission.kt`: added flavorLine and rewardMultiplier fields
+- `ingredients.json`: added bilberry (forage/wild) and athelas (forage/wild)
+- `recipes.json`: added bilberry_tea (acuity), restorative_broth (healing), athelas_infusion (healing_deep); verified all recipe names match their ingredients
+- `missions.json`: all 12 missions updated with flavorLine and rewardMultiplier
+- `README.md`: rewritten with two-game vision (provisioning idle loop + future raid RPG), faction descriptions, V2–V5+ roadmap
+
+**Decisions made:**
+- Farming bootstrap problem solved with Option C: starter seeds on band selection + forage drops seeds as a trickle
+- Farm base yield 6, garden base yield 3 — "Shire-sized farm" calibration
+- Wounds: ordinary food (buffType=healing) clears "wounded"; only healing_deep clears "grievously_wounded"
+- Mission success is probabilistic with no hard gate — the food improves odds, not locks/unlocks
+- flavorLine is static per-mission text replacing "Needs: buffType ≥X" — hides the probability math from the player
+
+**Anything that diverged from docs/design.md:**
+- Farming split into farm plot (targeted, larger yield) + garden (4 independent targeted slots, smaller yield) + forage (random, seed trickle) — more granular than prior design. Updated design.md to match.
+- Wound system implemented earlier than planned (was V4); minimal version only, not the full Houses of Healing arc.
+
+**Coming up:**
+- Next session: intro screen, then install and play.
+- Near term: assess farming balance in real play; mission unlock tiers.
+- Future ideas logged: swipe tabs, recipe tiers by level, band member traits/levels.
+
+---
+
+## Session 14 — June 14, 2026
+**Intro screen and Corsair Fleet flavor rework**
+
+**What was built:**
+- `BandSelectionScreen.kt`: complete rewrite as a three-page flow — opening lore (page 0), band selection (page 1), welcome quote (page 2). Single `page` integer state variable; no new navigation routes. DB writes happen when player taps "Enter" on the welcome page.
+- `bands.json` (corsair_fleet): description reworked to reflect Númenórean lineage — ancient mariners, formal bearing, kings three thousand years in the dust. Previous "chaotic, adaptable" framing replaced.
+- `BandSelectionScreen.kt` (Reva Tidecaller welcome line): rewritten from casual wanderer to fallen-nobility register — "the sea took most of that back," "certain standard," "no more steadfast company in the West."
+
+**Decisions made:**
+- confirmSelection() is called from the "Enter" button on page 2 (not from "Begin" on page 1). The welcome screen shows immediately; DB writes complete in the background before navigation fires via the navigateToMain SharedFlow.
+- Welcome lines are hardcoded in the composable keyed by band ID rather than added to bands.json — they are character voice, not game data.
+- Corsair Fleet is Númenórean-descended, not opportunistic pirates. Noble, formal, proud of lineage even in diminishment.
+
+**Anything that diverged from docs/design.md:**
+- Corsair Fleet identity updated: README already described them as "Freewake — Sea corsairs, chaotic, adaptable, opportunistic." Updated bands.json to match the new framing. README should be updated to align when band names are finalized in V2.
+
+**Coming up:**
+- Next session: install and play the full redesigned loop end-to-end.
+- Near term: kitchen ingredient name display (shows raw IDs in recipe detail), mission unlock tiers.
 - Future ideas logged: none this session.
