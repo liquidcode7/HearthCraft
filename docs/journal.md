@@ -7,12 +7,12 @@
 
 ## Current Status — June 14, 2026
 
-**Phase:** 7 complete — all core screens built and navigable  
-**V1 progress:** Phases 1–7 done. Phase 8 next.  
-**What's working:** Full app navigation (band selection → 5-tab main game); Gathering, Kitchen, and Band screens with live countdown timers; Recipe Book and Mission Board sub-screens; Pantry with named ingredients and prepared food. Sessions start and timers tick.  
-**What's not wired yet:** Sessions don't move items — gathering doesn't add ingredients, cooking doesn't deduct them, missions don't consume prepared food. The pantry is static.  
-**Next session:** Phase 8 — wire the game loop: deduct ingredients on cook start, populate inventory from gathering worker output, consume prepared food on mission send.  
-**Open questions:** Band rename (Mithlost / Undermarch / Freewake) still pending. 8-member roster expansion decision also pending.
+**Phase:** 8 complete — the full loop is wired  
+**V1 progress:** Phases 1–8 done. Phase 9 next (polish and stability).  
+**What's working:** Full core loop — gather ingredients → cook recipes (deducts ingredients) → send band on mission (consumes food) → receive money and ingredient rewards → repeat. All three workers fire completion notifications and update Room. Member loss on badly failed missions is active.  
+**What's not wired yet:** Everything in Phase 9 — edge case handling, notification tap routing, crash/stability pass.  
+**Next session:** Phase 9 — polish and stability: edge cases (session already running, no ingredients, all members lost), notification deep-links, fresh install check, background survival test.  
+**Open questions:** Band rename (Mithlost / Undermarch / Freewake) still pending. 8-member roster expansion pending.
 
 ---
 
@@ -448,3 +448,25 @@ Three new design scratchpads saved to `vision/`. All V5+ — zero code impact.
 
 **What's next:**
 - Phase 8 — Wire up game logic: deduct ingredients on cook start, consume prepared food on mission send, populate inventory from gathering worker output. Sessions start and timers tick but nothing flows in or out of the pantry yet.
+
+---
+
+## Session 11 — June 14, 2026
+**Phase 8: Wire the complete core loop**
+
+**What was built:**
+- `KitchenViewModel.startCooking()`: added `recipe.ingredients.forEach { inventory.removeIngredient(it.id, it.qty) }` before enqueuing the work request. Ingredients are now consumed the moment cooking starts.
+- `BandViewModel`: injected `InventoryRepository`; added `inventory.removePreparedFood(food.recipeId)` after `sessions.startMission()`. The prepared food is now consumed when the band is sent.
+
+**Decisions made:**
+- The three workers (GatheringWorker, CookingWorker, MissionWorker) were already fully implemented from Phase 4 — they write to inventory and handle XP, money, member loss, and notifications on completion. Phase 8 was just the two missing TODO lines in the ViewModels.
+- Ingredients are deducted at cook-start (not cook-complete). This means if the app crashes mid-cook, ingredients are gone but the food isn't made yet. Acceptable for V1 — Phase 9 can address this if it feels wrong in play.
+- Prepared food is consumed at mission-send (not mission-return). Same reasoning.
+
+**Anything that diverged from docs/design.md:**
+- Nothing.
+
+**Coming up:**
+- Next session: Phase 9 — edge cases, notification deep-links, stability pass.
+- Near term: Phase 10 — install and play for a week, fill wishlist, decide V2 priorities.
+- Future ideas logged: none this session.
