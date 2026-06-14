@@ -24,6 +24,18 @@ class InventoryViewModel @Inject constructor(
     val ingredients: StateFlow<List<InventoryItem>> = inventory.observeIngredients()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
+    val namedIngredients: StateFlow<List<IngredientStock>> = inventory.observeIngredients()
+        .map { items ->
+            items.map { item ->
+                IngredientStock(
+                    ingredientId = item.ingredientId,
+                    name = gameData.ingredients.find { it.id == item.ingredientId }?.name ?: item.ingredientId,
+                    quantity = item.quantity
+                )
+            }
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
     val money: StateFlow<Int> = player.observe()
         .map { it?.money ?: 0 }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)

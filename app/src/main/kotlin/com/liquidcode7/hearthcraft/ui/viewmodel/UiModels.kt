@@ -24,3 +24,9 @@ data class BandMemberWithState(
     val quirkNote: String,
     val isAlive: Boolean
 )
+
+data class IngredientStock(
+    val ingredientId: String,
+    val name: String,
+    val quantity: Int
+)
