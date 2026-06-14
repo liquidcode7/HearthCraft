@@ -16,8 +16,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.liquidcode7.hearthcraft.BuildConfig
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.liquidcode7.hearthcraft.ui.viewmodel.HomeViewModel
 import com.liquidcode7.hearthcraft.ui.viewmodel.XpProgress
@@ -60,6 +62,14 @@ fun HomeScreen(viewModel: HomeViewModel = hiltViewModel()) {
         }
         SessionRow(label = "Kitchen", active = cSession != null)
         SessionRow(label = "Mission", active = mSession != null)
+
+        Spacer(modifier = Modifier.height(24.dp))
+        Text(
+            "v${BuildConfig.VERSION_NAME}",
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.align(Alignment.CenterHorizontally)
+        )
     }
 }
 
