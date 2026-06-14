@@ -357,3 +357,51 @@ call it to compute progress-to-next-level for the XP bar display.
 
 **What's next:**
 - Phase 6 — Band Selection Screen
+
+---
+
+## Session 9 — June 13, 2026
+**Vision expanded: bestiary, progression, and raid RPG systems**
+
+Three new design scratchpads saved to `vision/`. All V5+ — zero code impact.
+
+**What was built:**
+- `vision/bestiary.md`: Enemy tier system — five tiers (Rabble, the Fell, Banes,
+  the Nine, Nameless Things). Power and untouchability tracked separately. The
+  Nine are NEVER killed, only repelled — canon-protected. Nameless Things are a
+  hazard/doom-clock, not a combat tier. Win conditions vary by tier: kill, repel,
+  or race. Mixed fields (orc host led by a Ringwraith) create asymmetric fights
+  where inspiration clears the rabble but leaves the real problem standing.
+- `vision/progression.md`: Character stats and member realization. Five universal
+  stats (Might, Agility, Vitality, Will, Fate) with no class locks — roles emerge
+  from stat distribution. One resource pool: Morale (not HP). Power pool
+  deliberately cut — provisioning IS the power economy, relocated to the kitchen.
+  Core principle: "Greatness Is MADE, Not Born." No innate caps; any member can
+  reach the heights if you invest in them and they survive the road.
+- `vision/battlegrounds-rpg.md`: Expanded systems design — the full RPG layer.
+  Updates and expands on the existing `vision/battlegrounds.md`. Key additions:
+  Two-Pool combat math (`E/D_party` vs `P_effective/D_enemy`); live event log;
+  Bonfires/Respites as segment breaks; Inspiration triggered by FORECAST of
+  defeat (not accumulated death — the critical design fix); Captain as 4th role
+  beyond tank/healer/damage; two wound tiers (ordinary vs grievous); Houses of
+  Healing requiring healer + mastered alchemical preparation + time; healers
+  can't self-heal. The influence map as emotional core.
+
+**Decisions made:**
+- `battlegrounds-rpg.md` coexists with the existing `vision/battlegrounds.md`
+  rather than replacing it. The existing file is the earlier overview; the new
+  file is the developed systems doc. Both are scratchpads.
+- Inspiration trigger is the FORECAST of defeat, not accumulated deaths. This
+  is the critical design fix — it decouples "experiencing inspiration" from
+  "burying characters to get there." The dread precedes the dying.
+- Healing cannot fail if costs are paid — the drama is entirely upstream
+  (getting there, having the means, having time). This is the Aragorn model.
+- The player has NO stat sheet. Craft levels ARE player power. This is the
+  mechanical distinction that keeps the warlock-culinarian identity intact.
+
+**Anything that diverged from docs/design.md:**
+- Nothing. All three files are `vision/` scratchpads — they document future
+  design intent, not V1 decisions.
+
+**What's next:**
+- Phase 6 — Band Selection Screen
