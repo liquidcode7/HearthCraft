@@ -20,7 +20,7 @@ Everything in V1 exists to answer that question. Nothing else.
 
 ### Band Selection
 - Player chooses one of four bands at first launch: Druid Circle,
-  Dwarven Company, Corsair Fleet, Nomadic Confederation
+  Dwarven Company, Corsair Fleet, The Greycloaks
 - Choice is permanent, flavor only, no mechanical difference
 - Each band has a name, a short description, and a regional flavor
 - Band choice determines mission names and ingredient flavor text
