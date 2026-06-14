@@ -3,6 +3,7 @@ package com.liquidcode7.hearthcraft.ui.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.liquidcode7.hearthcraft.data.model.Band
+import com.liquidcode7.hearthcraft.data.repository.BandRepository
 import com.liquidcode7.hearthcraft.data.repository.GameDataRepository
 import com.liquidcode7.hearthcraft.data.repository.PlayerRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -18,7 +19,8 @@ import javax.inject.Inject
 @HiltViewModel
 class BandSelectionViewModel @Inject constructor(
     private val gameData: GameDataRepository,
-    private val player: PlayerRepository
+    private val player: PlayerRepository,
+    private val band: BandRepository
 ) : ViewModel() {
 
     val bands: List<Band> = gameData.bands
@@ -37,6 +39,7 @@ class BandSelectionViewModel @Inject constructor(
         val id = _selectedBandId.value ?: return
         viewModelScope.launch {
             player.init(id)
+            band.initMembers(id)
             _navigateToMain.emit(Unit)
         }
     }

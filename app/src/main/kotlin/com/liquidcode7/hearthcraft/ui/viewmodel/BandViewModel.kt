@@ -21,6 +21,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -62,6 +63,12 @@ class BandViewModel @Inject constructor(
 
     val activeMission: StateFlow<MissionSession?> = sessions.observeMission()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
+
+    // true while members list is empty (loading) or at least one member is alive
+    val hasAliveMembers: StateFlow<Boolean> = members
+        .map { list -> list.isEmpty() || list.any { it.isAlive } }
+        .distinctUntilChanged()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
 
     private val _selectedFood = MutableStateFlow<PreparedFoodDetail?>(null)
     val selectedFood: StateFlow<PreparedFoodDetail?> = _selectedFood.asStateFlow()

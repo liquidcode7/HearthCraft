@@ -19,7 +19,10 @@ class BandRepository @Inject constructor(
             .forEach { dao.upsert(BandMemberState(memberId = it.id)) }
     }
 
-    suspend fun killMember(memberId: String) = dao.kill(memberId)
+    suspend fun killMember(memberId: String) {
+        val existing = dao.get(memberId) ?: BandMemberState(memberId = memberId)
+        dao.upsert(existing.copy(isAlive = false))
+    }
 
     suspend fun aliveMemberIds(bandId: String): List<String> =
         gameData.bandMembers

@@ -41,6 +41,7 @@ fun BandScreen(
 ) {
     val activeMission by bandViewModel.activeMission.collectAsState()
     val members by bandViewModel.members.collectAsState()
+    val hasAliveMembers by bandViewModel.hasAliveMembers.collectAsState()
     val missions by bandViewModel.missions.collectAsState()
     val selectedFood by bandViewModel.selectedFood.collectAsState()
     val selectedMission by bandViewModel.selectedMission.collectAsState()
@@ -73,7 +74,26 @@ fun BandScreen(
             Spacer(modifier = Modifier.height(4.dp))
         }
 
-        if (activeMission == null) {
+        if (!hasAliveMembers) {
+            Spacer(modifier = Modifier.height(16.dp))
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        "The band has fallen.",
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.onErrorContainer
+                    )
+                    Text(
+                        "No members remain. There is no one left to send.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onErrorContainer
+                    )
+                }
+            }
+        } else if (activeMission == null) {
             Spacer(modifier = Modifier.height(16.dp))
             OutlinedButton(onClick = onMissionBoard, modifier = Modifier.fillMaxWidth()) {
                 Text("Mission Board")
