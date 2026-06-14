@@ -1,9 +1,18 @@
 # HearthCraft — Development Journal
 
-> One entry per session. Written to be pasted into claude.ai to keep the design
-> conversation in sync with the codebase. Each entry covers: what was built,
-> decisions made and why, anything that diverged from the original design,
-> and what's next.
+> **Current Status** is the living summary at the top — update it every session.
+> Session entries below are append-only.
+
+---
+
+## Current Status — June 14, 2026
+
+**Phase:** 7 complete — all core screens built and navigable  
+**V1 progress:** Phases 1–7 done. Phase 8 next.  
+**What's working:** Full app navigation (band selection → 5-tab main game); Gathering, Kitchen, and Band screens with live countdown timers; Recipe Book and Mission Board sub-screens; Pantry with named ingredients and prepared food. Sessions start and timers tick.  
+**What's not wired yet:** Sessions don't move items — gathering doesn't add ingredients, cooking doesn't deduct them, missions don't consume prepared food. The pantry is static.  
+**Next session:** Phase 8 — wire the game loop: deduct ingredients on cook start, populate inventory from gathering worker output, consume prepared food on mission send.  
+**Open questions:** Band rename (Mithlost / Undermarch / Freewake) still pending. 8-member roster expansion decision also pending.
 
 ---
 

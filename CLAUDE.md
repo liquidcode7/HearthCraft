@@ -69,22 +69,23 @@ No Google Play Services dependency. F-Droid compatible. Minimum SDK: API 26.
 1. Read this file
 2. Read `docs/design.md`
 3. Read `docs/v1-plan.md`
-4. Read `docs/wishlist.md`
-5. Read the latest entry in `docs/journal.md`
+4. Read the **Current Status** section at the top of `docs/journal.md`
+5. Read the latest session entry in `docs/journal.md`
 6. State the current task and your plan before writing any code
 
 ### Session End — do these in order
 1. Summarize what changed in plain English
 2. List every touched file
-3. Write a journal entry in `docs/journal.md` (see format below)
-4. Provide a commit message prefixed with `[v1]`, `[v2]`, etc.
+3. Update the **Current Status** section at the top of `docs/journal.md`
+4. Append a new session entry to `docs/journal.md` (see format below)
+5. Provide a commit message prefixed with `[v1]`, `[v2]`, etc.
 
 ### Journal Entry Format
 Append to `docs/journal.md` at the end of every session:
 
 ```
 ## Session N — [Date]
-**Phase X: [what this session covered]**
+**[What this session covered]**
 
 **What was built:**
 - [file or feature]: [one line description]
@@ -95,8 +96,22 @@ Append to `docs/journal.md` at the end of every session:
 **Anything that diverged from docs/design.md:**
 - [what changed and why — then update docs/design.md to match]
 
-**What's next:**
-- [next task]
+**Coming up:**
+- Next session: [immediate next task]
+- Near term: [next 2–3 phases]
+- Future ideas logged: [anything added to future/ this session]
+```
+
+Also update the **Current Status** block at the top of `docs/journal.md`:
+
+```
+## Current Status — [Date]
+**Phase:** [current phase and completion state]
+**V1 progress:** [phases done / total]
+**What's working:** [one sentence]
+**What's not wired yet:** [one sentence on what's missing]
+**Next session:** [exactly what to tackle]
+**Open questions:** [unresolved design or technical decisions]
 ```
 
 ### Design Decisions
@@ -145,7 +160,7 @@ don't re-explain from scratch, just name them.
 V1 scope is defined in `docs/v1-plan.md`. When Wes tries to add something
 outside it:
 
-> That's outside V1 scope. Should I add it to `docs/wishlist.md` for later?
+> That's outside V1 scope. Should I add it to `future/wishlist.md` for later?
 > Staying focused means we ship sooner.
 
 Do not bend on this. A shipped V1 teaches more than an unfinished V2.
@@ -166,11 +181,18 @@ If a feature implies any of these, flag it immediately.
 
 ## Reference Files
 
+### Current work
 - `docs/design.md` — authoritative game design, always current
 - `docs/v1-plan.md` — V1 task list and scope
-- `docs/wishlist.md` — deferred ideas, add freely, never act on during V1
-- `docs/journal.md` — session log, append only, one entry per session
+- `docs/journal.md` — current status at top, session log below
 - `docs/learning-notes.md` — Kotlin concepts with examples, append as needed
-- `vision/` — long-horizon scratchpad: future modes, V5+ ideas, design thinking
-  not yet being built. Human reference only, not authoritative, do not act on
-  without explicit promotion to docs/
+
+### Future ideas (not being built yet)
+- `future/wishlist.md` — small ideas and deferred features, add freely
+- `future/characters.md` — full 32-member roster design for V2+
+- `future/battlegrounds.md` — lore roster of 14 named battlegrounds
+- `future/battlegrounds-rpg.md` — full RPG combat mode design (V5+)
+- `future/bestiary.md` — enemy tier system (V5+)
+- `future/progression.md` — stat and progression design (V5+)
+
+Do not act on anything in `future/` without explicit promotion to `docs/`.
