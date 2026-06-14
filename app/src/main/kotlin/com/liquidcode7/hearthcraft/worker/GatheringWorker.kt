@@ -1,6 +1,8 @@
 package com.liquidcode7.hearthcraft.worker
 
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.work.CoroutineWorker
@@ -9,6 +11,7 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import com.liquidcode7.hearthcraft.HearthCraftApp
+import com.liquidcode7.hearthcraft.MainActivity
 import com.liquidcode7.hearthcraft.data.repository.GameDataRepository
 import com.liquidcode7.hearthcraft.data.repository.InventoryRepository
 import com.liquidcode7.hearthcraft.data.repository.PlayerRepository
@@ -58,10 +61,18 @@ class GatheringWorker @AssistedInject constructor(
     }
 
     private fun notify(title: String, text: String, id: Int) {
+        val intent = Intent(applicationContext, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        }
+        val pendingIntent = PendingIntent.getActivity(
+            applicationContext, id, intent,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
         val notification = NotificationCompat.Builder(applicationContext, HearthCraftApp.CHANNEL_ID)
             .setSmallIcon(android.R.drawable.ic_popup_reminder)
             .setContentTitle(title)
             .setContentText(text)
+            .setContentIntent(pendingIntent)
             .setAutoCancel(true)
             .build()
         try {
