@@ -6,10 +6,12 @@ import com.liquidcode7.hearthcraft.data.db.HearthCraftDatabase
 import com.liquidcode7.hearthcraft.data.db.dao.BandMemberStateDao
 import com.liquidcode7.hearthcraft.data.db.dao.CookingSessionDao
 import com.liquidcode7.hearthcraft.data.db.dao.GatheringSessionDao
+import com.liquidcode7.hearthcraft.data.db.dao.GrowingSlotDao
 import com.liquidcode7.hearthcraft.data.db.dao.InventoryDao
 import com.liquidcode7.hearthcraft.data.db.dao.MissionSessionDao
 import com.liquidcode7.hearthcraft.data.db.dao.PlayerStateDao
 import com.liquidcode7.hearthcraft.data.db.dao.PreparedFoodDao
+import com.liquidcode7.hearthcraft.data.db.dao.SeedStockDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -35,4 +37,6 @@ object DatabaseModule {
     @Provides fun provideCookingSessionDao(db: HearthCraftDatabase): CookingSessionDao = db.cookingSessionDao()
     @Provides fun provideMissionSessionDao(db: HearthCraftDatabase): MissionSessionDao = db.missionSessionDao()
     @Provides fun provideBandMemberStateDao(db: HearthCraftDatabase): BandMemberStateDao = db.bandMemberStateDao()
+    @Provides fun provideSeedStockDao(db: HearthCraftDatabase): SeedStockDao = db.seedStockDao()
+    @Provides fun provideGrowingSlotDao(db: HearthCraftDatabase): GrowingSlotDao = db.growingSlotDao()
 }

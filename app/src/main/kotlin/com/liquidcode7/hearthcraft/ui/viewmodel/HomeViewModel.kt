@@ -6,11 +6,13 @@ import com.liquidcode7.hearthcraft.data.db.CookingSession
 import com.liquidcode7.hearthcraft.data.db.GatheringSession
 import com.liquidcode7.hearthcraft.data.db.MissionSession
 import com.liquidcode7.hearthcraft.data.db.PlayerState
+import com.liquidcode7.hearthcraft.data.repository.GrowingRepository
 import com.liquidcode7.hearthcraft.data.repository.PlayerRepository
 import com.liquidcode7.hearthcraft.data.repository.SessionRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
@@ -18,7 +20,8 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val player: PlayerRepository,
-    private val sessions: SessionRepository
+    private val sessions: SessionRepository,
+    private val growing: GrowingRepository
 ) : ViewModel() {
 
     val playerState: StateFlow<PlayerState?> = player.observe()
@@ -40,6 +43,12 @@ class HomeViewModel @Inject constructor(
 
     val missionSession: StateFlow<MissionSession?> = sessions.observeMission()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
+
+    val activeGrowingCount: StateFlow<Int> = combine(
+        growing.observeFarmPlot(),
+        growing.observeGardenSlots()
+    ) { farm, garden -> (if (farm != null) 1 else 0) + garden.size }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
 
     private fun xpProgressFor(totalXp: Int): XpProgress {
         val level = PlayerRepository.levelForXp(totalXp)

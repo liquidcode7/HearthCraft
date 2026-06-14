@@ -21,4 +21,10 @@ interface BandMemberStateDao {
 
     @Query("UPDATE band_member_state SET isAlive = 0 WHERE memberId = :id")
     suspend fun kill(id: String)
+
+    @Query("UPDATE band_member_state SET woundStatus = :status, woundedSinceMs = :sinceMs WHERE memberId = :id")
+    suspend fun updateWound(id: String, status: String, sinceMs: Long)
+
+    @Query("UPDATE band_member_state SET woundStatus = 'healthy', woundedSinceMs = 0 WHERE memberId = :id")
+    suspend fun healWound(id: String)
 }

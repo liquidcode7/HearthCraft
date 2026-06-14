@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -22,23 +24,21 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.liquidcode7.hearthcraft.data.model.Mission
 import com.liquidcode7.hearthcraft.ui.viewmodel.BandViewModel
-import com.liquidcode7.hearthcraft.ui.viewmodel.InventoryViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MissionBoardScreen(
     onBack: () -> Unit,
-    bandViewModel: BandViewModel = hiltViewModel(),
-    inventoryViewModel: InventoryViewModel = hiltViewModel()
+    bandViewModel: BandViewModel = hiltViewModel()
 ) {
     val missions by bandViewModel.missions.collectAsState()
-    val preparedFood by inventoryViewModel.preparedFood.collectAsState()
-    val bestBuff = preparedFood.maxByOrNull { it.buffStrength }
 
     Scaffold(
         topBar = {
@@ -59,14 +59,6 @@ fun MissionBoardScreen(
                 .padding(innerPadding)
                 .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
-            if (bestBuff != null) {
-                Text(
-                    "Best buff available: ${bestBuff.buffType} +${bestBuff.buffStrength}",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.primary
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-            }
             if (missions.isEmpty()) {
                 Text(
                     "No missions available.",
@@ -75,11 +67,7 @@ fun MissionBoardScreen(
                 )
             } else {
                 missions.forEach { mission ->
-                    MissionCard(
-                        mission = mission,
-                        bestBuffType = bestBuff?.buffType ?: "",
-                        bestBuffStrength = bestBuff?.buffStrength ?: 0
-                    )
+                    MissionCard(mission = mission)
                     Spacer(modifier = Modifier.height(8.dp))
                 }
             }
@@ -88,33 +76,45 @@ fun MissionBoardScreen(
 }
 
 @Composable
-private fun MissionCard(mission: Mission, bestBuffType: String, bestBuffStrength: Int) {
-    val canMeet = bestBuffType == mission.requiredBuffType && bestBuffStrength >= mission.requiredBuffStrength
+private fun MissionCard(mission: Mission) {
+    val (difficultyLabel, difficultyColor) = when (mission.difficulty) {
+        "easy" -> "Routine" to Color(0xFF4CAF50)
+        "medium" -> "Challenging" to Color(0xFFFF9800)
+        "hard" -> "Dangerous" to MaterialTheme.colorScheme.error
+        else -> mission.difficulty to MaterialTheme.colorScheme.onSurfaceVariant
+    }
+
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(12.dp)) {
-            Row {
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     mission.name,
                     style = MaterialTheme.typography.titleSmall,
                     modifier = Modifier.weight(1f)
                 )
+                Spacer(modifier = Modifier.width(8.dp))
+                // Colored difficulty dot + label
+                androidx.compose.foundation.Canvas(modifier = Modifier.size(8.dp)) {
+                    drawCircle(color = difficultyColor)
+                }
+                Spacer(modifier = Modifier.width(4.dp))
                 Text(
-                    mission.difficulty,
+                    difficultyLabel,
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = difficultyColor
                 )
             }
             Spacer(modifier = Modifier.height(4.dp))
             Text(mission.description, style = MaterialTheme.typography.bodySmall)
             Spacer(modifier = Modifier.height(6.dp))
             Text(
-                "Needs: ${mission.requiredBuffType} ≥${mission.requiredBuffStrength}",
+                mission.flavorLine,
                 style = MaterialTheme.typography.labelMedium,
-                color = if (canMeet) MaterialTheme.colorScheme.primary
-                        else MaterialTheme.colorScheme.error
+                color = difficultyColor
             )
+            Spacer(modifier = Modifier.height(4.dp))
             Text(
-                "Reward: ${mission.rewardMoneyMin}–${mission.rewardMoneyMax} gold",
+                "Reward: ${mission.rewardMoneyMin * mission.rewardMultiplier}–${mission.rewardMoneyMax * mission.rewardMultiplier} gold",
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )

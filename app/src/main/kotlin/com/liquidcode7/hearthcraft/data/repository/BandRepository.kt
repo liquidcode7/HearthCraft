@@ -24,9 +24,27 @@ class BandRepository @Inject constructor(
         dao.upsert(existing.copy(isAlive = false))
     }
 
+    suspend fun woundMember(memberId: String, grievous: Boolean) {
+        val existing = dao.get(memberId) ?: BandMemberState(memberId = memberId)
+        val status = if (grievous) "grievously_wounded" else "wounded"
+        dao.upsert(existing.copy(woundStatus = status, woundedSinceMs = System.currentTimeMillis()))
+    }
+
+    suspend fun healWound(memberId: String) = dao.healWound(memberId)
+
     suspend fun aliveMemberIds(bandId: String): List<String> =
         gameData.bandMembers
             .filter { it.bandId == bandId }
             .filter { dao.get(it.id)?.isAlive != false }
+            .map { it.id }
+
+    // Members who can receive a wound (alive and not already grievously wounded)
+    suspend fun woundableMemberIds(bandId: String): List<String> =
+        gameData.bandMembers
+            .filter { it.bandId == bandId }
+            .filter {
+                val state = dao.get(it.id)
+                state?.isAlive != false && state?.woundStatus != "grievously_wounded"
+            }
             .map { it.id }
 }

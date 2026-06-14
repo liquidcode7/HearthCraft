@@ -5,10 +5,12 @@ import androidx.room.RoomDatabase
 import com.liquidcode7.hearthcraft.data.db.dao.BandMemberStateDao
 import com.liquidcode7.hearthcraft.data.db.dao.CookingSessionDao
 import com.liquidcode7.hearthcraft.data.db.dao.GatheringSessionDao
+import com.liquidcode7.hearthcraft.data.db.dao.GrowingSlotDao
 import com.liquidcode7.hearthcraft.data.db.dao.InventoryDao
 import com.liquidcode7.hearthcraft.data.db.dao.MissionSessionDao
 import com.liquidcode7.hearthcraft.data.db.dao.PlayerStateDao
 import com.liquidcode7.hearthcraft.data.db.dao.PreparedFoodDao
+import com.liquidcode7.hearthcraft.data.db.dao.SeedStockDao
 
 @Database(
     entities = [
@@ -19,8 +21,10 @@ import com.liquidcode7.hearthcraft.data.db.dao.PreparedFoodDao
         CookingSession::class,
         MissionSession::class,
         BandMemberState::class,
+        SeedStock::class,
+        GrowingSlot::class,
     ],
-    version = 2,
+    version = 3,
     exportSchema = true
 )
 abstract class HearthCraftDatabase : RoomDatabase() {
@@ -31,4 +35,6 @@ abstract class HearthCraftDatabase : RoomDatabase() {
     abstract fun cookingSessionDao(): CookingSessionDao
     abstract fun missionSessionDao(): MissionSessionDao
     abstract fun bandMemberStateDao(): BandMemberStateDao
+    abstract fun seedStockDao(): SeedStockDao
+    abstract fun growingSlotDao(): GrowingSlotDao
 }

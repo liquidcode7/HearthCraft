@@ -128,5 +128,48 @@
       { "id": "pale_cap", "qty": 1 },
       { "id": "hearthgrain", "qty": 2 }
     ]
+  },
+  {
+    "id": "bilberry_tea",
+    "name": "Bilberry Tea",
+    "description": "Astringent, medicinal, and deeply unpleasant to drink. The bitterness is entirely the point. Something in bilberry cuts through fog and confusion and the particular weight that settles on a person who has been too long in unhealthy places. Tastes terrible. Works.",
+    "buffType": "acuity",
+    "flavorTag": "herbal",
+    "baseBuffStrength": 8,
+    "buffStrengthPerLevel": 0.5,
+    "durationMs": 2700000,
+    "ingredients": [
+      { "id": "bilberry", "qty": 3 },
+      { "id": "sunpetal_herb", "qty": 1 }
+    ]
+  },
+  {
+    "id": "restorative_broth",
+    "name": "Restorative Broth",
+    "description": "A plain broth, long-simmered. Ironroot for body, sunpetal herb for something the healers call 'knitting.' Not remarkable to eat. Remarkable for what it does afterward — tissue repairs faster, ache recedes, the body decides to continue.",
+    "buffType": "healing",
+    "flavorTag": "hearty",
+    "baseBuffStrength": 0,
+    "buffStrengthPerLevel": 0.0,
+    "durationMs": 3600000,
+    "ingredients": [
+      { "id": "ironroot", "qty": 1 },
+      { "id": "sunpetal_herb", "qty": 2 }
+    ]
+  },
+  {
+    "id": "athelas_infusion",
+    "name": "Athelas Infusion",
+    "description": "A preparation of moonpetal steeped with ironbark resin and something rarer still. Raw athelas is a weed. In the right hands, prepared the right way, it becomes something else entirely — the last line between a grievous wound and what comes after. It does not always work. When it does, it is extraordinary.",
+    "buffType": "healing_deep",
+    "flavorTag": "herbal",
+    "baseBuffStrength": 0,
+    "buffStrengthPerLevel": 0.0,
+    "durationMs": 7200000,
+    "ingredients": [
+      { "id": "athelas", "qty": 2 },
+      { "id": "moonpetal", "qty": 1 },
+      { "id": "ironbark_resin", "qty": 1 }
+    ]
   }
 ]

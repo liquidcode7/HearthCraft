@@ -82,5 +82,19 @@
     "type": "wild",
     "gatheringMode": "forage",
     "flavor": "Found at the base of old growth and in cave mouths, growing where light barely reaches. Earthy, complex, faintly sweet. Rare enough that finding one feels like the world offering something."
+  },
+  {
+    "id": "bilberry",
+    "name": "Bilberry",
+    "type": "wild",
+    "gatheringMode": "forage",
+    "flavor": "Small, intensely bitter berries that grow in dense patches on open moorland. Tastes like medicine and regret. Something in them, though — a particular resistance, a specific clarity. The old folk swore by bilberry tea for minds that had been too long in unhealthy places."
+  },
+  {
+    "id": "athelas",
+    "name": "Athelas",
+    "type": "wild",
+    "gatheringMode": "forage",
+    "flavor": "Looks like a weed. Smells faintly like open country on a bright morning. Most people walk past it without a second glance. In the right hands — prepared the right way — it is the difference between surviving a grievous wound and what comes after. The herb alone does nothing. The preparation is everything."
   }
 ]

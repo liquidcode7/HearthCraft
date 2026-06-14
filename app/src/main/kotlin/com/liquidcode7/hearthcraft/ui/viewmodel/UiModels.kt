@@ -22,7 +22,15 @@ data class BandMemberWithState(
     val personality: String,
     val foodPreference: String,
     val quirkNote: String,
-    val isAlive: Boolean
+    val isAlive: Boolean,
+    val woundStatus: String = "healthy"  // "healthy", "wounded", "grievously_wounded"
+)
+
+data class SeedDetail(
+    val seedId: String,
+    val ingredientId: String,
+    val name: String,
+    val quantity: Int
 )
 
 data class IngredientStock(

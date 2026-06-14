@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.OneTimeWorkRequest
 import androidx.work.OneTimeWorkRequestBuilder
@@ -12,52 +13,37 @@ import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import com.liquidcode7.hearthcraft.HearthCraftApp
 import com.liquidcode7.hearthcraft.MainActivity
-import com.liquidcode7.hearthcraft.data.repository.GameDataRepository
+import com.liquidcode7.hearthcraft.data.repository.GrowingRepository
 import com.liquidcode7.hearthcraft.data.repository.InventoryRepository
 import com.liquidcode7.hearthcraft.data.repository.PlayerRepository
-import com.liquidcode7.hearthcraft.data.repository.SessionRepository
+import com.liquidcode7.hearthcraft.data.repository.GameDataRepository
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
-import androidx.hilt.work.HiltWorker
 import java.util.concurrent.TimeUnit
-import kotlin.random.Random
 
 @HiltWorker
-class GatheringWorker @AssistedInject constructor(
+class GardenWorker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted params: WorkerParameters,
-    private val gameData: GameDataRepository,
+    private val growing: GrowingRepository,
     private val inventory: InventoryRepository,
     private val player: PlayerRepository,
-    private val sessions: SessionRepository
+    private val gameData: GameDataRepository
 ) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
+        val slotId = inputData.getString(KEY_SLOT_ID) ?: return Result.failure()
+        val ingredientId = inputData.getString(KEY_INGREDIENT_ID) ?: return Result.failure()
         val level = inputData.getInt(KEY_LEVEL, 1)
 
-        // Forage: random wild ingredients
-        val pool = gameData.ingredients.filter { it.gatheringMode == MODE_FORAGE }
-        val count = 2 + (level - 1) / 5
-        val qty = 2 + (level - 1) / 10
-        val results = pool.shuffled().take(count).associate { it.id to qty }
-        results.forEach { (id, q) -> inventory.addIngredient(id, q) }
+        val qty = BASE_YIELD + (level - 1) / 5
+        inventory.addIngredient(ingredientId, qty)
+        player.addGatheringXp(XP_GARDEN)
+        growing.clearSlot(slotId)
 
-        // Chance to find seeds for plantable ingredients while out in the world
-        if (Random.nextFloat() < SEED_DROP_CHANCE) {
-            val plantable = gameData.ingredients.filter { it.gatheringMode == MODE_FARM }
-            plantable.randomOrNull()?.let { ingredient ->
-                val seedCount = Random.nextInt(1, 3)
-                inventory.addSeed("${ingredient.id}_seed", seedCount)
-            }
-        }
-
-        player.addGatheringXp(XP_GATHERING_FORAGE)
-        sessions.clearGathering()
-
-        val names = results.keys
-            .mapNotNull { id -> gameData.ingredients.find { it.id == id }?.name }
-            .joinToString(", ")
-        notify("Foraging Complete", "Returned with: $names", NOTIFICATION_ID)
+        val name = gameData.ingredients.find { it.id == ingredientId }?.name ?: ingredientId
+        val slotNum = slotId.last().digitToInt() + 1
+        notify("Garden ready", "Slot $slotNum: $name — $qty ready.", NOTIFICATION_ID_BASE + slotId.last().digitToInt())
 
         return Result.success()
     }
@@ -83,17 +69,20 @@ class GatheringWorker @AssistedInject constructor(
     }
 
     companion object {
-        const val KEY_LEVEL = "gatheringLevel"
-        const val MODE_FORAGE = "forage"
-        // Keep MODE_FARM for any legacy references
-        const val MODE_FARM = "farm"
-        const val NOTIFICATION_ID = 1
-        private const val XP_GATHERING_FORAGE = 50
-        private const val SEED_DROP_CHANCE = 0.25f
+        const val KEY_SLOT_ID = "slotId"
+        const val KEY_INGREDIENT_ID = "ingredientId"
+        const val KEY_LEVEL = "level"
+        const val NOTIFICATION_ID_BASE = 20
+        private const val BASE_YIELD = 3
+        private const val XP_GARDEN = 25
 
-        fun buildRequest(level: Int, durationMs: Long): OneTimeWorkRequest =
-            OneTimeWorkRequestBuilder<GatheringWorker>()
-                .setInputData(workDataOf(KEY_LEVEL to level))
+        fun buildRequest(slotId: String, ingredientId: String, level: Int, durationMs: Long): OneTimeWorkRequest =
+            OneTimeWorkRequestBuilder<GardenWorker>()
+                .setInputData(workDataOf(
+                    KEY_SLOT_ID to slotId,
+                    KEY_INGREDIENT_ID to ingredientId,
+                    KEY_LEVEL to level
+                ))
                 .setInitialDelay(durationMs, TimeUnit.MILLISECONDS)
                 .build()
     }

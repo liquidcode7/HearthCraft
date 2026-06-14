@@ -39,6 +39,7 @@ fun KitchenScreen(
     val session by viewModel.session.collectAsState()
     val selectedRecipe by viewModel.selectedRecipe.collectAsState()
     val inventoryItems by viewModel.inventoryItems.collectAsState()
+    val sortedRecipes by viewModel.sortedRecipes.collectAsState()
 
     Column(
         modifier = Modifier
@@ -63,7 +64,7 @@ fun KitchenScreen(
             Spacer(modifier = Modifier.height(12.dp))
             Text("Select a Recipe", style = MaterialTheme.typography.titleSmall)
             Spacer(modifier = Modifier.height(8.dp))
-            viewModel.recipes.forEach { recipe ->
+            sortedRecipes.forEach { recipe ->
                 RecipeRow(
                     recipe = recipe,
                     canCook = viewModel.canCook(recipe, inventoryItems),

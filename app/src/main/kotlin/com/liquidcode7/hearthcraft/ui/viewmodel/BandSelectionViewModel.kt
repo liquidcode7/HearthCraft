@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.liquidcode7.hearthcraft.data.model.Band
 import com.liquidcode7.hearthcraft.data.repository.BandRepository
 import com.liquidcode7.hearthcraft.data.repository.GameDataRepository
+import com.liquidcode7.hearthcraft.data.repository.InventoryRepository
 import com.liquidcode7.hearthcraft.data.repository.PlayerRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -20,7 +21,8 @@ import javax.inject.Inject
 class BandSelectionViewModel @Inject constructor(
     private val gameData: GameDataRepository,
     private val player: PlayerRepository,
-    private val band: BandRepository
+    private val band: BandRepository,
+    private val inventory: InventoryRepository
 ) : ViewModel() {
 
     val bands: List<Band> = gameData.bands
@@ -40,7 +42,15 @@ class BandSelectionViewModel @Inject constructor(
         viewModelScope.launch {
             player.init(id)
             band.initMembers(id)
+            giveStarterSeeds()
             _navigateToMain.emit(Unit)
+        }
+    }
+
+    private suspend fun giveStarterSeeds() {
+        // Give the player a small set of seeds to start their first garden
+        listOf("duskberry_seed", "pale_cap_seed", "hearthgrain_seed").forEach { seedId ->
+            inventory.addSeed(seedId, 3)
         }
     }
 }

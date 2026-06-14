@@ -49,7 +49,8 @@ class BandViewModel @Inject constructor(
                     personality = member.personality,
                     foodPreference = member.foodPreference,
                     quirkNote = member.quirkNote,
-                    isAlive = states.find { it.memberId == member.id }?.isAlive != false
+                    isAlive = states.find { it.memberId == member.id }?.isAlive != false,
+                    woundStatus = states.find { it.memberId == member.id }?.woundStatus ?: "healthy"
                 )
             }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
@@ -82,6 +83,19 @@ class BandViewModel @Inject constructor(
 
     fun selectMission(mission: Mission) {
         _selectedMission.value = mission
+    }
+
+    fun treatWound(memberId: String, food: PreparedFoodDetail) {
+        viewModelScope.launch {
+            val canTreat = when (food.buffType) {
+                "healing" -> true          // ordinary wounds
+                "healing_deep" -> true     // grievous wounds too
+                else -> false
+            }
+            if (!canTreat) return@launch
+            band.healWound(memberId)
+            inventory.removePreparedFood(food.recipeId)
+        }
     }
 
     fun sendOnMission() {

@@ -74,6 +74,42 @@ fun BandScreen(
             Spacer(modifier = Modifier.height(4.dp))
         }
 
+        // Healing section — appears when someone is wounded and healing food is available
+        val woundedMembers = members.filter { it.isAlive && it.woundStatus != "healthy" }
+        val healingFood = preparedFood.filter { it.buffType == "healing" || it.buffType == "healing_deep" }
+        if (woundedMembers.isNotEmpty() && healingFood.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(12.dp))
+            Text("Treat Wounds", style = MaterialTheme.typography.titleSmall)
+            Spacer(modifier = Modifier.height(8.dp))
+            woundedMembers.forEach { member ->
+                val applicableFood = healingFood.filter { food ->
+                    when (member.woundStatus) {
+                        "wounded" -> true
+                        "grievously_wounded" -> food.buffType == "healing_deep"
+                        else -> false
+                    }
+                }
+                if (applicableFood.isNotEmpty()) {
+                    Card(modifier = Modifier.fillMaxWidth()) {
+                        Column(modifier = Modifier.padding(10.dp)) {
+                            Text("${member.name} — ${if (member.woundStatus == "grievously_wounded") "Grievous Wound" else "Wounded"}",
+                                style = MaterialTheme.typography.bodySmall)
+                            Spacer(modifier = Modifier.height(6.dp))
+                            applicableFood.forEach { food ->
+                                androidx.compose.material3.OutlinedButton(
+                                    onClick = { bandViewModel.treatWound(member.memberId, food) },
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Text("Treat with ${food.name}", style = MaterialTheme.typography.labelSmall)
+                                }
+                            }
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(6.dp))
+                }
+            }
+        }
+
         if (!hasAliveMembers) {
             Spacer(modifier = Modifier.height(16.dp))
             Card(
@@ -148,6 +184,12 @@ fun BandScreen(
 
 @Composable
 private fun MemberRow(member: BandMemberWithState) {
+    val (statusLabel, statusColor) = when {
+        !member.isAlive -> "Fallen" to MaterialTheme.colorScheme.error
+        member.woundStatus == "grievously_wounded" -> "Grievous Wound" to MaterialTheme.colorScheme.error
+        member.woundStatus == "wounded" -> "Wounded" to androidx.compose.ui.graphics.Color(0xFFFF9800)
+        else -> "Active" to MaterialTheme.colorScheme.primary
+    }
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -161,12 +203,7 @@ private fun MemberRow(member: BandMemberWithState) {
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
-        Text(
-            if (member.isAlive) "Active" else "Fallen",
-            style = MaterialTheme.typography.labelSmall,
-            color = if (member.isAlive) MaterialTheme.colorScheme.primary
-                    else MaterialTheme.colorScheme.error
-        )
+        Text(statusLabel, style = MaterialTheme.typography.labelSmall, color = statusColor)
     }
 }
 

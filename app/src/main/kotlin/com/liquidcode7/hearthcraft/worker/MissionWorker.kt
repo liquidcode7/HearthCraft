@@ -40,40 +40,87 @@ class MissionWorker @AssistedInject constructor(
         val buffStrength = inputData.getInt(KEY_BUFF_STRENGTH, 0)
 
         val mission = gameData.missions.find { it.id == missionId } ?: return Result.failure()
-        val succeeded = buffType == mission.requiredBuffType && buffStrength >= mission.requiredBuffStrength
+
+        // Success probability — hidden from player, driven by difficulty + food quality
+        val baseChance = when (mission.difficulty) {
+            "easy" -> 0.80f
+            "medium" -> 0.55f
+            "hard" -> 0.25f
+            else -> 0.50f
+        }
+        val typeBonus = if (buffType == mission.requiredBuffType) 0.10f else 0f
+        val strengthRatio = if (mission.requiredBuffStrength > 0)
+            buffStrength.toFloat() / mission.requiredBuffStrength else 1f
+        val strengthBonus = minOf(0.10f, strengthRatio * 0.10f)
+        val successChance = minOf(0.95f, baseChance + typeBonus + strengthBonus)
+
+        val succeeded = Random.nextFloat() < successChance
 
         if (succeeded) {
-            val money = Random.nextInt(mission.rewardMoneyMin, mission.rewardMoneyMax + 1)
+            val multiplier = mission.rewardMultiplier
+            val money = Random.nextInt(mission.rewardMoneyMin, mission.rewardMoneyMax + 1) * multiplier
             player.addMoney(money)
 
-            val rewardCount = Random.nextInt(1, 4)
+            val rewardCount = Random.nextInt(1, 4) + (multiplier - 1)
             mission.rewardTable.shuffled().take(rewardCount).forEach {
                 inventory.addIngredient(it, 1)
             }
 
             notify("Mission Complete", "${mission.name} — your band has returned.", NOTIFICATION_ID)
         } else {
-            var memberLost = false
-            if (buffStrength < mission.requiredBuffStrength * 0.6) {
-                if (Random.nextFloat() < 0.33f) {
-                    val alive = band.aliveMemberIds(mission.bandId)
-                    alive.randomOrNull()?.let {
-                        band.killMember(it)
-                        memberLost = true
-                    }
-                }
-            }
-
-            val message = if (memberLost)
-                "${mission.name} — they failed. Someone didn't come back."
-            else
-                "${mission.name} — they failed. They came back empty-handed."
-
+            applyFailureConsequences(mission.difficulty, mission.bandId, strengthRatio, typeBonus)
+            val message = buildFailureMessage(mission.name, mission.difficulty)
             notify("Mission Failed", message, NOTIFICATION_ID)
         }
 
         sessions.clearMission()
         return Result.success()
+    }
+
+    private suspend fun applyFailureConsequences(
+        difficulty: String,
+        bandId: String,
+        strengthRatio: Float,
+        typeBonus: Float
+    ) {
+        when (difficulty) {
+            "easy" -> { /* empty-handed, no further consequences */ }
+            "medium" -> {
+                if (Random.nextFloat() < 0.30f) {
+                    band.woundableMemberIds(bandId).randomOrNull()?.let {
+                        band.woundMember(it, grievous = false)
+                    }
+                }
+            }
+            "hard" -> {
+                val roll = Random.nextFloat()
+                when {
+                    roll < 0.15f -> {
+                        band.woundableMemberIds(bandId).randomOrNull()?.let {
+                            band.woundMember(it, grievous = true)
+                        }
+                    }
+                    roll < 0.45f -> {
+                        band.woundableMemberIds(bandId).randomOrNull()?.let {
+                            band.woundMember(it, grievous = false)
+                        }
+                    }
+                }
+                // Death is rare — only when food was badly wrong for a hard mission
+                if (strengthRatio < 0.4f && typeBonus == 0f && Random.nextFloat() < 0.05f) {
+                    band.aliveMemberIds(bandId).randomOrNull()?.let {
+                        band.killMember(it)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun buildFailureMessage(missionName: String, difficulty: String): String = when (difficulty) {
+        "easy" -> "$missionName — they came back empty-handed."
+        "medium" -> "$missionName — they failed. Someone may need rest."
+        "hard" -> "$missionName — they failed. Check on your band."
+        else -> "$missionName — they did not succeed."
     }
 
     private fun notify(title: String, text: String, id: Int) {
@@ -93,9 +140,7 @@ class MissionWorker @AssistedInject constructor(
             .build()
         try {
             NotificationManagerCompat.from(applicationContext).notify(id, notification)
-        } catch (_: SecurityException) {
-            // POST_NOTIFICATIONS not yet granted — notification skipped silently
-        }
+        } catch (_: SecurityException) {}
     }
 
     companion object {

@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -28,6 +29,17 @@ class KitchenViewModel @Inject constructor(
     private val inventory: InventoryRepository,
     private val sessions: SessionRepository
 ) : ViewModel() {
+
+    // All recipes sorted: cookable ones first, then the rest — updated reactively
+    val sortedRecipes: StateFlow<List<Recipe>> = inventory.observeIngredients()
+        .map { items ->
+            val qtyMap = items.associate { it.ingredientId to it.quantity }
+            val (can, cannot) = gameData.recipes.partition { recipe ->
+                recipe.ingredients.all { needed -> (qtyMap[needed.id] ?: 0) >= needed.qty }
+            }
+            can + cannot
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), gameData.recipes)
 
     val recipes: List<Recipe> = gameData.recipes
 

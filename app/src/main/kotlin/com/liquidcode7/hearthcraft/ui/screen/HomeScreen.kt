@@ -29,6 +29,7 @@ fun HomeScreen(viewModel: HomeViewModel = hiltViewModel()) {
     val gSession by viewModel.gatheringSession.collectAsState()
     val cSession by viewModel.cookingSession.collectAsState()
     val mSession by viewModel.missionSession.collectAsState()
+    val growingCount by viewModel.activeGrowingCount.collectAsState()
 
     Column(
         modifier = Modifier
@@ -53,7 +54,10 @@ fun HomeScreen(viewModel: HomeViewModel = hiltViewModel()) {
         Spacer(modifier = Modifier.height(20.dp))
         Text("Active Sessions", style = MaterialTheme.typography.titleSmall)
         Spacer(modifier = Modifier.height(8.dp))
-        SessionRow(label = "Gathering", active = gSession != null)
+        SessionRow(label = "Foraging", active = gSession != null)
+        if (growingCount > 0) {
+            SessionRow(label = "Growing ($growingCount plots)", active = true)
+        }
         SessionRow(label = "Kitchen", active = cSession != null)
         SessionRow(label = "Mission", active = mSession != null)
     }

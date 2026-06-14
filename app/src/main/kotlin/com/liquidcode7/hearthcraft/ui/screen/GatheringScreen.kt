@@ -1,6 +1,8 @@
 package com.liquidcode7.hearthcraft.ui.screen
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -8,31 +10,53 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.liquidcode7.hearthcraft.data.db.GrowingSlot
 import com.liquidcode7.hearthcraft.ui.viewmodel.GatheringViewModel
-import com.liquidcode7.hearthcraft.worker.GatheringWorker
+import com.liquidcode7.hearthcraft.ui.viewmodel.SeedDetail
 import kotlinx.coroutines.delay
 
 @Composable
 fun GatheringScreen(viewModel: GatheringViewModel = hiltViewModel()) {
-    val session by viewModel.session.collectAsState()
-    val selectedMode by viewModel.selectedMode.collectAsState()
+    val farmPlot by viewModel.farmPlot.collectAsState()
+    val gardenSlots by viewModel.gardenSlots.collectAsState()
+    val forageSession by viewModel.forageSession.collectAsState()
+    val seeds by viewModel.seeds.collectAsState()
+
+    // Which slot is awaiting seed selection; null = picker closed
+    var pickingSlot by remember { mutableStateOf<String?>(null) }
+
+    if (pickingSlot != null) {
+        SeedPickerDialog(
+            seeds = seeds,
+            onSelect = { seedId ->
+                val slot = pickingSlot!!
+                if (slot == "farm_0") viewModel.plantFarm(seedId)
+                else viewModel.plantGarden(slot.last().digitToInt(), seedId)
+                pickingSlot = null
+            },
+            onDismiss = { pickingSlot = null }
+        )
+    }
 
     Column(
         modifier = Modifier
@@ -41,113 +65,160 @@ fun GatheringScreen(viewModel: GatheringViewModel = hiltViewModel()) {
             .padding(16.dp)
     ) {
         Text("Gathering", style = MaterialTheme.typography.headlineMedium)
-        Spacer(modifier = Modifier.height(16.dp))
 
-        if (session != null) {
-            GatheringActiveCard(
-                label = if (session!!.mode == GatheringWorker.MODE_FARM) "Farm / Garden" else "Forage / Wild",
-                startedAtMs = session!!.startedAtMs,
-                durationMs = session!!.durationMs
+        Spacer(modifier = Modifier.height(20.dp))
+        SectionHeader("Farm Plot")
+        Spacer(modifier = Modifier.height(8.dp))
+        GrowingSlotCard(
+            slot = farmPlot,
+            label = "Farm plot",
+            onPlant = { pickingSlot = "farm_0" }
+        )
+
+        Spacer(modifier = Modifier.height(20.dp))
+        SectionHeader("Garden (${gardenSlots.count { it != null }}/4 growing)")
+        Spacer(modifier = Modifier.height(8.dp))
+        gardenSlots.forEachIndexed { index, slot ->
+            GrowingSlotCard(
+                slot = slot,
+                label = "Slot ${index + 1}",
+                onPlant = { pickingSlot = "garden_$index" }
+            )
+            Spacer(modifier = Modifier.height(6.dp))
+        }
+
+        Spacer(modifier = Modifier.height(20.dp))
+        HorizontalDivider()
+        Spacer(modifier = Modifier.height(20.dp))
+        SectionHeader("Forage")
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            "Head into the wild. Random ingredients, and a chance of finding seeds.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+
+        if (forageSession != null) {
+            ActiveTimerCard(
+                label = "Foraging in progress",
+                startedAtMs = forageSession!!.startedAtMs,
+                durationMs = forageSession!!.durationMs
             )
         } else {
-            ModeSelector(
-                selectedMode = selectedMode,
-                onSelectMode = { viewModel.selectMode(it) }
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            ModeDescription(selectedMode)
-            Spacer(modifier = Modifier.height(16.dp))
             Button(
-                onClick = { viewModel.startSession() },
+                onClick = { viewModel.startForage() },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Start Gathering")
+                Text("Start Foraging — 3 min")
             }
         }
     }
 }
 
 @Composable
-private fun ModeSelector(selectedMode: String, onSelectMode: (String) -> Unit) {
-    val modes = listOf(GatheringWorker.MODE_FARM to "Farm / Garden", GatheringWorker.MODE_FORAGE to "Forage / Wild")
-    val index = if (selectedMode == GatheringWorker.MODE_FARM) 0 else 1
-    TabRow(selectedTabIndex = index) {
-        modes.forEachIndexed { i, (mode, label) ->
-            Tab(
-                selected = index == i,
-                onClick = { onSelectMode(mode) }
-            ) {
-                Text(label, modifier = Modifier.padding(vertical = 12.dp))
+private fun SectionHeader(text: String) {
+    Text(text, style = MaterialTheme.typography.titleSmall)
+}
+
+@Composable
+private fun GrowingSlotCard(slot: GrowingSlot?, label: String, onPlant: () -> Unit) {
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier.padding(12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            if (slot == null) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(label, style = MaterialTheme.typography.bodyMedium)
+                    Text(
+                        "Empty — plant a seed",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                OutlinedButton(onClick = onPlant) { Text("Plant") }
+            } else {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(label, style = MaterialTheme.typography.bodyMedium)
+                    Text(
+                        slot.ingredientId ?: "",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+                SlotTimer(startedAtMs = slot.plantedAtMs, durationMs = slot.durationMs)
             }
         }
     }
 }
 
 @Composable
-private fun ModeDescription(mode: String) {
+private fun SlotTimer(startedAtMs: Long, durationMs: Long) {
+    var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
+    LaunchedEffect(startedAtMs) { while (true) { now = System.currentTimeMillis(); delay(1000L) } }
+    val remaining = maxOf(0L, startedAtMs + durationMs - now)
+    Text(
+        formatMs(remaining),
+        style = MaterialTheme.typography.bodyMedium,
+        color = if (remaining == 0L) MaterialTheme.colorScheme.primary
+                else MaterialTheme.colorScheme.onSurface
+    )
+}
+
+@Composable
+private fun ActiveTimerCard(label: String, startedAtMs: Long, durationMs: Long) {
+    var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
+    LaunchedEffect(startedAtMs) { while (true) { now = System.currentTimeMillis(); delay(1000L) } }
+    val remaining = maxOf(0L, startedAtMs + durationMs - now)
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
-            if (mode == GatheringWorker.MODE_FARM) {
-                Text("Farm / Garden", style = MaterialTheme.typography.titleSmall)
-                Text(
-                    "Cultivated crops and herbs. Faster, predictable yields.",
-                    style = MaterialTheme.typography.bodySmall
-                )
-                Text(
-                    "Duration: 5 minutes",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 4.dp)
-                )
-            } else {
-                Text("Forage / Wild", style = MaterialTheme.typography.titleSmall)
-                Text(
-                    "Wild plants and mushrooms. Slower, rarer finds.",
-                    style = MaterialTheme.typography.bodySmall
-                )
-                Text(
-                    "Duration: 10 minutes",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 4.dp)
-                )
-            }
+            Text(label, style = MaterialTheme.typography.titleSmall)
+            Text(formatMs(remaining), style = MaterialTheme.typography.headlineSmall)
+            Text("remaining", style = MaterialTheme.typography.labelSmall)
         }
     }
 }
 
 @Composable
-private fun GatheringActiveCard(label: String, startedAtMs: Long, durationMs: Long) {
-    var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
-    LaunchedEffect(startedAtMs) {
-        while (true) {
-            now = System.currentTimeMillis()
-            delay(1000L)
+private fun SeedPickerDialog(
+    seeds: List<SeedDetail>,
+    onSelect: (String) -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Choose a seed to plant") },
+        text = {
+            Column {
+                if (seeds.isEmpty()) {
+                    Text(
+                        "No seeds available. Forage to find some, or earn them from missions.",
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                } else {
+                    seeds.forEach { seed ->
+                        TextButton(
+                            onClick = { onSelect(seed.seedId) },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Row(modifier = Modifier.fillMaxWidth()) {
+                                Text(seed.name, modifier = Modifier.weight(1f))
+                                Text("×${seed.quantity}", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {},
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("Cancel") }
         }
-    }
-    val remainingMs = maxOf(0L, startedAtMs + durationMs - now)
-
-    Card(modifier = Modifier.fillMaxWidth()) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text("Gathering in progress", style = MaterialTheme.typography.titleSmall)
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(label, style = MaterialTheme.typography.bodyMedium)
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                formatMs(remainingMs),
-                style = MaterialTheme.typography.headlineSmall,
-                color = MaterialTheme.colorScheme.primary
-            )
-            Text(
-                "remaining",
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-    }
+    )
 }
 
 private fun formatMs(ms: Long): String {
