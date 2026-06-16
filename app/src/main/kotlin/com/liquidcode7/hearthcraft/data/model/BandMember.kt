@@ -10,6 +10,7 @@ data class BandMember(
     val personality: String,
     val foodPreference: String,
     val quirkNote: String,
+    val role: String = "",
     val startingMight: Int = 2,
     val startingAgility: Int = 2,
     val startingVitality: Int = 3,

@@ -22,6 +22,7 @@ data class BandMemberWithState(
     val personality: String,
     val foodPreference: String,
     val quirkNote: String,
+    val role: String = "",
     val isAlive: Boolean,
     val woundStatus: String = "healthy",
     val might: Int = 0,

@@ -50,6 +50,7 @@ class BandViewModel @Inject constructor(
                     personality = member.personality,
                     foodPreference = member.foodPreference,
                     quirkNote = member.quirkNote,
+                    role = member.role,
                     isAlive = state?.isAlive != false,
                     woundStatus = state?.woundStatus ?: "healthy",
                     might = state?.might ?: member.startingMight,

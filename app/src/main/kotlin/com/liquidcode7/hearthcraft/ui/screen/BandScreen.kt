@@ -23,9 +23,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.layout.width
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.liquidcode7.hearthcraft.data.model.Mission
 import com.liquidcode7.hearthcraft.ui.viewmodel.BandMemberWithState
@@ -203,7 +205,17 @@ private fun MemberRow(member: BandMemberWithState) {
     ) {
         Row {
             Column(modifier = Modifier.weight(1f)) {
-                Text(member.name, style = MaterialTheme.typography.bodyMedium)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(member.name, style = MaterialTheme.typography.bodyMedium)
+                    if (member.role.isNotEmpty()) {
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            member.role,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.tertiary
+                        )
+                    }
+                }
                 Text(
                     member.personality,
                     style = MaterialTheme.typography.labelSmall,
