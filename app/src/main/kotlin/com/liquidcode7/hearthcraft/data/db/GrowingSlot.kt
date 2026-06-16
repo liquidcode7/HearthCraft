@@ -11,5 +11,6 @@ data class GrowingSlot(
     val ingredientId: String? = null,
     val plantedAtMs: Long = 0L,
     val durationMs: Long = 0L,
-    val workRequestId: String? = null
+    val workRequestId: String? = null,
+    val pendingResultJson: String? = null
 )

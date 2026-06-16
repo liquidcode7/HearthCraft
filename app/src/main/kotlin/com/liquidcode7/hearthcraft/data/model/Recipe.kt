@@ -18,5 +18,6 @@ data class Recipe(
     val baseBuffStrength: Int,
     val buffStrengthPerLevel: Double,
     val durationMs: Long,
+    val levelRequired: Int = 1,
     val ingredients: List<RecipeIngredient>
 )

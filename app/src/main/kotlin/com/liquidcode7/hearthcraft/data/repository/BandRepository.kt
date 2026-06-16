@@ -16,7 +16,16 @@ class BandRepository @Inject constructor(
     suspend fun initMembers(bandId: String) {
         gameData.bandMembers
             .filter { it.bandId == bandId }
-            .forEach { dao.upsert(BandMemberState(memberId = it.id)) }
+            .forEach { member ->
+                dao.upsert(BandMemberState(
+                    memberId = member.id,
+                    might = member.startingMight,
+                    agility = member.startingAgility,
+                    vitality = member.startingVitality,
+                    will = member.startingWill,
+                    fate = member.startingFate
+                ))
+            }
     }
 
     suspend fun killMember(memberId: String) {
@@ -38,7 +47,6 @@ class BandRepository @Inject constructor(
             .filter { dao.get(it.id)?.isAlive != false }
             .map { it.id }
 
-    // Members who can receive a wound (alive and not already grievously wounded)
     suspend fun woundableMemberIds(bandId: String): List<String> =
         gameData.bandMembers
             .filter { it.bandId == bandId }
@@ -47,4 +55,21 @@ class BandRepository @Inject constructor(
                 state?.isAlive != false && state?.woundStatus != "grievously_wounded"
             }
             .map { it.id }
+
+    suspend fun grantMissionStats(bandId: String, succeeded: Boolean) {
+        aliveMemberIds(bandId).forEach { id ->
+            dao.grantStats(
+                memberId = id,
+                vitality = 1,
+                might = if (succeeded) 1 else 0
+            )
+        }
+    }
+
+    suspend fun maxVitality(bandId: String): Int =
+        gameData.bandMembers
+            .filter { it.bandId == bandId }
+            .mapNotNull { dao.get(it.id) }
+            .filter { it.isAlive }
+            .maxOfOrNull { it.vitality } ?: 0
 }

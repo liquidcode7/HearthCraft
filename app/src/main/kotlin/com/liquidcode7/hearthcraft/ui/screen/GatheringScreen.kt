@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
@@ -31,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.liquidcode7.hearthcraft.data.db.GrowingSlot
+import com.liquidcode7.hearthcraft.data.model.HarvestItem
 import com.liquidcode7.hearthcraft.ui.viewmodel.GatheringViewModel
 import com.liquidcode7.hearthcraft.ui.viewmodel.SeedDetail
 import kotlinx.coroutines.delay
@@ -41,9 +43,16 @@ fun GatheringScreen(viewModel: GatheringViewModel = hiltViewModel()) {
     val gardenSlots by viewModel.gardenSlots.collectAsState()
     val forageSession by viewModel.forageSession.collectAsState()
     val seeds by viewModel.seeds.collectAsState()
+    val lastHarvest by viewModel.lastHarvest.collectAsState()
 
-    // Which slot is awaiting seed selection; null = picker closed
     var pickingSlot by remember { mutableStateOf<String?>(null) }
+
+    if (lastHarvest.isNotEmpty()) {
+        HarvestResultDialog(
+            items = lastHarvest,
+            onDismiss = { viewModel.clearLastHarvest() }
+        )
+    }
 
     if (pickingSlot != null) {
         SeedPickerDialog(
@@ -72,7 +81,8 @@ fun GatheringScreen(viewModel: GatheringViewModel = hiltViewModel()) {
         GrowingSlotCard(
             slot = farmPlot,
             label = "Farm plot",
-            onPlant = { pickingSlot = "farm_0" }
+            onPlant = { if (farmPlot?.pendingResultJson == null) pickingSlot = "farm_0" },
+            onCollect = { viewModel.collectGrowingSlot("farm_0") }
         )
 
         Spacer(modifier = Modifier.height(20.dp))
@@ -81,8 +91,9 @@ fun GatheringScreen(viewModel: GatheringViewModel = hiltViewModel()) {
         gardenSlots.forEachIndexed { index, slot ->
             GrowingSlotCard(
                 slot = slot,
-                label = "Slot ${index + 1}",
-                onPlant = { pickingSlot = "garden_$index" }
+                label = "Bed ${index + 1}",
+                onPlant = { if (slot?.pendingResultJson == null) pickingSlot = "garden_$index" },
+                onCollect = { viewModel.collectGrowingSlot("garden_$index") }
             )
             Spacer(modifier = Modifier.height(6.dp))
         }
@@ -99,18 +110,42 @@ fun GatheringScreen(viewModel: GatheringViewModel = hiltViewModel()) {
         )
         Spacer(modifier = Modifier.height(8.dp))
 
-        if (forageSession != null) {
-            ActiveTimerCard(
-                label = "Foraging in progress",
-                startedAtMs = forageSession!!.startedAtMs,
-                durationMs = forageSession!!.durationMs
-            )
-        } else {
-            Button(
-                onClick = { viewModel.startForage() },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Start Foraging — 3 min")
+        when {
+            forageSession?.pendingResultJson != null -> {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+                ) {
+                    Column(modifier = Modifier.padding(12.dp)) {
+                        Text(
+                            "Forage complete — ready to collect",
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Button(
+                            onClick = { viewModel.collectForage() },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("Collect Forage")
+                        }
+                    }
+                }
+            }
+            forageSession != null -> {
+                ActiveTimerCard(
+                    label = "Foraging in progress",
+                    startedAtMs = forageSession!!.startedAtMs,
+                    durationMs = forageSession!!.durationMs
+                )
+            }
+            else -> {
+                Button(
+                    onClick = { viewModel.startForage() },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Start Foraging — 3 min")
+                }
             }
         }
     }
@@ -122,35 +157,89 @@ private fun SectionHeader(text: String) {
 }
 
 @Composable
-private fun GrowingSlotCard(slot: GrowingSlot?, label: String, onPlant: () -> Unit) {
+private fun GrowingSlotCard(slot: GrowingSlot?, label: String, onPlant: () -> Unit, onCollect: () -> Unit) {
     Card(modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier.padding(12.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            if (slot == null) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(label, style = MaterialTheme.typography.bodyMedium)
-                    Text(
-                        "Empty — plant a seed",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+            when {
+                slot == null -> {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(label, style = MaterialTheme.typography.bodyMedium)
+                        Text(
+                            "Empty — plant a seed",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    OutlinedButton(onClick = onPlant) { Text("Plant") }
                 }
-                OutlinedButton(onClick = onPlant) { Text("Plant") }
-            } else {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(label, style = MaterialTheme.typography.bodyMedium)
-                    Text(
-                        slot.ingredientId ?: "",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.primary
-                    )
+                slot.pendingResultJson != null -> {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(label, style = MaterialTheme.typography.bodyMedium)
+                        Text(
+                            "Ready to harvest",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                    Button(onClick = onCollect) { Text("Collect") }
                 }
-                SlotTimer(startedAtMs = slot.plantedAtMs, durationMs = slot.durationMs)
+                else -> {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(label, style = MaterialTheme.typography.bodyMedium)
+                        Text(
+                            slot.ingredientId ?: "",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                    SlotTimer(startedAtMs = slot.plantedAtMs, durationMs = slot.durationMs)
+                }
             }
         }
     }
+}
+
+@Composable
+private fun HarvestResultDialog(items: List<HarvestItem>, onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Harvest") },
+        text = {
+            Column {
+                items.forEach { item ->
+                    val rarityColor = when (item.rarity) {
+                        "uncommon" -> MaterialTheme.colorScheme.tertiary
+                        "bonus" -> MaterialTheme.colorScheme.primary
+                        else -> MaterialTheme.colorScheme.onSurface
+                    }
+                    Row(modifier = Modifier.padding(vertical = 2.dp)) {
+                        Text(
+                            item.name,
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.weight(1f)
+                        )
+                        Text(
+                            "×${item.quantity}",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            item.rarity.replaceFirstChar { it.uppercase() },
+                            style = MaterialTheme.typography.labelSmall,
+                            color = rarityColor
+                        )
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) { Text("Take All") }
+        }
+    )
 }
 
 @Composable
@@ -196,7 +285,7 @@ private fun SeedPickerDialog(
             Column {
                 if (seeds.isEmpty()) {
                     Text(
-                        "No seeds available. Forage to find some, or earn them from missions.",
+                        "No seeds available. Forage to find some, or buy them at the Market.",
                         style = MaterialTheme.typography.bodySmall
                     )
                 } else {

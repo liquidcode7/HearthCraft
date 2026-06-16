@@ -10,7 +10,7 @@ data class Mission(
     val description: String,
     val difficulty: String,
     val flavorLine: String,
-    val requiredBuffType: String,
+    val vitalityRequired: Int,
     val requiredBuffStrength: Int,
     val rewardMultiplier: Int,
     val durationMs: Long,

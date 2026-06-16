@@ -7,7 +7,6 @@ import androidx.room.PrimaryKey
 data class MissionSession(
     @PrimaryKey val id: Int = 0,
     val missionId: String,
-    val buffType: String,
     val buffStrength: Int,
     val startedAtMs: Long,
     val durationMs: Long,

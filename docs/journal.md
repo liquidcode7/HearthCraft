@@ -5,14 +5,14 @@
 
 ---
 
-## Current Status — June 14, 2026
+## Current Status — June 16, 2026
 
-**Phase:** Post-audit iteration complete — farming, wounds, missions, intro screen all rebuilt  
-**V1 progress:** Core loop is now fully playable and significantly more interesting than pre-audit.  
-**What's working:** Farm plot + 4 independent garden slots + forage (with seed drops). Probability-based missions with wound consequences. Color-coded difficulty + flavor text. Cookable-recipes-first kitchen sort. Intro screen with opening lore → band selection → welcome quote. Corsair Fleet reworked as Númenórean lineage.  
-**What's not wired yet:** Kitchen recipe detail panel still shows raw ingredient IDs (not display names). Mission unlock tiers (harder missions unlock after successful runs) designed but not built.  
-**Next session:** Install and play the redesigned loop. Focus on: does farming feel rewarding? Do missions feel risky vs safe correctly? Does the intro land?  
-**Open questions:** When to unlock harder mission tiers. Kitchen ingredient name display (small polish). Band rename (Mithlost / Undermarch / Freewake) remains a V2 decision.
+**Phase:** Stats, tiered kitchen, Market, and pending-harvest system complete  
+**V1 progress:** Core loop playable with meaningful progression: band members have stats that grow, missions gate on vitality, kitchen tiers unlock by cooking level, Market lets you buy seeds.  
+**What's working:** Band member stats (Might/Agility/Vitality/Will/Fate) initialized from data, displayed on Band screen. Missions gated by max party vitality. Kitchen recipes grouped into Apprentice/Journeyman/Craftsman tiers. Forage and farm/garden harvests now show a collect dialog instead of auto-depositing. Market tab sells all farm seeds for 5g each.  
+**What's not wired yet:** Kitchen recipe detail panel ingredient IDs still not resolved to display names (pre-existing). Stats grow but no caps or milestone events yet.  
+**Next session:** Install and play — does the vitality gate feel right on first play? Does the Market feel useful? Does the harvest collect dialog feel satisfying?  
+**Open questions:** Stats show on Band screen — does seeing raw numbers feel good or clinical? Vitality thresholds (0/3/6) may need tuning after playtesting.
 
 ---
 
@@ -571,4 +571,55 @@ Wes played the game on a Pixel 7 Pro and submitted a detailed first-play audit. 
 **Coming up:**
 - Next session: install and play the full redesigned loop end-to-end.
 - Near term: kitchen ingredient name display (shows raw IDs in recipe detail), mission unlock tiers.
+- Future ideas logged: none this session.
+
+---
+
+## Session 15 — June 16, 2026
+**Stats, tiered kitchen, Market, and pending-harvest collect system**
+
+This session introduced stats to band members, gated missions on vitality, added recipe tiers to the kitchen, added a Market tab for buying seeds, and changed harvest behavior from auto-deposit to a collect dialog.
+
+**What was built:**
+- `band_members.json` + `BandMember.kt`: all 16 members now have `startingMight/Agility/Vitality/Will/Fate` values
+- `BandMemberState.kt`: added `might`, `agility`, `vitality`, `will`, `fate` columns (DB version → 4)
+- `BandMemberStateDao.kt`: added `grantStats(memberId, vitality, might)` query
+- `BandRepository.kt`: `initMembers()` now seeds stats from JSON data; added `grantMissionStats()` (alive members +1 vitality always, +1 might on success) and `maxVitality()`
+- `UiModels.kt` / `BandViewModel.kt`: `BandMemberWithState` carries all 5 stats; `maxVitality` StateFlow derived from alive members
+- `BandScreen.kt`: member rows show stat line; mission rows show locked state if vitality too low; Send button disabled when vitality gate not met
+- `Mission.kt` + `missions.json`: `requiredBuffType` replaced with `vitalityRequired` (0/3/6 for easy/medium/hard)
+- `MissionBoardScreen.kt`: shows vitality requirement and provision strength hint
+- `MissionWorker.kt`: stat grants after every mission; removed buffType bonus from probability math; tweaked base chances (easy 70%, medium 45%, hard 20%); removed `KEY_BUFF_TYPE`
+- `MissionSession.kt` / `BandViewModel.sendOnMission()`: `buffType` field removed throughout
+- `HarvestItem.kt` (new): serializable data class with ingredientId, name, quantity, rarity
+- `GatheringSession.kt` + `GrowingSlot.kt`: added `pendingResultJson: String?` column
+- `GatheringSessionDao.kt` + `GrowingSlotDao.kt`: added `setPendingResult()` / `clearPendingResult()` queries
+- `GatheringWorker.kt` + `FarmWorker.kt` + `GardenWorker.kt`: no longer write to inventory directly; write JSON result to pending column; notification text changed to "tap to collect"
+- `SessionRepository.kt`: added `setPendingForageResult()` and `collectForage()`
+- `GrowingRepository.kt`: added `setPendingResult()` and `collectAndClearSlot()`
+- `GatheringViewModel.kt`: added `lastHarvest` StateFlow; `collectForage()` and `collectGrowingSlot()` claim items and set lastHarvest; `clearLastHarvest()` dismisses dialog
+- `GatheringScreen.kt`: forage shows "Collect" button when result pending; growing slot cards show "Ready to harvest" state + Collect button; `HarvestResultDialog` shows what was collected with rarity colors
+- `Ingredient.kt` + `ingredients.json`: added `rarity: String = "common"` field to all ingredients
+- `Recipe.kt` + `recipes.json`: added `levelRequired: Int = 1`; all recipes assigned tiers (1, 3, 6, 8, 12)
+- `KitchenViewModel.kt`: added `tieredRecipes` StateFlow — Apprentice (1–5), Journeyman (6–10), Craftsman (11+); added `playerState` StateFlow
+- `KitchenScreen.kt`: replaced flat recipe list with tiered sections; locked tiers shown greyed with "Reach Lv N" label
+- `PlayerStateDao.kt` + `PlayerRepository.kt`: added `spendMoney()` that conditionally deducts only if funds sufficient
+- `MarketViewModel.kt` (new): `SeedForSale` data class; catalogue of 5 cultivated seeds at 5g each; `buySeed()` deducts gold atomically then adds seed
+- `MarketScreen.kt` (new): seed purchase UI with gold display, card per seed, Buy button disabled when can't afford
+- `MainScreen.kt`: added "Market" tab with Storefront icon
+
+**Decisions made:**
+- Harvest requires active collection (tap "Collect") rather than auto-depositing — adds intentionality and makes the world feel less mechanical
+- Vitality gates mission access rather than buff type — simpler to understand, grows organically as members survive missions
+- Base mission success chances lowered (70/45/20%) but food strength contributes up to +25% — food still matters but isn't dominant
+- Stat grants after every mission (alive members): +1 vitality always, +1 might on success — consistent growth with a small success reward
+- Market seeds cost 5g each — cheaper than the reward from a single easy mission; bootstraps farming without being trivial
+
+**Anything that diverged from docs/design.md:**
+- Stats system (Might/Agility/Vitality/Will/Fate) introduced as a minimal V1 layer — character sheet not displayed, stats affect mission gating only via vitality. Full stats progression is V5+ vision but the data foundation is now in place.
+- Mission access gate changed from buff type to vitality requirement.
+
+**Coming up:**
+- Next session: install and play. Does vitality gate feel right on first play? Does the harvest collect step feel satisfying or annoying?
+- Near term: kitchen ingredient name display (pre-existing gap); stat display tuning based on real-play feedback.
 - Future ideas logged: none this session.

@@ -36,23 +36,20 @@ class MissionWorker @AssistedInject constructor(
 
     override suspend fun doWork(): Result {
         val missionId = inputData.getString(KEY_MISSION_ID) ?: return Result.failure()
-        val buffType = inputData.getString(KEY_BUFF_TYPE) ?: ""
         val buffStrength = inputData.getInt(KEY_BUFF_STRENGTH, 0)
 
         val mission = gameData.missions.find { it.id == missionId } ?: return Result.failure()
 
-        // Success probability — hidden from player, driven by difficulty + food quality
         val baseChance = when (mission.difficulty) {
-            "easy" -> 0.80f
-            "medium" -> 0.55f
-            "hard" -> 0.25f
+            "easy" -> 0.70f
+            "medium" -> 0.45f
+            "hard" -> 0.20f
             else -> 0.50f
         }
-        val typeBonus = if (buffType == mission.requiredBuffType) 0.10f else 0f
         val strengthRatio = if (mission.requiredBuffStrength > 0)
-            buffStrength.toFloat() / mission.requiredBuffStrength else 1f
-        val strengthBonus = minOf(0.10f, strengthRatio * 0.10f)
-        val successChance = minOf(0.95f, baseChance + typeBonus + strengthBonus)
+            minOf(1.0f, buffStrength.toFloat() / mission.requiredBuffStrength) else 1f
+        val strengthBonus = strengthRatio * 0.25f
+        val successChance = minOf(0.95f, baseChance + strengthBonus)
 
         val succeeded = Random.nextFloat() < successChance
 
@@ -60,19 +57,17 @@ class MissionWorker @AssistedInject constructor(
             val multiplier = mission.rewardMultiplier
             val money = Random.nextInt(mission.rewardMoneyMin, mission.rewardMoneyMax + 1) * multiplier
             player.addMoney(money)
-
             val rewardCount = Random.nextInt(1, 4) + (multiplier - 1)
             mission.rewardTable.shuffled().take(rewardCount).forEach {
                 inventory.addIngredient(it, 1)
             }
-
             notify("Mission Complete", "${mission.name} — your band has returned.", NOTIFICATION_ID)
         } else {
-            applyFailureConsequences(mission.difficulty, mission.bandId, strengthRatio, typeBonus)
-            val message = buildFailureMessage(mission.name, mission.difficulty)
-            notify("Mission Failed", message, NOTIFICATION_ID)
+            applyFailureConsequences(mission.difficulty, mission.bandId, strengthRatio)
+            notify("Mission Failed", buildFailureMessage(mission.name, mission.difficulty), NOTIFICATION_ID)
         }
 
+        band.grantMissionStats(mission.bandId, succeeded)
         sessions.clearMission()
         return Result.success()
     }
@@ -80,8 +75,7 @@ class MissionWorker @AssistedInject constructor(
     private suspend fun applyFailureConsequences(
         difficulty: String,
         bandId: String,
-        strengthRatio: Float,
-        typeBonus: Float
+        strengthRatio: Float
     ) {
         when (difficulty) {
             "easy" -> { /* empty-handed, no further consequences */ }
@@ -95,19 +89,14 @@ class MissionWorker @AssistedInject constructor(
             "hard" -> {
                 val roll = Random.nextFloat()
                 when {
-                    roll < 0.15f -> {
-                        band.woundableMemberIds(bandId).randomOrNull()?.let {
-                            band.woundMember(it, grievous = true)
-                        }
+                    roll < 0.15f -> band.woundableMemberIds(bandId).randomOrNull()?.let {
+                        band.woundMember(it, grievous = true)
                     }
-                    roll < 0.45f -> {
-                        band.woundableMemberIds(bandId).randomOrNull()?.let {
-                            band.woundMember(it, grievous = false)
-                        }
+                    roll < 0.45f -> band.woundableMemberIds(bandId).randomOrNull()?.let {
+                        band.woundMember(it, grievous = false)
                     }
                 }
-                // Death is rare — only when food was badly wrong for a hard mission
-                if (strengthRatio < 0.4f && typeBonus == 0f && Random.nextFloat() < 0.05f) {
+                if (strengthRatio < 0.4f && Random.nextFloat() < 0.05f) {
                     band.aliveMemberIds(bandId).randomOrNull()?.let {
                         band.killMember(it)
                     }
@@ -145,15 +134,13 @@ class MissionWorker @AssistedInject constructor(
 
     companion object {
         const val KEY_MISSION_ID = "missionId"
-        const val KEY_BUFF_TYPE = "buffType"
         const val KEY_BUFF_STRENGTH = "buffStrength"
         const val NOTIFICATION_ID = 3
 
-        fun buildRequest(missionId: String, buffType: String, buffStrength: Int, durationMs: Long): OneTimeWorkRequest =
+        fun buildRequest(missionId: String, buffStrength: Int, durationMs: Long): OneTimeWorkRequest =
             OneTimeWorkRequestBuilder<MissionWorker>()
                 .setInputData(workDataOf(
                     KEY_MISSION_ID to missionId,
-                    KEY_BUFF_TYPE to buffType,
                     KEY_BUFF_STRENGTH to buffStrength
                 ))
                 .setInitialDelay(durationMs, TimeUnit.MILLISECONDS)

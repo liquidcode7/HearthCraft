@@ -7,7 +7,11 @@ import androidx.room.PrimaryKey
 data class BandMemberState(
     @PrimaryKey val memberId: String,
     val isAlive: Boolean = true,
-    // "healthy", "wounded", "grievously_wounded"
     val woundStatus: String = "healthy",
-    val woundedSinceMs: Long = 0L
+    val woundedSinceMs: Long = 0L,
+    val might: Int = 0,
+    val agility: Int = 0,
+    val vitality: Int = 0,
+    val will: Int = 0,
+    val fate: Int = 0
 )

@@ -9,5 +9,6 @@ data class GatheringSession(
     val mode: String,
     val startedAtMs: Long,
     val durationMs: Long,
-    val workRequestId: String
+    val workRequestId: String,
+    val pendingResultJson: String? = null
 )

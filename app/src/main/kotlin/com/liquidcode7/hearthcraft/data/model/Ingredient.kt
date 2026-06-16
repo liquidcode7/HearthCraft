@@ -8,5 +8,6 @@ data class Ingredient(
     val name: String,
     val type: String,
     val gatheringMode: String,
-    val flavor: String
+    val flavor: String,
+    val rarity: String = "common"
 )

@@ -113,6 +113,18 @@ private fun MissionCard(mission: Mission) {
                 color = difficultyColor
             )
             Spacer(modifier = Modifier.height(4.dp))
+            if (mission.vitalityRequired > 0) {
+                Text(
+                    "Requires Vitality ${mission.vitalityRequired}",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Text(
+                "Provision strength ${mission.requiredBuffStrength} for best odds",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
             Text(
                 "Reward: ${mission.rewardMoneyMin * mission.rewardMultiplier}–${mission.rewardMoneyMax * mission.rewardMultiplier} gold",
                 style = MaterialTheme.typography.labelSmall,

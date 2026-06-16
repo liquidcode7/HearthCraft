@@ -6,7 +6,9 @@ import com.liquidcode7.hearthcraft.data.db.MissionSession
 import com.liquidcode7.hearthcraft.data.db.dao.CookingSessionDao
 import com.liquidcode7.hearthcraft.data.db.dao.GatheringSessionDao
 import com.liquidcode7.hearthcraft.data.db.dao.MissionSessionDao
+import com.liquidcode7.hearthcraft.data.model.HarvestItem
 import kotlinx.coroutines.flow.Flow
+import kotlinx.serialization.json.Json
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -32,4 +34,14 @@ class SessionRepository @Inject constructor(
 
     suspend fun startMission(session: MissionSession) = missionDao.start(session)
     suspend fun clearMission() = missionDao.clear()
+
+    suspend fun setPendingForageResult(json: String) = gatheringDao.setPendingResult(json)
+
+    suspend fun collectForage(): List<HarvestItem> {
+        val session = gatheringDao.get() ?: return emptyList()
+        val json = session.pendingResultJson ?: return emptyList()
+        val items = Json.decodeFromString<List<HarvestItem>>(json)
+        gatheringDao.clear()
+        return items
+    }
 }

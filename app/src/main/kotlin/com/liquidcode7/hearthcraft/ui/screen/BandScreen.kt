@@ -24,6 +24,7 @@ import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.liquidcode7.hearthcraft.data.model.Mission
@@ -46,6 +47,7 @@ fun BandScreen(
     val selectedFood by bandViewModel.selectedFood.collectAsState()
     val selectedMission by bandViewModel.selectedMission.collectAsState()
     val preparedFood by inventoryViewModel.preparedFood.collectAsState()
+    val maxVitality by bandViewModel.maxVitality.collectAsState()
 
     Column(
         modifier = Modifier
@@ -74,7 +76,6 @@ fun BandScreen(
             Spacer(modifier = Modifier.height(4.dp))
         }
 
-        // Healing section — appears when someone is wounded and healing food is available
         val woundedMembers = members.filter { it.isAlive && it.woundStatus != "healthy" }
         val healingFood = preparedFood.filter { it.buffType == "healing" || it.buffType == "healing_deep" }
         if (woundedMembers.isNotEmpty() && healingFood.isNotEmpty()) {
@@ -92,11 +93,13 @@ fun BandScreen(
                 if (applicableFood.isNotEmpty()) {
                     Card(modifier = Modifier.fillMaxWidth()) {
                         Column(modifier = Modifier.padding(10.dp)) {
-                            Text("${member.name} — ${if (member.woundStatus == "grievously_wounded") "Grievous Wound" else "Wounded"}",
-                                style = MaterialTheme.typography.bodySmall)
+                            Text(
+                                "${member.name} — ${if (member.woundStatus == "grievously_wounded") "Grievous Wound" else "Wounded"}",
+                                style = MaterialTheme.typography.bodySmall
+                            )
                             Spacer(modifier = Modifier.height(6.dp))
                             applicableFood.forEach { food ->
-                                androidx.compose.material3.OutlinedButton(
+                                OutlinedButton(
                                     onClick = { bandViewModel.treatWound(member.memberId, food) },
                                     modifier = Modifier.fillMaxWidth()
                                 ) {
@@ -162,9 +165,11 @@ fun BandScreen(
             Text("Select Mission:", style = MaterialTheme.typography.labelMedium)
             Spacer(modifier = Modifier.height(4.dp))
             missions.forEach { mission ->
+                val isLocked = maxVitality < mission.vitalityRequired
                 MissionRow(
                     mission = mission,
                     isSelected = mission.id == selectedMission?.id,
+                    isLocked = isLocked,
                     onClick = { bandViewModel.selectMission(mission) }
                 )
                 Spacer(modifier = Modifier.height(4.dp))
@@ -173,7 +178,8 @@ fun BandScreen(
             Spacer(modifier = Modifier.height(12.dp))
             Button(
                 onClick = { bandViewModel.sendOnMission() },
-                enabled = selectedFood != null && selectedMission != null,
+                enabled = selectedFood != null && selectedMission != null
+                        && maxVitality >= (selectedMission?.vitalityRequired ?: 0),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Send on Mission")
@@ -190,20 +196,29 @@ private fun MemberRow(member: BandMemberWithState) {
         member.woundStatus == "wounded" -> "Wounded" to androidx.compose.ui.graphics.Color(0xFFFF9800)
         else -> "Active" to MaterialTheme.colorScheme.primary
     }
-    Row(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 2.dp)
     ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(member.name, style = MaterialTheme.typography.bodyMedium)
+        Row {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(member.name, style = MaterialTheme.typography.bodyMedium)
+                Text(
+                    member.personality,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Text(statusLabel, style = MaterialTheme.typography.labelSmall, color = statusColor)
+        }
+        if (member.isAlive) {
             Text(
-                member.personality,
+                "VIT ${member.vitality}  MGT ${member.might}  AGI ${member.agility}  WIL ${member.will}  FAT ${member.fate}",
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
-        Text(statusLabel, style = MaterialTheme.typography.labelSmall, color = statusColor)
     }
 }
 
@@ -229,11 +244,13 @@ private fun FoodRow(food: PreparedFoodDetail, isSelected: Boolean, onClick: () -
 }
 
 @Composable
-private fun MissionRow(mission: Mission, isSelected: Boolean, onClick: () -> Unit) {
+private fun MissionRow(mission: Mission, isSelected: Boolean, isLocked: Boolean, onClick: () -> Unit) {
     Card(
-        onClick = onClick,
+        onClick = { if (!isLocked) onClick() },
         border = if (isSelected) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .alpha(if (isLocked) 0.5f else 1f)
     ) {
         Column(modifier = Modifier.padding(10.dp)) {
             Row {
@@ -248,10 +265,19 @@ private fun MissionRow(mission: Mission, isSelected: Boolean, onClick: () -> Uni
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-            Text(
-                "Needs: ${mission.requiredBuffType} ≥${mission.requiredBuffStrength}",
-                style = MaterialTheme.typography.labelSmall
-            )
+            if (isLocked) {
+                Text(
+                    "Requires Vitality ${mission.vitalityRequired} — train your band",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.error
+                )
+            } else if (mission.vitalityRequired > 0) {
+                Text(
+                    "Vitality ${mission.vitalityRequired} met ✓",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
         }
     }
 }

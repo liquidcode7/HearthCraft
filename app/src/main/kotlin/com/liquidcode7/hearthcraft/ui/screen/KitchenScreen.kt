@@ -23,12 +23,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.liquidcode7.hearthcraft.data.db.InventoryItem
 import com.liquidcode7.hearthcraft.data.model.Recipe
 import com.liquidcode7.hearthcraft.ui.viewmodel.KitchenViewModel
+import com.liquidcode7.hearthcraft.ui.viewmodel.RecipeTier
 import kotlinx.coroutines.delay
 
 @Composable
@@ -39,7 +42,10 @@ fun KitchenScreen(
     val session by viewModel.session.collectAsState()
     val selectedRecipe by viewModel.selectedRecipe.collectAsState()
     val inventoryItems by viewModel.inventoryItems.collectAsState()
-    val sortedRecipes by viewModel.sortedRecipes.collectAsState()
+    val tieredRecipes by viewModel.tieredRecipes.collectAsState()
+    val playerState by viewModel.playerState.collectAsState()
+    val cookingLevel = playerState?.cookingLevel ?: 1
+    val isCooking = session != null
 
     Column(
         modifier = Modifier
@@ -57,48 +63,92 @@ fun KitchenScreen(
                 startedAtMs = session!!.startedAtMs,
                 durationMs = session!!.durationMs
             )
-        } else {
-            OutlinedButton(onClick = onViewRecipes, modifier = Modifier.fillMaxWidth()) {
-                Text("Recipe Book")
-            }
-            Spacer(modifier = Modifier.height(12.dp))
-            Text("Select a Recipe", style = MaterialTheme.typography.titleSmall)
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+
+        OutlinedButton(onClick = onViewRecipes, modifier = Modifier.fillMaxWidth()) {
+            Text("Recipe Book")
+        }
+        Spacer(modifier = Modifier.height(12.dp))
+        Text("Select a Recipe", style = MaterialTheme.typography.titleSmall)
+        Spacer(modifier = Modifier.height(8.dp))
+
+        tieredRecipes.forEach { tier ->
+            val isUnlocked = cookingLevel >= tier.minLevel
             Spacer(modifier = Modifier.height(8.dp))
-            sortedRecipes.forEach { recipe ->
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                val rangeLabel = if (tier.minLevel >= 11) "Lv ${tier.minLevel}+" else "Lv ${tier.minLevel}–${tier.minLevel + 4}"
+                Text(
+                    "${tier.label}  ·  $rangeLabel",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = if (isUnlocked) MaterialTheme.colorScheme.onSurface
+                            else MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.weight(1f)
+                )
+                if (!isUnlocked) {
+                    Text(
+                        "Reach Lv ${tier.minLevel}",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(6.dp))
+            tier.recipes.forEach { recipe ->
+                val canCook = isUnlocked && !isCooking && viewModel.canCook(recipe, inventoryItems)
                 RecipeRow(
                     recipe = recipe,
-                    canCook = viewModel.canCook(recipe, inventoryItems),
-                    isSelected = recipe.id == selectedRecipe?.id,
-                    onClick = { viewModel.selectRecipe(recipe) }
+                    canCook = canCook,
+                    isSelected = !isCooking && recipe.id == selectedRecipe?.id,
+                    isLocked = !isUnlocked,
+                    onClick = { if (isUnlocked && !isCooking) viewModel.selectRecipe(recipe) }
                 )
                 Spacer(modifier = Modifier.height(4.dp))
             }
-            if (selectedRecipe != null) {
-                Spacer(modifier = Modifier.height(12.dp))
-                RecipeDetailPanel(recipe = selectedRecipe!!, inventoryItems = inventoryItems)
-                Spacer(modifier = Modifier.height(12.dp))
-                Button(
-                    onClick = { viewModel.startCooking() },
-                    enabled = viewModel.canCook(selectedRecipe!!, inventoryItems),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Start Cooking")
-                }
+        }
+
+        if (!isCooking && selectedRecipe != null) {
+            Spacer(modifier = Modifier.height(12.dp))
+            RecipeDetailPanel(recipe = selectedRecipe!!, inventoryItems = inventoryItems)
+            Spacer(modifier = Modifier.height(12.dp))
+            Button(
+                onClick = { viewModel.startCooking() },
+                enabled = viewModel.canCook(selectedRecipe!!, inventoryItems),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Start Cooking")
             }
         }
     }
 }
 
 @Composable
-private fun RecipeRow(recipe: Recipe, canCook: Boolean, isSelected: Boolean, onClick: () -> Unit) {
+private fun RecipeRow(
+    recipe: Recipe,
+    canCook: Boolean,
+    isSelected: Boolean,
+    isLocked: Boolean = false,
+    onClick: () -> Unit
+) {
     Card(
         onClick = onClick,
         border = if (isSelected) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .alpha(if (isLocked) 0.4f else 1f),
+        colors = CardDefaults.cardColors(
+            containerColor = if (canCook && !isLocked) MaterialTheme.colorScheme.surface
+                            else MaterialTheme.colorScheme.surfaceVariant
+        )
     ) {
         Row(modifier = Modifier.padding(12.dp)) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(recipe.name, style = MaterialTheme.typography.bodyMedium)
+                Text(
+                    recipe.name,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = if (!isLocked && canCook) MaterialTheme.colorScheme.onSurface
+                            else MaterialTheme.colorScheme.onSurfaceVariant
+                )
                 Text(
                     recipe.flavorTag,
                     style = MaterialTheme.typography.labelSmall,
@@ -106,9 +156,17 @@ private fun RecipeRow(recipe: Recipe, canCook: Boolean, isSelected: Boolean, onC
                 )
             }
             Text(
-                if (canCook) "✓" else "✗",
+                when {
+                    isLocked -> "🔒"
+                    canCook -> "✓"
+                    else -> "✗"
+                },
                 style = MaterialTheme.typography.bodyMedium,
-                color = if (canCook) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
+                color = when {
+                    isLocked -> MaterialTheme.colorScheme.onSurfaceVariant
+                    canCook -> MaterialTheme.colorScheme.primary
+                    else -> MaterialTheme.colorScheme.error
+                }
             )
         }
     }

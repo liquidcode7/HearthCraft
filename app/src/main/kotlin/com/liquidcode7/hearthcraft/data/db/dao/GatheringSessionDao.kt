@@ -21,4 +21,10 @@ interface GatheringSessionDao {
 
     @Query("DELETE FROM gathering_session WHERE id = 0")
     suspend fun clear()
+
+    @Query("UPDATE gathering_session SET pendingResultJson = :json WHERE id = 0")
+    suspend fun setPendingResult(json: String)
+
+    @Query("UPDATE gathering_session SET pendingResultJson = NULL WHERE id = 0")
+    suspend fun clearPendingResult()
 }

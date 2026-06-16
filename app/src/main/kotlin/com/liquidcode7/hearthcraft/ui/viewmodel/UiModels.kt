@@ -23,7 +23,12 @@ data class BandMemberWithState(
     val foodPreference: String,
     val quirkNote: String,
     val isAlive: Boolean,
-    val woundStatus: String = "healthy"  // "healthy", "wounded", "grievously_wounded"
+    val woundStatus: String = "healthy",
+    val might: Int = 0,
+    val agility: Int = 0,
+    val vitality: Int = 0,
+    val will: Int = 0,
+    val fate: Int = 0
 )
 
 data class SeedDetail(

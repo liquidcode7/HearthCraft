@@ -5,7 +5,12 @@
     "name": "Aelindra",
     "personality": "Ancient and precise. She speaks in careful sentences, as though each word costs something. She has outlived three groves and is not sentimental about it.",
     "foodPreference": "earthy",
-    "quirkNote": "Deeply rooted. She wants food that comes from the ground — earthy, unadorned, honest."
+    "quirkNote": "Deeply rooted. She wants food that comes from the ground — earthy, unadorned, honest.",
+    "startingMight": 2,
+    "startingAgility": 2,
+    "startingVitality": 4,
+    "startingWill": 5,
+    "startingFate": 3
   },
   {
     "id": "thornwick",
@@ -13,7 +18,12 @@
     "name": "Thornwick",
     "personality": "Young by druid reckoning, which means he is merely old by human standards. Curious about everything. Asks too many questions. Has not yet learned that silence is also an answer.",
     "foodPreference": "herbal",
-    "quirkNote": "Endlessly curious, even about his provisions. Herbal things — he wants to know what's in it."
+    "quirkNote": "Endlessly curious, even about his provisions. Herbal things — he wants to know what's in it.",
+    "startingMight": 2,
+    "startingAgility": 3,
+    "startingVitality": 3,
+    "startingWill": 4,
+    "startingFate": 5
   },
   {
     "id": "old_mossback",
@@ -21,7 +31,12 @@
     "name": "Old Mossback",
     "personality": "Speaks rarely. When he does, people listen. He feels the cold now in a way he did not when he was younger, and he would never mention it.",
     "foodPreference": "hearty",
-    "quirkNote": "Doesn't say much about food either. Something dense and filling keeps him moving."
+    "quirkNote": "Doesn't say much about food either. Something dense and filling keeps him moving.",
+    "startingMight": 4,
+    "startingAgility": 1,
+    "startingVitality": 5,
+    "startingWill": 3,
+    "startingFate": 2
   },
   {
     "id": "borin_ironmantle",
@@ -29,7 +44,12 @@
     "name": "Borin Ironmantle",
     "personality": "Has never complained once in forty years of hard service. Reliable as bedrock. If you ask how he is, he will say fine, and mean it, and be back at work before you have finished asking.",
     "foodPreference": "hearty",
-    "quirkNote": "Reliable appetite to match. Dense, sustaining food — he doesn't want anything complicated."
+    "quirkNote": "Reliable appetite to match. Dense, sustaining food — he doesn't want anything complicated.",
+    "startingMight": 5,
+    "startingAgility": 2,
+    "startingVitality": 5,
+    "startingWill": 3,
+    "startingFate": 2
   },
   {
     "id": "dagra_copperhelm",
@@ -37,7 +57,12 @@
     "name": "Dagra Copperhelm",
     "personality": "Laughs at everything. Danger, hardship, bad odds — all equally funny to her. The band finds this either inspiring or alarming depending on the day.",
     "foodPreference": "spicy",
-    "quirkNote": "Laughs at mild food the same way she laughs at everything else. Give her something with heat."
+    "quirkNote": "Laughs at mild food the same way she laughs at everything else. Give her something with heat.",
+    "startingMight": 4,
+    "startingAgility": 4,
+    "startingVitality": 4,
+    "startingWill": 3,
+    "startingFate": 3
   },
   {
     "id": "keldra",
@@ -45,7 +70,12 @@
     "name": "Keldra",
     "personality": "Youngest in the company. Ambitious in a way she hasn't yet learned to hide. She wants to be the best and is, on her better days, not far off.",
     "foodPreference": "spicy",
-    "quirkNote": "Bold flavors for a bold dwarf. She lights up with something spicy."
+    "quirkNote": "Bold flavors for a bold dwarf. She lights up with something spicy.",
+    "startingMight": 3,
+    "startingAgility": 4,
+    "startingVitality": 3,
+    "startingWill": 3,
+    "startingFate": 5
   },
   {
     "id": "snorri_saltbeard",
@@ -53,7 +83,12 @@
     "name": "Snorri Saltbeard",
     "personality": "Veteran. Suspicious of new things, new people, and favorable weather. Has a gift for finding the one thing that could go wrong in any plan. Often correct.",
     "foodPreference": "hearty",
-    "quirkNote": "Suspicious of anything unusual. Solid, familiar, hearty food — nothing he has to think about."
+    "quirkNote": "Suspicious of anything unusual. Solid, familiar, hearty food — nothing he has to think about.",
+    "startingMight": 4,
+    "startingAgility": 2,
+    "startingVitality": 5,
+    "startingWill": 4,
+    "startingFate": 1
   },
   {
     "id": "reva_tidecaller",
@@ -61,7 +96,12 @@
     "name": "Reva Tidecaller",
     "personality": "Charismatic and completely unpredictable. Makes decisions in three seconds flat and is right often enough that no one argues anymore. The fleet follows her because she is usually worth following.",
     "foodPreference": "light",
-    "quirkNote": "Hates anything heavy before a job. Light and fast — matches how she thinks."
+    "quirkNote": "Hates anything heavy before a job. Light and fast — matches how she thinks.",
+    "startingMight": 3,
+    "startingAgility": 5,
+    "startingVitality": 3,
+    "startingWill": 4,
+    "startingFate": 4
   },
   {
     "id": "silas_thorn",
@@ -69,7 +109,12 @@
     "name": "Silas Thorn",
     "personality": "Quiet. Watchful. Knows things he has not explained and will not. The fleet uses him as a compass. He always knows when something is wrong before it becomes wrong.",
     "foodPreference": "herbal",
-    "quirkNote": "Clears the head. He wants something brewed and quiet, like he is."
+    "quirkNote": "Clears the head. He wants something brewed and quiet, like he is.",
+    "startingMight": 2,
+    "startingAgility": 4,
+    "startingVitality": 3,
+    "startingWill": 5,
+    "startingFate": 3
   },
   {
     "id": "marta_wavebreaker",
@@ -77,7 +122,12 @@
     "name": "Marta Wavebreaker",
     "personality": "Loud, boastful, and terrifyingly capable. The stories she tells about herself are exaggerated. The actual events were worse. She has survived things that should not be survivable.",
     "foodPreference": "hearty",
-    "quirkNote": "Built for excess in every direction. Hearty food, plenty of it."
+    "quirkNote": "Built for excess in every direction. Hearty food, plenty of it.",
+    "startingMight": 5,
+    "startingAgility": 3,
+    "startingVitality": 5,
+    "startingWill": 2,
+    "startingFate": 3
   },
   {
     "id": "aldric",
@@ -85,7 +135,12 @@
     "name": "Aldric",
     "personality": "Has been walking the borderlands for thirty years. Quiet, observant, unsentimental. Pays attention to everything. When he speaks, it is worth hearing.",
     "foodPreference": "earthy",
-    "quirkNote": "Practical down to the bone. Earthy, grounding food — the kind that doesn't announce itself."
+    "quirkNote": "Practical down to the bone. Earthy, grounding food — the kind that doesn't announce itself.",
+    "startingMight": 4,
+    "startingAgility": 3,
+    "startingVitality": 5,
+    "startingWill": 4,
+    "startingFate": 2
   },
   {
     "id": "mira",
@@ -93,7 +148,12 @@
     "name": "Mira",
     "personality": "Came to this life young and adapted faster than was probably healthy. Sharp in ways that make people uneasy. Notices things she doesn't mention until exactly the right moment.",
     "foodPreference": "light",
-    "quirkNote": "Doesn't eat heavy before a job. Light provisions, fast movement — that's the rule."
+    "quirkNote": "Doesn't eat heavy before a job. Light provisions, fast movement — that's the rule.",
+    "startingMight": 3,
+    "startingAgility": 5,
+    "startingVitality": 3,
+    "startingWill": 4,
+    "startingFate": 4
   },
   {
     "id": "cael",
@@ -101,6 +161,11 @@
     "name": "Cael",
     "personality": "Keeps a detailed journal of everything observed in the field. The others tease him about it. They also ask to borrow it, constantly. More thoughtful than his survival record suggests he should be.",
     "foodPreference": "herbal",
-    "quirkNote": "Brewed things. He thinks better with something warm and herbal beside him."
+    "quirkNote": "Brewed things. He thinks better with something warm and herbal beside him.",
+    "startingMight": 2,
+    "startingAgility": 3,
+    "startingVitality": 3,
+    "startingWill": 5,
+    "startingFate": 5
   }
 ]

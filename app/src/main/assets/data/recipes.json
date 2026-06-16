@@ -8,6 +8,7 @@
     "baseBuffStrength": 10,
     "buffStrengthPerLevel": 0.4,
     "durationMs": 1800000,
+    "levelRequired": 1,
     "ingredients": [
       { "id": "hearthgrain", "qty": 2 },
       { "id": "forest_honey", "qty": 1 }
@@ -22,6 +23,7 @@
     "baseBuffStrength": 12,
     "buffStrengthPerLevel": 0.65,
     "durationMs": 5400000,
+    "levelRequired": 6,
     "ingredients": [
       { "id": "ironroot", "qty": 2 },
       { "id": "hearthgrain", "qty": 1 },
@@ -37,6 +39,7 @@
     "baseBuffStrength": 10,
     "buffStrengthPerLevel": 0.4,
     "durationMs": 1800000,
+    "levelRequired": 1,
     "ingredients": [
       { "id": "wanderer_fig", "qty": 2 },
       { "id": "duskberry", "qty": 1 }
@@ -51,6 +54,7 @@
     "baseBuffStrength": 12,
     "buffStrengthPerLevel": 0.65,
     "durationMs": 5400000,
+    "levelRequired": 6,
     "ingredients": [
       { "id": "stormcap", "qty": 2 },
       { "id": "pale_cap", "qty": 1 },
@@ -66,6 +70,7 @@
     "baseBuffStrength": 10,
     "buffStrengthPerLevel": 0.4,
     "durationMs": 1800000,
+    "levelRequired": 1,
     "ingredients": [
       { "id": "sunpetal_herb", "qty": 2 },
       { "id": "moonpetal", "qty": 1 }
@@ -80,6 +85,7 @@
     "baseBuffStrength": 12,
     "buffStrengthPerLevel": 0.65,
     "durationMs": 5400000,
+    "levelRequired": 6,
     "ingredients": [
       { "id": "moonpetal", "qty": 3 },
       { "id": "ironbark_resin", "qty": 1 }
@@ -94,6 +100,7 @@
     "baseBuffStrength": 10,
     "buffStrengthPerLevel": 0.4,
     "durationMs": 1800000,
+    "levelRequired": 1,
     "ingredients": [
       { "id": "hearthgrain", "qty": 2 },
       { "id": "heartflame_pepper", "qty": 1 }
@@ -108,6 +115,7 @@
     "baseBuffStrength": 12,
     "buffStrengthPerLevel": 0.65,
     "durationMs": 5400000,
+    "levelRequired": 6,
     "ingredients": [
       { "id": "heartflame_pepper", "qty": 2 },
       { "id": "ironroot", "qty": 1 },
@@ -123,6 +131,7 @@
     "baseBuffStrength": 10,
     "buffStrengthPerLevel": 0.4,
     "durationMs": 3600000,
+    "levelRequired": 3,
     "ingredients": [
       { "id": "cave_truffle", "qty": 1 },
       { "id": "pale_cap", "qty": 1 },
@@ -138,6 +147,7 @@
     "baseBuffStrength": 8,
     "buffStrengthPerLevel": 0.5,
     "durationMs": 2700000,
+    "levelRequired": 3,
     "ingredients": [
       { "id": "bilberry", "qty": 3 },
       { "id": "sunpetal_herb", "qty": 1 }
@@ -152,6 +162,7 @@
     "baseBuffStrength": 0,
     "buffStrengthPerLevel": 0.0,
     "durationMs": 3600000,
+    "levelRequired": 8,
     "ingredients": [
       { "id": "ironroot", "qty": 1 },
       { "id": "sunpetal_herb", "qty": 2 }
@@ -166,6 +177,7 @@
     "baseBuffStrength": 0,
     "buffStrengthPerLevel": 0.0,
     "durationMs": 7200000,
+    "levelRequired": 12,
     "ingredients": [
       { "id": "athelas", "qty": 2 },
       { "id": "moonpetal", "qty": 1 },

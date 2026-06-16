@@ -43,17 +43,27 @@ class BandViewModel @Inject constructor(
         gameData.bandMembers
             .filter { it.bandId == bandId }
             .map { member ->
+                val state = states.find { it.memberId == member.id }
                 BandMemberWithState(
                     memberId = member.id,
                     name = member.name,
                     personality = member.personality,
                     foodPreference = member.foodPreference,
                     quirkNote = member.quirkNote,
-                    isAlive = states.find { it.memberId == member.id }?.isAlive != false,
-                    woundStatus = states.find { it.memberId == member.id }?.woundStatus ?: "healthy"
+                    isAlive = state?.isAlive != false,
+                    woundStatus = state?.woundStatus ?: "healthy",
+                    might = state?.might ?: member.startingMight,
+                    agility = state?.agility ?: member.startingAgility,
+                    vitality = state?.vitality ?: member.startingVitality,
+                    will = state?.will ?: member.startingWill,
+                    fate = state?.fate ?: member.startingFate
                 )
             }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val maxVitality: StateFlow<Int> = members
+        .map { list -> list.filter { it.isAlive }.maxOfOrNull { it.vitality } ?: 0 }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
 
     val missions: StateFlow<List<Mission>> = player.observe()
         .map { state ->
@@ -65,7 +75,6 @@ class BandViewModel @Inject constructor(
     val activeMission: StateFlow<MissionSession?> = sessions.observeMission()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
-    // true while members list is empty (loading) or at least one member is alive
     val hasAliveMembers: StateFlow<Boolean> = members
         .map { list -> list.isEmpty() || list.any { it.isAlive } }
         .distinctUntilChanged()
@@ -88,8 +97,8 @@ class BandViewModel @Inject constructor(
     fun treatWound(memberId: String, food: PreparedFoodDetail) {
         viewModelScope.launch {
             val canTreat = when (food.buffType) {
-                "healing" -> true          // ordinary wounds
-                "healing_deep" -> true     // grievous wounds too
+                "healing" -> true
+                "healing_deep" -> true
                 else -> false
             }
             if (!canTreat) return@launch
@@ -105,7 +114,6 @@ class BandViewModel @Inject constructor(
             if (sessions.activeMission() != null) return@launch
             val request = MissionWorker.buildRequest(
                 missionId = mission.id,
-                buffType = food.buffType,
                 buffStrength = food.buffStrength,
                 durationMs = mission.durationMs
             )
@@ -113,7 +121,6 @@ class BandViewModel @Inject constructor(
             sessions.startMission(
                 MissionSession(
                     missionId = mission.id,
-                    buffType = food.buffType,
                     buffStrength = food.buffStrength,
                     startedAtMs = System.currentTimeMillis(),
                     durationMs = mission.durationMs,

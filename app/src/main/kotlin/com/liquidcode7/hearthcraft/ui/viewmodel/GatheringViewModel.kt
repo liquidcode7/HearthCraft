@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
 import com.liquidcode7.hearthcraft.data.db.GatheringSession
 import com.liquidcode7.hearthcraft.data.db.GrowingSlot
+import com.liquidcode7.hearthcraft.data.model.HarvestItem
 import com.liquidcode7.hearthcraft.data.repository.GameDataRepository
 import com.liquidcode7.hearthcraft.data.repository.GrowingRepository
 import com.liquidcode7.hearthcraft.data.repository.InventoryRepository
@@ -16,8 +17,10 @@ import com.liquidcode7.hearthcraft.worker.GardenWorker
 import com.liquidcode7.hearthcraft.worker.GatheringWorker
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -34,20 +37,16 @@ class GatheringViewModel @Inject constructor(
     private val gameData: GameDataRepository
 ) : ViewModel() {
 
-    // Forage session (replaces old single-mode gathering session)
     val forageSession: StateFlow<GatheringSession?> = sessions.observeGathering()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
-    // Farm plot — single slot at level 1
     val farmPlot: StateFlow<GrowingSlot?> = growing.observeFarmPlot()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
-    // Garden — always 4 slots; null = empty
     val gardenSlots: StateFlow<List<GrowingSlot?>> = growing.observeGardenSlots()
         .map { planted -> (0..3).map { i -> planted.find { it.id == "garden_$i" } } }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), List(4) { null })
 
-    // Available seeds for the picker
     val seeds: StateFlow<List<SeedDetail>> = inventory.observeSeeds()
         .map { stocks ->
             stocks.filter { it.quantity > 0 }.map { stock ->
@@ -57,6 +56,9 @@ class GatheringViewModel @Inject constructor(
             }
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    private val _lastHarvest = MutableStateFlow<List<HarvestItem>>(emptyList())
+    val lastHarvest: StateFlow<List<HarvestItem>> = _lastHarvest.asStateFlow()
 
     fun plantFarm(seedId: String) {
         viewModelScope.launch {
@@ -102,9 +104,35 @@ class GatheringViewModel @Inject constructor(
         }
     }
 
+    fun collectForage() {
+        viewModelScope.launch {
+            val items = sessions.collectForage()
+            items.forEach { item ->
+                if (item.rarity == "bonus") {
+                    inventory.addSeed(item.ingredientId, item.quantity)
+                } else {
+                    inventory.addIngredient(item.ingredientId, item.quantity)
+                }
+            }
+            _lastHarvest.value = items
+        }
+    }
+
+    fun collectGrowingSlot(slotId: String) {
+        viewModelScope.launch {
+            val items = growing.collectAndClearSlot(slotId)
+            items.forEach { item -> inventory.addIngredient(item.ingredientId, item.quantity) }
+            _lastHarvest.value = items
+        }
+    }
+
+    fun clearLastHarvest() {
+        _lastHarvest.value = emptyList()
+    }
+
     companion object {
-        const val DURATION_FARM_MS = 8 * 60 * 1000L     // 8 minutes
-        const val DURATION_GARDEN_MS = 4 * 60 * 1000L   // 4 minutes per slot
-        const val DURATION_FORAGE_MS = 3 * 60 * 1000L   // 3 minutes
+        const val DURATION_FARM_MS = 8 * 60 * 1000L
+        const val DURATION_GARDEN_MS = 4 * 60 * 1000L
+        const val DURATION_FORAGE_MS = 3 * 60 * 1000L
     }
 }

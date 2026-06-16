@@ -34,6 +34,11 @@ class PlayerRepository @Inject constructor(
         if (newLevel != state.cookingLevel) dao.upsert(state.copy(cookingLevel = newLevel))
     }
 
+    suspend fun spendMoney(amount: Int): Boolean {
+        val rowsAffected = dao.spendMoney(amount)
+        return rowsAffected > 0
+    }
+
     companion object {
         // XP required per level increases by 100 each level: 100 to reach 2, 200 to reach 3, etc.
         fun levelForXp(xp: Int): Int {

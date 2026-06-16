@@ -13,12 +13,14 @@ import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import com.liquidcode7.hearthcraft.HearthCraftApp
 import com.liquidcode7.hearthcraft.MainActivity
+import com.liquidcode7.hearthcraft.data.model.HarvestItem
 import com.liquidcode7.hearthcraft.data.repository.GrowingRepository
-import com.liquidcode7.hearthcraft.data.repository.InventoryRepository
 import com.liquidcode7.hearthcraft.data.repository.PlayerRepository
 import com.liquidcode7.hearthcraft.data.repository.GameDataRepository
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import java.util.concurrent.TimeUnit
 
 @HiltWorker
@@ -26,7 +28,6 @@ class GardenWorker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted params: WorkerParameters,
     private val growing: GrowingRepository,
-    private val inventory: InventoryRepository,
     private val player: PlayerRepository,
     private val gameData: GameDataRepository
 ) : CoroutineWorker(context, params) {
@@ -36,15 +37,19 @@ class GardenWorker @AssistedInject constructor(
         val ingredientId = inputData.getString(KEY_INGREDIENT_ID) ?: return Result.failure()
         val level = inputData.getInt(KEY_LEVEL, 1)
 
+        val ingredient = gameData.ingredients.find { it.id == ingredientId }
+            ?: return Result.failure()
         val qty = BASE_YIELD + (level - 1) / 5
-        inventory.addIngredient(ingredientId, qty)
+
+        val items = listOf(HarvestItem(ingredientId, ingredient.name, qty, ingredient.rarity))
+        val json = Json.encodeToString(items)
+
         player.addGatheringXp(XP_GARDEN)
-        growing.clearSlot(slotId)
+        growing.setPendingResult(slotId, json)
 
-        val name = gameData.ingredients.find { it.id == ingredientId }?.name ?: ingredientId
         val slotNum = slotId.last().digitToInt() + 1
-        notify("Garden ready", "Slot $slotNum: $name — $qty ready.", NOTIFICATION_ID_BASE + slotId.last().digitToInt())
-
+        val notifId = NOTIFICATION_ID_BASE + slotId.last().digitToInt()
+        notify("Garden ready — tap to harvest", "Bed $slotNum: ${ingredient.name} is ready to collect.", notifId)
         return Result.success()
     }
 

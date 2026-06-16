@@ -12,13 +12,15 @@ import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import com.liquidcode7.hearthcraft.HearthCraftApp
 import com.liquidcode7.hearthcraft.MainActivity
+import com.liquidcode7.hearthcraft.data.model.HarvestItem
 import com.liquidcode7.hearthcraft.data.repository.GameDataRepository
-import com.liquidcode7.hearthcraft.data.repository.InventoryRepository
 import com.liquidcode7.hearthcraft.data.repository.PlayerRepository
 import com.liquidcode7.hearthcraft.data.repository.SessionRepository
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import androidx.hilt.work.HiltWorker
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import java.util.concurrent.TimeUnit
 import kotlin.random.Random
 
@@ -27,7 +29,6 @@ class GatheringWorker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted params: WorkerParameters,
     private val gameData: GameDataRepository,
-    private val inventory: InventoryRepository,
     private val player: PlayerRepository,
     private val sessions: SessionRepository
 ) : CoroutineWorker(context, params) {
@@ -35,30 +36,38 @@ class GatheringWorker @AssistedInject constructor(
     override suspend fun doWork(): Result {
         val level = inputData.getInt(KEY_LEVEL, 1)
 
-        // Forage: random wild ingredients
         val pool = gameData.ingredients.filter { it.gatheringMode == MODE_FORAGE }
         val count = 2 + (level - 1) / 5
         val qty = 2 + (level - 1) / 10
-        val results = pool.shuffled().take(count).associate { it.id to qty }
-        results.forEach { (id, q) -> inventory.addIngredient(id, q) }
 
-        // Chance to find seeds for plantable ingredients while out in the world
+        val harvestItems = pool.shuffled().take(count).map { ingredient ->
+            HarvestItem(
+                ingredientId = ingredient.id,
+                name = ingredient.name,
+                quantity = qty,
+                rarity = ingredient.rarity
+            )
+        }.toMutableList()
+
         if (Random.nextFloat() < SEED_DROP_CHANCE) {
             val plantable = gameData.ingredients.filter { it.gatheringMode == MODE_FARM }
             plantable.randomOrNull()?.let { ingredient ->
                 val seedCount = Random.nextInt(1, 3)
-                inventory.addSeed("${ingredient.id}_seed", seedCount)
+                harvestItems.add(HarvestItem(
+                    ingredientId = "${ingredient.id}_seed",
+                    name = "${ingredient.name} Seed",
+                    quantity = seedCount,
+                    rarity = "bonus"
+                ))
             }
         }
 
         player.addGatheringXp(XP_GATHERING_FORAGE)
-        sessions.clearGathering()
 
-        val names = results.keys
-            .mapNotNull { id -> gameData.ingredients.find { it.id == id }?.name }
-            .joinToString(", ")
-        notify("Foraging Complete", "Returned with: $names", NOTIFICATION_ID)
+        val json = Json.encodeToString(harvestItems.toList())
+        sessions.setPendingForageResult(json)
 
+        notify("Foraging complete — tap to collect", "Return to Gathering to claim your haul.", NOTIFICATION_ID)
         return Result.success()
     }
 
@@ -85,7 +94,6 @@ class GatheringWorker @AssistedInject constructor(
     companion object {
         const val KEY_LEVEL = "gatheringLevel"
         const val MODE_FORAGE = "forage"
-        // Keep MODE_FARM for any legacy references
         const val MODE_FARM = "farm"
         const val NOTIFICATION_ID = 1
         private const val XP_GATHERING_FORAGE = 50

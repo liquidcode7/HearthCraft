@@ -24,4 +24,10 @@ interface GrowingSlotDao {
 
     @Query("DELETE FROM growing_slots WHERE id = :id")
     suspend fun delete(id: String)
+
+    @Query("UPDATE growing_slots SET pendingResultJson = :json WHERE id = :id")
+    suspend fun setPendingResult(id: String, json: String)
+
+    @Query("UPDATE growing_slots SET pendingResultJson = NULL WHERE id = :id")
+    suspend fun clearPendingResult(id: String)
 }

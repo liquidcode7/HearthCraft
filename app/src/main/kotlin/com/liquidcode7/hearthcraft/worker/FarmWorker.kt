@@ -13,21 +13,21 @@ import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import com.liquidcode7.hearthcraft.HearthCraftApp
 import com.liquidcode7.hearthcraft.MainActivity
+import com.liquidcode7.hearthcraft.data.model.HarvestItem
 import com.liquidcode7.hearthcraft.data.repository.GrowingRepository
-import com.liquidcode7.hearthcraft.data.repository.InventoryRepository
 import com.liquidcode7.hearthcraft.data.repository.PlayerRepository
 import com.liquidcode7.hearthcraft.data.repository.GameDataRepository
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import java.util.concurrent.TimeUnit
-import kotlin.random.Random
 
 @HiltWorker
 class FarmWorker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted params: WorkerParameters,
     private val growing: GrowingRepository,
-    private val inventory: InventoryRepository,
     private val player: PlayerRepository,
     private val gameData: GameDataRepository
 ) : CoroutineWorker(context, params) {
@@ -37,14 +37,18 @@ class FarmWorker @AssistedInject constructor(
         val ingredientId = inputData.getString(KEY_INGREDIENT_ID) ?: return Result.failure()
         val level = inputData.getInt(KEY_LEVEL, 1)
 
+        val ingredient = gameData.ingredients.find { it.id == ingredientId }
+            ?: return Result.failure()
         val qty = BASE_YIELD + (level - 1) / 3
-        inventory.addIngredient(ingredientId, qty)
+
+        val items = listOf(HarvestItem(ingredientId, ingredient.name, qty, ingredient.rarity))
+        val json = Json.encodeToString(items)
+
         player.addGatheringXp(XP_FARM)
-        growing.clearSlot(slotId)
+        growing.setPendingResult(slotId, json)
 
-        val name = gameData.ingredients.find { it.id == ingredientId }?.name ?: ingredientId
-        notify("Farm harvest ready", "$name — $qty harvested.", NOTIFICATION_ID_BASE + slotId.last().digitToInt())
-
+        val notifId = NOTIFICATION_ID_BASE + slotId.last().digitToInt()
+        notify("Farm ready — tap to harvest", "${ingredient.name} is ready to collect.", notifId)
         return Result.success()
     }
 

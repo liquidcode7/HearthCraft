@@ -7,6 +7,7 @@ import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Inventory
 import androidx.compose.material.icons.filled.LocalDining
+import androidx.compose.material.icons.filled.Storefront
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -29,6 +30,7 @@ private val tabs = listOf(
     Tab("kitchen", "Kitchen", Icons.Filled.LocalDining),
     Tab("band", "Band", Icons.Filled.Groups),
     Tab("pantry", "Pantry", Icons.Filled.Inventory),
+    Tab("market", "Market", Icons.Filled.Storefront),
 )
 
 private val tabRoutes = tabs.map { it.route }.toSet()
@@ -81,6 +83,7 @@ fun MainScreen() {
                 MissionBoardScreen(onBack = { navController.popBackStack() })
             }
             composable("pantry") { PantryScreen() }
+            composable("market") { MarketScreen() }
         }
     }
 }

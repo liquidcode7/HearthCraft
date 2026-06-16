@@ -4,6 +4,7 @@
     "name": "Hearthgrain",
     "type": "cultivated",
     "gatheringMode": "farm",
+    "rarity": "common",
     "flavor": "A short-stalked grain that thrives in kitchen gardens and sheltered plots. Dense, nutty, forgiving to cook with. The foundation of half the dishes in any hearth cook's repertoire."
   },
   {
@@ -11,6 +12,7 @@
     "name": "Ironroot",
     "type": "cultivated",
     "gatheringMode": "farm",
+    "rarity": "common",
     "flavor": "A thick, deep-purple root vegetable that has to be coaxed out of the earth. Earthy, slightly bitter raw, but slow-cooked it becomes something rich and sustaining."
   },
   {
@@ -18,6 +20,7 @@
     "name": "Sunpetal Herb",
     "type": "cultivated",
     "gatheringMode": "farm",
+    "rarity": "common",
     "flavor": "Bright yellow herb that grows readily in kitchen gardens with enough sun. Slightly sweet fragrance, used fresh in teas and tinctures. Good for the mind."
   },
   {
@@ -25,6 +28,7 @@
     "name": "Forest Honey",
     "type": "cultivated",
     "gatheringMode": "farm",
+    "rarity": "common",
     "flavor": "Thick amber honey kept from tended hives. Darker and more complex than ordinary honey — the bees range far and bring back something of the world they visit."
   },
   {
@@ -32,6 +36,7 @@
     "name": "Duskberry",
     "type": "cultivated",
     "gatheringMode": "farm",
+    "rarity": "common",
     "flavor": "Small dark berries, tart and faintly sweet, that ripen at the end of the growing season. Preserved or fresh, they lend a particular brightness to whatever they go into."
   },
   {
@@ -39,6 +44,7 @@
     "name": "Pale Cap",
     "type": "cultivated",
     "gatheringMode": "farm",
+    "rarity": "common",
     "flavor": "A cultivated mushroom variety — mild, savory, reliable. Not interesting on its own, but it takes on the character of whatever it's cooked with. A useful ingredient."
   },
   {
@@ -46,6 +52,7 @@
     "name": "Moonpetal",
     "type": "wild",
     "gatheringMode": "forage",
+    "rarity": "common",
     "flavor": "A wild herb that blooms at dusk, leaves faintly luminous in low light. Something in it opens the mind to precision and stillness. Gathered at the right moment, it is extraordinary."
   },
   {
@@ -53,6 +60,7 @@
     "name": "Ironbark Resin",
     "type": "wild",
     "gatheringMode": "forage",
+    "rarity": "common",
     "flavor": "Thick amber sap from old ironbark trees, harvested slowly over multiple visits. Pungent raw, but in small amounts it adds a deep, rooted quality to anything prepared with it."
   },
   {
@@ -60,6 +68,7 @@
     "name": "Stormcap",
     "type": "wild",
     "gatheringMode": "forage",
+    "rarity": "common",
     "flavor": "A wild mushroom that springs up overnight after heavy rain, then vanishes just as quickly. Earthy and faintly electric in flavor. The timing of the harvest matters."
   },
   {
@@ -67,6 +76,7 @@
     "name": "Wanderer Fig",
     "type": "wild",
     "gatheringMode": "forage",
+    "rarity": "common",
     "flavor": "A small wild fruit that grows along old roads and forgotten paths, as though it follows the movement of travelers. Sweet, slightly smoky. Makes you feel like keeping moving."
   },
   {
@@ -74,6 +84,7 @@
     "name": "Heartflame Pepper",
     "type": "wild",
     "gatheringMode": "forage",
+    "rarity": "common",
     "flavor": "Tiny wild peppers with a delayed, intense heat that builds from the inside out. In the right proportion, they create a warmth that lasts for hours. Used with care."
   },
   {
@@ -81,6 +92,7 @@
     "name": "Cave Truffle",
     "type": "wild",
     "gatheringMode": "forage",
+    "rarity": "uncommon",
     "flavor": "Found at the base of old growth and in cave mouths, growing where light barely reaches. Earthy, complex, faintly sweet. Rare enough that finding one feels like the world offering something."
   },
   {
@@ -88,6 +100,7 @@
     "name": "Bilberry",
     "type": "wild",
     "gatheringMode": "forage",
+    "rarity": "uncommon",
     "flavor": "Small, intensely bitter berries that grow in dense patches on open moorland. Tastes like medicine and regret. Something in them, though — a particular resistance, a specific clarity. The old folk swore by bilberry tea for minds that had been too long in unhealthy places."
   },
   {
@@ -95,6 +108,7 @@
     "name": "Athelas",
     "type": "wild",
     "gatheringMode": "forage",
+    "rarity": "uncommon",
     "flavor": "Looks like a weed. Smells faintly like open country on a bright morning. Most people walk past it without a second glance. In the right hands — prepared the right way — it is the difference between surviving a grievous wound and what comes after. The herb alone does nothing. The preparation is everything."
   }
 ]
