@@ -1,28 +1,34 @@
 # HearthCraft — Game Design Document
 
 > Status: Living document. Update as decisions are made.
-> Last revised: session 6 (June 13, 2026)
+> Last revised: June 16, 2026 (post-redefinition audit)
 
 ---
 
 ## What This Game Is
 
-An offline idle game for Android set in high fantasy. You play as a
-warlock-culinarian — potion master, chef, and alchemist — who is the
-indispensable hidden engine of a roving band of fighters. You never fight.
-You gather, grow, brew, and cook. Without you, they are nothing.
+An offline Android game set in high fantasy. The player is the indispensable
+provisioner behind a roving band of fighters. They never fight. They gather,
+grow, cook, and sustain. Without their craft, the band is nothing.
 
-The line between a perfect dish and a potion is a matter of intent. Your
-food is borderline magical — not metaphorically. You understand that
-ingredients have power, preparation unlocks it, and feeding someone the
-right thing at the right moment changes what they're capable of. The band
-doesn't know if it's cuisine or sorcery. They don't care. It works.
+The player's title is **[PLACEHOLDER — not yet decided]**.
+
+The line between a perfect dish and a potion is a matter of intent. Food is
+borderline magical — not metaphorically. Ingredients have power; preparation
+unlocks it; feeding someone the right thing at the right moment changes what
+they are capable of. The band doesn't know if it's cuisine or sorcery. They
+don't care. It works.
+
+This is not a cozy cooking sim. It is a specialist identity fantasy rooted in
+craft and deep knowledge. The long-term destination is a full raid RPG fought
+across named battlegrounds from Middle-earth's history, with this provisioning
+game as the indispensable foundation. V1 proves the foundation feels good.
 
 Design inspirations:
-- **GW2** — recipe discovery, ambient tone, no punishment for casual play
-- **FFXIV** — parallel gathering and crafting skill tracks, specialist
-  identity, dedication has visible reward
-- **LotRO** — high fantasy grounding, mastery through repetition
+- **GW2** — crafting tier structure, recipe discovery, ambient tone
+- **FFXIV** — specialist identity, dedication has visible reward
+- **LotRO** — high fantasy grounding, mastery through repetition, the
+  Ettenmoors as the endgame model
 
 ---
 
@@ -31,178 +37,209 @@ Design inspirations:
 ```
 Gather ingredients (Farm/Garden or Forage/Wild session)
         +
-Cook food / brew preparations (Cooking or Alchemy session)
+Cook food (Cooking session — select recipe, run in background)
         +
-Send band on mission (runs in parallel with the above)
-        ↓
-Experiment with ingredient combinations → discover new recipes
+Send band on mission (runs in parallel)
         ↓
 Band returns: money + rare regional ingredients
         ↓
-Rare ingredients unlock new experiments and better preparations
+Better ingredients unlock better recipes → stronger provisions
         ↓
-Better food → band attempts harder missions → rarer ingredients
+Stronger provisions → band attempts harder missions → rarer ingredients
         ↓
 repeat
 ```
 
-Gathering, crafting, and missions all run simultaneously. The game never
-forces you to wait on one thing before starting another.
+Gathering, cooking, and missions all run simultaneously. The game never
+forces the player to wait on one thing before starting another.
 
 ---
 
 ## Skill Categories
 
-Two categories: **Gathering** and **Crafting**. Each has two tracks.
+Two categories: **Gathering** and **Cooking**. Each has two tracks.
 One session per category at a time. Missions run independently in parallel.
 
 ---
 
 ### Gathering
 
-One shared skill level across both modes. You choose which mode to run
+One shared skill level across both modes. The player chooses which mode to run
 each session. Both contribute XP to the same Gathering pool.
 
 #### Farm / Garden
 - Cultivated ingredients: vegetables, fruits, grains, herbs
-- Beekeeping: honey at low levels; royal jelly, beeswax, rare cultivars
-  at elite skill levels
-- Predictable output — you know roughly what you will get
-- Rare and exotic ingredients unlock at elite skill levels
+- Predictable output — the player knows roughly what they will get
+- Beekeeping unlocks at higher levels: honey → royal jelly → rare cultivars
 - A maxed gardener produces things that cannot be reliably found anywhere
-  else — this is a distinct long-term specialist identity
+  else — a distinct long-term specialist identity
 
 #### Forage / Wild
-- Uncultivated ingredients: wild herbs, mushrooms, bark, roots,
-  unusual plants
+- Uncultivated ingredients: wild herbs, mushrooms, bark, roots, unusual plants
 - Unpredictable output — occasionally surprising, sometimes lean
-- Primary source for alchemical inputs (unusual, non-food materials)
-- Rare finds possible at any level, more frequent at higher levels
-- Different specialist identity from farming — neither track obsoletes
-  the other
+- Primary source for unusual and alchemical inputs (V2+)
+- Rare finds possible at any level; more frequent at higher levels
+- Neither track obsoletes the other
 
 ---
 
-### Crafting
+### Cooking Skill
 
-Two skills that level independently but feed into each other.
-
-#### Cooking
 The primary loop. Produces food and preparations that buff the band.
 
-- Recipes discovered through ingredient experimentation, not handed to you
-- Leveled through cooking AND gathering — gathering is considered part of
-  the craft, both contribute Cooking XP
-- No hard level gates on recipes — a powerful recipe can be discovered
-  early, but its ingredients are the natural gate
-- At high levels, preparations blur the line between food and magic
+#### Skill Tiers (GW2 structure — seven tiers)
 
-**Buff types (V1):** endurance, agility, acuity, warmth, luck. Each recipe
-produces exactly one buff type. Missions require a specific buff type — the
-wrong type counts as a miss regardless of strength.
+| Tier | Title        | Notes                                      |
+|------|--------------|--------------------------------------------|
+| 1    | Hearthkeeper | Starting tier. Basic recipes, simple food. |
+| 2    | Initiate     | Unlocks more ingredient combinations.      |
+| 3    | Apprentice   | Grimoire-gated recipes begin to appear.    |
+| 4    | Journeyman   | Mid-game. Preparations grow complex.       |
+| 5    | Adept        | Grimoire-gated. Stronger preparations.     |
+| 6    | Master       | Late game. Deep craft identity.            |
+| 7    | Grandmaster  | Ceiling. Grimoire-gated apex recipes.      |
 
-**Buff strength scaling:** `baseBuffStrength + (cookingLevel - 1) × buffStrengthPerLevel`.
-Simple recipes (30-min cook): base 10, scale 0.4/level. Complex recipes
-(90-min cook): base 12, scale 0.65/level. Skill matters continuously —
-every level makes your provisions meaningfully better.
+Tiers gate recipe complexity, not access to the game. The player progresses
+through tiers by accumulating Cooking XP. Each tier requires meaningfully more
+XP than the last.
 
-**Food flavor tags:** Every recipe has a `flavorTag` — one of: sweet, hearty,
-light, spicy, herbal, earthy. This vocabulary is shared with band member
-`foodPreference` (see Band Members below). Not mechanically linked in V1
-but the data is in place for future use.
+**Grimoires** — rare mission drops that unlock the deepest recipes within tiers
+3, 5, and 7. Finding one is a meaningful event. They cannot be bought or crafted.
 
-#### Alchemy
-The weird science track. Produces special ingredients that normal cooking
-cannot make, and eventually potions.
+**Specialization trees** — deferred to post-max-level content (V2+, wishlist).
+V1 has one linear cooking progression with no branches.
 
-- Takes unusual inputs: minerals, strange plants, components from missions,
-  foraged oddities
-- Low levels: flavor enhancers, preserves, infusions that upgrade base
-  ingredients
-- High levels: potions that give the band unusual abilities beyond what
-  food alone can provide
-- Some alchemical ingredients only come from specific missions — alchemy
-  progression is partly gated by how far the band has explored
-- Feeds back into Cooking: the best recipes likely need at least one
-  alchemical component
+#### Recipes (V1)
+- V1 uses hand-coded recipes only — no discovery system yet (V2)
+- Starting set: 8–10 recipes, visible in the recipe book from the start
+- Each recipe produces exactly one buff type
+- Buff strength scales with Cooking level:
+  - Simple recipes (30-min cook): base 10, +0.4 per level
+  - Complex recipes (90-min cook): base 12, +0.65 per level
 
----
+#### Buff Types
+Five buff types. Every mission requires one specific type — wrong type is an
+outright miss regardless of strength.
 
-## Recipe Discovery
+- **Endurance** — sustain and staying power
+- **Agility** — speed and precision
+- **Acuity** — perception, awareness, mental sharpness
+- **Warmth** — cold resistance, morale in harsh conditions
+- **Luck** — fortune, the unlooked-for turn
 
-Recipes are not given to you. You find them by experimenting.
-
-- Combine ingredients in the cooking interface
-- Some combinations produce a discovery, others produce nothing (and
-  consume the ingredients — experimentation has a real cost)
-- Discovering a recipe adds it permanently to your recipe book
-- The recipe book is earned knowledge, not a shop
-- Powerful recipes can be discovered early — ingredient scarcity is
-  the natural pacing mechanism, not arbitrary level walls
+#### Food Flavor Tags
+Every recipe has a flavor tag: sweet, hearty, light, spicy, herbal, earthy.
+This vocabulary is shared with band member food preferences. Not mechanically
+linked in V1 — the data is in place for future use.
 
 ---
 
 ## The Band
 
 ### Identity
-At the start of the game you choose one of four bands. This is a permanent
-flavor choice — not a mechanical advantage. All bands are equivalent in
-power. The choice sets the tone of your world: mission names, ingredient
-flavors, the culture you operate within.
+At the start of the game the player chooses one of four bands. This is a
+permanent flavor choice — no mechanical advantage. The choice sets the tone:
+mission names, ingredient flavor text, and the culture the player operates
+within. All bands are equivalent in power.
 
-### Starting Bands
+---
 
-**Druid Circle** — Forest. Ancient, patient, connected to living things.
-Missions feel like stewardship and protection. Ingredients lean toward
-woodland herbs, moonflower, ancient resins, things that grow in old-growth
-forests.
+### The Four Starting Bands
 
-**Dwarven Company** — Mountain. Gruff, loyal, direct. Bring back deep
-minerals, cave fungi, things that grow without sunlight. Food needs to be
-dense and sustaining.
+#### The Mithlost — Forest / Elves
+Ancient, grey, lingering. The ones who stayed to fight a long defeat when others
+sailed West. Sorrowful, faithful, deadlier than their gentleness suggests.
+Missions feel like stewardship and a rearguard action against encroaching shadow.
+Ingredients lean toward woodland herbs, moonflower, ancient resins, things that
+grow in old-growth forests.
 
-**Corsair Fleet** — Sea. Chaotic, free, opportunistic. Ingredients from
-deep water, sea caves, exotic ports. Provisions must survive salt air and
-long voyages.
+**Members (V1 — 3 active, full roster in `future/characters.md`):**
+- **Aelindra** (Captain) — Ancient and precise. Speaks as though each word costs
+  something. Food: earthy. Quirk: food from the ground, honest, unadorned.
+- **Thornwick** (Damage/ranged) — Young by elven reckoning. Endlessly curious,
+  asks too many questions. Deadly with a bow. Food: herbal. Quirk: wants to know
+  every ingredient in his cup.
+- **Maelgwyn the Greenwarden** (Healer) — Speaks rarely; when he does, people
+  listen. Food: hearty. Quirk: dense, sustaining fare, nothing fussy.
 
-**The Greycloaks** — Borderlands. Wandering wardens who answer to no crown
-and hold no land. They move through the margins of the world as though they
-belong there. Their missions demand perception and careful observation —
-all three are acuity missions. Members: Aldric, Mira, Cael.
+#### The Undermarch — Mountain / Dwarves
+Grim, loyal, stone-deep. Words mostly unnecessary. They will not complain about a
+hard march, but they notice — and remember — who kept them fed. Missions feel like
+deep delves and the defense of ancient holds. Ingredients lean toward cave fungi,
+deep minerals, things that grow without sunlight.
 
-### Future Bands (later phases)
-Norse warband (Tundra), Hedge witch coven (Swamp), Halfling militia
-(Plains), Dark elf house (Volcanic). Present in world lore from the start.
+**Members (V1 — 3 active, full roster in `future/characters.md`):**
+- **Borin Ironmantle** (Tank) — Never complained once in forty years. Reliable as
+  bedrock. Food: hearty. Quirk: dense food, nothing complicated.
+- **Dagra Copperhelm** (Damage/melee) — Laughs at everything. The band finds this
+  inspiring or alarming depending on the day. Food: spicy. Quirk: give her heat.
+- **Keldra** (Captain) — Youngest in the company. Ambitious in a way she hasn't
+  learned to hide. Food: spicy. Quirk: bold flavors for a bold dwarf.
 
-### Band Members
-The band is not faceless. Members are named individuals with personalities
-and a `foodPreference` — one of the six flavor tags (sweet, hearty, light,
-spicy, herbal, earthy). This is characterization, not a mechanical stat:
-it tells you something true about who they are. Dagra Copperhelm wants
-spicy food because she laughs at mild food the same way she laughs at
-everything else. Keeping them well-fed and well-provisioned is personal,
-not abstract.
+#### The Freewake — Sea / Corsairs
+Free, chaotic, opportunistic. Answer to no flag and no crown. Eat what they can
+get, go where the money is — but learned the right meal before a hard job changes
+everything. Missions feel like raids, contracts, and opportunities seized.
+Ingredients lean toward sea herbs, salt-cured finds, exotic port goods.
 
-In V1, `foodPreference` is flavor only — it does not affect mission outcomes.
-Future phases can use it to add minor bonuses or personality-driven reactions.
+**Members (V1 — 3 active, full roster in `future/characters.md`):**
+- **Reva Tidecaller** (Captain) — Charismatic and completely unpredictable.
+  Decides in three seconds flat and is right often enough that no one argues.
+  Food: light. Quirk: nothing heavy before a job.
+- **Silas Thorn** (Damage/ranged) — Quiet, watchful. The fleet uses him as a
+  compass — he always knows when something's wrong before it is. Food: herbal.
+  Quirk: something brewed and quiet, like him.
+- **Marta Wavebreaker** (Tank) — Loud, boastful, terrifyingly capable. The
+  stories she tells about herself are exaggerated; the actual events were worse.
+  Food: hearty. Quirk: plenty of it.
 
-Members can be lost on missions that fail badly enough. Loss is permanent.
-This makes provisioning feel consequential.
+#### The Greycloaks — Borderlands / Wardens
+Watchful, unaffiliated, worn. At the edges of civilization long enough that the
+edges feel like home. Know where the threats are before anyone else does. Their
+missions demand perception and careful observation. Ingredients lean toward trail
+food, preserved rations, foraged borderland herbs.
+
+**Members (V1 — 3 active, full roster in `future/characters.md`):**
+- **Aldric** (Captain) — Thirty years walking the borderlands. Quiet, observant,
+  unsentimental. When he speaks, it is worth hearing. Food: earthy. Quirk:
+  grounding food that doesn't announce itself.
+- **Mira** (Damage/ranged) — Came to this life young and adapted faster than was
+  healthy. A killer with a bow. Food: light. Quirk: light, fast — that's the rule.
+- **Cael** (Healer) — Keeps a detailed field journal the others tease him about
+  and borrow constantly. Food: herbal. Quirk: thinks better with something warm
+  beside him.
+
+---
+
+### Band Members — General Rules
+
+Members are named individuals with personalities and a food preference. Cooking
+for them is personal, not transactional.
+
+- Each member has: name, personality, food preference (flavor tag), role lean
+- Role leans are starting tendencies only — not caps (see `future/progression.md`)
+- Food preference is flavor in V1 — does not affect mission outcomes yet
+- Members can be lost on badly failed missions. Loss is permanent in V1.
+- Member loss condition: buff strength below 60% of required threshold AND a
+  33% random roll succeeds
+
+---
 
 ### Missions
-- Missions run in parallel with your gathering and crafting sessions
-- Each mission requires a specific buff **type** and a minimum buff **strength**
-- Both must be met — wrong buff type counts as a miss regardless of strength
-- Meet both → success: money reward (random within a range) + 1–3 ingredient
-  drops from the mission's reward table
-- Miss either → outright failure: no rewards
-- Member loss: only possible if buff strength is below 60% of the required
-  threshold AND a 33% random roll succeeds. Failure is always costly;
-  losing someone is rarer and more severe.
-- The player always knows the requirements before sending the band out
+
+- Missions run in parallel with gathering and cooking sessions
+- Missions unlock by **vitality threshold** — the highest vitality among alive band
+  members must meet the mission's minimum (easy: 0, medium: 3, hard: 6)
+- No buff type requirement — any food helps; the right type is never gated
+- Missions are **very difficult when first unlocked but always attemptable** — the
+  player can send the band any time the vitality gate is met; success is unlikely
+  early and improves as the band grows and provisions get stronger
+- Buff **strength** affects success probability — stronger food meaningfully
+  increases odds but never guarantees success
+- Success: money reward (random within a range) + 1–3 ingredient drops
+- Failure: nothing. Possible member wound or loss per conditions above.
+- The player always sees the vitality requirement before confirming
 - Harder missions return rarer ingredients and more money
-- Mission difficulty scales with buff threshold — harder missions require
-  stronger preparations
 
 ---
 
@@ -210,26 +247,63 @@ This makes provisioning feel consequential.
 
 Three independent axes that reinforce each other:
 
-1. **Skill levels** — Gathering and Cooking XP (Alchemy in V2). Reflects
-   time and sessions invested. XP curve: each level costs `level × 100` XP
-   — level 2 costs 100 total, level 3 costs 300 total, level 4 costs 600
-   total. One forage session = 50 XP, so roughly 2 sessions to level 2.
-   Pacing subject to revision after playtesting.
-2. **Recipe book** — what you have discovered. Reflects curiosity and
-   willingness to experiment and lose ingredients trying.
-3. **Ingredient access** — what your gathering sessions and missions
-   return. Reflects how far you have pushed both skill tracks.
+1. **Skill levels** — Gathering and Cooking XP. XP curve: each level costs
+   `level × 100` XP. One forage session = 50 XP. Pacing subject to revision
+   after playtesting.
+2. **Recipe book** — what the player has unlocked. Reflects investment and
+   exploration.
+3. **Ingredient access** — what gathering sessions and missions return. Reflects
+   how far both skill tracks have been pushed.
 
-A player can be high on one axis and low on another. The game does not
-force a single path through its content.
+A player can be high on one axis and low on another. No single forced path.
+
+---
+
+## The Shape of the Whole Game (not V1 — for architectural awareness only)
+
+The provisioning loop is the core of a two-half game. These layers exist in
+`future/` and must NOT be built until promoted to `docs/`. They are noted here
+so architectural decisions in V1 don't accidentally foreclose them. Full
+structure is in `docs/redefinition.md`.
+
+**The Campaign (the core game).** Cooking, provisioning, gathering, recipe
+discovery, band members (meet them, feed them, bond, grow them), and battlegrounds
+across the ages of Middle-earth. A living roster of battlegrounds that expands as
+you grow — not a linear march, and it does not "end." A player can play only the
+campaign and have a complete game. Four combat roles (Tank, Healer, Damage,
+Captain). Three outcome states: Victory, Stalemate, Defeat. The clue system,
+after-action log, and influence map are first-class features here.
+
+**The Ettenmoors (the strategic endgame).** Unlocks mid-to-late, when the player
+is genuinely ready (a readiness gate, not a checklist), and then coexists with the
+campaign. Brutal, fixed difficulty — never scales down to the player. Manage
+several opening factions at once. Take and hold contested ground that ebbs and
+flows over time. Its own walled economy (Valor) buys Moors-specific gear, runes,
+recipes, ingredients, skills, and bonuses. One continuous space: the deeper you
+hold, the harder it gets, with raid-tier pre-boss encounters and world-ending boss
+fights as the deepest territory — reached by holding ground far enough to get
+there, not by a separate unlock.
+
+**New Game Plus (campaign only).** After maxing everything, raise the campaign's
+difficulty ceiling. The Ettenmoors has no NG+ — it is already as hard as the game
+gets.
+
+**Why the kitchen stays relevant forever:** the Ettenmoors never gets easier, so
+there is always a reason to return to the campaign and the kitchen to develop
+further. The campaign is the investment; the Moors is where it is tested. They are
+interdependent, not sequential.
+
+**Key architectural constraint to preserve now:** Mission resolution must remain
+extensible toward multi-member, multi-stage, and variance-based outcomes. Do not
+hard-code assumptions that a mission is always one food item, one outcome, one
+duration. Keep the resolution layer thin and replaceable.
 
 ---
 
 ## What This Game Is Not
 
-- No combat — the band fights so you never have to
-- No punishment for idle play — close the app, come back, nothing is
-  lost or decayed
+- No combat for the player — the band fights so the player never has to
+- No punishment for idle play — close the app, come back, nothing is lost
 - No energy systems, stamina bars, or artificial time pressure
 - No multiplayer, trading, or leaderboards
 - No ads, IAP, or accounts — ever
@@ -237,35 +311,28 @@ force a single path through its content.
 
 ---
 
-## Wishlist / Future Phases
-
-Ideas confirmed as good but deferred. Do not build during V1.
-Full list in `docs/wishlist.md`.
-
-- Alchemy as a fully built parallel crafting track (V2)
-- Recipe discovery engine — combinatorial, persistent (V2)
-- Elite and rare ingredient tiers from gathering (V2)
-- Potions and unusual mission types unlocked by Alchemy (V2)
-- Additional bands beyond the starting four (V2+)
-- Band member storylines and relationship arcs (V2+)
-- Forgejo migration (whenever)
-- Multiplayer ingredient trading between band players (long-term maybe)
-
----
-
 ## Open Questions
 
-*(Decisions not yet made — resolve before building the relevant system)*
+*(Resolve before building the relevant system)*
 
-- What is the player character's title, or is it player-defined?
-- How many ingredient combination slots does the experimentation
-  interface have?
-- Does Alchemy have its own discovery system or are recipes level-gated?
+- **Player title** — [PLACEHOLDER]. Do not use Hearthwright or warlock-culinarian.
+- How many ingredient combination slots does the experimentation interface have?
+  (V2 question — recipe discovery is not in V1)
+- Does Alchemy have its own discovery system or are recipes level-gated? (V2)
 
 **Resolved:**
-- *How are band member losses triggered?* — Below 60% of required buff
-  strength AND 33% random roll. Implemented in MissionWorker.
-- *How many named band members does the player start with?* — 3 per band
-  (Druid Circle: Aelindra, Thornwick, Old Mossback; Dwarven Company: Borin,
-  Dagra, Keldra, Snorri — 4; Corsair Fleet: Reva, Silas, Marta — 3;
-  Greycloaks: Aldric, Mira, Cael — 3).
+- *How are band member losses triggered?* — Below 60% of required buff strength
+  AND 33% random roll. Implemented in MissionWorker.
+- *How many named band members does the player start with?* — 3 per band (V1).
+  Full 8-member rosters are designed in `future/characters.md` for V2+.
+- *Four starting bands?* — The Mithlost (elves/forest), The Undermarch
+  (dwarves/mountain), The Freewake (corsairs/sea), The Greycloaks
+  (wardens/borderlands).
+- *Ingredient quality tiers?* — No. Complexity lives in the cook's skill and
+  decisions, not raw materials. Never add quality tiers.
+- *Craft branches (Waybread Fortifier, Miruvor Distiller, Athelas Apothecary)?*
+  — Removed from V1 and from the active design. May return as specialization
+  trees at max level (wishlist). GW2 seven-tier linear progression replaces them.
+- *Buff type named "focus"?* — Renamed to **acuity** in code and design.
+- *Mission failure — partial success?* — No partial success. Failure is outright.
+  Failed experiments also consume ingredients.

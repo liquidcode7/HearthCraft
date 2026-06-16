@@ -17,15 +17,19 @@ creep, and teach as you go.
 
 ## What You Are Building
 
-An offline idle game for Android set in high fantasy. The player is a
-warlock-culinarian — potion master, chef, and alchemist — who is the
-indispensable hidden engine of a roving band of fighters. The player never
-fights. They gather, grow, brew, and cook. The band succeeds entirely because
-of what the player provides.
+An offline Android game set in high fantasy. The player is the indispensable
+provisioner behind a roving band of fighters — the one who gathers, grows, cooks,
+and sustains them. The player never fights. Without the player's craft, the band
+is nothing.
 
-The line between a perfect dish and a potion is a matter of intent. Food is
-borderline magical. This is not a cozy cooking sim — it is a specialist
-identity fantasy rooted in craft and deep knowledge.
+The player's title is **[PLACEHOLDER — not yet decided]**. Do not use
+"Hearthwright" or "warlock-culinarian" — both are deprecated. Use "the player"
+or "the provisioner" in code comments and UI strings until the title is locked.
+
+This is not a cozy cooking sim. It is a specialist identity fantasy rooted in
+craft, deep knowledge, and a war that needs winning. The long-term destination
+is a full raid RPG fought across named battlegrounds from Middle-earth's history,
+with the cooking game as its indispensable foundation. V1 proves the foundation.
 
 Full design vision is in `docs/design.md`. Read it. Every decision you make
 must be consistent with it.

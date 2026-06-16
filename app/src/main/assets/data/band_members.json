@@ -28,8 +28,8 @@
   {
     "id": "old_mossback",
     "bandId": "druid_circle",
-    "name": "Old Mossback",
-    "personality": "Speaks rarely. When he does, people listen. He feels the cold now in a way he did not when he was younger, and he would never mention it.",
+    "name": "Maelgwyn the Greenwarden",
+    "personality": "Speaks rarely. When he does, people listen. He has watched over this forest longer than most kingdoms have stood, and he carries that weight without complaint.",
     "foodPreference": "hearty",
     "quirkNote": "Doesn't say much about food either. Something dense and filling keeps him moving.",
     "startingMight": 4,

@@ -1,21 +1,21 @@
 [
   {
     "id": "druid_circle",
-    "name": "Druid Circle",
+    "name": "The Mithlost",
     "region": "Forest",
     "description": "Ancient keepers of the old growth. Patient, unhurried, connected to living things in ways outsiders never quite understand. They do not conquer land — they tend it. Their missions feel like stewardship: protecting what exists, restoring what was lost.",
     "flavorNote": "They call you the Hearthkeeper. Your fire is the only fire they trust."
   },
   {
     "id": "dwarven_company",
-    "name": "Dwarven Company",
+    "name": "The Undermarch",
     "region": "Mountain",
     "description": "A tight unit of mountain dwarves who have worked together long enough that words are mostly unnecessary. Gruff, loyal, direct. They will not complain about a hard march or a bad night, but they will notice — and remember — who kept them fed.",
     "flavorNote": "They call you the Provender. Among dwarves, that is high praise."
   },
   {
     "id": "corsair_fleet",
-    "name": "Corsair Fleet",
+    "name": "The Freewake",
     "region": "Sea",
     "description": "Their bloodlines trace to Númenór — mariners who carried the old knowledge of sail and star long after the island sank beneath the waves. They answer to no current king because they remember kings who have been dust for three thousand years. Proud, long-memoried, and formal in ways that surprise newcomers. They have learned hard lessons about what endures and what does not.",
     "flavorNote": "They call you the Galley Witch. Among those who remember old Númenór, that title carries more weight than it sounds."
