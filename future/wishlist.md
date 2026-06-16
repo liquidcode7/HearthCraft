@@ -7,6 +7,20 @@
 
 ## Gameplay Systems
 
+- **Member inspection screen** — tap a member to open a full detail panel: large
+  name and role header, personality blurb and flavor text, colored stat bars
+  (green for Vitality, red for wounds, blue for Might, etc.) in a proper RPG
+  display, wound history, and eventually a small character portrait or icon.
+  The stats exist — they just aren't shown beautifully yet. This is the screen
+  that makes the band feel alive.
+
+- **Second-band unlock popup** — when the player's cooking level reaches the
+  threshold (currently 6), fire a one-time celebration dialog naming the newly
+  unlocked company and briefly explaining the band switcher. The switcher itself
+  already exists; this is the moment that teaches the player it appeared.
+  Requires a "has seen unlock notification" flag in PlayerState so it only fires
+  once.
+
 - **Band management as a second pillar** — the game currently has deep
   player-side systems (gathering, cooking, provisioning) but a thin band
   side (pick food, send, wait). V2 should give the band side equal weight:
@@ -30,6 +44,22 @@
   ingredients not available any other way. Maxed gardener grows things
   that can't be found in the wild. Maxed forager finds things that can't
   be cultivated.
+
+- **Crafting level design** — the cooking and gathering level curves, tier
+  breakpoints, and maximum level are not yet fully designed. Currently the
+  highest recipe requires level 12 and the XP formula has no hard ceiling.
+  Needs a complete design pass: how many levels total, what each tier boundary
+  means, what the Grandmaster ceiling feels like, and how the curve paces
+  across the full game. Should be done before adding significant new recipes.
+
+- **Squad level system** — a band needs a meaningful combat level metric: a
+  single number (or progression) reflecting how seasoned the band is through
+  missions survived, members grown, hard fights endured. Currently the second
+  band unlock uses cooking level alone as a proxy. The full design should define
+  what "squad level" means, how it is calculated from member stats and mission
+  history, how it is displayed, and how it gates the second band unlock and
+  eventually the Ettenmoors readiness check. Should combine with cooking level
+  for the final unlock condition.
 
 - **Lesser rings** — at very high crafting level, the player can discover
   or forge lesser rings that grant singular, meaningful bonuses to the

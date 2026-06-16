@@ -24,7 +24,7 @@ import com.liquidcode7.hearthcraft.data.db.dao.SeedStockDao
         SeedStock::class,
         GrowingSlot::class,
     ],
-    version = 4,
+    version = 5,
     exportSchema = true
 )
 abstract class HearthCraftDatabase : RoomDatabase() {

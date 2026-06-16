@@ -10,15 +10,15 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface MissionSessionDao {
 
-    @Query("SELECT * FROM mission_session WHERE id = 0")
-    fun observe(): Flow<MissionSession?>
+    @Query("SELECT * FROM mission_session WHERE bandId = :bandId")
+    fun observe(bandId: String): Flow<MissionSession?>
 
-    @Query("SELECT * FROM mission_session WHERE id = 0")
-    suspend fun get(): MissionSession?
+    @Query("SELECT * FROM mission_session WHERE bandId = :bandId")
+    suspend fun get(bandId: String): MissionSession?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun start(session: MissionSession)
 
-    @Query("DELETE FROM mission_session WHERE id = 0")
-    suspend fun clear()
+    @Query("DELETE FROM mission_session WHERE bandId = :bandId")
+    suspend fun clear(bandId: String)
 }

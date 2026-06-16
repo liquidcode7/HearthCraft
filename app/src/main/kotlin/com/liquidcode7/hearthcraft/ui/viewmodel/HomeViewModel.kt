@@ -10,9 +10,12 @@ import com.liquidcode7.hearthcraft.data.repository.GrowingRepository
 import com.liquidcode7.hearthcraft.data.repository.PlayerRepository
 import com.liquidcode7.hearthcraft.data.repository.SessionRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
@@ -41,7 +44,13 @@ class HomeViewModel @Inject constructor(
     val cookingSession: StateFlow<CookingSession?> = sessions.observeCooking()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
-    val missionSession: StateFlow<MissionSession?> = sessions.observeMission()
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val missionSession: StateFlow<MissionSession?> = player.observe()
+        .flatMapLatest { state ->
+            val bandId = state?.chosenBandId?.takeIf { it.isNotEmpty() }
+                ?: return@flatMapLatest flowOf(null)
+            sessions.observeMission(bandId)
+        }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
     val activeGrowingCount: StateFlow<Int> = combine(

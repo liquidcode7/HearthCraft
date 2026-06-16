@@ -30,4 +30,7 @@ interface PlayerStateDao {
 
     @Query("UPDATE player_state SET money = money - :amount WHERE id = 0 AND money >= :amount")
     suspend fun spendMoney(amount: Int): Int
+
+    @Query("UPDATE player_state SET secondBandId = :bandId WHERE id = 0")
+    suspend fun setSecondBand(bandId: String)
 }

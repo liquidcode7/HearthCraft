@@ -5,7 +5,7 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "mission_session")
 data class MissionSession(
-    @PrimaryKey val id: Int = 0,
+    @PrimaryKey val bandId: String,
     val missionId: String,
     val buffStrength: Int,
     val startedAtMs: Long,

@@ -30,13 +30,14 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.liquidcode7.hearthcraft.data.model.Band
 import com.liquidcode7.hearthcraft.ui.viewmodel.BandSelectionViewModel
 
-// page 0 = opening lore, page 1 = band selection, page 2 = welcome
+// page 0 = opening lore, page 1 = first band, page 2 = second band, page 3 = welcome
 @Composable
 fun BandSelectionScreen(
     onBandSelected: () -> Unit,
     viewModel: BandSelectionViewModel = hiltViewModel()
 ) {
-    val selectedBandId by viewModel.selectedBandId.collectAsState()
+    val firstBandId by viewModel.firstBandId.collectAsState()
+    val secondBandId by viewModel.secondBandId.collectAsState()
     var page by remember { mutableIntStateOf(0) }
 
     LaunchedEffect(Unit) {
@@ -47,13 +48,26 @@ fun BandSelectionScreen(
         0 -> OpeningPage(onContinue = { page = 1 })
         1 -> SelectionPage(
             bands = viewModel.bands,
-            selectedBandId = selectedBandId,
-            onSelect = { viewModel.selectBand(it) },
+            selectedBandId = firstBandId,
+            excludedBandId = null,
+            title = "Choose Your First Company",
+            subtitle = "You will work with two companies. Choose the first.",
+            onSelect = { viewModel.selectFirst(it) },
             onConfirm = { page = 2 }
         )
-        2 -> WelcomePage(
-            bandId = selectedBandId ?: "",
-            bandName = viewModel.bands.find { it.id == selectedBandId }?.name ?: "",
+        2 -> SelectionPage(
+            bands = viewModel.bands,
+            selectedBandId = secondBandId,
+            excludedBandId = firstBandId,
+            title = "Choose Your Second Company",
+            subtitle = "They will join you later, when your craft is ready for them.",
+            onSelect = { viewModel.selectSecond(it) },
+            onConfirm = { page = 3 }
+        )
+        3 -> WelcomePage(
+            firstBandId = firstBandId ?: "",
+            firstName = viewModel.bands.find { it.id == firstBandId }?.name ?: "",
+            secondName = viewModel.bands.find { it.id == secondBandId }?.name ?: "",
             onEnter = { viewModel.confirmSelection() }
         )
     }
@@ -108,6 +122,9 @@ private fun OpeningPage(onContinue: () -> Unit) {
 private fun SelectionPage(
     bands: List<Band>,
     selectedBandId: String?,
+    excludedBandId: String?,
+    title: String,
+    subtitle: String,
     onSelect: (String) -> Unit,
     onConfirm: () -> Unit
 ) {
@@ -119,22 +136,24 @@ private fun SelectionPage(
             .verticalScroll(rememberScrollState())
             .padding(16.dp)
     ) {
-        Text("Choose Your Company", style = MaterialTheme.typography.headlineMedium)
+        Text(title, style = MaterialTheme.typography.headlineMedium)
         Spacer(modifier = Modifier.height(4.dp))
         Text(
-            "This choice is permanent.",
+            subtitle,
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         Spacer(modifier = Modifier.height(16.dp))
 
         bands.forEach { band ->
-            BandCard(
-                band = band,
-                isSelected = band.id == selectedBandId,
-                onClick = { onSelect(band.id) }
-            )
-            Spacer(modifier = Modifier.height(8.dp))
+            if (band.id != excludedBandId) {
+                BandCard(
+                    band = band,
+                    isSelected = band.id == selectedBandId,
+                    onClick = { onSelect(band.id) }
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+            }
         }
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -143,14 +162,19 @@ private fun SelectionPage(
             enabled = selectedBandId != null,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Begin")
+            Text("Confirm")
         }
     }
 }
 
 @Composable
-private fun WelcomePage(bandId: String, bandName: String, onEnter: () -> Unit) {
-    val (quote, speaker) = welcomeFor(bandId)
+private fun WelcomePage(
+    firstBandId: String,
+    firstName: String,
+    secondName: String,
+    onEnter: () -> Unit
+) {
+    val (quote, speaker) = welcomeFor(firstBandId)
 
     Column(
         modifier = Modifier
@@ -161,17 +185,20 @@ private fun WelcomePage(bandId: String, bandName: String, onEnter: () -> Unit) {
             .padding(24.dp)
     ) {
         Spacer(modifier = Modifier.height(32.dp))
-        Text(bandName, style = MaterialTheme.typography.headlineMedium)
+        Text(firstName, style = MaterialTheme.typography.headlineMedium)
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            "$secondName await.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
         Spacer(modifier = Modifier.height(32.dp))
         Card(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
         ) {
             Column(modifier = Modifier.padding(20.dp)) {
-                Text(
-                    "\"$quote\"",
-                    style = MaterialTheme.typography.bodyLarge
-                )
+                Text("\"$quote\"", style = MaterialTheme.typography.bodyLarge)
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
                     "— $speaker",

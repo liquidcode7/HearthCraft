@@ -34,6 +34,8 @@ class PlayerRepository @Inject constructor(
         if (newLevel != state.cookingLevel) dao.upsert(state.copy(cookingLevel = newLevel))
     }
 
+    suspend fun setSecondBand(bandId: String) = dao.setSecondBand(bandId)
+
     suspend fun spendMoney(amount: Int): Boolean {
         val rowsAffected = dao.spendMoney(amount)
         return rowsAffected > 0

@@ -27,28 +27,33 @@ class BandSelectionViewModel @Inject constructor(
 
     val bands: List<Band> = gameData.bands
 
-    private val _selectedBandId = MutableStateFlow<String?>(null)
-    val selectedBandId: StateFlow<String?> = _selectedBandId.asStateFlow()
+    private val _firstBandId = MutableStateFlow<String?>(null)
+    val firstBandId: StateFlow<String?> = _firstBandId.asStateFlow()
+
+    private val _secondBandId = MutableStateFlow<String?>(null)
+    val secondBandId: StateFlow<String?> = _secondBandId.asStateFlow()
 
     private val _navigateToMain = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
     val navigateToMain: SharedFlow<Unit> = _navigateToMain.asSharedFlow()
 
-    fun selectBand(id: String) {
-        _selectedBandId.value = id
-    }
+    fun selectFirst(id: String) { _firstBandId.value = id }
+
+    fun selectSecond(id: String) { _secondBandId.value = id }
 
     fun confirmSelection() {
-        val id = _selectedBandId.value ?: return
+        val first = _firstBandId.value ?: return
+        val second = _secondBandId.value ?: return
         viewModelScope.launch {
-            player.init(id)
-            band.initMembers(id)
+            player.init(first)
+            player.setSecondBand(second)
+            band.initMembers(first)
+            band.initMembers(second)
             giveStarterSeeds()
             _navigateToMain.emit(Unit)
         }
     }
 
     private suspend fun giveStarterSeeds() {
-        // Give the player a small set of seeds to start their first garden
         listOf("duskberry_seed", "pale_cap_seed", "hearthgrain_seed").forEach { seedId ->
             inventory.addSeed(seedId, 3)
         }

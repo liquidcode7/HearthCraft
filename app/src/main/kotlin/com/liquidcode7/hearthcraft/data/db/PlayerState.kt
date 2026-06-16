@@ -7,6 +7,7 @@ import androidx.room.PrimaryKey
 data class PlayerState(
     @PrimaryKey val id: Int = 0,
     val chosenBandId: String = "",
+    val secondBandId: String = "",
     val gatheringLevel: Int = 1,
     val gatheringXp: Int = 0,
     val cookingLevel: Int = 1,

@@ -8,11 +8,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -27,7 +29,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.layout.width
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.liquidcode7.hearthcraft.data.model.Mission
 import com.liquidcode7.hearthcraft.ui.viewmodel.BandMemberWithState
@@ -50,6 +51,10 @@ fun BandScreen(
     val selectedMission by bandViewModel.selectedMission.collectAsState()
     val preparedFood by inventoryViewModel.preparedFood.collectAsState()
     val maxVitality by bandViewModel.maxVitality.collectAsState()
+    val viewingSecond by bandViewModel.viewingSecond.collectAsState()
+    val isSecondBandUnlocked by bandViewModel.isSecondBandUnlocked.collectAsState()
+    val firstBandId by bandViewModel.firstBandId.collectAsState()
+    val secondBandId by bandViewModel.secondBandId.collectAsState()
 
     Column(
         modifier = Modifier
@@ -58,7 +63,18 @@ fun BandScreen(
             .padding(16.dp)
     ) {
         Text("Band", style = MaterialTheme.typography.headlineMedium)
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(8.dp))
+
+        if (secondBandId != null) {
+            BandSwitcher(
+                firstName = bandViewModel.firstBandName(),
+                secondName = bandViewModel.secondBandName(),
+                viewingSecond = viewingSecond,
+                isSecondUnlocked = isSecondBandUnlocked,
+                onSwitch = { bandViewModel.switchBand() }
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+        }
 
         if (activeMission != null) {
             val missionName = missions.find { it.id == activeMission!!.missionId }?.name
@@ -187,6 +203,45 @@ fun BandScreen(
                 Text("Send on Mission")
             }
         }
+    }
+}
+
+@Composable
+private fun BandSwitcher(
+    firstName: String,
+    secondName: String,
+    viewingSecond: Boolean,
+    isSecondUnlocked: Boolean,
+    onSwitch: () -> Unit
+) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        FilterChip(
+            selected = !viewingSecond,
+            onClick = { if (viewingSecond) onSwitch() },
+            label = { Text(firstName, style = MaterialTheme.typography.labelMedium) },
+            modifier = Modifier.weight(1f)
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        FilterChip(
+            selected = viewingSecond,
+            onClick = { if (!viewingSecond && isSecondUnlocked) onSwitch() },
+            enabled = isSecondUnlocked,
+            label = {
+                Column {
+                    Text(secondName, style = MaterialTheme.typography.labelMedium)
+                    if (!isSecondUnlocked) {
+                        Text(
+                            "Unlock at cooking 6",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            },
+            modifier = Modifier
+                .weight(1f)
+                .alpha(if (isSecondUnlocked) 1f else 0.6f)
+        )
     }
 }
 

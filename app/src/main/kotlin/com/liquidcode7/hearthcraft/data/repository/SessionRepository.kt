@@ -20,11 +20,11 @@ class SessionRepository @Inject constructor(
 ) {
     fun observeGathering(): Flow<GatheringSession?> = gatheringDao.observe()
     fun observeCooking(): Flow<CookingSession?> = cookingDao.observe()
-    fun observeMission(): Flow<MissionSession?> = missionDao.observe()
+    fun observeMission(bandId: String): Flow<MissionSession?> = missionDao.observe(bandId)
 
     suspend fun activeGathering(): GatheringSession? = gatheringDao.get()
     suspend fun activeCooking(): CookingSession? = cookingDao.get()
-    suspend fun activeMission(): MissionSession? = missionDao.get()
+    suspend fun activeMission(bandId: String): MissionSession? = missionDao.get(bandId)
 
     suspend fun startGathering(session: GatheringSession) = gatheringDao.start(session)
     suspend fun clearGathering() = gatheringDao.clear()
@@ -33,7 +33,7 @@ class SessionRepository @Inject constructor(
     suspend fun clearCooking() = cookingDao.clear()
 
     suspend fun startMission(session: MissionSession) = missionDao.start(session)
-    suspend fun clearMission() = missionDao.clear()
+    suspend fun clearMission(bandId: String) = missionDao.clear(bandId)
 
     suspend fun setPendingForageResult(json: String) = gatheringDao.setPendingResult(json)
 

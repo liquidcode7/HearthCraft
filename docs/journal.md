@@ -7,12 +7,12 @@
 
 ## Current Status — June 16, 2026
 
-**Phase:** Design redefinition and character audit complete — ready to resume code work  
-**V1 progress:** Core loop playable. Major design restructure this session: full game vision locked (Campaign + Ettenmoors + NG+), all future docs promoted to authoritative, band rosters and identities fully audited.  
-**What's working:** All four bands have correct identities, four members each (one per role), elven names for Mithlost, Númenórean thread in Freewake, Greycloaks written as a community with deep built-in trust. README rewrites to reflect the full vision.  
-**What's not wired yet:** Role naming (Warden/Keeper/Hunter/? for the Captain slot) not yet decided. Two-faction start question not yet resolved.  
-**Next session:** Install and play — does the vitality gate feel right? Does the harvest collect step feel satisfying? Then address two open design questions (role names, two-faction start).  
-**Open questions:** Role names for the four positions (Captain → ?). Should players pick two bands at start for Ettenmoors readiness? Faction-swap token in Market?
+**Phase:** Two-faction start complete — both data layer and UI layer wired  
+**V1 progress:** Core loop playable. Two-faction start implemented end-to-end. Full game vision locked and documented in docs/roadmap.md.  
+**What's working:** Player picks two bands at character creation; second band visible on Band screen (locked, greyed, shows "Unlock at cooking 6"); both bands can run concurrent missions; band switcher UI present as two chips at top of Band screen; all missions and members correctly scoped to the currently-viewed band.  
+**What's not wired yet:** Second-band unlock popup not yet built (wishlist). Member inspection RPG UI not yet built (wishlist). Faction-swap token in Market not built.  
+**Next session:** Install and play the current build. Confirm band switcher feel and selection screen flow. Does picking two bands feel meaningful?  
+**Open questions:** None blocking V1. All major design decisions are settled and documented.
 
 ---
 
@@ -657,3 +657,47 @@ This session introduced stats to band members, gated missions on vitality, added
 - Next session: install and play. Does vitality gate feel right on first play? Does the harvest collect step feel satisfying or annoying?
 - Near term: kitchen ingredient name display (pre-existing gap); stat display tuning based on real-play feedback.
 - Future ideas logged: none this session.
+
+---
+
+## Session 17 — June 16, 2026
+**Two-faction start — complete implementation (data + UI)**
+
+The two-faction system is now fully built: a player picks two bands at character creation, the second is dormant until cooking level 6, both can run concurrent missions, and the Band screen shows a switcher between them.
+
+**What was built:**
+
+Data layer (completed in previous compacted session):
+- `PlayerState.kt`: added `secondBandId: String = ""`
+- `MissionSession.kt`: primary key changed from `id: Int = 0` to `bandId: String` — enables concurrent missions per band
+- `PlayerStateDao.kt`: added `setSecondBand()` query
+- `BandMemberStateDao.kt`, `GatheringSessionDao.kt`, `GrowingSlotDao.kt`, `PlayerStateDao.kt`: various updates
+- `SessionRepository.kt`: all mission methods now take `bandId` parameter
+- `PlayerRepository.kt`: added `setSecondBand()`
+- `MissionWorker.kt`: `clearMission()` call now passes `mission.bandId`
+- `HearthCraftDatabase.kt`: version bumped 4 → 5 (fallbackToDestructiveMigration)
+- `BandSelectionViewModel.kt`: complete rewrite for two-band selection flow
+
+UI layer (this session):
+- `BandSelectionScreen.kt`: 4-page flow — lore introduction → pick first band → pick second band (first excluded from list) → welcome quote from first band's captain
+- `BandViewModel.kt`: added `viewingSecond` toggle, `firstBandId`/`secondBandId` StateFlows, `cookingLevel`, `isSecondBandUnlocked` (threshold: cooking level 6), `switchBand()` function, `activeBandId` derived flow; all `members`/`missions`/`activeMission` now keyed to `activeBandId`; `sendOnMission()` passes `bandId` in `MissionSession`
+- `BandScreen.kt`: `BandSwitcher` composable at top — two `FilterChip` buttons, second greyed at 0.6 alpha with "Unlock at cooking 6" label when locked
+- `HomeViewModel.kt`: `missionSession` now uses `flatMapLatest` off player state to observe primary band's mission
+- `docs/roadmap.md`: full phased build plan (Layer 1 V1 → Layer 2 Campaign → Layer 3 Ettenmoors → Layer 4 Polish)
+- `future/wishlist.md`: added member inspection RPG UI and second-band unlock popup entries
+
+**Decisions made:**
+- Second band unlocks at cooking level 6 (squad level system deferred to wishlist — cooking level is the proxy for now)
+- `SECOND_BAND_UNLOCK_COOKING_LEVEL = 6` is a named constant in `BandViewModel.kt` — easy to tune
+- Band switching resets food and mission selection to avoid stale UI state
+- The unlock visual is the chip going from greyed to active; a celebration popup is a wishlist item
+- `flatMapLatest` used for reactive `bandId` → `Flow<MissionSession?>` mapping; `@OptIn(ExperimentalCoroutinesApi::class)` added where needed
+
+**Anything that diverged from docs/design.md:**
+- None. Two-faction start was a new addition consistent with the vision.
+
+**Coming up:**
+- Next session: install and play the two-faction flow end-to-end
+- Near term: Phase 1B — member personalities and food preferences visible in-game
+- Near term: Phase 1C — crafting level design pass
+- Future ideas logged: member inspection screen, second-band unlock popup (both wishlist.md)

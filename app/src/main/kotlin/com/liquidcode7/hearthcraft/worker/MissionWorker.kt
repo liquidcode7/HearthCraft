@@ -68,7 +68,7 @@ class MissionWorker @AssistedInject constructor(
         }
 
         band.grantMissionStats(mission.bandId, succeeded)
-        sessions.clearMission()
+        sessions.clearMission(mission.bandId)
         return Result.success()
     }
 
