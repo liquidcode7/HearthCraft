@@ -188,15 +188,16 @@ If a feature implies any of these, flag it immediately.
 ### Current work
 - `docs/design.md` — authoritative game design, always current
 - `docs/v1-plan.md` — V1 task list and scope
+- `docs/redefinition.md` — full structural vision (Campaign + Ettenmoors)
 - `docs/journal.md` — current status at top, session log below
 - `docs/learning-notes.md` — Kotlin concepts with examples, append as needed
 
-### Future ideas (not being built yet)
-- `future/wishlist.md` — small ideas and deferred features, add freely
-- `future/characters.md` — full 32-member roster design for V2+
-- `future/battlegrounds.md` — lore roster of 14 named battlegrounds
-- `future/battlegrounds-rpg.md` — full RPG combat mode design (V5+)
-- `future/bestiary.md` — enemy tier system (V5+)
-- `future/progression.md` — stat and progression design (V5+)
+### Full design (authoritative — not yet built, but the plan)
+- `docs/characters.md` — full 32-member roster (4 bands × 8 members × 4 roles)
+- `docs/battlegrounds.md` — lore roster of 14 named battlegrounds
+- `docs/battlegrounds-rpg.md` — campaign combat system design
+- `docs/bestiary.md` — enemy tier system (5 tiers, power + untouchability separate)
+- `docs/progression.md` — stat and progression design
 
-Do not act on anything in `future/` without explicit promotion to `docs/`.
+### Deferred small ideas
+- `future/wishlist.md` — small ideas and deferred features, add freely

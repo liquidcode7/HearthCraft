@@ -1,7 +1,8 @@
-# HearthCraft — Character Progression & Stats (Design Scratchpad)
+# HearthCraft — Character Progression & Stats
 
-> SCRATCHPAD. NOT V1. Part of the far-future raid RPG (V5+). Captured so the
-> design isn't lost. Do not build from this without promotion to docs/.
+> Authoritative design document — June 2026.
+> Stat system and progression design for band members. Not fully built yet —
+> stats exist in V1 but growth mechanics are minimal. This is what they grow into.
 > Companion files: battlegrounds.md, battlegrounds-rpg.md, bestiary.md.
 > Stat foundation is LotRO's, trimmed to what HearthCraft's systems actually use.
 
@@ -110,12 +111,12 @@ The four raid roles are not classes you pick — they emerge from how you've
 developed a member's stats, plus traits, plus gear. Any member can be grown
 toward any role (the "smallest can become great" principle in action).
 
-- **Tank** — Might + Vitality. High Morale, soaks/redirects enemy damage. The
+- **Warden** — Might + Vitality. High Morale, soaks/redirects enemy damage. The
   wall that keeps enemy damage off the party. (Signature behavior: "Bulwark.")
-- **Damage** — Might (bruiser) or Agility (nimble striker). Two flavors. Drives
+- **Hunter** — Might (bruiser) or Agility (nimble striker). Two flavors. Drives
   party damage; exploits enemy damage-type vulnerabilities via gear.
   (Signature behavior: "Edge.")
-- **Healer** — Will + Fate. Will sets how DEEP a grievous wound they can mend
+- **Keeper** — Will + Fate. Will sets how DEEP a grievous wound they can mend
   (beastliness); Fate gives the crit-heal that saves against the odds. The
   whole Houses-of-Healing system keys off this. (Signature behavior: "Grace.")
 - **Captain** — Will + Fate, the inspirer. Will to resist Dread and stand near
@@ -186,7 +187,7 @@ operation — not a fighter with stats, but the spirit working behind all of the
 
 Nothing here is invented for its own sake; every stat feeds a live mechanic:
 - **Two-pool combat** → party Morale vs enemy Morale; Might/Agility drive damage,
-  Vitality/Tank drive Morale.
+  Vitality/Warden drive Morale.
 - **Wound system** → Vitality governs wound thresholds, ordinary-wound recovery,
   and resistance to Fear/Shadow.
 - **Houses of Healing** → healer's Will (+ Fate) sets how deep a grievous wound

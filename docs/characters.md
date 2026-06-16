@@ -1,26 +1,25 @@
-# HearthCraft — Recruitable Characters (Design Scratchpad)
+# HearthCraft — Full Character Roster
 
-> SCRATCHPAD. Serves two layers:
-> (1) V1 FLAVOR — name, personality, quirk, food preference (the only fields V1
->     uses). Safe to pull into band_members.json now.
-> (2) FAR-FUTURE RPG SEED — role + primary stat leaning per member. NOT
->     mechanical yet. "Greatness is made, not born" (see progression.md):
->     role/stat leanings are STARTING TENDENCIES, never caps. Any member can be
->     grown into any role.
+> Authoritative design document — June 2026.
+> 32 named members across four bands. Eight per band, two per role.
+> V1 uses four per band (one of each role); the second of each role unlocks
+> as a replacement if the first is lost (permadeath insurance).
 >
-> STRUCTURE: EIGHT members per band (32 total). TWO per role, so permadeath has
-> insurance across EVERY role, not just some.
->   - 2 Tanks   (lean Might + Vitality)
->   - 2 Healers (lean Will + Fate)
->   - 2 Damage  (one MELEE/Might, one RANGED/Agility — damage is ONE role;
->                 melee vs ranged is FLAVOR backed by meaningful stat profiles)
+> Role/stat leanings are STARTING TENDENCIES — never caps. "Greatness is made,
+> not born" (see progression.md): any member can be grown into any role through
+> the player's provisioning and the deeds they survive.
+>
+> STRUCTURE: EIGHT members per band (32 total). TWO per role:
+>   - 2 Wardens   (lean Might + Vitality)
+>   - 2 Keepers (lean Will + Fate)
+>   - 2 Hunters  (one MELEE/Might, one RANGED/Agility)
 >   - 2 Captains(lean Will + Fate)
 >
 > Stats: Might, Agility, Vitality, Will, Fate (+ Morale pool). Food flavor
 > vocabulary: sweet, hearty, light, spicy, herbal, earthy.
 >
 > Bands: The Mithlost (Forest/elves), The Undermarch (Mountain/dwarves),
-> The Freewake (Sea/corsairs), The Greycloaks (Borderlands/wardens).
+> The Freewake (Sea/Númenórean corsairs), The Greycloaks (Dúnedain of the North).
 
 ---
 
@@ -28,44 +27,45 @@
 *Ancient, grey, lingering. The ones who stayed to fight a long defeat when others
 sailed West. Sorrowful, faithful, deadlier than their gentleness suggests.*
 
-**Tanks**
-### Caranthir Oakshield
+**Wardens**
+### Caranthir
 - Stands where he is told and does not move. Has held passes alone. Speaks in
   single words when words are needed at all.
 - Food: hearty. Quirk: dense, plain, eaten standing.
-- Role: Tank. Lean: Might/Vitality (the immovable wall).
+- Role: Warden. Lean: Might/Vitality (the immovable wall).
 
 ### Sereghil
 - An aggressive guardian — meets the charge rather than waiting for it. Older
   than he looks, scarred under the grey cloak he never removes.
 - Food: earthy. Quirk: roots and dark bread before a fight.
-- Role: Tank. Lean: Might/Vitality (the forward bulwark).
+- Role: Warden. Lean: Might/Vitality (the forward bulwark).
 
-**Healers**
-### Maelgwyn the Greenwarden
+**Keepers**
+### Galadorn
 - Speaks rarely; when he does, people listen. Tends the wounded forest the way
   others tend wounded people.
 - Food: hearty. Quirk: dense, sustaining fare, nothing fussy.
-- Role: Healer. Lean: Will/Fate (the cleanser of corruption and shadow).
+- Role: Keeper. Lean: Will/Fate (the cleanser of corruption and shadow).
 
 ### Faelith
 - Once healer of a fallen grove; carries those she couldn't save and rarely
   speaks of it. Gentle hands, harder eyes than she used to have.
 - Food: herbal. Quirk: brewed and quiet, like a remembered home.
-- Role: Healer. Lean: Will/Fate.
+- Role: Keeper. Lean: Will/Fate.
 
-**Damage**
+**Hunters**
 ### Lúthiel  *(melee)*
 - Carries an old grief she never names. Sings to herself when she thinks no one
   hears. Far deadlier than her gentleness suggests.
 - Food: light. Quirk: eats little, eats finely.
-- Role: Damage (melee). Lean: Might/Agility (the quiet blade).
+- Role: Hunter (melee). Lean: Might/Agility (the quiet blade).
 
-### Thornwick  *(ranged)*
-- Young by elven reckoning (merely centuries). Endlessly curious, asks too many
-  questions, hasn't learned that silence is also an answer. Deadly with a bow.
+### Thalindel  *(ranged)*
+- Young by elven reckoning (merely centuries). Finds the world genuinely beautiful
+  and has not yet lost that. Asks too many questions, remembers every answer,
+  hasn't learned that silence is also an answer. Deadly with a bow.
 - Food: herbal. Quirk: wants to know every ingredient in his cup.
-- Role: Damage (ranged). Lean: Agility (the swift archer).
+- Role: Hunter (ranged). Lean: Agility (the swift archer).
 
 **Captains**
 ### Aelindra
@@ -86,45 +86,47 @@ sailed West. Sorrowful, faithful, deadlier than their gentleness suggests.*
 *Grim, loyal, stone-deep. Words mostly unnecessary. They will not complain about a
 hard march, but they notice — and remember — who kept them fed.*
 
-**Tanks**
+**Wardens**
 ### Borin Ironmantle
 - Never complained once in forty years. Reliable as bedrock. Ask how he is and he
   says "fine," means it, and is back at work before you finish asking.
 - Food: hearty. Quirk: dense food, nothing complicated.
-- Role: Tank. Lean: Might/Vitality (the wall).
+- Role: Warden. Lean: Might/Vitality (the wall).
 
 ### Snorri Saltbeard
 - Veteran. Suspicious of new things, new people, and good weather. A gift for
   finding the one thing that could go wrong. Often right.
 - Food: hearty. Quirk: solid, familiar, nothing he has to think about.
-- Role: Tank. Lean: Vitality/Might (dug-in and stubborn).
+- Role: Warden. Lean: Vitality/Might (dug-in and stubborn).
 
-**Healers**
+**Keepers**
 ### Thrain Deepvein
 - A stonesinger and bonesetter both; among dwarves the same steady hands that
   read the rock can set a break. Calm in a crisis, dry as dust otherwise.
+  Does not wear rings. Has not explained why — though those who know him well
+  suspect it is simply because he loses things, and leave it at that.
 - Food: hearty. Quirk: a full bowl, eaten in silence.
-- Role: Healer. Lean: Will/Fate (the mender of the company).
+- Role: Keeper. Lean: Will/Fate (the mender of the company).
 
 ### Old Vidrun
 - Buried more of the company than she will name. Tends wounds with unbothered
   hands and a hard kindness. Has seen every way a dwarf can fall and means to
   prevent the next one.
 - Food: hearty. Quirk: no fuss, just enough.
-- Role: Healer. Lean: Will/Fate.
+- Role: Keeper. Lean: Will/Fate.
 
-**Damage**
+**Hunters**
 ### Dagra Copperhelm  *(melee)*
 - Laughs at everything — danger, hardship, bad odds, all equally funny. The band
   finds this inspiring or alarming depending on the day.
 - Food: spicy. Quirk: give her heat.
-- Role: Damage (melee). Lean: Might (reckless and fearless).
+- Role: Hunter (melee). Lean: Might (reckless and fearless).
 
 ### Brokk Flinteye  *(ranged)*
 - Crossbow dwarf, patient as stone, counts his bolts and his words. Misses
   nothing and almost never misses.
 - Food: hearty. Quirk: cold rations, eaten one-handed, eyes on the dark.
-- Role: Damage (ranged). Lean: Agility (the marksman).
+- Role: Hunter (ranged). Lean: Agility (the marksman).
 
 **Captains**
 ### Keldra
@@ -146,44 +148,44 @@ hard march, but they notice — and remember — who kept them fed.*
 get, go where the money is — but learned the right meal before a hard job changes
 everything.*
 
-**Tanks**
+**Wardens**
 ### Marta Wavebreaker
 - Loud, boastful, terrifyingly capable. The stories she tells about herself are
   exaggerated; the actual events were worse.
 - Food: hearty. Quirk: plenty of it.
-- Role: Tank. Lean: Might/Vitality (built for excess).
+- Role: Warden. Lean: Might/Vitality (built for excess).
 
 ### Bosun Harl
 - A mountain of a man who holds the deck like a breakwater. Slow to anger, and
   you do not want to see the end of that slow road.
 - Food: hearty. Quirk: stew, endless stew.
-- Role: Tank. Lean: Vitality/Might (the breakwater).
+- Role: Warden. Lean: Vitality/Might (the breakwater).
 
-**Healers**
+**Keepers**
 ### Old Cassia
 - Sailed longer than anyone living should have. Mends rope, bone, and morale with
   the same unbothered hands. Has buried more crew than she'll say.
 - Food: hearty. Quirk: a full bowl, no fuss.
-- Role: Healer. Lean: Will/Fate (patches everyone up).
+- Role: Keeper. Lean: Will/Fate (patches everyone up).
 
 ### Tally Brisk
 - Fast-talking, faster-moving; keeps the only honest ledger on the ship and the
   only dishonest one too. Cheerful under fire in a way that unnerves people.
 - Food: light. Quirk: quick bites, never sits long.
-- Role: Healer. Lean: Will/Fate (patches on the move).
+- Role: Keeper. Lean: Will/Fate (patches on the move).
 
-**Damage**
+**Hunters**
 ### Silas Thorn  *(ranged)*
 - Quiet, watchful, knows things he won't explain. The fleet uses him as a
   compass — he always knows when something's wrong before it is. Deadly at range.
 - Food: herbal. Quirk: something brewed and quiet, like him.
-- Role: Damage (ranged). Lean: Agility (the one who sees, and shoots).
+- Role: Hunter (ranged). Lean: Agility (the one who sees, and shoots).
 
 ### Rook Calloway  *(melee)*
 - Boarding-axe in each hand and a grin that means trouble. Lives for the leap
   from rail to rail. Reckless in a way that has somehow kept him alive.
 - Food: spicy. Quirk: hot food, fast, before the leap.
-- Role: Damage (melee). Lean: Might/Agility (the boarder).
+- Role: Hunter (melee). Lean: Might/Agility (the boarder).
 
 **Captains**
 ### Reva Tidecaller
@@ -201,62 +203,84 @@ everything.*
 
 ---
 
-## THE GREYCLOAKS — Borderlands, wardens
-*Watchful, unaffiliated, worn. At the edges of civilization long enough that the
-edges feel like home. Know where the threats are before anyone else does.*
+## THE GREYCLOAKS — Eriador, Dúnedain of the North
+*The remnant of the line of Isildur. Heirs to a kingdom that fell and was never
+rebuilt. They walk the wild lands of Eriador not as wanderers but as guardians
+bound by an oath older than the Shire. They have no home because their home is
+gone — but they have each other, and that has been the fact for generations. They
+know each other's families, each other's histories, each other's grief. There is
+warmth here that does not announce itself. The world has mostly forgotten what
+they are. Among themselves, that matters not at all.*
 
-**Tanks**
+**Wardens**
 ### Hollis
-- Speaks little of where he came from. Carries an old soldier's wariness and an
-  old soldier's competence. The newest Greycloak, not yet fully trusted.
-- Food: hearty. Quirk: eats like a man who's known lean times.
-- Role: Tank. Lean: Might/Vitality (guards the line).
+- The newest Greycloak — came to them after losing his village, and the company
+  folded him in the way they fold everyone in: without ceremony or conditions,
+  steadily, until the belonging simply became true. He is still finding his footing.
+  The others give him room and check in on him without saying that's what they're doing.
+- Food: hearty. Quirk: eats gratefully and completely; he doesn't waste what's given.
+- Role: Warden. Lean: Might/Vitality (the one who holds the line while the others act).
 
 ### Thoral Greywood
-- A big, silent warden who plants himself between the band and whatever's coming.
-  Lost a brother to the dark and has been a wall ever since.
-- Food: earthy. Quirk: plain and heavy, nothing more.
-- Role: Tank. Lean: Vitality/Might (the standing stone).
+- Has been putting himself between the company and whatever is coming since before
+  most of them were born. Grew up with Aldric; they've been covering each other's
+  flanks for thirty years. Not a man of many words — but when Aldric goes quiet,
+  Thoral is already moving.
+- Food: earthy. Quirk: plain and heavy, eaten without fuss.
+- Role: Warden. Lean: Vitality/Might (the standing stone — will not yield).
 
-**Healers**
+**Keepers**
 ### Cael
-- Keeps a detailed field journal the others tease him about and borrow
-  constantly. More thoughtful than his survival record suggests he should be.
-- Food: herbal. Quirk: thinks better with something warm beside him.
-- Role: Healer. Lean: Will/Fate (the careful one).
+- Has kept a field journal since boyhood — threats, remedies, routes, lore reaching
+  back to the Elder Days. Every member of the company has borrowed it at some point,
+  usually without asking. They tease him about it the way you tease family. He is
+  the memory of this company and he carries that with quiet pride.
+- Food: herbal. Quirk: something warm and herbal while he works — has been that way since before anyone can remember.
+- Role: Keeper. Lean: Will/Fate (the careful keeper of what can be saved).
 
 ### Wrenna Fenn
-- A hedge-healer from the marches who joined after the Greycloaks saved her
-  village and she decided to repay it permanently. Practical, warm, unshockable.
-- Food: herbal. Quirk: bitter teas and root broths, the old remedies.
-- Role: Healer. Lean: Will/Fate.
+- Not Dúnedain-born, but the Greycloaks found her village when it needed finding,
+  and she decided the debt was permanent. Sixteen years later, she is simply one
+  of them. Practical, warm, unshockable. The quiet center when things get bad.
+  She is the one Hollis has been trusting first, without quite knowing why — because
+  she makes it easy.
+- Food: herbal. Quirk: bitter teas and root broths, the old remedies, shared freely.
+- Role: Keeper. Lean: Will/Fate.
 
-**Damage**
+**Hunters**
 ### Mira  *(ranged)*
-- Came to this life young and adapted faster than was healthy. Sharp in ways that
-  make people uneasy. Notices things she doesn't mention until exactly the right
-  moment. A killer with a bow.
-- Food: light. Quirk: light, fast — that's the rule.
-- Role: Damage (ranged). Lean: Agility (the scout-killer).
+- Grew up among the Greycloaks. Has known Aldric since she was small. There is
+  nothing uncertain about who she is or what she is for — she has always known,
+  and that quiet certainty is not arrogance, it's inheritance. Notices things she
+  doesn't mention until exactly the right moment. The company trusts her reads.
+- Food: light. Quirk: light before a hunt — she's been saying it since she was twelve; everyone's stopped arguing.
+- Role: Hunter (ranged). Lean: Agility (sees first, shoots first, is right).
 
 ### Dav Marrow  *(melee)*
-- A blade-fighter who came up rough and never lost the edge. Talks more than the
-  others and means less by it. Loyal past sense.
-- Food: spicy. Quirk: something with bite, eaten fast.
-- Role: Damage (melee). Lean: Might/Agility (the close blade).
+- Dúnedain through his mother's line, raised at the edge of Bree-land, and so
+  more comfortable with outsiders than the others — which makes him useful in a
+  different way. Talks more, and means more of it than it sounds. The one who
+  will go looking for you when you've been quiet too long.
+- Food: spicy. Quirk: something with heat, eaten fast.
+- Role: Hunter (melee). Lean: Might/Agility (the close blade in the press).
 
 **Captains**
 ### Aldric
-- Thirty years walking the borderlands. Quiet, observant, unsentimental. When he
-  speaks, it is worth hearing.
-- Food: earthy. Quirk: grounding food that doesn't announce itself.
-- Role: Captain. Lean: Will/Fate (the steady hand).
+- Descended from the old chieftains and has led this company for twenty years.
+  He knows every one of them the way you know kin — their tells, their limits,
+  what they need before they know they need it. Quiet with strangers, warmer
+  than he appears among his own. The company does not follow him because they
+  have to. They follow him because he has never once led them wrong.
+- Food: earthy. Quirk: food that doesn't announce itself; he eats the same way he leads.
+- Role: Captain. Lean: Will/Fate (the steady hand of an ancient line).
 
 ### Bregan the Quiet
-- Led a warden company that no longer exists. Carries that quietly. Defers to
-  Aldric, but the others drift to him when the choice is hard.
-- Food: earthy. Quirk: plain rations, shared evenly — always feeds others first.
-- Role: Captain. Lean: Will/Fate (a leader who'd rather not be).
+- Has been Aldric's second since they were young; there is a shorthand between
+  them that needs no words. Defers to Aldric openly, but the others drift to
+  Bregan when the choice is genuinely hard — because he carries difficult things
+  without making them harder than they are. Feeds others before himself, always.
+- Food: earthy. Quirk: plain rations, shared evenly before he eats.
+- Role: Captain. Lean: Will/Fate (a leader who carries it rather than wears it).
 
 ---
 
@@ -264,7 +288,7 @@ edges feel like home. Know where the threats are before anyone else does.*
 
 | Band | Tanks | Healers | Damage (melee/ranged) | Captains |
 |------|-------|---------|------------------------|----------|
-| Mithlost | Caranthir, Sereghil | Maelgwyn, Faelith | Lúthiel(m), Thornwick(r) | Aelindra, Orenmir |
+| Mithlost | Caranthir, Sereghil | Galadorn, Faelith | Lúthiel(m), Thalindel(r) | Aelindra, Orenmir |
 | Undermarch | Borin, Snorri | Thrain, Old Vidrun | Dagra(m), Brokk(r) | Keldra, Durgan |
 | Freewake | Marta, Bosun Harl | Old Cassia, Tally | Rook(m), Silas(r) | Reva, Garrick |
 | Greycloaks | Hollis, Thoral | Cael, Wrenna | Dav(m), Mira(r) | Aldric, Bregan |

@@ -165,8 +165,8 @@ This was the central design worry, and the structure resolves it:
   becoming deep enough, not by completing a checklist.
 - The Ettenmoors raid tier is NOT a separately-unlocked mode. It is the deep
   territory of the Moors map, reached by holding ground far enough to get there.
-- Healer heroic peak renamed **Hands of Healing** (was Pull-Back).
-- Damage heroic peak renamed **Deadeye** (was Slaying).
+- Keeper heroic peak renamed **Hands of Healing** (was Pull-Back).
+- Hunter heroic peak renamed **Deadeye** (was Slaying).
 - Dread aura applies to any dread-source (Nazgûl, Balrog, Shelob, etc.), not
   only the Nine.
 - Buff type "focus" renamed **acuity**.

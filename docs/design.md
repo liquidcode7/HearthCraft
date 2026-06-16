@@ -153,14 +153,16 @@ Missions feel like stewardship and a rearguard action against encroaching shadow
 Ingredients lean toward woodland herbs, moonflower, ancient resins, things that
 grow in old-growth forests.
 
-**Members (V1 — 3 active, full roster in `future/characters.md`):**
-- **Aelindra** (Captain) — Ancient and precise. Speaks as though each word costs
-  something. Food: earthy. Quirk: food from the ground, honest, unadorned.
-- **Thornwick** (Damage/ranged) — Young by elven reckoning. Endlessly curious,
-  asks too many questions. Deadly with a bow. Food: herbal. Quirk: wants to know
-  every ingredient in his cup.
-- **Maelgwyn the Greenwarden** (Healer) — Speaks rarely; when he does, people
-  listen. Food: hearty. Quirk: dense, sustaining fare, nothing fussy.
+**Members (V1 — 4 active, full roster in `docs/characters.md`):**
+- **Aelindra** (Captain) — Ancient and precise. Carries centuries of grief without
+  making it anyone else's burden. Food: earthy. Quirk: food from the ground, honest, unadorned.
+- **Thalindel** (Hunter/ranged) — Young by elven reckoning. Finds the world
+  beautiful and hasn't lost that yet. Asks too many questions. Deadly with a bow.
+  Food: herbal. Quirk: wants to know every ingredient in his cup.
+- **Galadorn** (Keeper) — Speaks rarely; when he does, people listen. Food: hearty.
+  Quirk: dense, sustaining fare, nothing fussy.
+- **Caranthir** (Warden) — Stands where he is told and does not move. Has held passes
+  alone. Speaks in single words. Food: hearty. Quirk: dense, plain, eaten standing.
 
 #### The Undermarch — Mountain / Dwarves
 Grim, loyal, stone-deep. Words mostly unnecessary. They will not complain about a
@@ -168,10 +170,10 @@ hard march, but they notice — and remember — who kept them fed. Missions fee
 deep delves and the defense of ancient holds. Ingredients lean toward cave fungi,
 deep minerals, things that grow without sunlight.
 
-**Members (V1 — 3 active, full roster in `future/characters.md`):**
-- **Borin Ironmantle** (Tank) — Never complained once in forty years. Reliable as
+**Members (V1 — 3 active, full roster in `docs/characters.md`):**
+- **Borin Ironmantle** (Warden) — Never complained once in forty years. Reliable as
   bedrock. Food: hearty. Quirk: dense food, nothing complicated.
-- **Dagra Copperhelm** (Damage/melee) — Laughs at everything. The band finds this
+- **Dagra Copperhelm** (Hunter/melee) — Laughs at everything. The band finds this
   inspiring or alarming depending on the day. Food: spicy. Quirk: give her heat.
 - **Keldra** (Captain) — Youngest in the company. Ambitious in a way she hasn't
   learned to hide. Food: spicy. Quirk: bold flavors for a bold dwarf.
@@ -182,32 +184,43 @@ get, go where the money is — but learned the right meal before a hard job chan
 everything. Missions feel like raids, contracts, and opportunities seized.
 Ingredients lean toward sea herbs, salt-cured finds, exotic port goods.
 
-**Members (V1 — 3 active, full roster in `future/characters.md`):**
+**Members (V1 — 3 active, full roster in `docs/characters.md`):**
 - **Reva Tidecaller** (Captain) — Charismatic and completely unpredictable.
   Decides in three seconds flat and is right often enough that no one argues.
   Food: light. Quirk: nothing heavy before a job.
-- **Silas Thorn** (Damage/ranged) — Quiet, watchful. The fleet uses him as a
+- **Silas Thorn** (Hunter/ranged) — Quiet, watchful. The fleet uses him as a
   compass — he always knows when something's wrong before it is. Food: herbal.
   Quirk: something brewed and quiet, like him.
-- **Marta Wavebreaker** (Tank) — Loud, boastful, terrifyingly capable. The
+- **Marta Wavebreaker** (Warden) — Loud, boastful, terrifyingly capable. The
   stories she tells about herself are exaggerated; the actual events were worse.
   Food: hearty. Quirk: plenty of it.
 
-#### The Greycloaks — Borderlands / Wardens
-Watchful, unaffiliated, worn. At the edges of civilization long enough that the
-edges feel like home. Know where the threats are before anyone else does. Their
-missions demand perception and careful observation. Ingredients lean toward trail
-food, preserved rations, foraged borderland herbs.
+#### The Greycloaks — Eriador / Dúnedain of the North
+The remnant of the line of Isildur — heirs to a kingdom that fell and was never
+rebuilt. They walk the wild lands of Eriador not as wanderers but as guardians
+bound by an oath older than the Shire. They have no home because their home is
+gone. They wait for a king who has not yet come, and in the meantime they hold
+the darkness back with their own hands. Among themselves they know what they are.
+The world has mostly forgotten. Ingredients lean toward trail food, preserved
+rations, foraged Eriador herbs — the food of a people who live in the open by
+duty, not by preference.
 
-**Members (V1 — 3 active, full roster in `future/characters.md`):**
-- **Aldric** (Captain) — Thirty years walking the borderlands. Quiet, observant,
-  unsentimental. When he speaks, it is worth hearing. Food: earthy. Quirk:
-  grounding food that doesn't announce itself.
-- **Mira** (Damage/ranged) — Came to this life young and adapted faster than was
-  healthy. A killer with a bow. Food: light. Quirk: light, fast — that's the rule.
-- **Cael** (Healer) — Keeps a detailed field journal the others tease him about
-  and borrow constantly. Food: herbal. Quirk: thinks better with something warm
+**Members (V1 — 4 active, full roster in `docs/characters.md`):**
+- **Aldric** (Captain) — Descended from the old chieftains. Quiet, unsentimental,
+  and possessed of the long memory his line carries. Does not speak often. When he
+  does, it is the weight of generations behind it. Food: earthy. Quirk: grounding
+  food that doesn't announce itself.
+- **Mira** (Hunter/ranged) — Young even by Dúnedain reckoning, and already more
+  capable than most will ever be. She learned young what she was born to defend.
+  Food: light. Quirk: light, fast — that's the rule before a hunt.
+- **Cael** (Keeper) — Keeps a detailed field journal of everything observed —
+  threats, remedies, routes, lore. The others tease him about it and borrow it
+  constantly. Food: herbal. Quirk: thinks better with something warm and herbal
   beside him.
+- **Hollis** (Warden) — The newest Greycloak, still learning what he carries. Came
+  to this company from a village that no longer exists. Has not yet spoken of it.
+  Food: hearty. Quirk: eats like a man who has known lean times and does not
+  intend to again.
 
 ---
 
@@ -217,7 +230,7 @@ Members are named individuals with personalities and a food preference. Cooking
 for them is personal, not transactional.
 
 - Each member has: name, personality, food preference (flavor tag), role lean
-- Role leans are starting tendencies only — not caps (see `future/progression.md`)
+- Role leans are starting tendencies only — not caps (see `docs/progression.md`)
 - Food preference is flavor in V1 — does not affect mission outcomes yet
 - Members can be lost on badly failed missions. Loss is permanent in V1.
 - Member loss condition: buff strength below 60% of required threshold AND a
@@ -270,7 +283,7 @@ structure is in `docs/redefinition.md`.
 discovery, band members (meet them, feed them, bond, grow them), and battlegrounds
 across the ages of Middle-earth. A living roster of battlegrounds that expands as
 you grow — not a linear march, and it does not "end." A player can play only the
-campaign and have a complete game. Four combat roles (Tank, Healer, Damage,
+campaign and have a complete game. Four combat roles (Warden, Keeper, Hunter,
 Captain). Three outcome states: Victory, Stalemate, Defeat. The clue system,
 after-action log, and influence map are first-class features here.
 
@@ -324,7 +337,7 @@ duration. Keep the resolution layer thin and replaceable.
 - *How are band member losses triggered?* — Below 60% of required buff strength
   AND 33% random roll. Implemented in MissionWorker.
 - *How many named band members does the player start with?* — 3 per band (V1).
-  Full 8-member rosters are designed in `future/characters.md` for V2+.
+  Full 8-member rosters are designed in `docs/characters.md` for V2+.
 - *Four starting bands?* — The Mithlost (elves/forest), The Undermarch
   (dwarves/mountain), The Freewake (corsairs/sea), The Greycloaks
   (wardens/borderlands).

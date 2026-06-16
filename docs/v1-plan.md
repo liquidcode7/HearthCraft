@@ -19,8 +19,8 @@ Everything in V1 exists to answer that question. Nothing else.
 ## What V1 Includes
 
 ### Band Selection
-- Player chooses one of four bands at first launch: Druid Circle,
-  Dwarven Company, Corsair Fleet, The Greycloaks
+- Player chooses one of four bands at first launch: The Mithlost,
+  The Undermarch, The Freewake, The Greycloaks
 - Choice is permanent, flavor only, no mechanical difference
 - Each band has a name, a short description, and a regional flavor
 - Band choice determines mission names and ingredient flavor text
@@ -65,17 +65,18 @@ Everything in V1 exists to answer that question. Nothing else.
 
 ### Missions
 - 3 mission types per band: Easy, Medium, Hard
-- Each mission has: a name, a flavor description, a required buff type,
-  a required buff strength threshold, a duration, and a reward table
+- Missions unlock by vitality threshold — highest alive member vitality
+  must meet the minimum (easy: 0, medium: 3, hard: 6)
+- Each mission has: a name, a flavor description, a vitality requirement,
+  a required buff strength (affects success odds), a duration, and a reward table
 - Player feeds the band (selects a prepared food item) then sends them
 - Mission runs in background via WorkManager
+- Missions are difficult when first unlocked but always attemptable
 - On return: success or outright failure — no partial outcomes
 - Success returns: money + 1–3 ingredient drops from the mission's
   reward table
-- Failure returns: nothing. Possible member loss if provisioning was
-  significantly below threshold
-- Player always sees the mission requirements and their current buff
-  value before confirming
+- Failure returns: nothing. Possible member wound or loss on hard failures
+- Player always sees the vitality requirement before confirming
 
 ### Inventory and Pantry
 - Simple inventory: ingredients with quantities, prepared food items

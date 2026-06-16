@@ -1,7 +1,7 @@
-# HearthCraft — Bestiary & Enemy Tiers (Design Scratchpad)
+# HearthCraft — Bestiary & Enemy Tiers
 
-> SCRATCHPAD. NOT V1. Far-future (battleground raid RPG, V5+). Captured so the
-> design isn't lost. Do not build from this without promotion to docs/.
+> Authoritative design document — June 2026.
+> Enemy tier system for the Campaign and Ettenmoors layers. Not built yet.
 > Companion files: battlegrounds.md (the roster), battlegrounds-rpg.md (systems).
 > Lore grounded against Tolkien canon. Tier names use canon terms where possible.
 

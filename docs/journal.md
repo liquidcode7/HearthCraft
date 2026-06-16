@@ -7,12 +7,12 @@
 
 ## Current Status — June 16, 2026
 
-**Phase:** Stats, tiered kitchen, Market, and pending-harvest system complete  
-**V1 progress:** Core loop playable with meaningful progression: band members have stats that grow, missions gate on vitality, kitchen tiers unlock by cooking level, Market lets you buy seeds.  
-**What's working:** Band member stats (Might/Agility/Vitality/Will/Fate) initialized from data, displayed on Band screen. Missions gated by max party vitality. Kitchen recipes grouped into Apprentice/Journeyman/Craftsman tiers. Forage and farm/garden harvests now show a collect dialog instead of auto-depositing. Market tab sells all farm seeds for 5g each.  
-**What's not wired yet:** Kitchen recipe detail panel ingredient IDs still not resolved to display names (pre-existing). Stats grow but no caps or milestone events yet.  
-**Next session:** Install and play — does the vitality gate feel right on first play? Does the Market feel useful? Does the harvest collect dialog feel satisfying?  
-**Open questions:** Stats show on Band screen — does seeing raw numbers feel good or clinical? Vitality thresholds (0/3/6) may need tuning after playtesting.
+**Phase:** Design redefinition and character audit complete — ready to resume code work  
+**V1 progress:** Core loop playable. Major design restructure this session: full game vision locked (Campaign + Ettenmoors + NG+), all future docs promoted to authoritative, band rosters and identities fully audited.  
+**What's working:** All four bands have correct identities, four members each (one per role), elven names for Mithlost, Númenórean thread in Freewake, Greycloaks written as a community with deep built-in trust. README rewrites to reflect the full vision.  
+**What's not wired yet:** Role naming (Warden/Keeper/Hunter/? for the Captain slot) not yet decided. Two-faction start question not yet resolved.  
+**Next session:** Install and play — does the vitality gate feel right? Does the harvest collect step feel satisfying? Then address two open design questions (role names, two-faction start).  
+**Open questions:** Role names for the four positions (Captain → ?). Should players pick two bands at start for Ettenmoors readiness? Faction-swap token in Market?
 
 ---
 
@@ -572,6 +572,40 @@ Wes played the game on a Pixel 7 Pro and submitted a detailed first-play audit. 
 - Next session: install and play the full redesigned loop end-to-end.
 - Near term: kitchen ingredient name display (shows raw IDs in recipe detail), mission unlock tiers.
 - Future ideas logged: none this session.
+
+---
+
+## Session 16 — June 16, 2026
+**Design redefinition, full character audit, README rewrite**
+
+The game vision was formally locked this session. All future/ design docs promoted to docs/. Band rosters audited and corrected. README completely rewritten.
+
+**What was built:**
+- `README.md`: complete rewrite — one integrated game (Campaign + Ettenmoors + NG+), correct band identities, full vision including 14 battlegrounds, 4 roles, 5-tier bestiary, Inspiration mechanic
+- `docs/characters.md` (new): promoted from future/; Greycloaks fully rewritten as Dúnedain community with built-in trust; name renames throughout
+- `docs/battlegrounds.md`, `docs/battlegrounds-rpg.md`, `docs/bestiary.md`, `docs/progression.md` (new): promoted from future/; SCRATCHPAD headers replaced with authoritative headers
+- `docs/redefinition.md`: Campaign + Ettenmoors + NG+ structure document
+- `app/src/main/assets/data/band_members.json`: full personality audit
+  - Mithlost: Thornwick → Thalindel, Maelgwyn the Greenwarden → Galadorn, Caranthir Oakshield → Caranthir; all "druid" language removed; Aelindra corrected to carry grief (elven); Thalindel rewritten with elven wonder
+  - Freewake: Númenórean dormant greatness thread woven through all four members
+  - Undermarch: Keldra given a quirky competitive personality; Thrain gets a subtle ring easter egg
+  - Greycloaks: rewritten as a people with centuries of shared trust, not four separate stoic individuals
+- `docs/design.md`: Mithlost member list updated to 4 active members with correct names
+- `CLAUDE.md`: reference section updated, future/ docs removed
+- `future/wishlist.md`: lesser rings idea added
+
+**Decisions made:**
+- Role names locked: Warden, Keeper, Hunter, Captain
+- All five "future/" design docs are now first-class authoritative documents in docs/
+- future/wishlist.md remains the only file in future/ — it is the correct place for deferred ideas
+
+**Anything that diverged from docs/design.md:**
+- Nothing structural. Personality text and naming are flavor, not design decisions.
+
+**Coming up:**
+- Next session: install and play — vitality gate feel, harvest collect feel
+- Near term: lock role names; address two-faction-start question; faction-swap token in Market
+- Future ideas logged: lesser rings (wishlist.md)
 
 ---
 

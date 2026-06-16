@@ -1,11 +1,11 @@
-# HearthCraft — Battlegrounds (Design Scratchpad)
+# HearthCraft — Battlegrounds (Lore Roster)
 
-> SCRATCHPAD. Not authoritative. Not V1. Far-future feature concept captured so
-> it isn't lost. Do not build from this without promotion to docs/.
+> Authoritative design document — June 2026.
+> The fourteen named battlegrounds for the Campaign layer. Not built yet.
 >
 > Lore grounded against Tolkien canon (Appendices, Tale of Years, Tolkien
-> Gateway) as of research done June 2026. Where a battleground departs from
-> book canon or leans on game-canon (LotRO etc.), it is flagged.
+> Gateway). Where a battleground departs from book canon or leans on
+> game-canon (LotRO etc.), it is flagged.
 
 ---
 

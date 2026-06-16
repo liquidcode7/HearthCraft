@@ -1,9 +1,8 @@
-# HearthCraft — Battlegrounds: The Raid RPG (Design Scratchpad)
+# HearthCraft — Battlegrounds: The Campaign Combat System
 
-> SCRATCHPAD. NOT V1. NOT V2. Long-term destination — realistically V5+.
-> The endgame "game mode": a party combat RPG on top of the provisioning game,
-> fuelled by it. Captured in full so the vision is preserved and coherent.
-> Do NOT build from this without promotion to docs/. Nothing here changes V1.
+> Authoritative design document — June 2026.
+> The party combat system for the Campaign layer. Not built yet — this is the
+> design the code grows toward. Nothing here changes V1 scope.
 >
 > Companion files: battlegrounds.md (lore roster), bestiary.md (enemy tiers).
 
@@ -48,9 +47,9 @@ A segment is a race between two pools:
 - You WIN if kill-time `E / D_party` < wipe-time `P_effective / D_enemy`.
 
 All four pillars live in this one inequality:
-- **Damage role** → raises `D_party`.
-- **Tank role** → raises `P_effective`.
-- **Healer role** → raises `P_effective` (sustain over time).
+- **Hunter role** → raises `D_party`.
+- **Warden role** → raises `P_effective`.
+- **Keeper role** → raises `P_effective` (sustain over time).
 - **Provisioning/sustain** → feeds both `D_party` and `P_effective`, AND food
   RUNS OUT: if the segment outlasts provisions, the back half runs at reduced
   values. This is the supply-train mechanic expressed in math.
@@ -248,7 +247,7 @@ TIME, not whether his hands work. Permadeath happens when a grievous wound goes
 untreated because you couldn't pay a cost in time — a death the player feels
 responsible for, because there WAS a door and they couldn't open it.
 
-### Healers can't heal themselves → protect them
+### Keepers can't heal themselves → protect them
 A healer cannot heal their own grievous wounds. Consequences:
 - A lone healer is a single point of failure; a serious campaign wants TWO
   healers as mutual insurance (they guard each other — the only one who can save
@@ -456,8 +455,8 @@ one categorical heroic peak. Balanced in depth, distinct in domain.
 Every role is load-bearing FOR THE OTHERS, so no single role can dominate:
 - Captain's inspiration (Lever 1) needs the tank to have held and the healer to
   have kept people up to reach a survivable brink.
-- Healer needs the tank's threat-control to keep enemies off them.
-- Damage needs the Captain's dread-resistance to function near the Nine, and the
+- Keeper needs the Warden's threat-control to keep enemies off them.
+- Hunter needs the Captain's dread-resistance to function near the Nine, and the
   tank to keep them alive long enough to land the Slaying.
 Pull one out and the structure sags. This is what makes a party feel like a
 FELLOWSHIP rather than four independent stat-blocks.
@@ -465,9 +464,9 @@ FELLOWSHIP rather than four independent stat-blocks.
 ### Heroic-peak TRIGGERS (spread across the raid, not bunched)
 
 Different conditions so the drama doesn't all proc at once at the brink:
-- Tank Last Stand → at the brink.
-- Healer Pull-Back → when a member falls.
-- Damage Slaying → when facing a Bane/champion.
+- Warden Last Stand → at the brink.
+- Keeper Pull-Back → when a member falls.
+- Hunter Slaying → when facing a Bane/champion.
 - Captain Inspiration → at the PROJECTED-loss brink (forecast, not body count).
 One peak per role (clean, distinct). Reserve any SECOND peak for legendary
 individuals as a very-late-game rarity, if at all.

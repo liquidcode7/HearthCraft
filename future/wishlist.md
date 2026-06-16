@@ -31,6 +31,12 @@
   that can't be found in the wild. Maxed forager finds things that can't
   be cultivated.
 
+- **Lesser rings** — at very high crafting level, the player can discover
+  or forge lesser rings that grant singular, meaningful bonuses to the
+  band member who wears one. Not a general stat boost — one unusual
+  effect each. A nod to Tolkien's ring lore, and a long-term reward for
+  players who have mastered the craft.
+
 - **Cooking skill trees** — specialization paths (Baking, Pastry, Knife
   Work, etc.) that gate recipe categories. Evaluate after V1 — does the
   base loop create demand for this?
@@ -99,4 +105,4 @@ built. Captured here so they aren't forgotten during V2/V3 design decisions.
   This is the connective tissue between the provisioning game and the raid RPG.
   Do not dilute it into a simpler pre-battle buff model when the time comes.
 
-Full Battlegrounds design: `vision/battlegrounds.md`
+Full Battlegrounds design: `docs/battlegrounds.md` and `docs/battlegrounds-rpg.md`

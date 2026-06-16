@@ -23,8 +23,8 @@
   {
     "id": "greycloaks",
     "name": "The Greycloaks",
-    "region": "Borderlands",
-    "description": "Wandering wardens who answer to no crown and hold no land. They have been at the edges of civilization long enough that the edges feel like home. They know where the threats are before anyone else does, and they move through the world as though they belong to it in a way others do not.",
-    "flavorNote": "They don't give you a name. Among the Greycloaks, trusting someone with your provisions is enough."
+    "region": "Eriador",
+    "description": "The Dúnedain of the North — the remnant of the line of Isildur, heirs to a kingdom that fell and was never rebuilt. They walk the wild lands of Eriador not as wanderers but as guardians bound by an oath older than the Shire. They have no home because their home is gone. They wait for a king who has not yet come, and in the meantime they hold the darkness back with their own hands. They are not what they once were. They are more than the world knows.",
+    "flavorNote": "They do not give you a title. What they give you is their trust — and among the Dúnedain, that is rarer and worth more."
   }
 ]
