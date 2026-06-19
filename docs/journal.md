@@ -7,12 +7,12 @@
 
 ## Current Status — June 19, 2026
 
-**Phase:** V1 core loop complete. Combat model designed and tooled. Simulator redesigned with band level cap and duration presets.  
-**V1 progress:** Core loop playable. Combat system designed in full (not yet built — V2+ destination). Band combat level cap set at 20.  
-**What's working:** Full V1 loop. Combat simulator with capped band level slider (1–20), 6-button duration picker (20–45 min), valid range highlighted per level, larger controls and polished click animations.  
-**What's not wired yet:** Full combat system (V2+). 5th combat role (melee DPS) not yet designed.  
-**Next session:** Play the V1 build to test feel. Decide V2 scope — combat integration vs alchemy/recipe discovery.  
-**Open questions:** 5th role design (party-of-5 vs field-4-from-roster; identity; Inspiration). Rung-3 first-hazard fork (Cold vs Wakefulness). Exact magnitude tuning for all combat constants. Mettle as a display label for band readiness (deferred).
+**Phase:** V1 core loop complete. Combat model designed and tooled. Encounter tuning underway — Neekerbreekers fully validated, Wolves pending.
+**V1 progress:** Core loop playable. Combat system designed in full (not yet built — V2+ destination). Two V1 encounters in progress: Neekerbreekers locked, Wolves next.
+**What's working:** Full V1 loop. Combat simulator with variable spikes, convex HP/s curve, --rlevel flag, close-call stats, Company tab (character cards). Neekerbreekers confirmed at 5000 runs (25/66/98/100% across Lv1–4 food). Encounter Builder has Design Notes sheet.
+**What's not wired yet:** Full combat system (V2+). Wolves encounter not yet validated. 5th combat role not yet designed. Encounter/Battleground vocabulary not yet in design.md. missions.json needs to be replaced with encounters.json.
+**Next session:** Tune Wolves in the Chetwood. Nail the food progression ladder across both Rung 0 encounters. Then lock both and move to the recipe/XP design.
+**Open questions:** 5th role design (party-of-5 vs field-4-from-roster; identity; Inspiration). Rung-3 first-hazard fork (Cold vs Wakefulness). Exact magnitude tuning for all combat constants. Encounter vs Battleground vocabulary not yet in design.md. XP design for cooking (first-cook bonus, preference match bonus, antidote prep bonus, diminishing returns on repetition).
 
 ---
 
@@ -815,3 +815,82 @@ the current state of the project.
   see where the curve breaks.
 - Near term: play V1 build; V2 scope decision.
 - Future ideas logged: none this session.
+
+---
+
+## Session 11 — June 19, 2026
+**Encounter tuning: variable spikes, HP/s curve, Neekerbreekers validated, Design Notes sheet**
+
+A long design and tuning session. No Kotlin code touched. All work in the combat simulator, encounter spreadsheet, and design docs.
+
+**What was built:**
+
+`tools/sim/run_sim.js` — headless simulator:
+- `--rlevel R` flag: pass a cooking level (1–50) and the sim derives HP/s from the tier table, labels output as "Lv4 Hearthkeeper → 10 HP/s per member"
+- HP/s tier table added: 7 tiers, Hearthkeeper (Lv1–4, 5–10 HP/s) through Grandmaster (Lv41–50, 86–110 HP/s)
+- Within-tier curve changed from concave (power=0.65, steep at entry) to convex (power=1.8, slow at entry, biggest reward near tier ceiling). Rationale: rewards pushing to the tier boundary, creates a natural pull toward the next tier rather than farming the current one
+- Spike interval changed from fixed (`t % spikeiv === 0`) to variable: each spike schedules the next at `spikeiv × U(0.5, 1.5)` — uniform jitter of ±50% around the mean
+- Spike damage changed from fixed base to rolled: `spike × U(0.7, 1.3)` — ±30% range each hit. Together with interval jitter, this breaks the binary win/loss cliff produced by deterministic spikes
+- Close-call stats added to aggregate output: "Enemy resolve remaining avg X% of max" and "Close calls (< 25% left): Y% of defeats" — surfaces near-miss information that informs after-action report design. Near-miss zone flag fires when avg < 20%
+- `nextSpikeAt` state variable added; initialised at fight start with jitter
+
+`tools/sim/hearthcraft_fight_sim.html` — browser simulator:
+- Variable spike interval and damage range synced from headless sim (same math)
+- `nextSpikeAt` state variable added; initialised in `prep()` on each reset
+- Spike interval label updated: "Seconds between spikes (mean)" with note that interval is randomised ±50% and damage ±30%
+- Ward check updated to use rolled `hit` value instead of `P.spike`
+- Company tab added (4 · The Company): character cards for Borin Ironmantle (Warden), Mira (Hunter), Cael (Keeper), Aelindra (Captain). Each card has: biography (flavor-first, in-character voice), mechanics paragraph (how they work, implied not stated), Inspiration block (in-world description, not tooltip language). Tab wired into showTab() and tabbar
+
+`tools/sim/HearthCraft_Encounter_Builder.xlsx`:
+- Neekerbreekers row updated: drain 6→12, spike 40→75, spikeIntervalSec 15→13
+- Design Notes sheet injected (new sheet 19, rId23): philosophy section, difficulty ramp table (all 8 rungs), encounter notes table (Neekers validated, Wolves TBD), full HP/s tier table with per-level values, after-action report design notes
+
+**Design decisions made:**
+
+Encounter vocabulary locked:
+- **Encounters** = single-stage fights. The V1 unit. What the sim runs. Neekerbreekers, Wolves, everything on the early ramp. Band-agnostic mechanically; flavor-per-band via separate flavor blocks (name, flavorIntro, stageFlavor, rewardFlavor keyed by bandId).
+- **Battlegrounds** = named historical set-pieces (Fornost, Pelennor, Azanulbizar). Multi-stage, scored differently, not yet fully designed. Same underlying engine, different shape and scope.
+- Reward tables are band-agnostic (same ingredient pool). Named weapon/legendary drops belong to Battlegrounds only, not Encounters.
+
+Encounter flavor is band-specific, lore-grounded:
+- Neekerbreekers and Wolves are canonically Greycloak territory (Midgewater Marshes, Chetwood). Other bands will have their own regionally grounded encounters — not the same fights with different flavor text. Undermarch: mountain passes, goblin tunnels. Mithlost: forest edge, corrupted groves. Freewake: coastal/river work, brigands.
+- Each band's encounter names and descriptions should feel native to that band's home geography and voice.
+
+HP/s curve philosophy:
+- Convex within each tier (power=1.8). Lv1 of any tier = floor (just crossed into this tier). Tier ceiling = biggest reward. This creates meaningful progression at every level without farming behavior.
+- Tier 1 exact values: Lv1=5.0, Lv2=5.7, Lv3=7.4, Lv4=10.0 HP/s
+
+Neekerbreekers (VALIDATED — 5000 runs):
+- drain=12, spike=75, spikeIntervalSec=13 (mean), resolve=50000, duration=1500, no hazards, no armor
+- Win rates: no food=0%, Lv1=25%, Lv2=66%, Lv3=98%, Lv4=100%
+- On defeat at Lv2: avg enemy resolve remaining 23% — 61% of defeats are close calls. The after-action report will have near-miss stories to tell.
+- Design character: drain-dominant sustain test. The tutorial fight. Unwinnable with no food (wipe ~1min). The lesson is go cook. Every recipe level does visible work.
+
+Variable spike design rationale:
+- Fixed spikes create a deterministic pressure equation — the win curve is a sharp threshold, not a slope. Variable interval + damage range creates genuine run-to-run variance.
+- In HearthCraft (zero in-fight player agency), randomness is more justified than in action RPGs — the player can't dodge crits, so variance is what creates replayability and war stories, not frustration.
+- The separate "crit" mechanic was considered and rejected in favor of a damage range — simpler, same effect. High rolls on the damage distribution naturally produce memorable "oh no" moments without a new system.
+
+After-action report philosophy:
+- Binary win/loss is insufficient. The screen that follows the fight does the emotional work.
+- Well-provisioned: low variance, consistent wins, clean aftermath. Preparation is reliably rewarded.
+- Squeaky zone: high variance. Sometimes win, sometimes lose. Aftermath explains why — enemy resolve remaining at defeat tells the player they were close. Losing with the enemy at 8% resolve is a near-miss story, not an opaque failure.
+- Underprepared: consistent fast wipe. Lesson is immediate and clear.
+- Key stats to surface: enemy resolve remaining %, fight duration, wounds per member, rescues used, Warden guards spent, Inspirations that fired.
+
+Cooking XP design (design intent, not yet built):
+- First-cook bonus: 3–5× XP on first completion of any recipe. Rewards recipe discovery.
+- Preference match bonus: small XP bonus when flavor tag matches a living member's preference. Rewards knowing the band.
+- Antidote/hazard prep bonus: XP bonus when cooking an antidote food while a relevant encounter is active or queued. Rewards reading the fight before you cook.
+- Diminishing returns on repetition: same recipe back-to-back decays XP ~15% per consecutive repeat, floor at 25%. Soft tax on spam.
+
+**Anything that diverged from docs/design.md:**
+- Encounter vs Battleground vocabulary is new and not yet in design.md. Should be added next session.
+- "Missions" in the original design are now being called "Encounters" for single-stage fights. missions.json will need to be replaced with encounters.json when the Android build catches up.
+
+**Coming up:**
+- Next session: tune Wolves in the Chetwood. Target win curve: Lv4 (Neekers ceiling) = squeaky entry (~25–35%), Lv6–7 = comfortable, Lv8–9 = clean ceiling.
+- Near term: lock both Rung 0 encounters, then design the cooking XP system properly.
+- Near term: add Encounter vs Battleground vocabulary to design.md.
+- Near term: design per-band encounter flavor for Neekerbreekers and Wolves (Greycloaks-native), then design the Undermarch/Mithlost/Freewake equivalents.
+- Future ideas logged: character cards in-game (not just in the sim) — noted but deferred.
