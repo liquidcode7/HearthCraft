@@ -9,7 +9,7 @@
     --ink:#241a12;--parch:#efe6d2;--parch2:#e6dac0;--rule:#b9a47c;--roast:#4a2f1a;
     --ember:#b5602e;--gold:#b8843c;--surv:#5b7f63;--win:#4a6c93;--keeper:#7d5a93;
     --boss:#8a3a2c;--good:#5b7f63;--stale:#b8843c;--bad:#9a3526;--bar-bg:#cabfa3;--insp:#b8843c;
-    --warden:#5b7f63;--captain:#6d7f4a;--hunter:#4a6c93;--keeperc:#7d5a93;
+    --warden:#2e6da4;--captain:#b8843c;--hunter:#c0392b;--keeperc:#7d5a93;
   }
   *{box-sizing:border-box;margin:0;padding:0}
   body{background:radial-gradient(ellipse at 50% -10%,#f6efdd 0%,var(--parch) 55%,var(--parch2) 100%);color:var(--ink);font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;min-height:100vh;padding:20px 16px 60px}
@@ -105,7 +105,7 @@
   .m-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:3px}
   .m-name{font-size:14px;font-weight:600}
   .m-role{font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;padding:1px 6px;border-radius:8px;color:#fff}
-  .role-warden{background:var(--surv)}.role-captain{background:#6d7f4a}.role-hunter{background:var(--win)}.role-keeper{background:var(--keeper)}
+  .role-warden{background:#2e6da4}.role-captain{background:#b8843c}.role-hunter{background:#c0392b}.role-keeper{background:#7d5a93}
   .m-hp-num{font-size:10.5px;color:#6a5638;font-variant-numeric:tabular-nums;margin-top:3px;display:flex;justify-content:space-between}
   .m-wounds{font-size:10px;margin-top:2px;letter-spacing:1px}
   .wound-pip{color:var(--bad)}.wound-empty{color:#cabfa3}
@@ -452,11 +452,11 @@ function recipeLevelLabel(rl){
   return `Lv${rl}`;
 }
 const TPL={
-  warden:  {name:"Borin Ironmantle",role:"Warden", cls:"role-warden", soak:true,  color:"#5b7f63", start:{mig:13,agi:6,vit:15,wil:7,fat:6},  grow:{mig:0.5,agi:0.15,vit:0.55,wil:0.2,fat:0.15}},
-  hunterA: {name:"Mira",role:"Hunter", cls:"role-hunter", soak:false, color:"#4a6c93", start:{mig:9,agi:15,vit:7,wil:5,fat:9},   grow:{mig:0.3,agi:0.55,vit:0.2,wil:0.15,fat:0.35}},
-  hunterM: {name:"Mira",role:"Hunter", cls:"role-hunter", soak:false, color:"#4a6c93", start:{mig:15,agi:9,vit:8,wil:5,fat:7},   grow:{mig:0.55,agi:0.3,vit:0.25,wil:0.15,fat:0.25}},
+  warden:  {name:"Borin Ironmantle",role:"Warden", cls:"role-warden", soak:true,  color:"#2e6da4", start:{mig:13,agi:6,vit:15,wil:7,fat:6},  grow:{mig:0.5,agi:0.15,vit:0.55,wil:0.2,fat:0.15}},
+  hunterA: {name:"Mira",role:"Hunter", cls:"role-hunter", soak:false, color:"#c0392b", start:{mig:9,agi:15,vit:7,wil:5,fat:9},   grow:{mig:0.3,agi:0.55,vit:0.2,wil:0.15,fat:0.35}},
+  hunterM: {name:"Mira",role:"Hunter", cls:"role-hunter", soak:false, color:"#c0392b", start:{mig:15,agi:9,vit:8,wil:5,fat:7},   grow:{mig:0.55,agi:0.3,vit:0.25,wil:0.15,fat:0.25}},
   keeper:  {name:"Cael",role:"Keeper", cls:"role-keeper", soak:false, color:"#7d5a93", start:{mig:5,agi:7,vit:9,wil:15,fat:12},  grow:{mig:0.15,agi:0.2,vit:0.3,wil:0.55,fat:0.45}},
-  captain: {name:"Aelindra",role:"Captain",cls:"role-captain",soak:true,color:"#8a7a3a",start:{mig:8,agi:7,vit:12,wil:13,fat:13},grow:{mig:0.2,agi:0.2,vit:0.4,wil:0.45,fat:0.45}},
+  captain: {name:"Aelindra",role:"Captain",cls:"role-captain",soak:true,color:"#b8843c",start:{mig:8,agi:7,vit:12,wil:13,fat:13},grow:{mig:0.2,agi:0.2,vit:0.4,wil:0.45,fat:0.45}},
 };
 const ORDER=["warden","hunter","keeper","captain"];
 const STAT_KEYS=["mig","agi","vit","wil","fat"];
