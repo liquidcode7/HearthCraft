@@ -20,12 +20,12 @@
 // Tier breakpoints: [cookLvlStart, cookLvlEnd, hpsMin, hpsMax]
 const TIER_TABLE = [
   { tier:1, title:"Hearthkeeper", lo:1,  hi:4,  hpsLo:5,   hpsHi:10  },
-  { tier:2, title:"Initiate",     lo:5,  hi:9,  hpsLo:10,  hpsHi:18  },
-  { tier:3, title:"Apprentice",   lo:10, hi:15, hpsLo:18,  hpsHi:30  },
-  { tier:4, title:"Journeyman",   lo:16, hi:22, hpsLo:30,  hpsHi:44  },
-  { tier:5, title:"Adept",        lo:23, hi:30, hpsLo:44,  hpsHi:62  },
-  { tier:6, title:"Master",       lo:31, hi:40, hpsLo:62,  hpsHi:86  },
-  { tier:7, title:"Grandmaster",  lo:41, hi:50, hpsLo:86,  hpsHi:110 },
+  { tier:2, title:"Initiate",     lo:5,  hi:9,  hpsLo:11,  hpsHi:18  },
+  { tier:3, title:"Apprentice",   lo:10, hi:15, hpsLo:19,  hpsHi:30  },
+  { tier:4, title:"Journeyman",   lo:16, hi:22, hpsLo:31,  hpsHi:44  },
+  { tier:5, title:"Adept",        lo:23, hi:30, hpsLo:45,  hpsHi:62  },
+  { tier:6, title:"Master",       lo:31, hi:40, hpsLo:63,  hpsHi:86  },
+  { tier:7, title:"Grandmaster",  lo:41, hi:50, hpsLo:87,  hpsHi:110 },
 ];
 
 // Convex power: > 1 gives slow start within each tier (small early gains,
