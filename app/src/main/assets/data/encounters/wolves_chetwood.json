@@ -1,0 +1,32 @@
+{
+  "id": "wolves_chetwood",
+  "name": "Wolves in the Chetwood",
+  "region": "Chetwood, east of Bree",
+  "tier": "Rabble",
+  "recLevel": 3,
+  "resupply": "none",
+  "rewards": "wolf-pelts; the east road made quiet",
+  "flavorIntro": "Yellow eyes ring the firelight. The pack has trailed the band since dusk, and hunger has made them bold.",
+  "stages": [
+    {
+      "stageId": "main",
+      "label": "Wolves in the Chetwood",
+      "type": "attrition",
+      "objective": "kill",
+      "durationSec": 1500,
+      "resolve": 55000,
+      "drain": 12,
+      "spike": 55,
+      "spikeIntervalSec": 10,
+      "physMitPct": 0,
+      "dread": 0,
+      "shadow": 0,
+      "disease": 0,
+      "cold": 0,
+      "heat": 0,
+      "wakefulness": 0,
+      "stageFlavor": ""
+    }
+  ],
+  "designNote": "Onramp rung 2 (Design B, swarm). ~20-min grind through a wolf-pack. Asks TWO questions: sustain (drain) AND whether the Warden can hold the line so the Keeper survives the wolf-lunges (spikes). Needs a better meal than the Neekerbreekers: ~5 HP/s squeaks by ragged (Keeper falls ~13%), ~7 clean. Under ~5 the Warden is overwhelmed and the healer drops (Keeper-fell 100%). physMit stays 0 \u2014 armor is a LATER rung's question."
+}

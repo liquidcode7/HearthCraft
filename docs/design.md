@@ -112,20 +112,46 @@ V1 has one linear cooking progression with no branches.
 #### Recipes (V1)
 - V1 uses hand-coded recipes only — no discovery system yet (V2)
 - Starting set: 8–10 recipes, visible in the recipe book from the start
-- Each recipe produces exactly one buff type
-- Buff strength scales with Cooking level:
-  - Simple recipes (30-min cook): base 10, +0.4 per level
-  - Complex recipes (90-min cook): base 12, +0.65 per level
+- V1 uses a simplified buff model (see below); the full stat-based model
+  is implemented in V2+ alongside the combat system
 
-#### Buff Types
-Five buff types. Every mission requires one specific type — wrong type is an
-outright miss regardless of strength.
+#### Food & Buffs — Full Model (V2+)
 
-- **Endurance** — sustain and staying power
-- **Agility** — speed and precision
-- **Acuity** — perception, awareness, mental sharpness
-- **Warmth** — cold resistance, morale in harsh conditions
-- **Luck** — fortune, the unlooked-for turn
+Every recipe has a **stat focus** (1–2 stats boosted strongly) that persists
+at every tier. Higher tiers add **breadth** (minor boosts to other stats), but
+the focus magnitude stays high — a focused low-tier recipe stays relevant for
+min-maxing. HP/s is a **separate universal sustain layer** on top of stat boosts.
+
+Food boosts the five base stats directly (Might / Agility / Vitality / Will /
+Fate) plus HP per second. "Cook the right dish for the right member" is the
+provisioning puzzle. The old abstract buff vocabulary is **retired.**
+
+Six **hazard antidotes** are secondary effects carried by specific recipes:
+
+| Hazard | Antidote | What it counters |
+|---|---|---|
+| Cold | Warmth | Morale drain |
+| Heat | Heat-ease | Morale drain |
+| Disease | Hale | Morale drain |
+| Wakefulness | Alert | Morale drain |
+| Dread | Hope | DPS suppression |
+| Shadow | Radiance | Will + Fate drain |
+
+Hazards are properties of **regions** — the clue system telegraphs which
+hazard a region carries before the player faces it. See `docs/combat-model.md`
+for the full mechanical spec.
+
+#### Food & Buffs — V1 Simplification
+
+V1 uses a single **buff strength** number (stronger food → better mission odds)
+rather than the full stat model. This lets the core gather→cook→provision loop
+be playable before the combat system is built. V1 buff strength scales with
+Cooking level:
+- Simple recipes (30-min cook): base 10, +0.4 per level
+- Complex recipes (90-min cook): base 12, +0.65 per level
+
+V1 missions use buff strength vs. a vitality threshold to determine success
+probability. This layer is replaced when full combat lands.
 
 #### Food Flavor Tags
 Every recipe has a flavor tag: sweet, hearty, light, spicy, herbal, earthy.
@@ -335,7 +361,8 @@ duration. Keep the resolution layer thin and replaceable.
 
 **Resolved:**
 - *How are band member losses triggered?* — Below 60% of required buff strength
-  AND 33% random roll. Implemented in MissionWorker.
+  AND 33% random roll. Implemented in MissionWorker. (V1 simplification — full
+  combat uses wounds + grievous system; see `docs/combat-model.md`.)
 - *How many named band members does the player start with?* — 3 per band (V1).
   Full 8-member rosters are designed in `docs/characters.md` for V2+.
 - *Four starting bands?* — The Mithlost (elves/forest), The Undermarch
@@ -346,6 +373,9 @@ duration. Keep the resolution layer thin and replaceable.
 - *Craft branches (Waybread Fortifier, Miruvor Distiller, Athelas Apothecary)?*
   — Removed from V1 and from the active design. May return as specialization
   trees at max level (wishlist). GW2 seven-tier linear progression replaces them.
-- *Buff type named "focus"?* — Renamed to **acuity** in code and design.
+- *Abstract buff vocabulary (Endurance / Agility / Acuity / Warmth / Luck)?* —
+  **Retired.** Food now buffs the five base stats directly (Might / Agility /
+  Vitality / Will / Fate) + HP/s sustain. V1 code retains a simplified
+  buff-strength number as a prototype layer; V2+ implements the full stat model.
 - *Mission failure — partial success?* — No partial success. Failure is outright.
   Failed experiments also consume ingredients.

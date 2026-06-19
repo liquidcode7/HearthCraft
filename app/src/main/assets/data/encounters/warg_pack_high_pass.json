@@ -1,0 +1,31 @@
+{
+  "id": "warg_pack_high_pass",
+  "name": "A Pack of Wargs",
+  "region": "the High Pass",
+  "tier": "Fell",
+  "recLevel": 14,
+  "resupply": "none",
+  "rewards": "warg-fells; the pass held through the night",
+  "flavorIntro": "The wargs come fast and low, snapping at whoever strays from the line. You cannot guard every flank at once \u2014 see that the unshielded are well fed.",
+  "stages": [
+    {
+      "stageId": "main",
+      "label": "A Pack of Wargs",
+      "type": "attrition",
+      "objective": "kill",
+      "durationSec": 2100,
+      "resolve": 3200,
+      "drain": 46,
+      "spike": 115,
+      "spikeIntervalSec": 4,
+      "physMitPct": 8,
+      "dread": 0,
+      "shadow": 0,
+      "disease": 0,
+      "cold": 0,
+      "heat": 0,
+      "wakefulness": 0,
+      "stageFlavor": ""
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "id": "neekerbreekers_midgewater",
+  "name": "Neekerbreekers at the Marsh's Edge",
+  "region": "Northern Midgewater, east of Staddle",
+  "tier": "Rabble",
+  "recLevel": 1,
+  "resupply": "none",
+  "rewards": "shell-breaker trophies; the band's first quiet night; the lesson that an unprovisioned band does not last",
+  "flavorIntro": "An endless shrill chorus rises from the reeds \u2014 overgrown crickets the size of a fist, drawn by the scent of waybread on the night air and grown bold since dark riders passed this way. They will not be silenced, and now they bite. Keep the band on its feet until the swarm thins, and they will hold.",
+  "designNote": "Floor encounter / cooking tutorial (Design B). A ~19-min swarm: a huge total pool of insects fought down one wave at a time. UNWINNABLE with no food \u2014 the band bleeds out in ~2 min, which IS the lesson: go cook. With the basic L1 meal (~2-3 HP/s per member) it becomes a squeaky-but-winnable 19-min survival; ~3 HP/s wins clean. Drain-dominant (constant bites) so food/sustain is the whole test; the small spike is just swarm-lunge texture. Win needs only one survivor standing to land the kill. IP: 'Neekerbreekers' is Tolkien's coined name \u2014 placeholder pending review (cf. Black Arrow).",
+  "stages": [
+    {
+      "stageId": "main",
+      "label": "Neekerbreekers at the Marsh's Edge",
+      "type": "attrition",
+      "objective": "kill",
+      "durationSec": 1500,
+      "resolve": 50000,
+      "drain": 6,
+      "spike": 40,
+      "spikeIntervalSec": 15,
+      "physMitPct": 0,
+      "dread": 0,
+      "shadow": 0,
+      "disease": 0,
+      "cold": 0,
+      "heat": 0,
+      "wakefulness": 0,
+      "stageFlavor": ""
+    }
+  ]
+}

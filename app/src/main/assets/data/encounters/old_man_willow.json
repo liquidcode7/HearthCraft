@@ -1,0 +1,31 @@
+{
+  "id": "old_man_willow",
+  "name": "Old Man Willow",
+  "region": "The Old Forest",
+  "tier": "Fell",
+  "recLevel": 14,
+  "resupply": "none",
+  "rewards": "safe passage; withywindle reeds",
+  "flavorIntro": "A great willow leans over the river. A drowsy spell presses on your eyes \u2014 endure until the band can break free.",
+  "stages": [
+    {
+      "stageId": "main",
+      "label": "Old Man Willow",
+      "type": "survival",
+      "objective": "survive",
+      "durationSec": 2100,
+      "resolve": 0,
+      "drain": 60,
+      "spike": 100,
+      "spikeIntervalSec": 6,
+      "physMitPct": 0,
+      "dread": 2,
+      "shadow": 0,
+      "disease": 0,
+      "cold": 0,
+      "heat": 0,
+      "wakefulness": 7,
+      "stageFlavor": ""
+    }
+  ]
+}

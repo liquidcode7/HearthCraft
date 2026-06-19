@@ -1,0 +1,31 @@
+{
+  "id": "goblin_town_warband",
+  "name": "Goblin-town Warband",
+  "region": "the Misty Mountains, Goblin-town",
+  "tier": "Fell",
+  "recLevel": 12,
+  "resupply": "none",
+  "rewards": "goblin-mail; the under-way opened",
+  "flavorIntro": "Drums in the deep, and a war-band of the Great Goblin's folk in stolen mail come boiling up the tunnels.",
+  "stages": [
+    {
+      "stageId": "main",
+      "label": "Goblin-town Warband",
+      "type": "attrition",
+      "objective": "kill",
+      "durationSec": 1800,
+      "resolve": 4400,
+      "drain": 55,
+      "spike": 95,
+      "spikeIntervalSec": 6,
+      "physMitPct": 32,
+      "dread": 0,
+      "shadow": 0,
+      "disease": 0,
+      "cold": 0,
+      "heat": 0,
+      "wakefulness": 0,
+      "stageFlavor": ""
+    }
+  ]
+}

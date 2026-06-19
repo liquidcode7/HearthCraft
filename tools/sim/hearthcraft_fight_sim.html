@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HearthCraft — Engagement Simulator</title>
+<style>
+  :root{
+    --ink:#241a12;--parch:#efe6d2;--parch2:#e6dac0;--rule:#b9a47c;--roast:#4a2f1a;
+    --ember:#b5602e;--gold:#b8843c;--surv:#5b7f63;--win:#4a6c93;--keeper:#7d5a93;
+    --boss:#8a3a2c;--good:#5b7f63;--stale:#b8843c;--bad:#9a3526;--bar-bg:#cabfa3;--insp:#b8843c;
+    --warden:#5b7f63;--captain:#6d7f4a;--hunter:#4a6c93;--keeperc:#7d5a93;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:radial-gradient(ellipse at 50% -10%,#f6efdd 0%,var(--parch) 55%,var(--parch2) 100%);color:var(--ink);font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;min-height:100vh;padding:20px 16px 60px}
+  .wrap{max-width:1180px;margin:0 auto}
+  header{text-align:center;margin-bottom:4px}
+  h1{font-size:clamp(23px,4vw,36px);font-weight:600;color:var(--roast)}
+  .sub{font-style:italic;color:#6a5638;font-size:13px;margin-top:2px}
+  .rule-orn{text-align:center;color:var(--rule);letter-spacing:.5em;margin:8px 0 14px;font-size:12px}
+
+  /* tabs */
+  .tabbar{display:flex;gap:4px;margin-bottom:14px;border-bottom:2px solid var(--roast)}
+  .tabbar button{font-family:inherit;font-size:13px;font-weight:600;letter-spacing:.04em;padding:9px 20px;border:1px solid var(--rule);border-bottom:none;background:#e6dac0;color:#6a5638;border-radius:5px 5px 0 0;cursor:pointer}
+  .tabbar button.on{background:var(--roast);color:#fff;border-color:var(--roast)}
+  .tabbar .runstate{margin-left:auto;align-self:center;font-size:11.5px;font-style:italic;color:#6a5638}
+  .tab{display:none}.tab.on{display:block}
+
+  .panel{background:linear-gradient(180deg,#f7f0de,#efe6d2);border:1px solid var(--rule);border-radius:3px;box-shadow:0 1px 0 #fff inset,0 2px 8px rgba(60,40,20,.10)}
+  .panel-h{font-size:11.5px;letter-spacing:.15em;text-transform:uppercase;color:#fff;background:var(--roast);padding:7px 13px;border-radius:2px 2px 0 0;font-weight:600}
+  .panel-b{padding:13px}
+
+  /* setup grid */
+  .setup-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:780px){.setup-grid{grid-template-columns:1fr}}
+  .ctl-group{margin-bottom:13px}
+  .ctl-group:last-child{margin-bottom:0}
+  .ctl-group h3{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ember);border-bottom:1px solid var(--rule);padding-bottom:3px;margin-bottom:4px;font-weight:600;display:flex;justify-content:space-between;cursor:help}
+  .ctl-group .gnote{font-size:10.5px;font-style:italic;color:#8a7355;margin-bottom:7px;line-height:1.4;display:none}
+  .ctl-group.open .gnote{display:block}
+  .ctl{margin-bottom:7px}
+  .ctl label{display:flex;justify-content:space-between;font-size:12px;margin-bottom:1px}
+  .ctl label .val{font-variant-numeric:tabular-nums;color:var(--roast);font-weight:600}
+  .ctl .effect{font-size:10px;font-style:italic;color:#9a8568;min-height:11px;line-height:1.3}
+  input[type=range]{-webkit-appearance:none;width:100%;height:4px;border-radius:2px;background:var(--bar-bg);outline:none}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--ember);border:2px solid #f7f0de;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+  input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:var(--ember);border:2px solid #f7f0de;cursor:pointer}
+  .seg{display:flex;gap:4px;margin-bottom:5px}
+  .seg button{flex:1;font-family:inherit;font-size:11px;padding:5px 6px;border:1px solid var(--rule);background:#f1e8d2;color:var(--ink);border-radius:3px;cursor:pointer;font-weight:600}
+  .seg button.on{background:var(--roast);color:#fff;border-color:var(--roast)}
+  .btns{display:flex;gap:7px;margin-top:12px}
+  button.act{font-family:inherit;font-size:13px;font-weight:600;padding:10px 14px;border-radius:3px;border:1px solid var(--roast);cursor:pointer;flex:1}
+  .btn-run{background:var(--ember);color:#fff}.btn-run:hover{background:#c56d36}
+  .btn-step{background:#dfd2b2;color:var(--roast)}.btn-step:hover{background:#d3c4a0}
+  .btn-reset{background:transparent;color:var(--roast)}.btn-reset:hover{background:#e6dac0}
+
+  /* live view */
+  .readbar{display:flex;gap:14px;padding:9px 14px;font-size:12px;align-items:center;flex-wrap:wrap;margin-bottom:13px}
+  .readbar .lbl{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ember)}
+  .chip{padding:2px 9px;border-radius:10px;font-size:11px;font-weight:600}
+  .c-likely{background:#d5e6d6;color:#3c5e3f}.c-risky{background:#f1e3c4;color:#896318}.c-unlikely{background:#f0d2cd;color:#8a3526}
+  .boss{padding:12px 15px;margin-bottom:13px}
+  .boss-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px}
+  .boss-name{font-size:17px;font-weight:600;color:var(--boss)}
+  .boss-name small{font-size:11.5px;color:#6a5638;font-weight:400;font-style:italic}
+  .boss-hp-label{font-size:12px;font-variant-numeric:tabular-nums;color:#6a5638}
+  .boss-mit{font-size:10.5px;color:#7a5a3a;margin-top:5px;display:flex;gap:12px;flex-wrap:wrap}.boss-mit b{color:var(--boss)}
+  .bar-track{height:20px;background:var(--bar-bg);border-radius:3px;overflow:hidden;position:relative;border:1px solid rgba(74,47,26,.25)}
+  .bar-fill{height:100%;transition:width .08s linear;border-radius:2px}
+  .boss .bar-track{height:26px}.boss .bar-fill{background-color:#8a3a2c}
+  .boss .bar-track.timer .bar-fill{background:linear-gradient(90deg,#b8843c,#8a6a2a)}
+  .party{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-bottom:13px}
+  @media(max-width:560px){.party{grid-template-columns:1fr}}
+  .member{padding:10px 12px;position:relative;overflow:hidden}
+  .member.grievous{opacity:.5;filter:grayscale(.7)}
+  .member.grievous::after{content:"GRIEVOUS";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-8deg);font-size:13px;letter-spacing:.2em;color:var(--bad);font-weight:700;opacity:.85}
+  .m-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:3px}
+  .m-name{font-size:14px;font-weight:600}
+  .m-role{font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;padding:1px 6px;border-radius:8px;color:#fff}
+  .role-warden{background:var(--surv)}.role-captain{background:#6d7f4a}.role-hunter{background:var(--win)}.role-keeper{background:var(--keeper)}
+  .m-hp-num{font-size:10.5px;color:#6a5638;font-variant-numeric:tabular-nums;margin-top:3px;display:flex;justify-content:space-between}
+  .m-wounds{font-size:10px;margin-top:2px;letter-spacing:1px}
+  .wound-pip{color:var(--bad)}.wound-empty{color:#cabfa3}
+  .m-action{font-size:10px;font-style:italic;color:var(--keeper);min-height:13px;margin-top:1px}
+  .member .bar-fill{background:var(--surv)}.member.role-h .bar-fill{background:var(--win)}
+  .member.horn{box-shadow:0 0 0 2px var(--gold) inset}
+  .statusline{display:flex;justify-content:space-between;align-items:center;padding:9px 15px;font-size:13px;margin-bottom:13px}
+  .clock{font-variant-numeric:tabular-nums;color:#6a5638}
+  .verdict{font-size:19px;font-weight:700}
+  .v-victory{color:var(--good)}.v-stalemate{color:var(--stale)}.v-defeat{color:var(--bad)}.v-repelled{color:var(--gold)}.v-fighting{color:var(--roast);font-size:14px;font-weight:600;letter-spacing:.08em}
+  .gauges{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-bottom:13px}
+  .gauge{padding:9px 12px}
+  .gauge .g-h{font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ember);margin-bottom:4px}
+  .gauge .g-row{display:flex;justify-content:space-between;font-size:11.5px;margin:1.5px 0;font-variant-numeric:tabular-nums}
+  .gauge .g-row.sub{font-size:10.5px;color:#8a7355;padding-left:10px}
+  .gauge .g-row .ok{color:var(--good);font-weight:600}.gauge .g-row .no{color:var(--bad);font-weight:600}
+  .gauge .g-row .save{color:var(--keeper);font-weight:600}
+  .log{height:150px;overflow-y:auto;font-size:11px;line-height:1.55;color:#5a4730;padding:8px 11px;font-family:"SF Mono",ui-monospace,Menlo,monospace}
+  .log .t{color:var(--bad)}.log .h{color:var(--keeper)}.log .g{color:var(--good)}.log .insp{color:var(--insp);font-weight:700}
+
+  /* results */
+  .results-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:780px){.results-grid{grid-template-columns:1fr}}
+  .chart-card{padding:0;overflow:hidden}
+  .chart-card .ch-h{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#fff;background:var(--roast);padding:6px 12px;font-weight:600}
+  .chart-card .ch-body{padding:8px 6px 4px}
+  .chart-legend{display:flex;gap:12px;flex-wrap:wrap;padding:4px 12px 9px;font-size:10.5px;color:#6a5638}
+  .chart-legend span{display:flex;align-items:center;gap:4px}
+  .lg-line{width:14px;height:3px;border-radius:2px}
+  svg .axis{stroke:var(--rule);stroke-width:1}
+  svg .grid{stroke:#d8ccae;stroke-width:.5;stroke-dasharray:2 3}
+  svg .axlabel{font-size:9px;fill:#8a7355;font-family:Georgia,serif}
+  svg .hoverdot{pointer-events:none}
+  .tooltip{position:fixed;pointer-events:none;background:var(--roast);color:#f7f0de;font-size:11px;padding:5px 8px;border-radius:3px;opacity:0;transition:opacity .08s;z-index:50;font-family:"SF Mono",ui-monospace,monospace;white-space:nowrap;line-height:1.4}
+  .summary{padding:12px 15px;font-size:13px;line-height:1.6}
+  .summary h4{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ember);margin-bottom:6px}
+  .summary .saga{font-style:italic;color:#4a3a26;margin-bottom:10px}
+  .after{display:flex;gap:8px;flex-wrap:wrap}
+  .after .m-card{font-size:11px;padding:5px 9px;border-radius:3px;border:1px solid var(--rule);background:#f3ead6}
+  .after .ah{color:var(--good)}.after .aw{color:var(--stale)}.after .ag{color:var(--bad)}
+  .insp-timeline{padding:10px 14px}
+  .insp-row{display:flex;gap:10px;font-size:11.5px;padding:3px 0;border-bottom:1px solid #e3d8bd;align-items:baseline}
+  .insp-row:last-child{border-bottom:none}
+  .insp-row .it{font-variant-numeric:tabular-nums;color:#a8956d;min-width:48px}
+  .insp-row .ik{font-weight:700;color:var(--insp)}
+  .empty{font-size:11.5px;font-style:italic;color:#8a7355;padding:6px 0}
+  .note{font-size:11px;font-style:italic;color:#7a6748;padding:8px 2px 0;line-height:1.5}
+  .statline{font-size:10px;color:#8a7556;margin-top:1px;font-variant-numeric:tabular-nums}
+  .results-empty{text-align:center;padding:40px 20px;color:#8a7355;font-style:italic;font-size:13px}
+</style>
+<style>
+.impbar{margin-bottom:14px}
+.impbtn{display:inline-block;background:#b5602e;color:#fff;border:none;border-radius:4px;padding:7px 12px;font-family:inherit;font-size:13px;cursor:pointer}
+.impbtn.alt{background:#6a5638}
+.impbtn:hover{filter:brightness(1.07)}
+#enc_select{font-family:inherit;font-size:13px;padding:6px;border:1px solid #d8c9a8;border-radius:4px;max-width:340px}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>The Engagement Table</h1>
+    <div class="sub">HearthCraft combat — set it up, watch it run, study what happened</div>
+  </header>
+  <div class="rule-orn">&#10022; &#11839;&#11839;&#11839; &#10022; &#11839;&#11839;&#11839; &#10022;</div>
+
+  <div class="tabbar">
+    <button id="tab_setup" class="on" onclick="showTab('setup')">1 &middot; Setup</button>
+    <button id="tab_live" onclick="showTab('live')">2 &middot; Live</button>
+    <button id="tab_results" onclick="showTab('results')">3 &middot; Results</button>
+    <span class="runstate" id="runstate">not yet run</span>
+  </div>
+
+  <!-- placeholder: tabs injected below -->
+
+  <!-- ===================== TAB 1: SETUP ===================== -->
+  <div class="tab on" id="pane_setup">
+    <div class="panel impbar"><div class="panel-h">Import encounter from spreadsheet</div><div class="panel-b">
+      <div class="gnote">Edit the <b>Sim Encounters</b> sheet in HearthCraft_Encounter_Builder.xlsx, save, then load it here. Picking one drops its numbers into the controls below and sets the band to its recommended level.</div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <label class="impbtn">Load .xlsx&#8230;<input type="file" id="enc_file" accept=".xlsx" style="display:none" onchange="loadEncFile(event)"></label>
+        <select id="enc_select" style="display:none" onchange="applyEncByIndex(this.value)"></select>
+        <button class="impbtn alt" type="button" onclick="togglePaste()">Paste rows instead</button>
+        <span class="small" id="enc_status" style="color:#6a5638"></span>
+      </div>
+      <div id="paste_wrap" style="display:none;margin-top:8px">
+        <div class="gnote">Offline fallback: in the sheet, select the header row plus your encounter rows, copy, and paste here.</div>
+        <textarea id="enc_paste" rows="4" style="width:100%;font-family:monospace;font-size:12px;box-sizing:border-box" placeholder="id  name  recLevel  mode  durationSec  resolve  drain  spike  spikeIntervalSec  physMitPct ..."></textarea>
+        <button class="impbtn" type="button" style="margin-top:6px" onclick="loadEncPaste()">Load pasted rows</button>
+      </div>
+    </div></div>
+    <div class="setup-grid">
+      <div class="panel"><div class="panel-h">Encounter &amp; Enemy</div><div class="panel-b">
+        <div class="ctl-group open">
+          <h3 onclick="this.parentElement.classList.toggle('open')">Encounter type <span>&#9432;</span></h3>
+          <div class="gnote">Attrition = a normal boss you must kill before time runs out. Survival timer = an un-killable enemy (the Nine): you can't damage them, only endure until the clock ends.</div>
+          <div class="seg"><button id="mode_att" class="on" onclick="setMode(0)">Attrition boss</button><button id="mode_tim" onclick="setMode(1)">Survival timer (the Nine)</button></div>
+          <div class="ctl"><label>Fight duration <span class="val" id="v_dur">20:00</span></label><input type="range" id="dur" min="300" max="3600" step="60" value="1200"><div class="effect" id="e_dur">1 tick = 1 real second &#183; L1–9: 20–30 min (1200–1800 s) &#183; L10+: 30–60 min (1800–3600 s)</div></div>
+        </div>
+        <div class="ctl-group">
+          <h3 onclick="this.parentElement.classList.toggle('open')">The enemy <span>&#9432;</span></h3>
+          <div class="gnote">Boss resolve = damage to grind through to win. Steady drain = constant pressure your food offsets. Spikes = bursts that drive members to zero (when the Keeper must rescue).</div>
+          <div class="ctl" id="r_boss"><label>Boss resolve (kill pool) <span class="val" id="v_boss">8500</span></label><input type="range" id="boss" min="1000" max="20000" step="250" value="8500"></div>
+          <div class="ctl"><label>Steady drain / sec <span class="val" id="v_drain">70</span></label><input type="range" id="drain" min="0" max="220" value="70"><div class="effect" id="e_drain"></div></div>
+          <div class="ctl"><label>Spike size (crit potency) <span class="val" id="v_spike">160</span></label><input type="range" id="spike" min="0" max="340" step="10" value="160"><div class="effect" id="e_spike"></div></div>
+          <div class="ctl"><label>Seconds between spikes <span class="val" id="v_spikeiv">12</span></label><input type="range" id="spikeiv" min="2" max="20" value="12"><div class="effect">spikes hit ONE member at random — less frequent and harder; the danger is they can land on a fragile member (Hunter/Keeper), with no mid-fight reaction possible</div></div>
+        </div>
+        <div class="ctl-group" id="r_phys">
+          <h3 onclick="this.parentElement.classList.toggle('open')">Physical mitigation (armor) <span>&#9432;</span></h3>
+          <div class="gnote">Armor eats martial damage. Penetration is computed from the PARTY's stats (Agility for strikers, Might for bruisers) &#8212; not a buff. The Live/Results tabs decompose exactly who punches through and by how much.</div>
+          <div class="ctl"><label>Physical mit. % <span class="val" id="v_phys">0</span></label><input type="range" id="phys" min="0" max="90" value="0"><div class="effect" id="e_phys"></div></div>
+        </div>
+        <div class="ctl-group open">
+          <h3 onclick="this.parentElement.classList.toggle('open')">Enemy statuses <span>&#9432;</span></h3>
+          <div class="gnote">Toggle the debuffs/hazards this enemy inflicts. Dread suppresses damage (countered by Captain's Will + Hope). Shadow drains Will+Fate over time (countered by Radiance) &#8212; only certain foes carry it (great spiders, Ringwraiths, Balrog). Cold/Heat/Disease/Wakefulness press Morale (countered by Warmth/Heat-ease/Hale/Alert).</div>
+          <div id="status_rows"></div>
+        </div>
+        <div class="ctl-group">
+          <h3 onclick="this.parentElement.classList.toggle('open')">Provisioning &#8212; antidotes <span>&#9432;</span></h3>
+          <div class="gnote">Check the hazard answers you provisioned, and set their strength (stands in for food tier). Each answers its matching status.</div>
+          <div id="antidote_rows"></div>
+        </div>
+      </div></div>
+
+      <div class="panel"><div class="panel-h">Band &amp; Provisioning</div><div class="panel-b">
+        <div class="ctl-group">
+          <h3 onclick="this.parentElement.classList.toggle('open')">Provisioning &#8212; food HP/s <span>&#9432;</span></h3>
+          <div class="gnote">Food HP/s = steady baseline per member. Should offset each member's share of incoming damage so they rarely hit zero. Over-feeding one member past their need gives diminishing returns.</div>
+          <div class="ctl"><label>Warden's meal <span class="val" id="v_fw">26</span></label><input type="range" id="fw" min="0" max="160" value="26"></div>
+          <div class="ctl"><label>Hunter's meal <span class="val" id="v_fh">20</span></label><input type="range" id="fh" min="0" max="160" value="20"></div>
+          <div class="ctl"><label>Keeper's meal <span class="val" id="v_fk">22</span></label><input type="range" id="fk" min="0" max="160" value="22"></div>
+          <div class="ctl"><label>Captain's meal <span class="val" id="v_fc">24</span></label><input type="range" id="fc" min="0" max="160" value="24"></div>
+          <div class="effect" style="margin-top:6px">Food also boosts STATS. Pick each meal's stat focus &#8212; this feeds damage, penetration (Agi/Mig), healing (Wil), etc.</div>
+          <div class="ctl"><label>Warden meal favors <span class="val" id="v_sw">Vit</span></label><input type="range" id="sw" min="0" max="4" value="2"></div>
+          <div class="ctl"><label>Hunter meal favors <span class="val" id="v_sh">Agi</span></label><input type="range" id="sh" min="0" max="4" value="1"></div>
+          <div class="ctl"><label>Keeper meal favors <span class="val" id="v_sk">Wil</span></label><input type="range" id="sk" min="0" max="4" value="3"></div>
+          <div class="ctl"><label>Captain meal favors <span class="val" id="v_sc">Wil</span></label><input type="range" id="sc" min="0" max="4" value="3"></div>
+          <div class="ctl"><label>Food stat boost strength <span class="val" id="v_foodstat">0</span></label><input type="range" id="foodstat" min="0" max="30" value="0"><div class="effect">how many points the favored stat gains (0 = stats from level only)</div></div>
+        </div>
+        <div class="ctl-group">
+          <h3 onclick="this.parentElement.classList.toggle('open')">The band <span>&#9432;</span></h3>
+          <div class="gnote">Band level scales every member's stats up from their 1&#8211;20 starting spread. Each role is a fixed template: Warden tanky, Hunter fragile striker, Keeper fragile linchpin, Captain durable empowerer. Live stats shown below.</div>
+          <div class="ctl"><label>Band level <span class="val" id="v_lvl">25</span></label><input type="range" id="lvl" min="1" max="60" value="25"></div>
+          <div class="ctl"><label>Hunter flavor <span class="val" id="v_hflav">agility</span></label><input type="range" id="hflav" min="0" max="1" value="0"></div>
+          <div id="statpreview" class="statline"></div>
+        </div>
+        <div class="ctl-group">
+          <h3 onclick="this.parentElement.classList.toggle('open')">Wounds &amp; the Keeper <span>&#9432;</span></h3>
+          <div class="gnote">Zero Morale = one wound (keep fighting). 5 wounds = grievous = out, needs the Houses of Healing. The Keeper burst-rescues whoever hits zero (one at a time) and deals magic damage otherwise.</div>
+          <div class="ctl"><label>Keeper rescue burst mult. <span class="val" id="v_burst">1.0&#215;</span></label><input type="range" id="burstmul" min="50" max="200" value="100"><div class="effect">base burst scales with Keeper's Will</div></div>
+          <div class="ctl"><label>Inspiration rarity <span class="val" id="v_insprare">normal</span></label><input type="range" id="insprare" min="0" max="2" value="1"></div>
+        </div>
+        <div class="seg" style="margin-top:8px">
+          <button id="spd1" onclick="setSpeed(0)">1&#215;</button><button id="spd4" class="on" onclick="setSpeed(1)">4&#215;</button>
+          <button id="spd16" onclick="setSpeed(2)">16&#215;</button><button id="spdmax" onclick="setSpeed(3)">Instant</button>
+        </div>
+        <div class="btns">
+          <button class="act btn-run" id="run">&#9654; Run</button>
+          <button class="act btn-step" id="step">Step</button>
+          <button class="act btn-reset" id="reset">Reset</button>
+        </div>
+      </div></div>
+    </div>
+  </div>
+
+  <!-- ===================== TAB 2: LIVE ===================== -->
+  <div class="tab" id="pane_live">
+    <div class="panel readbar">
+      <span class="lbl">Pre-engagement read</span>
+      <span>Survive <span class="chip c-risky" id="read_surv">&#8212;</span></span>
+      <span>Victory <span class="chip c-risky" id="read_win">&#8212;</span></span>
+      <span style="margin-left:auto;font-size:11px;color:#6a5638" id="read_hint"></span>
+    </div>
+    <div class="panel boss">
+      <div class="boss-top"><div class="boss-name" id="bossname">The Enemy Host <small id="bosstier">&#8212; Bane-tier</small></div>
+        <div class="boss-hp-label" id="bosshplabel"><span id="bosshp">8500</span> resolve</div></div>
+      <div class="bar-track" id="bosstrack"><div class="bar-fill" id="bossbar" style="width:100%"></div></div>
+      <div class="boss-mit" id="bossmit"></div>
+    </div>
+    <div class="party" id="party"></div>
+    <div class="panel statusline">
+      <div class="clock"><span id="clock">0:00</span> elapsed</div>
+      <div class="verdict v-fighting" id="verdict">AWAITING ORDERS</div>
+      <div class="clock" id="speed">&#8212;</div>
+    </div>
+    <div class="gauges">
+      <div class="panel gauge"><div class="g-h">Survive axis</div>
+        <div class="g-row"><span>Party sustain (HP/s)</span><span id="g_sus">&#8212;</span></div>
+        <div class="g-row"><span>Incoming pressure</span><span id="g_inc">&#8212;</span></div>
+        <div class="g-row"><span>Holding?</span><span id="g_hold">&#8212;</span></div>
+      </div>
+      <div class="panel gauge"><div class="g-h">Win axis &amp; mitigation</div>
+        <div class="g-row"><span>Raw party DPS</span><span id="g_raw">&#8212;</span></div>
+        <div class="g-row sub" id="g_physrow"><span>&#8722; Armor (after penetration)</span><span id="g_phys">&#8212;</span></div>
+        <div class="g-row sub" id="g_pensaverow"><span>&nbsp;&nbsp;DPS preserved by penetration</span><span class="save" id="g_pensave">&#8212;</span></div>
+        <div class="g-row sub" id="g_pendetail" style="font-size:10px;color:#8a7355"></div>
+        <div class="g-row sub" id="g_dreadrow"><span>&#8722; Dread (after Will + Hope)</span><span id="g_dreadval">&#8212;</span></div>
+        <div class="g-row sub" id="g_willrow"><span>&nbsp;&nbsp;preserved by Captain Will</span><span class="save" id="g_willsave">&#8212;</span></div>
+        <div class="g-row sub" id="g_hoperow"><span>&nbsp;&nbsp;preserved by Hope-food</span><span class="save" id="g_hopesave">&#8212;</span></div>
+        <div class="g-row sub" id="g_shadowrow"><span>Shadow drain (Will+Fate lost)</span><span class="no" id="g_shadowval">&#8212;</span></div>
+        <div class="g-row"><span><b>Effective DPS</b></span><span id="g_dps"><b>&#8212;</b></span></div>
+        <div class="g-row"><span>Keeper</span><span id="g_keep">&#8212;</span></div>
+        <div class="g-row"><span id="g_ttklabel">Time-to-kill</span><span id="g_ttk">&#8212;</span></div>
+      </div>
+    </div>
+    <div class="panel"><div class="panel-h">Engagement Log</div><div class="log" id="log"></div></div>
+  </div>
+
+  <!-- ===================== TAB 3: RESULTS ===================== -->
+  <div class="tab" id="pane_results">
+    <div id="results_empty" class="panel results-empty">Run an engagement (Setup tab) to populate analysis &#8212; charts, mitigation breakdowns, the Inspiration timeline, and the battle summary will appear here.</div>
+    <div id="results_body" style="display:none">
+      <div class="panel summary" id="summary" style="margin-bottom:14px"></div>
+      <div class="results-grid">
+        <div class="panel chart-card"><div class="ch-h">Effective DPS over time</div><div class="ch-body" id="ch_dps"></div><div class="chart-legend" id="lg_dps"></div></div>
+        <div class="panel chart-card"><div class="ch-h">Party Morale over time</div><div class="ch-body" id="ch_morale"></div><div class="chart-legend" id="lg_morale"></div></div>
+        <div class="panel chart-card"><div class="ch-h">Mitigation &#8212; DPS preserved by counters</div><div class="ch-body" id="ch_mit"></div><div class="chart-legend" id="lg_mit"></div></div>
+        <div class="panel chart-card"><div class="ch-h">Wounds accumulated</div><div class="ch-body" id="ch_wounds"></div><div class="chart-legend" id="lg_wounds"></div></div>
+        <div class="panel chart-card"><div class="ch-h">Shadow &#8212; party spirit (Will + Fate)</div><div class="ch-body" id="ch_spirit"></div><div class="chart-legend" id="lg_spirit"></div></div>
+      </div>
+      <div class="panel insp-timeline" style="margin-top:14px"><div class="panel-h" style="margin:-10px -14px 8px">Inspiration Timeline</div><div id="insp_list"></div></div>
+      <div class="note">All values are per-second (1 tick = 1 second). Hover any chart for exact values. Numbers are placeholders for tuning.</div>
+    </div>
+  </div>
+
+
+  <div class="tooltip" id="tooltip"></div>
+</div>
+<script>
+
+const TPL={
+  warden:  {name:"Borin Ironmantle",role:"Warden", cls:"role-warden", soak:true,  color:"#5b7f63", start:{mig:13,agi:6,vit:15,wil:7,fat:6},  grow:{mig:0.5,agi:0.15,vit:0.55,wil:0.2,fat:0.15}},
+  hunterA: {name:"Mira",role:"Hunter", cls:"role-hunter", soak:false, color:"#4a6c93", start:{mig:9,agi:15,vit:7,wil:5,fat:9},   grow:{mig:0.3,agi:0.55,vit:0.2,wil:0.15,fat:0.35}},
+  hunterM: {name:"Mira",role:"Hunter", cls:"role-hunter", soak:false, color:"#4a6c93", start:{mig:15,agi:9,vit:8,wil:5,fat:7},   grow:{mig:0.55,agi:0.3,vit:0.25,wil:0.15,fat:0.25}},
+  keeper:  {name:"Cael",role:"Keeper", cls:"role-keeper", soak:false, color:"#7d5a93", start:{mig:5,agi:7,vit:9,wil:15,fat:12},  grow:{mig:0.15,agi:0.2,vit:0.3,wil:0.55,fat:0.45}},
+  captain: {name:"Aelindra",role:"Captain",cls:"role-captain",soak:true,color:"#8a7a3a",start:{mig:8,agi:7,vit:12,wil:13,fat:13},grow:{mig:0.2,agi:0.2,vit:0.4,wil:0.45,fat:0.45}},
+};
+const ORDER=["warden","hunter","keeper","captain"];
+const STAT_KEYS=["mig","agi","vit","wil","fat"];
+const STAT_LABEL={mig:"Mig",agi:"Agi",vit:"Vit",wil:"Wil",fat:"Fat"};
+// statuses: enemy debuffs/hazards. rich = Dread/Shadow (stat interactions); simple = Morale-drain hazards.
+const STATUSES=[
+  {id:"dread", name:"Dread", anti:"hope", kind:"dread"},
+  {id:"shadow",name:"Shadow",anti:"radiance", kind:"shadow"},
+  {id:"disease",name:"Disease",anti:"hale", kind:"drain"},
+  {id:"cold",  name:"Cold",  anti:"warmth", kind:"drain"},
+  {id:"heat",  name:"Heat",  anti:"heatease", kind:"drain"},
+  {id:"wake",  name:"Wakefulness",anti:"alert", kind:"drain"},
+];
+const ANTIDOTES={hope:"Hope",radiance:"Radiance",hale:"Hale",warmth:"Warmth",heatease:"Heat-ease",alert:"Alert"};
+// penetration: each role penetrates armor via a stat, weighted. (melee5 slot reserved for the fifth role.)
+const PEN_COEF={warden:{stat:"mig",k:0.25},hunter:{stat:"agi",k:0.9},keeper:{stat:"agi",k:0.15},captain:{stat:"mig",k:0.2}};
+const PEN_SCALE=110; // tuning: higher = armor harder to fully strip (retuned from validation)
+const SHADOW_FLOOR=0.55; // base floor at low severity; Model C: Radiance raises the floor, harsher Shadow lowers the deep-floor
+const SHADOW_RATE=0.0011; // per-tick drain per point of shadow strength
+const RESCUE_CAP=5;
+const WARD_CAP=3; // Keeper zero-rescues per fight (Laurelin's Grace is separate, uncapped)
+const GRIEVOUS=5;
+const $=id=>document.getElementById(id);
+const stat=(t,k,l)=>t.start[k]+t.grow[k]*(l-1);
+const moraleOf=(t,l)=>Math.round(30+stat(t,"vit",l)*16);
+const fmtT=s=>`${Math.floor(s/60)}:${String(Math.max(0,s)%60).padStart(2,"0")}`;
+function roster(){const hk=(+$("hflav").value===1)?"hunterM":"hunterA";return {warden:TPL.warden,hunter:TPL[hk],keeper:TPL.keeper,captain:TPL.captain};}
+
+let MODE=0,SPEED=1,running=false,timer=null,t=0,P=null,maxT=0;
+let M={},events=[],fired={},windows={},baFired=false,series=[],rescuesUsed=0,wardsUsed=0;
+const SPEED_MS=[1000,250,62,0];
+
+function showTab(name){['setup','live','results'].forEach(n=>{$('pane_'+n).classList.toggle('on',n===name);$('tab_'+n).classList.toggle('on',n===name);});}
+function setMode(m){MODE=m;$("mode_att").classList.toggle("on",m===0);$("mode_tim").classList.toggle("on",m===1);
+  $("r_boss").style.display=m===1?"none":"";$("r_phys").style.display=m===1?"none":"";
+  $("g_ttklabel").textContent=m===1?"Clock remaining":"Time-to-kill";
+  if(!running){refreshBoss();refreshRead();}}
+function setSpeed(s){SPEED=s;["spd1","spd4","spd16","spdmax"].forEach((id,i)=>$(id).classList.toggle("on",i===s));if(running){clearInterval(timer);runLoop();}}
+
+const live={dur:"v_dur",boss:"v_boss",drain:"v_drain",spike:"v_spike",spikeiv:"v_spikeiv",phys:"v_phys",fw:"v_fw",fh:"v_fh",fk:"v_fk",fc:"v_fc",lvl:"v_lvl"};
+Object.keys(live).forEach(id=>{const el=$(id),out=$(live[id]);
+  el.addEventListener("input",()=>{out.textContent=(id==="dur")?fmtT(+el.value):el.value;if(!running){buildParty();refreshRead();refreshBoss();updEffects();statPreview();}});});
+$("hflav").addEventListener("input",e=>{$("v_hflav").textContent=(+e.target.value===1)?"might":"agility";if(!running){buildParty();refreshRead();statPreview();}});
+$("insprare").addEventListener("input",e=>{$("v_insprare").textContent=["rare","normal","frequent"][+e.target.value];});
+$("burstmul").addEventListener("input",e=>{$("v_burst").textContent=(+e.target.value/100).toFixed(1)+"\u00d7";});
+["sw","sh","sk","sc"].forEach(id=>{const vid="v_"+id;$(id).addEventListener("input",e=>{$(vid).textContent=STAT_LABEL[STAT_KEYS[+e.target.value]];if(!running){buildParty();statPreview();refreshRead();}});});
+$("foodstat").addEventListener("input",e=>{$("v_foodstat").textContent=e.target.value;if(!running){buildParty();statPreview();refreshRead();}});
+/* ---- Encounter import (spreadsheet -> sim) ---- */
+let _encList=[];
+function _setCtl(id,val){const el=document.getElementById(id);if(!el||val===''||val==null||isNaN(+val))return;
+  if(el.max!==''&&+val>+el.max)el.max=String(val);
+  if(el.min!==''&&+val<+el.min)el.min=String(val);
+  el.value=val;el.dispatchEvent(new Event("input",{bubbles:true}));}
+function _setStatus(id,val){const cb=document.getElementById("st_"+id),sl=document.getElementById("sl_"+id);if(!cb||!sl)return;
+  val=+val||0; if(val>0){cb.checked=true; if(sl.max!==''&&val>+sl.max)sl.max=String(val); sl.value=val;} else {cb.checked=false;}
+  sl.dispatchEvent(new Event("input",{bubbles:true})); cb.dispatchEvent(new Event("change",{bubbles:true}));}
+function durRangeForLevel(lvl){
+  return lvl<10?{min:1200,max:1800,label:"20–30 min (L1–9)"}:{min:1800,max:3600,label:"30–60 min (L10+)"};
+}
+function updDurHint(){
+  const lvl=+$("lvl").value, r=durRangeForLevel(lvl);
+  $("e_dur").textContent=`Expected: ${r.label} · 1 tick = 1 real second`;
+}
+function applyEncounter(e){
+  const modeStr=String(e.mode||"").toLowerCase();
+  const isSurvival=modeStr==="survival"||modeStr==="timer"||modeStr.indexOf("tim")===0;
+  if(isSurvival)setMode(1);else setMode(0);
+  if(e.recLevel){
+    _setCtl("lvl",e.recLevel);
+    const range=durRangeForLevel(+e.recLevel);
+    const dur=e.durationSec?Math.min(range.max,Math.max(range.min,+e.durationSec)):Math.round((range.min+range.max)/2/60)*60;
+    _setCtl("dur",dur);
+    updDurHint();
+  } else if(e.durationSec){
+    _setCtl("dur",e.durationSec);
+  }
+  _setCtl("boss",e.resolve);_setCtl("drain",e.drain);
+  _setCtl("spike",e.spike);_setCtl("spikeiv",e.spikeIntervalSec);_setCtl("phys",e.physMitPct);
+  _setStatus("dread",e.dread);_setStatus("shadow",e.shadow);_setStatus("disease",e.disease);
+  _setStatus("cold",e.cold);_setStatus("heat",e.heat);_setStatus("wake",e.wakefulness);
+  if(!running){refreshRead();refreshBoss();}
+  document.getElementById("enc_status").textContent="Loaded: "+(e.name||e.id||"encounter");
+}
+function applyEncByIndex(i){if(i==="")return;applyEncounter(_encList[+i]);}
+function _fillDropdown(){const sel=document.getElementById("enc_select");
+  sel.innerHTML='<option value="">&mdash; pick an encounter &mdash;</option>'+_encList.map((e,i)=>'<option value="'+i+'">L'+(e.recLevel||"?")+" \u00b7 "+(e.name||e.id)+"</option>").join("");
+  sel.style.display=_encList.length?"inline-block":"none";}
+function _num(v){const n=parseFloat(v);return isNaN(n)?0:n;}
+function _rowsToEnc(headers,rows){const idx={};headers.forEach((hh,i)=>idx[String(hh||"").trim().toLowerCase()]=i);
+  const g=(r,k)=>{const i=idx[k.toLowerCase()];return i==null?"":r[i];};const out=[];
+  rows.forEach(r=>{if(!r||r.every(c=>c===""||c==null))return;
+    if(!g(r,"id")&&!g(r,"name"))return;
+    out.push({id:g(r,"id"),name:g(r,"name"),recLevel:_num(g(r,"recLevel")),mode:g(r,"mode")||"attrition",
+      durationSec:_num(g(r,"durationSec")),resolve:_num(g(r,"resolve")),drain:_num(g(r,"drain")),
+      spike:_num(g(r,"spike")),spikeIntervalSec:_num(g(r,"spikeIntervalSec")),physMitPct:_num(g(r,"physMitPct")),
+      dread:_num(g(r,"dread")),shadow:_num(g(r,"shadow")),disease:_num(g(r,"disease")),cold:_num(g(r,"cold")),
+      heat:_num(g(r,"heat")),wakefulness:_num(g(r,"wakefulness"))});});
+  return out;}
+function _findHeader(arr){let hi=arr.findIndex(r=>r.map(c=>String(c).toLowerCase()).indexOf("resolve")>=0);return hi<0?0:hi;}
+function loadEncFile(ev){const file=ev.target.files[0];if(!file)return;const st=document.getElementById("enc_status");
+  if(typeof XLSX==="undefined"){st.textContent="Spreadsheet library did not load (no internet?). Use Paste rows instead.";togglePaste(true);return;}
+  const reader=new FileReader();
+  reader.onload=ee=>{try{const wb=XLSX.read(new Uint8Array(ee.target.result),{type:"array"});
+    let name=wb.SheetNames.find(n=>n.toLowerCase().indexOf("sim enc")>=0)||wb.SheetNames.find(n=>n.toLowerCase().indexOf("encounter")>=0)||wb.SheetNames[0];
+    const arr=XLSX.utils.sheet_to_json(wb.Sheets[name],{header:1,blankrows:false});
+    const hi=_findHeader(arr);_encList=_rowsToEnc(arr[hi],arr.slice(hi+1));_fillDropdown();
+    st.textContent=_encList.length+' encounter(s) loaded from "'+name+'". Pick one \u2192';
+  }catch(err){st.textContent="Could not read file: "+err.message;}};
+  reader.readAsArrayBuffer(file);}
+function togglePaste(force){const w=document.getElementById("paste_wrap");w.style.display=(force||w.style.display==="none")?"block":"none";}
+function loadEncPaste(){const txt=document.getElementById("enc_paste").value.trim();const st=document.getElementById("enc_status");if(!txt)return;
+  const lines=txt.split(/\r?\n/).map(l=>l.indexOf("\t")>=0?l.split("\t"):l.split(","));
+  const hi=_findHeader(lines);_encList=_rowsToEnc(lines[hi],lines.slice(hi+1));_fillDropdown();
+  st.textContent=_encList.length+" encounter(s) loaded from paste. Pick one \u2192";}
+
+
+function curParams(){const ins=[0.6,1,1.6][+$("insprare").value];
+  return {lvl:+$("lvl").value,duration:+$("dur").value,boss:+$("boss").value,drain:+$("drain").value,spike:+$("spike").value,spikeiv:+$("spikeiv").value,
+    phys:(MODE===1?0:+$("phys").value/100),unkill:MODE===1,burstmul:+$("burstmul").value/100,
+    dread:statusOn("dread")/100, hope:antidoteOn("hope"),
+    shadow:statusOn("shadow"), radiance:antidoteOn("radiance"),
+    disease:statusOn("disease"),hale:antidoteOn("hale"),
+    cold:statusOn("cold"),warmth:antidoteOn("warmth"),
+    heat:statusOn("heat"),heatease:antidoteOn("heatease"),
+    wake:statusOn("wake"),alert:antidoteOn("alert"),
+    graceBase:0.10*ins,hornBase:0.02*ins,dawnBase:0.02*ins,blackArrowCap:0.03*ins};}
+function foodOf(k){return +({warden:$("fw"),hunter:$("fh"),keeper:$("fk"),captain:$("fc")}[k]).value;}
+
+function buildStatusRows(){
+  $("status_rows").innerHTML=STATUSES.map(st=>`<div class="ctl" style="margin-bottom:5px"><label style="align-items:center"><span><input type="checkbox" id="st_${st.id}" onchange="onStatusToggle()"> ${st.name}</span><span class="val" id="v_st_${st.id}">0</span></label><input type="range" id="sl_${st.id}" min="0" max="90" value="40" oninput="document.getElementById('v_st_${st.id}').textContent=this.value;if(!running){refreshRead();refreshBoss();}"></div>`).join("");
+  $("antidote_rows").innerHTML=Object.keys(ANTIDOTES).map(a=>`<div class="ctl" style="margin-bottom:5px"><label style="align-items:center"><span><input type="checkbox" id="an_${a}" onchange="if(!running)refreshRead()"> ${ANTIDOTES[a]}</span><span class="val" id="v_an_${a}">0</span></label><input type="range" id="al_${a}" min="0" max="90" value="40" oninput="document.getElementById('v_an_${a}').textContent=this.value;if(!running)refreshRead();"></div>`).join("");
+}
+function onStatusToggle(){ if(!running){refreshRead();refreshBoss();} }
+function statusOn(id){const c=$("st_"+id);return c&&c.checked?(+$("sl_"+id).value):0;}
+function antidoteOn(a){const c=$("an_"+a);return c&&c.checked?(+$("al_"+a).value):0;}
+// food stat focus per member
+function foodFocus(k){const map={warden:"sw",hunter:"sh",keeper:"sk",captain:"sc"};return STAT_KEYS[+$(map[k]).value];}
+function foodStatBonus(k,statKey){ // returns points added to statKey for member k from their meal
+  const strength=+$("foodstat").value; if(strength<=0)return 0;
+  const focus=foodFocus(k);
+  if(statKey===focus) return strength;            // full to favored
+  return Math.round(strength*0.25);               // minor breadth to others
+}
+function buildParty(){const lvl=+$("lvl").value,R=roster();M={};
+  ORDER.forEach(k=>{const tpl=R[k],max=moraleOf(tpl,lvl);
+    M[k]={key:k,tpl,role:tpl.role,cls:tpl.cls,soak:tpl.soak,color:tpl.color,max,hp:max,wounds:0,grievous:false,atZero:false,action:"",horn:false,
+      mig:stat(tpl,"mig",lvl)+foodStatBonus(k,"mig"),agi:stat(tpl,"agi",lvl)+foodStatBonus(k,"agi"),vit:stat(tpl,"vit",lvl)+foodStatBonus(k,"vit"),wil:stat(tpl,"wil",lvl)+foodStatBonus(k,"wil"),fat:stat(tpl,"fat",lvl)+foodStatBonus(k,"fat"),
+      wilBase:stat(tpl,"wil",lvl)+foodStatBonus(k,"wil"),fatBase:stat(tpl,"fat",lvl)+foodStatBonus(k,"fat"),shDrain:0};});
+  renderParty();}
+function statPreview(){const lvl=+$("lvl").value,R=roster();
+  $("statpreview").innerHTML=ORDER.map(k=>{const t=R[k];return `${t.role}: Mig ${Math.round(stat(t,"mig",lvl))} Agi ${Math.round(stat(t,"agi",lvl))} Vit ${Math.round(stat(t,"vit",lvl))} Wil ${Math.round(stat(t,"wil",lvl))} Fat ${Math.round(stat(t,"fat",lvl))}`;}).join("<br>");}
+function woundPips(n){let s="";for(let i=0;i<GRIEVOUS;i++)s+=`<span class="${i<n?'wound-pip':'wound-empty'}">&#9670;</span>`;return s;}
+function renderParty(){const host=$("party");host.innerHTML="";
+  ORDER.forEach(k=>{const m=M[k],pct=Math.max(0,(m.hp/m.max)*100),wc=(k==="hunter")?"role-h":"";
+    const el=document.createElement("div");el.className=`panel member ${wc} ${m.grievous?"grievous":""} ${m.horn?"horn":""}`;
+    el.innerHTML=`<div class="m-top"><span class="m-name">${m.tpl.name}</span><span class="m-role ${m.cls}">${m.role}</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
+      <div class="m-hp-num"><span>Morale</span><span>${Math.max(0,Math.round(m.hp))} / ${m.max}</span></div>
+      <div class="m-wounds">${woundPips(m.wounds)}</div><div class="m-action">${m.action||""}</div>`;
+    host.appendChild(el);});}
+function tierName(d){return d<10?"&#8212; Rabble":d<20?"&#8212; Fell":d<32?"&#8212; Bane-tier":d<44?"&#8212; of the Nine":"&#8212; Nameless";}
+function refreshBoss(){
+  if(MODE===1){$("bossname").innerHTML='The Nine <small>&#8212; un-killable terror</small>';
+    $("bosshplabel").innerHTML='<span id="bosshp">'+fmtT(+$("dur").value)+'</span> remaining';
+    $("bosstrack").className="bar-track timer";$("bossbar").style.width="100%";
+    $("bossmit").innerHTML='<b>SURVIVAL TIMER</b> &#8212; cannot be killed; endure to the end to be Repelled';
+  }else{const lvl=+$("lvl").value;$("bossname").innerHTML='The Enemy Host <small id="bosstier">'+tierName(lvl)+'</small>';
+    $("bosshplabel").innerHTML='<span id="bosshp">'+$("boss").value+'</span> resolve';$("bosstrack").className="bar-track";$("bossbar").style.width="100%";
+    const mit=[];if(+$("phys").value>0)mit.push(`Armor <b>${$("phys").value}%</b>`);
+    STATUSES.forEach(st=>{const v=statusOn(st.id);if(v>0)mit.push(`${st.name} <b>${v}</b>`);});
+    $("bossmit").innerHTML=mit.join(" &#183; ");}}
+function updEffects(){const drainPer=+$("drain").value/4;
+  $("e_drain").textContent=`each member soaks ~${Math.round(drainPer)}/s steady &#8212; food should cover it`;
+  $("e_spike").textContent=+$("spike").value>0?`spikes drive members to zero &#8212; the Keeper must catch them`:`no spikes &#8212; pure steady drain`;
+  $("e_phys").textContent=+$("phys").value>0?`armor cut by the party's computed penetration (see Live tab)`:``;}
+
+// party penetration, decomposed by member (each via their pen stat)
+function penBreakdown(){
+  let total=0, parts=[];
+  ORDER.forEach(k=>{ if(M[k].grievous)return; const c=PEN_COEF[k]; if(!c)return;
+    const contrib=M[k][c.stat]*c.k; total+=contrib; parts.push({who:k,name:M[k].tpl.name,stat:c.stat,val:contrib});});
+  return {total,parts};
+}
+// returns full breakdown incl penetration + Dread(Will+Hope) + Shadow effects
+function dpsBreakdown(){
+  if(P.unkill)return {raw:0,physAfter:0,dreadAfter:0,eff:0,penSaved:0,willSaved:0,hopeSaved:0,pen:penBreakdown()};
+  let raw=0;ORDER.forEach(k=>{if(M[k].grievous||M[k].hp<=0)return;
+    if(k==="keeper"){if(M[k].action!=="burst")raw+=M[k].wil*0.9;}
+    else if(k==="hunter")raw+=M[k].agi+M[k].mig*0.4;else if(k==="warden")raw+=M[k].mig*0.5;
+    else if(k==="captain")raw+=M[k].mig*0.3+M[k].fat*0.2;});
+  if(windows.dawn>0)raw*=1.5;
+  // PHYSICAL: computed party penetration reduces armor
+  const pen=penBreakdown();
+  const physRaw=P.phys;
+  const physAfter=Math.max(0,physRaw*(1-Math.min(1,pen.total/PEN_SCALE)));
+  // DREAD: Will (stat, current = possibly shadow-drained) + Hope (flat %, additive then cap)
+  const capWill=(!M.captain.grievous)?M.captain.wil:0;
+  const dreadRaw=P.dread;
+  const willCut=Math.min(1,capWill/100), hopeCut=Math.min(1,P.hope/100);
+  const dreadAfter=Math.max(0,dreadRaw*(1-Math.min(1,willCut+hopeCut)));
+  const eff=raw*(1-physAfter)*(1-dreadAfter);
+  // preserved-by-counter decomposition
+  const effNoPen=raw*(1-physRaw)*(1-dreadAfter);
+  const dreadNoWill=Math.max(0,dreadRaw*(1-hopeCut));
+  const dreadNoHope=Math.max(0,dreadRaw*(1-willCut));
+  const effNoWill=raw*(1-physAfter)*(1-dreadNoWill);
+  const effNoHope=raw*(1-physAfter)*(1-dreadNoHope);
+  return {raw,physRaw,physAfter,dreadRaw,dreadAfter,eff:Math.max(0,eff),
+    penSaved:Math.max(0,eff-effNoPen), willSaved:Math.max(0,eff-effNoWill), hopeSaved:Math.max(0,eff-effNoHope), pen};
+}
+function sustain(){let s=0;ORDER.forEach(k=>{if(!M[k].grievous)s+=foodOf(k);});return s;}
+function refreshRead(){buildParty();const drain=+$("drain").value,spike=+$("spike").value,iv=+$("spikeiv").value;
+  const incoming=drain+spike/iv,sus=sustain();const sR=sus/Math.max(1,incoming);
+  setChip("read_surv",sR>=1.25?"LIKELY":sR>=0.95?"RISKY":"UNLIKELY");
+  if(MODE===1){setChip("read_win","UNLIKELY");$("read_hint").textContent="The Nine cannot be killed — survival is the only victory.";}
+  else{P=curParams();const bd=dpsBreakdown();const boss=+$("boss").value;const ttk=bd.eff>0?boss/bd.eff:1e9;
+    setChip("read_win",ttk<=+$("dur").value*0.7?"LIKELY":ttk<=+$("dur").value?"RISKY":"UNLIKELY");
+    $("read_hint").textContent=ttk>+$("dur").value?"At this rate you won't finish in time.":"";}}
+function setChip(id,w){const el=$(id);el.textContent=w;el.className="chip "+(w==="LIKELY"?"c-likely":w==="RISKY"?"c-risky":"c-unlikely");}
+function log(msg,cls){const l=$("log"),d=document.createElement("div");
+  d.innerHTML=`<span style="color:#a8956d">${fmtT(t).padStart(5," ")}</span> ${cls?`<span class="${cls}">`:""}${msg}${cls?"</span>":""}`;
+  l.appendChild(d);l.scrollTop=l.scrollHeight;}
+function active(){return ORDER.filter(k=>!M[k].grievous);}
+function inTrouble(){return active().filter(k=>M[k].hp/M[k].max<0.30).length;}
+const inspRoll=(m,base)=>Math.random()<base*(1+(m.wil+m.fat)/200);
+
+function stepOnce(){
+  t++;
+  if(windows.dawn>0)windows.dawn--;
+  if(windows.horn>0){windows.horn--;if(windows.horn===0&&M.warden)M.warden.horn=false;}
+  const act=active();
+  let rescue=null;
+  // Keeper rescues someone at zero — but only if charges remain (capped per fight)
+  if(!M.keeper.grievous && M.keeper.hp>0 && rescuesUsed<RESCUE_CAP){for(const k of ORDER){if(k==="keeper"||M[k].grievous)continue;if(M[k].hp<=0){rescue=k;break;}}M.keeper.action=rescue?"burst":"damage";}
+  else if(!M.keeper.grievous){M.keeper.action="damage";}
+  const isSpike=(t%P.spikeiv===0)&&P.spike>0;
+  // STEADY DRAIN: spread across STANDING members only — downed members have no morale left to bleed, so loss concentrates pressure on survivors
+  {const living=act.filter(k=>M[k].hp>0); if(living.length)living.forEach(k=>{M[k].hp-=P.drain/living.length;});}
+  // SPIKE (crit): lands on ONE random member — PURE random, so fragile members are exposed (that's the danger). The RNG texture layer.
+  if(isSpike){
+    let target, guarded=false;
+    if(windows.horn>0&&!M.warden.grievous&&M.warden.hp>0){target="warden";}  // Horn of Gondor: Warden pulls ALL spikes for the window
+    else{
+      const living=act.filter(k=>M[k].hp>0);
+      target=living.length?living[Math.floor(Math.random()*living.length)]:null;
+      // THE TANK GUARDS THE HEALER FROM A KILLING BLOW ONLY: if a spike would DOWN a standing Keeper, a standing Warden takes it instead — but only WARD_CAP times per fight. Non-lethal spikes hit the Keeper normally.
+      if(target==="keeper" && (M.keeper.hp-P.spike)<=0 && M.warden.hp>0 && !M.warden.grievous && wardsUsed<WARD_CAP){
+        target="warden"; guarded=true; wardsUsed++;
+      }
+    }
+    if(target){const hit=P.spike;M[target].hp-=hit;
+      if(guarded)log(`${M.warden.tpl.name} throws himself across a killing blow meant for ${M.keeper.tpl.name} (${Math.round(hit)}) — guard ${wardsUsed} of ${WARD_CAP}`,"s");
+      else log(`a heavy blow strikes ${M[target].tpl.name} (${Math.round(hit)})`,"t");}
+  }
+  // food healing (steady, LIVING ONLY — food sustains the standing; it does not revive a member who has fallen to zero)
+  act.forEach(k=>{if(M[k].hp<=0)return;const incPer=P.drain/act.length;let heal=foodOf(k);const soft=incPer*1.5;if(heal>soft)heal=soft+(heal-soft)*0.4;
+    if(!(windows.horn>0&&k==="warden"))M[k].hp=Math.min(M[k].max,M[k].hp+heal);});
+  if(rescue){const burst=(40+M.keeper.wil*4)*P.burstmul;M[rescue].hp=Math.min(M[rescue].max,Math.max(M[rescue].hp,0)+burst);M.keeper.action="burst";rescuesUsed++;
+    log(`Cael bursts ${M[rescue].tpl.name} clear of zero (+${Math.round(burst)}) — rescue ${rescuesUsed} of ${RESCUE_CAP}`,"h");}
+  // --- SHADOW (Model C): drains Will+Fate toward a floor; RADIANCE RAISES THE FLOOR (so partial Radiance meaningfully limits how deep the spirit sinks, full Radiance nearly stops it). Cascades into heals/dread-resist/inspiration. ---
+  if(P.shadow>0){
+    // deep floor (no Radiance) scales with severity: harsher Shadow can drain further. Radiance lifts the floor back toward full.
+    const deepFloor=Math.max(0.25, SHADOW_FLOOR - (P.shadow/100)*0.30);   // sev10 with no Radiance can reach ~0.25 of base
+    const floor=deepFloor + (1-deepFloor)*Math.min(1,P.radiance/100);     // Radiance raises floor toward 1.0
+    const dr=P.shadow*SHADOW_RATE;                                         // drain rate is full; Radiance limits DEPTH, not speed
+    ORDER.forEach(k=>{if(M[k].grievous)return;
+      M[k].wil=Math.max(M[k].wilBase*floor, M[k].wil-dr);
+      M[k].fat=Math.max(M[k].fatBase*floor, M[k].fat-dr);
+      M[k].shDrain=(M[k].wilBase-M[k].wil)+(M[k].fatBase-M[k].fat);});
+    if(t===1||t%30===0)log(`the Shadow gnaws at the spirit &#8212; Will and Fate wither${P.radiance>0?" (Radiance holds the floor)":" (no Radiance — they sink deep)"}`,"t");}
+  // --- simple Morale-pressure hazards (Disease/Cold/Heat/Wakefulness), each cut by its antidote ---
+  {const haz=[["disease","hale"],["cold","warmth"],["heat","heatease"],["wake","alert"]];
+   let extra=0; haz.forEach(([hz,an])=>{const str=P[hz]||0; if(str>0){extra+=(str*0.08)*(1-Math.min(1,(P[an]||0)/100));}});
+   if(extra>0)act.forEach(k=>{M[k].hp-=extra/act.length;});}
+  ORDER.forEach(k=>{if(M[k].grievous)return;
+    if(M[k].hp<=0&&!M[k].atZero){M[k].atZero=true;M[k].wounds++;log(`${M[k].tpl.name} hits zero — a wound (${M[k].wounds}/${GRIEVOUS})`,"t");
+      if(M[k].wounds>=GRIEVOUS){if(!M.keeper.grievous&&M.keeper.hp>0&&inspRoll(M.keeper,P.graceBase)){M[k].wounds=0;M[k].hp=Math.round(M[k].max*0.4);M[k].atZero=false;
+          log(`&#10022; LAURELIN'S GRACE — Cael calls upon Laurelin's Grace, and the shadow loosens its hold on ${M[k].tpl.name}`,"insp");events.push({t,kind:"Laurelin's Grace",who:M[k].tpl.name});}
+        else{M[k].grievous=true;log(`${M[k].tpl.name} takes a GRIEVOUS wound — out of the fight`,"t");events.push({t,kind:"grievous",who:M[k].tpl.name});}}}
+    if(M[k].hp>5)M[k].atZero=false;});
+  if(windows.horn<=0&&!fired.horn&&inTrouble()>=2&&!M.warden.grievous&&M.warden.hp>0&&inspRoll(M.warden,P.hornBase)){fired.horn=true;windows.horn=8;M.warden.horn=true;
+    log(`&#10022; THE HORN OF GONDOR — ${M.warden.tpl.name} blows the Horn of Gondor and refuses to fall`,"insp");events.push({t,kind:"The Horn of Gondor",who:M.warden.tpl.name});}
+  if(windows.dawn<=0&&!fired.dawn&&inTrouble()>=2&&!M.captain.grievous&&M.captain.hp>0&&inspRoll(M.captain,P.dawnBase)){fired.dawn=true;windows.dawn=10;act.forEach(k=>{M[k].hp=Math.min(M[k].max,M[k].hp+M[k].max*0.15);});
+    log(`&#10022; WRATH, RUIN, AND THE RED DAWN — ${M.captain.tpl.name} cries: 'Now for wrath, now for ruin, and the red dawn!'`,"insp");events.push({t,kind:"Wrath, Ruin, and the Red Dawn",who:M.captain.tpl.name});}
+  const bd=dpsBreakdown();let boss=window._boss;if(!P.unkill)boss=Math.max(0,boss-bd.eff);window._boss=boss;
+  if(!baFired&&!M.hunter.grievous&&M.hunter.hp>0){const elapsed=t/maxT;const ttk=bd.eff>0?boss/bd.eff:1e9;const trem=maxT-t;
+    const losing=P.unkill?(elapsed>0.5):(ttk>trem&&elapsed>0.4);
+    if(losing){const rise=Math.min(P.blackArrowCap,(elapsed-0.4)*P.blackArrowCap*2.5);
+      if(Math.random()<rise*(1+(M.hunter.wil+M.hunter.fat)/200)){baFired=true;
+        if(P.unkill){maxT-=Math.round(P.duration*0.15);log(`&#10022; BLACK ARROW — ${M.hunter.tpl.name} looses a flaming arrow — the terror recoils, the clock shortens`,"insp");events.push({t,kind:"Black Arrow (flaming)",who:M.hunter.tpl.name});}
+        else{boss=Math.max(0,boss-P.boss*0.35);window._boss=boss;log(`&#10022; BLACK ARROW — ${M.hunter.tpl.name} draws the Black Arrow — go now, and speed well!`,"insp");events.push({t,kind:"Black Arrow",who:M.hunter.tpl.name});}}}}
+  // record time-series frame
+  const incoming=P.drain+P.spike/P.spikeiv;
+  series.push({t,boss:boss,dps:bd.eff,raw:bd.raw,penSaved:bd.penSaved,willSaved:bd.willSaved,hopeSaved:bd.hopeSaved,sustain:sustain(),incoming,
+    spirit:{wil:ORDER.reduce((a,k)=>a+(M[k].grievous?0:M[k].wil),0),fat:ORDER.reduce((a,k)=>a+(M[k].grievous?0:M[k].fat),0)},
+    spiritBase:{wil:ORDER.reduce((a,k)=>a+M[k].wilBase,0),fat:ORDER.reduce((a,k)=>a+M[k].fatBase,0)},
+    morale:{warden:Math.max(0,M.warden.hp),hunter:Math.max(0,M.hunter.hp),keeper:Math.max(0,M.keeper.hp),captain:Math.max(0,M.captain.hp)},
+    maxmorale:{warden:M.warden.max,hunter:M.hunter.max,keeper:M.keeper.max,captain:M.captain.max},
+    wounds:{warden:M.warden.wounds+(M.warden.grievous?GRIEVOUS:0),hunter:M.hunter.wounds+(M.hunter.grievous?GRIEVOUS:0),keeper:M.keeper.wounds+(M.keeper.grievous?GRIEVOUS:0),captain:M.captain.wounds+(M.captain.grievous?GRIEVOUS:0)}});
+  updLive(bd,boss,incoming);
+  // VICTORY needs only the kill landed by whoever is still standing — grievous casualties are survivable, the band just needs healing time after.
+  if(!P.unkill&&boss<=0){finish("VICTORY","v-victory");return true;}
+  // DEFEAT only if NO ONE is left standing (all downed or grievous) — then there's no damage and no rescuer.
+  if(!ORDER.some(k=>!M[k].grievous&&M[k].hp>0)){finish("DEFEAT","v-defeat");return true;}
+  if(t>=maxT){finish(P.unkill?"REPELLED":"STALEMATE",P.unkill?"v-repelled":"v-stalemate");return true;}
+  return false;}
+
+function updLive(bd,boss,incoming){
+  const bossMax=P.unkill?maxT:P.boss;
+  $("bosshp").textContent=P.unkill?fmtT(Math.max(0,maxT-t)):Math.round(boss);
+  $("bossbar").style.width=(P.unkill?((maxT-t)/maxT*100):(boss/bossMax*100))+"%";
+  const sus=sustain();
+  $("g_sus").textContent=Math.round(sus);$("g_inc").textContent=Math.round(incoming);
+  $("g_hold").innerHTML=sus>=incoming?'<span class="ok">holding</span>':'<span class="no">losing ground</span>';
+  $("g_raw").textContent=Math.round(bd.raw);
+  const showPhys=P.phys>0,showDread=P.dread>0,showShadow=P.shadow>0;
+  $("g_physrow").style.display=showPhys?"":"none";$("g_pensaverow").style.display=showPhys?"":"none";$("g_pendetail").style.display=showPhys?"":"none";
+  $("g_dreadrow").style.display=showDread?"":"none";$("g_willrow").style.display=showDread?"":"none";$("g_hoperow").style.display=showDread?"":"none";
+  $("g_shadowrow").style.display=showShadow?"":"none";
+  if(showPhys){$("g_phys").textContent="\u2212"+Math.round(bd.physAfter*100)+"%";$("g_pensave").textContent="+"+Math.round(bd.penSaved)+" dps";
+    $("g_pendetail").innerHTML="&nbsp;&nbsp;"+bd.pen.parts.filter(p=>p.val>=1).map(p=>`${p.name} +${Math.round(p.val)} (${STAT_LABEL[p.stat]})`).join(", ")+` &#8594; pen ${Math.round(bd.pen.total)}`;}
+  if(showDread){$("g_dreadval").textContent="\u2212"+Math.round(bd.dreadAfter*100)+"%";$("g_willsave").textContent="+"+Math.round(bd.willSaved)+" dps";$("g_hopesave").textContent="+"+Math.round(bd.hopeSaved)+" dps";}
+  if(showShadow){const lost=ORDER.reduce((a,k)=>a+(M[k].grievous?0:M[k].shDrain),0);$("g_shadowval").textContent="\u2212"+Math.round(lost)+" spirit";}
+  $("g_dps").innerHTML="<b>"+Math.round(bd.eff)+"</b>";
+  $("g_keep").innerHTML=M.keeper.grievous?'<span class="no">grievous</span>':(M.keeper.action==="burst"?'<span class="no">rescuing</span>':'<span class="ok">attacking</span>')+` <span style="color:#8a7355">(${RESCUE_CAP-rescuesUsed}/${RESCUE_CAP} rescues left)</span>`;
+  $("g_ttk").textContent=P.unkill?fmtT(Math.max(0,maxT-t)):(bd.eff>0?Math.ceil(boss/bd.eff)+"s":"\u221e");
+  $("clock").textContent=fmtT(t);$("speed").textContent=P.unkill?"surviving":`${Math.round(bd.eff)} dps`;
+  renderParty();}
+
+function buildSummary(verdict){
+  const griev=ORDER.filter(k=>M[k].grievous);const insps=events.filter(e=>/Grace|Horn|Red Dawn|Black Arrow/.test(e.kind));
+  let saga=`After ${fmtT(t)}, the engagement ended in <b>${verdict}</b>. `;
+  if(verdict==="VICTORY")saga+="The enemy host broke and the band held the field. ";
+  else if(verdict==="REPELLED")saga+="The terror could not be slain, but the band endured until it withdrew. ";
+  else if(verdict==="STALEMATE")saga+="The band survived but could not bring the enemy down before time ran out. ";
+  else saga+="The line collapsed — too many fell for the rest to hold. ";
+  if(insps.length)saga+="In the worst moments, grace intervened: "+insps.map(e=>`${e.who}'s ${e.kind}`).join("; ")+". ";
+  else saga+="No grace was needed — or none came. ";
+  let after=`<div class="after">`;
+  ORDER.forEach(k=>{const m=M[k];let cls,txt;
+    if(m.grievous){cls="ag";txt="grievous — Houses of Healing";}else if(m.wounds>=3){cls="aw";txt=`${m.wounds} wounds — significant rest`;}
+    else if(m.wounds>0){cls="aw";txt=`${m.wounds} wound${m.wounds>1?'s':''} — short rest`;}else{cls="ah";txt="unhurt";}
+    after+=`<div class="m-card"><b>${m.tpl.name}</b> <span class="${cls}">${txt}</span></div>`;});
+  after+=`</div>`;
+  const needHoH=griev.length>0;
+  $("summary").innerHTML=`<h4>Battle Summary</h4><div class="saga">${saga}</div><h4>Aftermath &amp; recovery</h4>${after}
+    <div class="note" style="margin-top:8px">${needHoH?`${griev.length} member${griev.length>1?'s':''} took a grievous wound — they need the Houses of Healing before fighting again.`:`No grievous wounds — the band recovers with rest.`} Cael used ${rescuesUsed} of ${RESCUE_CAP} zero-rescues${rescuesUsed>=RESCUE_CAP?' — all spent.':'.'}</div>`;}
+
+function finish(label,cls){clearInterval(timer);running=false;const v=$("verdict");v.textContent=label;v.className="verdict "+cls;
+  log(`— ${label} —`,cls==="v-victory"?"g":cls==="v-defeat"?"t":"h");$("run").innerHTML="&#9654; Run Again";
+  $("runstate").textContent=`${label} at ${fmtT(t)} — see Results`;
+  buildSummary(label);renderResults();$("results_empty").style.display="none";$("results_body").style.display="";showTab('results');}
+
+function prep(){buildParty();$("log").innerHTML="";t=0;P=curParams();maxT=P.duration;window._boss=P.boss;
+  events=[];fired={};windows={dawn:0,horn:0};baFired=false;series=[];rescuesUsed=0;wardsUsed=0;
+  $("verdict").textContent="ENGAGED";$("verdict").className="verdict v-fighting";
+  log(P.unkill?"The band sets itself against a terror that cannot be slain — endure.":"The band sets upon the enemy host.","");}
+function runLoop(){if(SPEED===3){let g=0;while(!stepOnce()&&g++<20000){}return;}timer=setInterval(()=>{if(stepOnce())clearInterval(timer);},SPEED_MS[SPEED]);}
+function start(){if(running)return;prep();running=true;$("run").innerHTML="&#8230; fighting";$("runstate").textContent="running…";showTab('live');runLoop();}
+$("run").addEventListener("click",start);
+$("step").addEventListener("click",()=>{if(!running){if(t===0||series.length===0)prep();showTab('live');stepOnce();}});
+$("reset").addEventListener("click",()=>{clearInterval(timer);running=false;t=0;
+  $("verdict").textContent="AWAITING ORDERS";$("verdict").className="verdict v-fighting";$("run").innerHTML="&#9654; Run";
+  $("log").innerHTML="";$("clock").textContent="0:00";$("runstate").textContent="not yet run";
+  $("results_empty").style.display="";$("results_body").style.display="none";series=[];events=[];
+  ["g_sus","g_inc","g_hold","g_raw","g_dps","g_keep","g_ttk"].forEach(id=>$(id).textContent="\u2014");$("speed").textContent="\u2014";
+  buildParty();refreshBoss();refreshRead();updEffects();statPreview();});
+
+/* ===================== INTERACTIVE CHARTS ===================== */
+const TT=$("tooltip");
+function showTip(x,y,html){TT.innerHTML=html;TT.style.left=(x+12)+"px";TT.style.top=(y+12)+"px";TT.style.opacity=1;}
+function hideTip(){TT.style.opacity=0;}
+// generic multi-line chart. lines=[{name,color,pts:[{x,y}],fmt}]; xmax, ymax, yunit
+function lineChart(host,legendHost,lines,xmax,ymax,opts){
+  opts=opts||{};const W=520,H=200,PADL=42,PADR=12,PADT=12,PADB=26;
+  const iw=W-PADL-PADR, ih=H-PADT-PADB;
+  const sx=x=>PADL+(x/Math.max(1,xmax))*iw;
+  const sy=y=>PADT+ih-(y/Math.max(1e-9,ymax))*ih;
+  let svg=`<svg viewBox="0 0 ${W} ${H}" width="100%" style="display:block">`;
+  // grid + y labels
+  for(let i=0;i<=4;i++){const yv=ymax*i/4, yy=sy(yv);
+    svg+=`<line class="grid" x1="${PADL}" y1="${yy}" x2="${W-PADR}" y2="${yy}"/>`;
+    svg+=`<text class="axlabel" x="${PADL-5}" y="${yy+3}" text-anchor="end">${opts.yfmt?opts.yfmt(yv):Math.round(yv)}</text>`;}
+  // x labels (time)
+  for(let i=0;i<=4;i++){const xv=xmax*i/4, xx=sx(xv);
+    svg+=`<text class="axlabel" x="${xx}" y="${H-8}" text-anchor="middle">${fmtT(Math.round(xv))}</text>`;}
+  svg+=`<line class="axis" x1="${PADL}" y1="${PADT}" x2="${PADL}" y2="${PADT+ih}"/><line class="axis" x1="${PADL}" y1="${PADT+ih}" x2="${W-PADR}" y2="${PADT+ih}"/>`;
+  lines.forEach(ln=>{if(!ln.pts.length)return;let d="";ln.pts.forEach((p,i)=>{d+=(i?"L":"M")+sx(p.x).toFixed(1)+" "+sy(p.y).toFixed(1)+" ";});
+    svg+=`<path d="${d}" fill="none" stroke="${ln.color}" stroke-width="1.8"/>`;});
+  // markers layer
+  svg+=`<g id="${host}_markers"></g>`;
+  svg+=`<rect x="${PADL}" y="${PADT}" width="${iw}" height="${ih}" fill="transparent" id="${host}_hit"/></svg>`;
+  $(host).innerHTML=svg;
+  // legend
+  if(legendHost)$(legendHost).innerHTML=lines.map(l=>`<span><span class="lg-line" style="background:${l.color}"></span>${l.name}</span>`).join("");
+  // hover
+  const hit=document.getElementById(host+"_hit");
+  hit.addEventListener("mousemove",ev=>{const r=hit.getBoundingClientRect();
+    const px=(ev.clientX-r.left)/r.width*iw; const xv=Math.round(px/iw*xmax);
+    let rows=`<b>${fmtT(xv)}</b>`;lines.forEach(ln=>{const p=ln.pts.reduce((a,b)=>Math.abs(b.x-xv)<Math.abs(a.x-xv)?b:a,ln.pts[0]||{x:0,y:0});
+      rows+=`<br><span style="color:${ln.color}">\u25cf</span> ${ln.name}: ${ln.fmt?ln.fmt(p.y):Math.round(p.y)}`;});
+    showTip(ev.clientX,ev.clientY,rows);});
+  hit.addEventListener("mouseleave",hideTip);
+}
+function renderResults(){
+  if(!series.length)return;const xmax=series[series.length-1].t;
+  // DPS over time
+  const dpsMax=Math.max(10,...series.map(s=>Math.max(s.dps,s.incoming)));
+  lineChart("ch_dps","lg_dps",[
+    {name:"Effective DPS",color:"#4a6c93",pts:series.map(s=>({x:s.t,y:s.dps})),fmt:v=>Math.round(v)+" dps"},
+    {name:"Incoming pressure",color:"#9a3526",pts:series.map(s=>({x:s.t,y:s.incoming})),fmt:v=>Math.round(v)+"/s"},
+  ],xmax,dpsMax,{});
+  // Morale
+  const mMax=Math.max(...ORDER.map(k=>series[0].maxmorale[k]));
+  lineChart("ch_morale","lg_morale",ORDER.map(k=>({name:M[k].tpl.name+" ("+M[k].role+")",color:TPL[k==="hunter"?"hunterA":k].color,pts:series.map(s=>({x:s.t,y:s.morale[k]})),fmt:v=>Math.round(v)})),xmax,mMax,{});
+  // Mitigation preserved
+  const anyMit=series.some(s=>s.penSaved>0||s.willSaved>0||s.hopeSaved>0);
+  if(anyMit){const mitMax=Math.max(5,...series.map(s=>Math.max(s.penSaved,s.willSaved,s.hopeSaved)));
+    lineChart("ch_mit","lg_mit",[
+      {name:"preserved by Penetration",color:"#5b7f63",pts:series.map(s=>({x:s.t,y:s.penSaved})),fmt:v=>"+"+Math.round(v)+" dps"},
+      {name:"preserved by Captain Will",color:"#7d5a93",pts:series.map(s=>({x:s.t,y:s.willSaved})),fmt:v=>"+"+Math.round(v)+" dps"},
+      {name:"preserved by Hope",color:"#b8843c",pts:series.map(s=>({x:s.t,y:s.hopeSaved})),fmt:v=>"+"+Math.round(v)+" dps"},
+    ],xmax,mitMax,{});}
+  else{$("ch_mit").innerHTML='<div class="empty" style="padding:30px 14px;text-align:center">No armor or Dread in this fight — set Physical mit. or toggle Dread to see how much penetration, Captain Will, and Hope each preserve.</div>';$("lg_mit").innerHTML="";}
+  // Wounds
+  lineChart("ch_wounds","lg_wounds",ORDER.map(k=>({name:M[k].tpl.name,color:TPL[k==="hunter"?"hunterA":k].color,pts:series.map(s=>({x:s.t,y:s.wounds[k]})),fmt:v=>Math.round(v)+" wounds"})),xmax,GRIEVOUS,{yfmt:v=>Math.round(v)});
+  // spirit (Will+Fate) drain under Shadow
+  const sawShadow=series.some(s=>s.spirit.wil<s.spiritBase.wil-0.5||s.spirit.fat<s.spiritBase.fat-0.5);
+  if(sawShadow){const spMax=Math.max(...series.map(s=>Math.max(s.spiritBase.wil,s.spiritBase.fat)));
+    lineChart("ch_spirit","lg_spirit",[
+      {name:"Party Will",color:"#7d5a93",pts:series.map(s=>({x:s.t,y:s.spirit.wil})),fmt:v=>Math.round(v)},
+      {name:"Party Fate",color:"#b8843c",pts:series.map(s=>({x:s.t,y:s.spirit.fat})),fmt:v=>Math.round(v)},
+    ],xmax,spMax,{});}
+  else{$("ch_spirit").innerHTML='<div class="empty" style="padding:30px 14px;text-align:center">No Shadow in this fight — toggle Shadow on the enemy to watch it drain the party\'s Will and Fate (and Radiance hold it back).</div>';$("lg_spirit").innerHTML="";}
+  // inspiration timeline
+  const insps=events.filter(e=>/Grace|Horn|Red Dawn|Black Arrow/.test(e.kind));
+  $("insp_list").innerHTML=insps.length?insps.map(e=>`<div class="insp-row"><span class="it">${fmtT(e.t)}</span><span class="ik">${e.kind}</span><span>&#8212; ${e.who}</span></div>`).join(""):'<div class="empty">No Inspirations fired this engagement. They are rare grace — most fights pass without them.</div>';
+}
+
+// Wire level slider to update duration hint
+$("lvl").addEventListener("input", updDurHint);
+
+// init
+buildStatusRows();
+setMode(0);refreshBoss();buildParty();refreshRead();updEffects();statPreview();updDurHint();
+
+</script>
+</body>
+</html>

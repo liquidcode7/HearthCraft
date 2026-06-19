@@ -200,6 +200,37 @@ Nothing here is invented for its own sake; every stat feeds a live mechanic:
 
 ---
 
+## Difficulty Onramp — How the Campaign Teaches Combat
+
+Each region the player enters adds **exactly one new question the fight asks.**
+No question repeats. Dread and Shadow are the last two by construction —
+early content cannot throw them. Early variety comes from foe **shape**
+(swarm / tank / endure) crossed with the four "safe" environmental hazards
+(Cold, Heat, Disease, Wakefulness).
+
+| Rung | New question | Teacher foes | Region | Answer |
+|---|---|---|---|---|
+| 0 | Survive + win at all? | Wolves, lone goblins | Bree-land, Chetwood | HP/s food + damage |
+| 1 | Pierce armor? | Mailed orcs, stone-trolls | Trollshaws, Goblin-town | Agi/Mig food (penetration) |
+| 2 | Weather the dice? | Warg packs, barghests | Misty Mtn passes | Feed fragile members; respect Keeper's 5 rescues |
+| 3 | Have the region's antidote? | Huorns, midge-marsh, cold passes | Old Forest, Midgewater, Caradhras | The one hazard food |
+| 4 | Endure when you can't win? | Old Man Willow, blizzard | Old Forest, high passes | All-sustain; survival mindset |
+| 5 | Fight while afraid? | Barrow-wights, the Dead | Barrow-downs, Dead Marshes | Hope food + Captain Will |
+| 6 | Fight while the light fails? | Great spiders, Balrog, the Nine | Mirkwood, Moria, Morgul-vale | Radiance |
+| 7 | All at once. | Sieges, combined raids | Fornost, the Black Gate | Full toolkit + multi-stage prep |
+
+**Two rules:**
+- Each hidden mechanic needs a **cheap teacher first** — an armored goblin you
+  can brute-force slowly (notice armor without dying), a warg pack where the
+  Keeper can fully cover (learn the rescue rhythm before the cap bites).
+- **Rung 3 open fork:** which hazard does the player meet first — Cold/Warmth
+  (most intuitive tutorial) or Old Forest's Wakefulness (most geographically
+  natural step out of the Shire)? Resolve when regional design lands.
+
+V1 is Rung 0 only. The full onramp is the campaign destination.
+
+---
+
 ## Open Questions
 - Exact realization curve: weighting of provisioning vs deeds; how fast.
 - Do signature behaviors (Bulwark/Grace/Edge/Valor) ever need to be surfaced to
@@ -207,3 +238,4 @@ Nothing here is invented for its own sake; every stat feeds a live mechanic:
 - Can rare legendary deeds grant/deepen traits — and how rare?
 - Whole-company inspiration vs single-hero (from battlegrounds-rpg.md) interacts
   with Captain Will/Fate — resolve together when inspiration is built.
+- Rung-3 first-hazard fork: Cold/Warmth vs Old Forest Wakefulness.

@@ -1,0 +1,31 @@
+{
+  "id": "barghest_hunt",
+  "name": "The Barghest Hunt",
+  "region": "the Bree-moors, by night",
+  "tier": "Fell",
+  "recLevel": 16,
+  "resupply": "none",
+  "rewards": "a coal-black pelt; the moor gone quiet",
+  "flavorIntro": "Great hounds out of old stories, eyes like banked embers, that cut the weakest from the herd and run it down.",
+  "stages": [
+    {
+      "stageId": "main",
+      "label": "The Barghest Hunt",
+      "type": "attrition",
+      "objective": "kill",
+      "durationSec": 2100,
+      "resolve": 3600,
+      "drain": 50,
+      "spike": 130,
+      "spikeIntervalSec": 4,
+      "physMitPct": 10,
+      "dread": 0,
+      "shadow": 0,
+      "disease": 0,
+      "cold": 0,
+      "heat": 0,
+      "wakefulness": 0,
+      "stageFlavor": ""
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "id": "ringwraith_morgul",
+  "name": "A Rider in Black",
+  "region": "near Weathertop",
+  "tier": "Nine",
+  "recLevel": 40,
+  "resupply": "none",
+  "rewards": "a tattered black cloak; the band's courage tested",
+  "flavorIntro": "A cry in the dark, and a deathly cold. It cannot be slain \u2014 hold, keep the light, and endure until it withdraws.",
+  "stages": [
+    {
+      "stageId": "main",
+      "label": "A Rider in Black",
+      "type": "survival",
+      "objective": "survive",
+      "durationSec": 3600,
+      "resolve": 0,
+      "drain": 95,
+      "spike": 160,
+      "spikeIntervalSec": 4,
+      "physMitPct": 0,
+      "dread": 8,
+      "shadow": 6,
+      "disease": 0,
+      "cold": 3,
+      "heat": 0,
+      "wakefulness": 0,
+      "stageFlavor": ""
+    }
+  ]
+}

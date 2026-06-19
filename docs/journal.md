@@ -5,14 +5,14 @@
 
 ---
 
-## Current Status — June 16, 2026
+## Current Status — June 18, 2026
 
-**Phase:** Two-faction start complete — both data layer and UI layer wired  
-**V1 progress:** Core loop playable. Two-faction start implemented end-to-end. Full game vision locked and documented in docs/roadmap.md.  
-**What's working:** Player picks two bands at character creation; second band visible on Band screen (locked, greyed, shows "Unlock at cooking 6"); both bands can run concurrent missions; band switcher UI present as two chips at top of Band screen; all missions and members correctly scoped to the currently-viewed band.  
-**What's not wired yet:** Second-band unlock popup not yet built (wishlist). Member inspection RPG UI not yet built (wishlist). Faction-swap token in Market not built.  
-**Next session:** Install and play the current build. Confirm band switcher feel and selection screen flow. Does picking two bands feel meaningful?  
-**Open questions:** None blocking V1. All major design decisions are settled and documented.
+**Phase:** V1 core loop complete. Combat model designed and tooled.  
+**V1 progress:** Core loop playable. Band selection, gathering, cooking, missions, and notifications all wired. Combat system designed in full (not yet built — V2+ destination).  
+**What's working:** Full V1 loop. New design docs: `docs/combat-model.md` (complete combat spec). Encounter tuning toolkit live in `tools/sim/` (HTML simulator + 3 spreadsheets + 14 encounter JSONs). Two tuned encounters validated (Neekerbreekers L1, Wolves L3).  
+**What's not wired yet:** Full combat system (V2+). V1 missions still use simplified buff-strength model. 5th combat role (melee DPS) not yet designed.  
+**Next session:** Play the V1 build to test feel. Then: decide whether any V1 code needs updating for combat forward-compat, or move to designing V2 combat integration.  
+**Open questions:** 5th role design (party-of-5 vs field-4-from-roster; identity; Inspiration). Rung-3 first-hazard fork (Cold vs Wakefulness). Exact magnitude tuning for all combat constants.
 
 ---
 
@@ -701,3 +701,53 @@ UI layer (this session):
 - Near term: Phase 1B — member personalities and food preferences visible in-game
 - Near term: Phase 1C — crafting level design pass
 - Future ideas logged: member inspection screen, second-band unlock popup (both wishlist.md)
+
+---
+
+## Session 8 — June 18, 2026
+**Combat model integrated into repo — design docs and tuning toolkit**
+
+**What was built:**
+- `docs/combat-model.md`: new authoritative readable spec for the full combat
+  system, synthesized from the claude.ai design session handoff. Covers party
+  roles + stat templates, DPS formulas, survival rules, food/hazard mechanics,
+  Inspirations, encounter JSON schema, difficulty onramp, and open threads.
+- `tools/sim/hearthcraft_fight_sim.html`: the validated combat simulator.
+  Open in a browser to run fights and tune encounters.
+- `tools/sim/HearthCraft_Encounter_Builder.xlsx`: encounter authoring
+  spreadsheet. Edit the Sim Encounters tab, load into the sim via Import panel.
+- `tools/sim/HearthCraft_Tier_Planner.xlsx`: food/recipe content and
+  Provisioning Reference (HP/s tiers, antidote ladder).
+- `tools/sim/HearthCraft_Mechanics_Reference.xlsx`: combat number reference.
+  Blue/yellow cells are tunable; values match the simulator.
+- `tools/sim/export_encounters.py`: batch-exports one JSON per encounter tab.
+- `app/src/main/assets/data/encounters/*.json`: 14 encounter files. Two are
+  validated and locked (Neekerbreekers L1, Wolves L3); the rest are
+  placeholder numbers awaiting re-tuning.
+- `docs/design.md`: updated food/buff section — abstract buff vocabulary
+  (Endurance/Agility/Acuity/Warmth/Luck) retired; full stat model documented;
+  V1 simplification layer noted.
+- `docs/progression.md`: difficulty onramp rung ladder added.
+
+**Decisions made:**
+- Old abstract buff types are RETIRED as the design destination. V1 code keeps
+  the simplified buff-strength model as a prototype layer; V2+ builds the full
+  stat system.
+- Encounter JSON schema uses 0–10 severity integers; sim sliders use raw values
+  (alignment is a future polish pass).
+- Encounter JSON holds a `stages` list — even V1 single-stage encounters use
+  this shape so multi-stage is a later data change, not a rewrite.
+- Simulator CDN dependency (SheetJS via cdnjs) is acceptable for a dev tool;
+  paste fallback handles offline use.
+
+**Anything that diverged from docs/design.md:**
+- Food buff model redesigned (direct stat boosts replacing abstract buff types).
+  `docs/design.md` updated to match.
+
+**Coming up:**
+- Next session: play V1 build, confirm feel of the core loop
+- Near term: decide V2 scope — does combat integration come before or after
+  alchemy and recipe discovery?
+- Open design thread: 5th combat role (melee DPS) — party-of-5 vs field-4;
+  identity vs Might Hunter; name and Inspiration
+- Future ideas logged: none this session
