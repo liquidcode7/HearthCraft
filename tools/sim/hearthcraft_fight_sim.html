@@ -242,12 +242,10 @@
 
       <div class="panel"><div class="panel-h">Band &amp; Provisioning</div><div class="panel-b">
         <div class="ctl-group">
-          <h3 onclick="this.parentElement.classList.toggle('open')">Provisioning &#8212; food HP/s <span>&#9432;</span></h3>
-          <div class="gnote">Food HP/s = steady baseline per member. Should offset each member's share of incoming damage so they rarely hit zero. Over-feeding one member past their need gives diminishing returns.</div>
-          <div class="ctl"><label>Warden's meal <span class="val" id="v_fw">26</span></label><input type="range" id="fw" min="0" max="160" value="26"></div>
-          <div class="ctl"><label>Hunter's meal <span class="val" id="v_fh">20</span></label><input type="range" id="fh" min="0" max="160" value="20"></div>
-          <div class="ctl"><label>Keeper's meal <span class="val" id="v_fk">22</span></label><input type="range" id="fk" min="0" max="160" value="22"></div>
-          <div class="ctl"><label>Captain's meal <span class="val" id="v_fc">24</span></label><input type="range" id="fc" min="0" max="160" value="24"></div>
+          <h3 onclick="this.parentElement.classList.toggle('open')">Provisioning &#8212; food level <span>&#9432;</span></h3>
+          <div class="gnote">Cooking level sets the food quality all members eat. Higher levels give more HP/s — how fast the Keeper and party regenerate morale between hits.</div>
+          <div class="ctl"><label>Cooking level <span class="val" id="v_rlevel">4 Hearthkeeper</span></label><input type="range" id="rlevel" min="1" max="50" value="4"></div>
+          <div class="gnote" id="rlevel_hps" style="margin-top:4px">&#8594; 10.0 HP/s per member</div>
           <div class="effect" style="margin-top:6px">Food also boosts STATS. Pick each meal's stat focus &#8212; this feeds damage, penetration (Agi/Mig), healing (Wil), etc.</div>
           <div class="ctl"><label>Warden meal favors <span class="val" id="v_sw">Vit</span></label><input type="range" id="sw" min="0" max="4" value="2"></div>
           <div class="ctl"><label>Hunter meal favors <span class="val" id="v_sh">Agi</span></label><input type="range" id="sh" min="0" max="4" value="1"></div>
@@ -416,6 +414,32 @@
 </div>
 <script>
 
+// ── recipe level → HP/s (same table as run_sim.js) ─────────────────────────
+const TIER_TABLE=[
+  {tier:1,title:"Hearthkeeper",lo:1, hi:4, hpsLo:5,  hpsHi:10 },
+  {tier:2,title:"Initiate",    lo:5, hi:9, hpsLo:10, hpsHi:18 },
+  {tier:3,title:"Apprentice",  lo:10,hi:15,hpsLo:18, hpsHi:30 },
+  {tier:4,title:"Journeyman",  lo:16,hi:22,hpsLo:30, hpsHi:44 },
+  {tier:5,title:"Adept",       lo:23,hi:30,hpsLo:44, hpsHi:62 },
+  {tier:6,title:"Master",      lo:31,hi:40,hpsLo:62, hpsHi:86 },
+  {tier:7,title:"Grandmaster", lo:41,hi:50,hpsLo:86, hpsHi:110},
+];
+const SCURVE_P=1.8;
+function recipeLevelToHps(rl){
+  rl=Math.max(1,Math.min(50,Math.round(rl)));
+  for(const t of TIER_TABLE){
+    if(rl>=t.lo&&rl<=t.hi){
+      const frac=(rl-t.lo)/Math.max(1,t.hi-t.lo);
+      return +(t.hpsLo+Math.pow(frac,SCURVE_P)*(t.hpsHi-t.hpsLo)).toFixed(1);
+    }
+  }
+  return 5;
+}
+function recipeLevelLabel(rl){
+  rl=Math.max(1,Math.min(50,Math.round(rl)));
+  for(const t of TIER_TABLE){if(rl>=t.lo&&rl<=t.hi)return `Lv${rl} ${t.title}`;}
+  return `Lv${rl}`;
+}
 const TPL={
   warden:  {name:"Borin Ironmantle",role:"Warden", cls:"role-warden", soak:true,  color:"#5b7f63", start:{mig:13,agi:6,vit:15,wil:7,fat:6},  grow:{mig:0.5,agi:0.15,vit:0.55,wil:0.2,fat:0.15}},
   hunterA: {name:"Mira",role:"Hunter", cls:"role-hunter", soak:false, color:"#4a6c93", start:{mig:9,agi:15,vit:7,wil:5,fat:9},   grow:{mig:0.3,agi:0.55,vit:0.2,wil:0.15,fat:0.35}},
@@ -461,9 +485,15 @@ function setMode(m){MODE=m;$("mode_att").classList.toggle("on",m===0);$("mode_ti
   if(!running){refreshBoss();refreshRead();}}
 function setSpeed(s){SPEED=s;["spd1","spd4","spd16","spdmax"].forEach((id,i)=>$(id).classList.toggle("on",i===s));if(running){clearInterval(timer);runLoop();}}
 
-const live={dur:"v_dur",boss:"v_boss",drain:"v_drain",spike:"v_spike",spikeiv:"v_spikeiv",phys:"v_phys",fw:"v_fw",fh:"v_fh",fk:"v_fk",fc:"v_fc",lvl:"v_lvl"};
+const live={dur:"v_dur",boss:"v_boss",drain:"v_drain",spike:"v_spike",spikeiv:"v_spikeiv",phys:"v_phys",lvl:"v_lvl"};
 Object.keys(live).forEach(id=>{const el=$(id),out=$(live[id]);
   el.addEventListener("input",()=>{out.textContent=(id==="dur")?fmtT(+el.value):el.value;if(!running){buildParty();refreshRead();refreshBoss();updEffects();statPreview();}});});
+$("rlevel").addEventListener("input",e=>{
+  const rl=+e.target.value,hps=recipeLevelToHps(rl);
+  $("v_rlevel").textContent=recipeLevelLabel(rl);
+  $("rlevel_hps").textContent="→ "+hps+" HP/s per member";
+  if(!running){buildParty();refreshRead();refreshBoss();updEffects();statPreview();}
+});
 $("hflav").addEventListener("input",e=>{$("v_hflav").textContent=(+e.target.value===1)?"might":"agility";if(!running){buildParty();refreshRead();statPreview();}});
 $("burstmul").addEventListener("input",e=>{$("v_burst").textContent=(+e.target.value/100).toFixed(1)+"\u00d7";});
 ["sw","sh","sk","sc"].forEach(id=>{const vid="v_"+id;$(id).addEventListener("input",e=>{$(vid).textContent=STAT_LABEL[STAT_KEYS[+e.target.value]];if(!running){buildParty();statPreview();refreshRead();}});});
@@ -548,7 +578,7 @@ function curParams(){
     wake:statusOn("wake"),alert:antidoteOn("alert"),
     // Fixed 5% base for Grace/Horn/Dawn; Black Arrow grows with time. Captain Red Dawn boosts others via inspBoost state.
     graceBase:0.05,hornBase:0.03,dawnBase:0.03,blackArrowCap:0.06};}
-function foodOf(k){return +({warden:$("fw"),hunter:$("fh"),keeper:$("fk"),captain:$("fc")}[k]).value;}
+function foodOf(k){return recipeLevelToHps(+$("rlevel").value);}
 
 function buildStatusRows(){
   $("status_rows").innerHTML=STATUSES.map(st=>`<div class="ctl" style="margin-bottom:5px"><label style="align-items:center"><span><input type="checkbox" id="st_${st.id}" onchange="onStatusToggle()"> ${st.name}</span><span class="val" id="v_st_${st.id}">0</span></label><input type="range" id="sl_${st.id}" min="0" max="90" value="40" oninput="document.getElementById('v_st_${st.id}').textContent=this.value;if(!running){refreshRead();refreshBoss();}"></div>`).join("");
