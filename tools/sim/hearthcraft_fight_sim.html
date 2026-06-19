@@ -27,6 +27,24 @@
   .tabbar .runstate{margin-left:auto;align-self:center;font-size:11.5px;font-style:italic;color:#6a5638}
   .tab{display:none}.tab.on{display:block}
 
+  /* company tab */
+  .company-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:780px){.company-grid{grid-template-columns:1fr}}
+  .char-card{overflow:hidden;border-radius:3px;border:1px solid var(--rule)}
+  .char-header{padding:10px 14px 9px;display:flex;justify-content:space-between;align-items:baseline}
+  .char-name{font-size:17px;font-weight:600;color:#fff}
+  .char-role{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.78);font-weight:600}
+  .char-body{padding:14px 16px;background:linear-gradient(180deg,#f7f0de,#efe6d2)}
+  .char-bio{font-size:13px;line-height:1.65;color:#3a2e1e;margin-bottom:11px;font-style:italic}
+  .char-mech{font-size:12.5px;line-height:1.6;color:#5a4730;border-top:1px solid var(--rule);padding-top:10px;margin-bottom:11px}
+  .char-insp{border-top:1px solid var(--rule);padding-top:10px}
+  .char-insp-name{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--insp);font-weight:700;margin-bottom:4px}
+  .char-insp-text{font-size:12px;line-height:1.6;color:#6a5030}
+  .hdr-warden{background:var(--warden)}
+  .hdr-hunter{background:var(--hunter)}
+  .hdr-keeper{background:var(--keeper)}
+  .hdr-captain{background:var(--captain)}
+
   .panel{background:linear-gradient(180deg,#f7f0de,#efe6d2);border:1px solid var(--rule);border-radius:3px;box-shadow:0 1px 0 #fff inset,0 2px 8px rgba(60,40,20,.10)}
   .panel-h{font-size:11.5px;letter-spacing:.15em;text-transform:uppercase;color:#fff;background:var(--roast);padding:7px 13px;border-radius:2px 2px 0 0;font-weight:600}
   .panel-b{padding:16px}
@@ -157,6 +175,7 @@
     <button id="tab_setup" class="on" onclick="showTab('setup')">1 &middot; Setup</button>
     <button id="tab_live" onclick="showTab('live')">2 &middot; Live</button>
     <button id="tab_results" onclick="showTab('results')">3 &middot; Results</button>
+    <button id="tab_company" onclick="showTab('company')">4 &middot; The Company</button>
     <span class="runstate" id="runstate">not yet run</span>
   </div>
 
@@ -202,7 +221,7 @@
           <div class="ctl" id="r_boss"><label>Boss resolve (kill pool) <span class="val" id="v_boss">8500</span></label><input type="range" id="boss" min="1000" max="20000" step="250" value="8500"></div>
           <div class="ctl"><label>Steady drain / sec <span class="val" id="v_drain">70</span></label><input type="range" id="drain" min="0" max="220" value="70"><div class="effect" id="e_drain"></div></div>
           <div class="ctl"><label>Spike size (crit potency) <span class="val" id="v_spike">160</span></label><input type="range" id="spike" min="0" max="340" step="10" value="160"><div class="effect" id="e_spike"></div></div>
-          <div class="ctl"><label>Seconds between spikes <span class="val" id="v_spikeiv">12</span></label><input type="range" id="spikeiv" min="2" max="20" value="12"><div class="effect">spikes hit ONE member at random — less frequent and harder; the danger is they can land on a fragile member (Hunter/Keeper), with no mid-fight reaction possible</div></div>
+          <div class="ctl"><label>Seconds between spikes (mean) <span class="val" id="v_spikeiv">12</span></label><input type="range" id="spikeiv" min="2" max="20" value="12"><div class="effect">interval is randomised ±50% each spike, damage ±30% — same mean, real variance. Fragile members (Hunter/Keeper) can catch a bad run of spikes with no mid-fight reaction possible.</div></div>
         </div>
         <div class="ctl-group" id="r_phys">
           <h3 onclick="this.parentElement.classList.toggle('open')">Physical mitigation (armor) <span>&#9432;</span></h3>
@@ -322,6 +341,77 @@
   </div>
 
 
+  <!-- ===================== TAB 4: THE COMPANY ===================== -->
+  <div class="tab" id="pane_company">
+    <div class="company-grid">
+
+      <!-- WARDEN -->
+      <div class="char-card">
+        <div class="char-header hdr-warden">
+          <span class="char-name">Borin Ironmantle</span>
+          <span class="char-role">Warden</span>
+        </div>
+        <div class="char-body">
+          <div class="char-bio">Never complained once in forty years. Reliable as bedrock. Ask how he is and he says "fine," means it, and is back at work before you finish asking. The band does not talk about what they owe him. They know.</div>
+          <div class="char-mech">The wall at the front. High Might and Vitality mean he soaks the most punishment and lasts the longest. His contribution to bringing an enemy down is modest — that is not his purpose. His purpose is to still be standing when others would not be.<br><br>He is the only member who can step between a killing blow and the Keeper. He will do this without being asked, and he will do it as many times as he is able.</div>
+          <div class="char-insp">
+            <div class="char-insp-name">&#10022; The Horn of Gondor</div>
+            <div class="char-insp-text">When the line is breaking and two or more are in peril, Borin has been known to blow a great horn — and for a time, every blow meant for another lands on him instead. He does not explain why he has such a horn, or where it came from. He does not have to.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- HUNTER -->
+      <div class="char-card">
+        <div class="char-header hdr-hunter">
+          <span class="char-name">Mira</span>
+          <span class="char-role">Hunter</span>
+        </div>
+        <div class="char-body">
+          <div class="char-bio">Grew up among the Greycloaks. Has known Aldric since she was small. There is nothing uncertain about who she is or what she is for — she has always known, and that quiet certainty is not arrogance, it is inheritance. Notices things she does not mention until exactly the right moment.</div>
+          <div class="char-mech">The band's primary blade. Her Agility drives most of the damage that kills the enemy, and her penetration is what strips armor from anything wearing it — no other member comes close. She carries none of Borin's durability, and a spike that finds her is genuinely dangerous.<br><br>Feed her well. She cannot do her work from the floor.</div>
+          <div class="char-insp">
+            <div class="char-insp-name">&#10022; Black Arrow</div>
+            <div class="char-insp-text">When the fight is turning against the band and the kill seems out of reach, Mira has once or twice drawn something from her quiver that is not an ordinary arrow. What follows is not ordinary either. Against something killable, a significant piece of it simply stops fighting. Against something that cannot be killed, the shot buys time — the terror flinches, and the clock runs shorter.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- KEEPER -->
+      <div class="char-card">
+        <div class="char-header hdr-keeper">
+          <span class="char-name">Cael</span>
+          <span class="char-role">Keeper</span>
+        </div>
+        <div class="char-body">
+          <div class="char-bio">Has kept a field journal since boyhood — threats, remedies, routes, lore reaching back to the Elder Days. Every member of the company has borrowed it at some point, usually without asking. They tease him about it the way you tease family. He is the memory of this company and he carries that with quiet pride.</div>
+          <div class="char-mech">The reason the others are still standing. His Will determines both how hard he hits and — far more importantly — how much he restores when a comrade hits zero. He has five of these interventions in him per fight. He uses each one carefully. Losing Cael is the beginning of the spiral; there is no one else who can pull a fallen member back.<br><br>Borin guards him from killing blows. That arrangement is not accidental.</div>
+          <div class="char-insp">
+            <div class="char-insp-name">&#10022; Laurelin's Grace</div>
+            <div class="char-insp-text">Occasionally — rarely — when a member should be done, grievously wounded and out of the fight, Cael calls on something beyond ordinary skill. The wounds reset. The member stands again. It has happened only a handful of times. Cael does not take credit for it, and the others have learned not to ask.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CAPTAIN -->
+      <div class="char-card">
+        <div class="char-header hdr-captain">
+          <span class="char-name">Aelindra</span>
+          <span class="char-role">Captain</span>
+        </div>
+        <div class="char-body">
+          <div class="char-bio">Ancient and precise. Speaks as though each word costs something. Has outlived three forests and is not sentimental about it. Her stillness in a bad moment steadies everyone around her — not because she says anything, but because she does not move.</div>
+          <div class="char-mech">Durable where the Hunter is fragile, steadying where the Keeper is singular. Her Will and Fate feed into the band's resistance to Dread — the cowering of courage before evil. Against enemies that carry fear as a weapon, she is the difference between a band that fights and one that breaks.<br><br>Her damage is secondary. Her presence is not.</div>
+          <div class="char-insp">
+            <div class="char-insp-name">&#10022; Wrath, Ruin, and the Red Dawn</div>
+            <div class="char-insp-text">In the worst moments — when the line is cracking and two or more are in peril — Aelindra has been known to say something. Nobody remembers the words exactly. What they remember is the feeling: that the world had not ended yet, that there was still something worth fighting for, and that they were on their feet again. All of them. Every Inspiration that follows in the next half-minute seems to come easier.</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
   <div class="tooltip" id="tooltip"></div>
 </div>
 <script>
@@ -361,10 +451,10 @@ const fmtT=s=>`${Math.floor(s/60)}:${String(Math.max(0,s)%60).padStart(2,"0")}`;
 function roster(){const hk=(+$("hflav").value===1)?"hunterM":"hunterA";return {warden:TPL.warden,hunter:TPL[hk],keeper:TPL.keeper,captain:TPL.captain};}
 
 let MODE=0,SPEED=1,running=false,timer=null,t=0,P=null,maxT=0;
-let M={},events=[],fired={},windows={},baFired=false,series=[],rescuesUsed=0,wardsUsed=0,inspBoost=0,prevTrouble=0;
+let M={},events=[],fired={},windows={},baFired=false,series=[],rescuesUsed=0,wardsUsed=0,inspBoost=0,prevTrouble=0,nextSpikeAt=0;
 const SPEED_MS=[1000,250,62,0];
 
-function showTab(name){['setup','live','results'].forEach(n=>{$('pane_'+n).classList.toggle('on',n===name);$('tab_'+n).classList.toggle('on',n===name);});}
+function showTab(name){['setup','live','results','company'].forEach(n=>{$('pane_'+n).classList.toggle('on',n===name);$('tab_'+n).classList.toggle('on',n===name);});}
 function setMode(m){MODE=m;$("mode_att").classList.toggle("on",m===0);$("mode_tim").classList.toggle("on",m===1);
   $("r_boss").style.display=m===1?"none":"";$("r_phys").style.display=m===1?"none":"";
   $("g_ttklabel").textContent=m===1?"Clock remaining":"Time-to-kill";
@@ -567,18 +657,20 @@ function stepOnce(){
   // Keeper rescues someone at zero — but only if charges remain (capped per fight)
   if(!M.keeper.grievous && M.keeper.hp>0 && rescuesUsed<RESCUE_CAP){for(const k of ORDER){if(k==="keeper"||M[k].grievous)continue;if(M[k].hp<=0){rescue=k;break;}}M.keeper.action=rescue?"burst":"damage";}
   else if(!M.keeper.grievous){M.keeper.action="damage";}
-  const isSpike=(t%P.spikeiv===0)&&P.spike>0;
+  const isSpike=(P.spike>0)&&(t>=nextSpikeAt);
   // STEADY DRAIN: spread across STANDING members only — downed members have no morale left to bleed, so loss concentrates pressure on survivors
   {const living=act.filter(k=>M[k].hp>0); if(living.length)living.forEach(k=>{M[k].hp-=P.drain/living.length;});}
-  // SPIKE (crit): lands on ONE random member — PURE random, so fragile members are exposed (that's the danger). The RNG texture layer.
+  // SPIKE: variable interval (±50% jitter around mean) and damage range (±30%) — creates genuine variance rather than a deterministic metronome
   if(isSpike){
+    nextSpikeAt = t + Math.round(P.spikeiv * (0.5 + Math.random()));
+    const hit = P.spike * (0.7 + Math.random() * 0.6);
     let target, guarded=false;
     if(windows.horn>0&&!M.warden.grievous&&M.warden.hp>0){target="warden";}  // Horn of Gondor: Warden pulls ALL spikes for the window
     else{
       const living=act.filter(k=>M[k].hp>0);
       target=living.length?living[Math.floor(Math.random()*living.length)]:null;
       // THE TANK GUARDS THE HEALER FROM A KILLING BLOW ONLY: if a spike would DOWN a standing Keeper, a standing Warden takes it instead — but only WARD_CAP times per fight. Non-lethal spikes hit the Keeper normally.
-      if(target==="keeper" && (M.keeper.hp-P.spike)<=0 && M.warden.hp>0 && !M.warden.grievous && wardsUsed<WARD_CAP){
+      if(target==="keeper" && (M.keeper.hp-hit)<=0 && M.warden.hp>0 && !M.warden.grievous && wardsUsed<WARD_CAP){
         target="warden"; guarded=true; wardsUsed++;
       }
     }
@@ -709,6 +801,7 @@ function finish(label,cls){clearInterval(timer);running=false;const v=$("verdict
 
 function prep(){buildParty();$("log").innerHTML="";t=0;P=curParams();maxT=P.duration;window._boss=P.boss;
   events=[];fired={};windows={dawn:0,horn:0};baFired=false;series=[];rescuesUsed=0;wardsUsed=0;inspBoost=0;prevTrouble=0;
+  nextSpikeAt=Math.round(P.spikeiv*(0.5+Math.random()));
   $("verdict").textContent="ENGAGED";$("verdict").className="verdict v-fighting";
   // --- verbose startup log ---
   const sus=sustain(), drain=P.drain, spike=P.spike, iv=P.spikeiv;

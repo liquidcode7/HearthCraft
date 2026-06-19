@@ -3,13 +3,56 @@
 // Same math as hearthcraft_fight_sim.html — no DOM required.
 // Usage:
 //   node run_sim.js [--runs N] [--level L] [--duration S] [--food W,H,K,C]
+//                   [--rlevel R]  (recipe cooking level 1-50; sets uniform HP/s from tier table)
 //                   [--boss R] [--drain D] [--spike S] [--spikeiv I]
 //                   [--phys P] [--dread V] [--shadow V] [--cold V] [--heat V]
 //                   [--disease V] [--wake V] [--hope V] [--radiance V]
 //                   [--hale V] [--warmth V] [--heatease V] [--alert V]
 //                   [--survival] [--hunter might] [--burstmul F] [--verbose]
 //
+// --food sets raw HP/s per member (W,H,K,C). --rlevel sets a single cooking
+// level and derives HP/s from the tier table (same value for all members).
+// --rlevel is overridden by --food if both are provided.
+//
 // Runs N fights and prints aggregate stats + Inspiration fire rates.
+
+// ── recipe level → HP/s (piecewise linear from Tier Planner) ──────────────
+// Tier breakpoints: [cookLvlStart, cookLvlEnd, hpsMin, hpsMax]
+const TIER_TABLE = [
+  { tier:1, title:"Hearthkeeper", lo:1,  hi:4,  hpsLo:5,   hpsHi:10  },
+  { tier:2, title:"Initiate",     lo:5,  hi:9,  hpsLo:10,  hpsHi:18  },
+  { tier:3, title:"Apprentice",   lo:10, hi:15, hpsLo:18,  hpsHi:30  },
+  { tier:4, title:"Journeyman",   lo:16, hi:22, hpsLo:30,  hpsHi:44  },
+  { tier:5, title:"Adept",        lo:23, hi:30, hpsLo:44,  hpsHi:62  },
+  { tier:6, title:"Master",       lo:31, hi:40, hpsLo:62,  hpsHi:86  },
+  { tier:7, title:"Grandmaster",  lo:41, hi:50, hpsLo:86,  hpsHi:110 },
+];
+
+// Convex power: > 1 gives slow start within each tier (small early gains,
+// bigger gains as you approach the tier ceiling). This creates a natural pull
+// toward the next tier — the last level of each tier is the biggest reward.
+// Tier boundaries stay anchored; only the within-tier shape changes.
+const SCURVE_P = 1.8;
+
+function recipeLevelToHps(rl) {
+  const rlClamped = Math.max(1, Math.min(50, Math.round(rl)));
+  for (const t of TIER_TABLE) {
+    if (rlClamped >= t.lo && rlClamped <= t.hi) {
+      const frac = (rlClamped - t.lo) / Math.max(1, t.hi - t.lo);
+      const curved = Math.pow(frac, SCURVE_P); // steep at tier entry, flattens toward tier cap
+      return +(t.hpsLo + curved * (t.hpsHi - t.hpsLo)).toFixed(1);
+    }
+  }
+  return 5;
+}
+
+function recipeLevelLabel(rl) {
+  const rlClamped = Math.max(1, Math.min(50, Math.round(rl)));
+  for (const t of TIER_TABLE) {
+    if (rlClamped >= t.lo && rlClamped <= t.hi) return `Lv${rlClamped} ${t.title}`;
+  }
+  return `Lv${rlClamped}`;
+}
 
 // ── constants (mirrored from the browser sim) ──────────────────────────────
 const TPL = {
@@ -38,12 +81,27 @@ function parseArgs() {
   const a = process.argv.slice(2);
   const get = (flag, def) => { const i = a.indexOf(flag); return i>=0 ? a[i+1] : def; };
   const num = (flag, def) => parseFloat(get(flag, def));
-  const food = (get("--food","26,20,22,24")).split(",").map(Number);
+
+  // --rlevel derives uniform HP/s from the tier table; --food overrides it
+  const rLevel   = a.includes("--rlevel") ? parseFloat(get("--rlevel", "1")) : null;
+  const derivedHps = rLevel !== null ? recipeLevelToHps(rLevel) : null;
+  const foodStr  = get("--food", null);
+  let food;
+  if (foodStr) {
+    food = foodStr.split(",").map(Number);
+  } else if (derivedHps !== null) {
+    food = [derivedHps, derivedHps, derivedHps, derivedHps];
+  } else {
+    food = [26, 20, 22, 24]; // default
+  }
+
   return {
     runs:      parseInt(get("--runs", "1000")),
     level:     num("--level",    10),
     duration:  num("--duration", 1800),
     food:      { warden:food[0]??26, hunter:food[1]??20, keeper:food[2]??22, captain:food[3]??24 },
+    rLevel,   // null if not provided
+    derivedHps,
     boss:      num("--boss",    8500),
     drain:     num("--drain",   70),
     spike:     num("--spike",   160),
@@ -123,6 +181,8 @@ function runFight(cfg, verbose) {
 
   let t=0, boss=cfg.boss, maxT=cfg.duration;
   let rescuesUsed=0, wardsUsed=0, inspBoost=0, baFired=false;
+  // first spike fires after one full interval (with jitter)
+  let nextSpikeAt = Math.round(cfg.spikeiv * (0.5 + Math.random()));
   const fired   = {};
   const windows = { dawn:0, horn:0 };
   const events  = [];
@@ -152,23 +212,27 @@ function runFight(cfg, verbose) {
     // steady drain (standing only)
     if (live.length) live.forEach(k => { M[k].hp -= cfg.drain / live.length; });
 
-    // spike
-    const isSpike = (t % cfg.spikeiv === 0) && cfg.spike > 0;
+    // spike — variable interval and damage range
+    const isSpike = (cfg.spike > 0) && (t >= nextSpikeAt);
     if (isSpike) {
+      // schedule next spike: interval × U(0.5, 1.5) — uniform jitter around mean
+      nextSpikeAt = t + Math.round(cfg.spikeiv * (0.5 + Math.random()));
+      // damage roll: base × U(0.7, 1.3)
+      const spikeRoll = cfg.spike * (0.7 + Math.random() * 0.6);
       let target = null;
       if (windows.horn > 0 && !M.warden.grievous && M.warden.hp > 0) {
         target = "warden";
       } else {
         const lv = live;
         target = lv.length ? lv[Math.floor(Math.random()*lv.length)] : null;
-        if (target==="keeper" && (M.keeper.hp-cfg.spike)<=0 && M.warden.hp>0 && !M.warden.grievous && wardsUsed<WARD_CAP) {
+        if (target==="keeper" && (M.keeper.hp-spikeRoll)<=0 && M.warden.hp>0 && !M.warden.grievous && wardsUsed<WARD_CAP) {
           target="warden"; wardsUsed++;
           lg(`${M.warden.tpl.name} guards Cael from killing blow (guard ${wardsUsed}/${WARD_CAP})`);
         }
       }
       if (target) {
-        M[target].hp -= cfg.spike;
-        lg(`spike → ${M[target].tpl.name} (${Math.round(cfg.spike)})`);
+        M[target].hp -= spikeRoll;
+        lg(`spike → ${M[target].tpl.name} (${Math.round(spikeRoll)})`);
       }
     }
 
@@ -270,17 +334,19 @@ function runFight(cfg, verbose) {
     }
 
     // termination
-    if (!cfg.survival && boss <= 0) return _result("VICTORY", t, M, events, rescuesUsed, wardsUsed, logs);
-    if (!ORDER.some(k => !M[k].grievous && M[k].hp>0)) return _result("DEFEAT", t, M, events, rescuesUsed, wardsUsed, logs);
-    if (t >= maxT) return _result(cfg.survival?"REPELLED":"STALEMATE", t, M, events, rescuesUsed, wardsUsed, logs);
+    if (!cfg.survival && boss <= 0) return _result("VICTORY", t, M, events, rescuesUsed, wardsUsed, logs, 0, cfg.boss);
+    if (!ORDER.some(k => !M[k].grievous && M[k].hp>0)) return _result("DEFEAT", t, M, events, rescuesUsed, wardsUsed, logs, boss, cfg.boss);
+    if (t >= maxT) return _result(cfg.survival?"REPELLED":"STALEMATE", t, M, events, rescuesUsed, wardsUsed, logs, boss, cfg.boss);
   }
 }
 
-function _result(outcome, t, M, events, rescuesUsed, wardsUsed, logs) {
+function _result(outcome, t, M, events, rescuesUsed, wardsUsed, logs, bossRemaining, bossMax) {
   const grievous = ORDER.filter(k=>M[k].grievous);
   const totalWounds = ORDER.reduce((s,k)=>s+M[k].wounds+(M[k].grievous?GRIEVOUS:0),0);
   const insps = events.filter(e=>/Grace|Horn|Red Dawn|Black Arrow/.test(e.kind));
+  const closeness = bossMax > 0 ? bossRemaining / bossMax : 0; // 0 = kill, 1 = never scratched
   return { outcome, t, grievous, totalWounds, rescuesUsed, wardsUsed, events, insps, logs,
+    bossRemaining, closeness,
     wounds: Object.fromEntries(ORDER.map(k=>[k, M[k].wounds+(M[k].grievous?GRIEVOUS:0)])) };
 }
 
@@ -290,6 +356,8 @@ function runMany(cfg, n, verbose) {
   const inspFired = { "Laurelin's Grace":0, "The Horn of Gondor":0, "Wrath, Ruin, and the Red Dawn":0, "Black Arrow":0, "Black Arrow (flaming)":0 };
   let totalWounds=0, totalRescues=0, totalWardsUsed=0, totalTime=0;
   const woundsByRole = Object.fromEntries(ORDER.map(k=>[k,0]));
+  // close-call tracking: defeats where enemy was < 25% resolve remaining
+  let closeDefeats=0, totalBossRemaining=0, defeatCount=0;
   let sample = null;
 
   for (let i=0; i<n; i++) {
@@ -301,10 +369,16 @@ function runMany(cfg, n, verbose) {
     totalTime    += r.t;
     ORDER.forEach(k => woundsByRole[k] += r.wounds[k]);
     r.insps.forEach(e => { if (inspFired[e.kind]!==undefined) inspFired[e.kind]++; });
+    if (r.outcome === "DEFEAT" || r.outcome === "STALEMATE") {
+      defeatCount++;
+      totalBossRemaining += r.bossRemaining;
+      if (r.closeness <= 0.25) closeDefeats++;
+    }
     if (i===0) sample = r;
   }
 
-  return { counts, inspFired, totalWounds, totalRescues, totalWardsUsed, totalTime, woundsByRole, n, sample };
+  return { counts, inspFired, totalWounds, totalRescues, totalWardsUsed, totalTime,
+           woundsByRole, n, sample, closeDefeats, totalBossRemaining, defeatCount };
 }
 
 // ── reporting ──────────────────────────────────────────────────────────────
@@ -317,6 +391,13 @@ function report(cfg, res) {
   console.log(`Runs: ${n}  |  Level ${cfg.level}  |  Duration ${fmtT(cfg.duration)}  |  ${cfg.survival?"SURVIVAL":"ATTRITION"}`);
   console.log(`Boss ${cfg.boss} resolve  |  Drain ${cfg.drain}/s  |  Spike ${cfg.spike} every ${cfg.spikeiv}s`);
   if (cfg.phys>0) console.log(`Armor ${Math.round(cfg.phys*100)}%`);
+  // food line: show recipe level + HP/s if --rlevel was used, otherwise raw HP/s
+  if (cfg.rLevel !== null) {
+    const label = recipeLevelLabel(cfg.rLevel);
+    console.log(`Food: ${label}  →  ${cfg.derivedHps} HP/s per member`);
+  } else {
+    console.log(`Food W/H/K/C: ${cfg.food.warden}/${cfg.food.hunter}/${cfg.food.keeper}/${cfg.food.captain}/s`);
+  }
   const haz=[];
   if(cfg.dread>0) haz.push(`Dread ${Math.round(cfg.dread*100)}%`+(cfg.hope>0?` Hope ${cfg.hope}`:""));
   if(cfg.shadow>0) haz.push(`Shadow ${cfg.shadow}`+(cfg.radiance>0?` Radiance ${cfg.radiance}`:""));
@@ -325,10 +406,22 @@ function report(cfg, res) {
   if(cfg.disease>0) haz.push(`Disease ${cfg.disease}`+(cfg.hale>0?` Hale ${cfg.hale}`:""));
   if(cfg.wake>0)    haz.push(`Wake ${cfg.wake}`+(cfg.alert>0?` Alert ${cfg.alert}`:""));
   if(haz.length) console.log(`Hazards: ${haz.join("  ")}`);
-  console.log(`Food W/H/K/C: ${cfg.food.warden}/${cfg.food.hunter}/${cfg.food.keeper}/${cfg.food.captain}/s`);
 
   console.log("\n── Outcomes ──");
   Object.entries(res.counts).forEach(([k,v])=>{ if(v>0) console.log(`  ${k.padEnd(10)} ${pct(v).padStart(6)}  (${v})`); });
+
+  // close-call block — only shown when there are defeats/stalemates
+  if (res.defeatCount > 0) {
+    const avgBossLeft = (res.totalBossRemaining / res.defeatCount / cfg.boss * 100).toFixed(1);
+    const closeDefeats = res.closeDefeats;
+    const closePct = (closeDefeats / res.defeatCount * 100).toFixed(1);
+    console.log("\n── On defeat ──");
+    console.log(`  Enemy resolve remaining  avg ${avgBossLeft}% of max`);
+    console.log(`  Close calls (< 25% left)     ${closePct}% of defeats  (${closeDefeats}/${res.defeatCount})`);
+    if (parseFloat(avgBossLeft) < 20) {
+      console.log(`  ★ Near-miss zone — most defeats came with enemy almost dead`);
+    }
+  }
 
   console.log("\n── Averages (per fight) ──");
   console.log(`  Duration    ${fmtT(Math.round(res.totalTime/n))}`);
