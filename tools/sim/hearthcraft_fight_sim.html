@@ -352,14 +352,17 @@
       <div class="results-grid">
         <div class="panel chart-card"><div class="ch-h">Effective DPS over time</div><div class="ch-body" id="ch_dps"></div><div class="chart-legend" id="lg_dps"></div></div>
         <div class="panel chart-card"><div class="ch-h">Party Morale over time</div><div class="ch-body" id="ch_morale"></div><div class="chart-legend" id="lg_morale"></div></div>
-        <div class="panel chart-card"><div class="ch-h">Mitigation &#8212; DPS preserved by counters</div><div class="ch-body" id="ch_mit"></div><div class="chart-legend" id="lg_mit"></div></div>
-        <div class="panel chart-card"><div class="ch-h">DPS per character</div><div class="ch-body" id="ch_dpschar"></div><div class="chart-legend" id="lg_dpschar"></div></div>
-        <div class="panel chart-card"><div class="ch-h">Damage mitigated vs. magic bypassing armor</div><div class="ch-body" id="ch_dmgmit"></div><div class="chart-legend" id="lg_dmgmit"></div></div>
+        <div class="panel chart-card"><div class="ch-h">DPS per character</div><div id="ch_dpschar"></div></div>
+        <div class="panel chart-card"><div class="ch-h">Captain&#8217;s boost to the party</div><div id="ch_captainboost"></div></div>
+        <div class="panel chart-card"><div class="ch-h">Keeper healing</div><div id="ch_keeperheal"></div></div>
+        <div class="panel chart-card"><div class="ch-h">Damage dealt to enemy &#8212; by type</div><div id="ch_damagetype"></div><div id="lg_damagetype"></div></div>
+        <div class="panel chart-card"><div class="ch-h">Armor mitigation</div><div id="ch_armormet"></div></div>
+        <div class="panel chart-card"><div class="ch-h">Dread mitigation</div><div id="ch_dreadmet"></div></div>
         <div class="panel chart-card"><div class="ch-h">Wounds accumulated</div><div class="ch-body" id="ch_wounds"></div><div class="chart-legend" id="lg_wounds"></div></div>
         <div class="panel chart-card"><div class="ch-h">Shadow &#8212; party spirit (Will + Fate)</div><div class="ch-body" id="ch_spirit"></div><div class="chart-legend" id="lg_spirit"></div></div>
       </div>
       <div class="panel insp-timeline" style="margin-top:14px"><div class="panel-h" style="margin:-10px -14px 8px">Inspiration Timeline</div><div id="insp_list"></div></div>
-      <div class="note">All values are per-second (1 tick = 1 second). Hover any chart for exact values. Numbers are placeholders for tuning.</div>
+      <div class="note">All DPS values are averages over the full engagement. Hover line charts for per-second values.</div>
     </div>
   </div>
 
