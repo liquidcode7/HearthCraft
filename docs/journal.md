@@ -5,11 +5,11 @@
 
 ---
 
-## Current Status — June 18, 2026
+## Current Status — June 19, 2026
 
-**Phase:** V1 core loop complete. Combat model designed and tooled.  
+**Phase:** V1 core loop complete. Combat model designed and tooled. Toolkit documented in README.  
 **V1 progress:** Core loop playable. Band selection, gathering, cooking, missions, and notifications all wired. Combat system designed in full (not yet built — V2+ destination).  
-**What's working:** Full V1 loop. New design docs: `docs/combat-model.md` (complete combat spec). Encounter tuning toolkit live in `tools/sim/` (HTML simulator + 3 spreadsheets + 14 encounter JSONs). Two tuned encounters validated (Neekerbreekers L1, Wolves L3).  
+**What's working:** Full V1 loop. `docs/combat-model.md` (complete combat spec). Encounter tuning toolkit live in `tools/sim/` (HTML simulator + 3 spreadsheets + 14 encounter JSONs). Two tuned encounters validated (Neekerbreekers L1, Wolves L3). README updated to document the toolkit.  
 **What's not wired yet:** Full combat system (V2+). V1 missions still use simplified buff-strength model. 5th combat role (melee DPS) not yet designed.  
 **Next session:** Play the V1 build to test feel. Then: decide whether any V1 code needs updating for combat forward-compat, or move to designing V2 combat integration.  
 **Open questions:** 5th role design (party-of-5 vs field-4-from-roster; identity; Inspiration). Rung-3 first-hazard fork (Cold vs Wakefulness). Exact magnitude tuning for all combat constants.
@@ -751,3 +751,28 @@ UI layer (this session):
 - Open design thread: 5th combat role (melee DPS) — party-of-5 vs field-4;
   identity vs Might Hunter; name and Inspiration
 - Future ideas logged: none this session
+
+---
+
+## Session 9 — June 19, 2026
+**README updated to document the combat toolkit**
+
+Completed the one remaining task from Session 8: updated `README.md` to reflect
+the current state of the project.
+
+**What was built:**
+- `README.md`: Updated "Current State" section; added new "Encounter Toolkit"
+  section documenting `tools/sim/` (simulator, spreadsheet, exporter, reference
+  spreadsheets).
+
+**Decisions made:**
+- Toolkit section lives in the README rather than a separate tools/README — keeps
+  everything in one place for a project this size.
+
+**Anything that diverged from docs/design.md:**
+- None.
+
+**Coming up:**
+- Next session: play V1 build, confirm feel of the core loop
+- Near term: decide V2 scope — combat integration vs alchemy/recipe discovery
+- Open design thread: 5th combat role

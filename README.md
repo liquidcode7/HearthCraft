@@ -129,7 +129,7 @@ Ordinary wounds heal with time and the right food — back in the player's domai
 
 ## Current State
 
-The provisioning loop is in active development. It is not a prototype to be replaced — it is the permanent foundation everything else extends.
+The provisioning loop is complete and playable. The combat model is fully designed and tuned. Encounter data is ready for the simulator now, and for the Android app when combat is built in V2.
 
 **What exists today:**
 - Working gather → cook → provision → mission loop
@@ -142,6 +142,45 @@ The provisioning loop is in active development. It is not a prototype to be repl
 - Harvest collect mechanic — forage and farm results are claimed actively, not auto-deposited
 - Intro screen with opening lore, band selection, and welcome quotes
 - Four bands: The Mithlost, The Undermarch, The Freewake, The Greycloaks — each with four named members (Captain, Warden, Keeper, Hunter)
+- Full combat model spec — party stats, DPS, mitigation, hazards, food-stat model, Inspiration (`docs/combat-model.md`)
+- 14 encounter JSON files across L1–L40 in `app/src/main/assets/data/encounters/`
+- Encounter design and tuning toolkit in `tools/sim/` (see below)
+
+---
+
+## Encounter Toolkit
+
+Design and tune encounters before they touch the Android app. Everything lives in `tools/sim/`.
+
+### `hearthcraft_fight_sim.html`
+Standalone browser-based fight simulator — open directly in any browser, no server required.
+
+- Manually configure party stats, food buffs, and hazard antidotes, or import an encounter directly from the spreadsheet
+- Simulates the fight tick-by-tick (1 tick = 1 real second) with a live event log
+- Duration clamped by level: L1–9 = 20–30 min; L10+ = 30–60 min
+- Supports **Resolution** mode (fight to a winner) and **Survival/Timer** mode (hold for the duration)
+
+### `HearthCraft_Encounter_Builder.xlsx`
+The encounter design spreadsheet:
+
+- **Sim Encounters** tab — flat import table; paste into the simulator's import field. Green = validated, amber = placeholder needing tuning.
+- **Schema** — field-by-field reference for the encounter format
+- **Export Help** — instructions for the Python exporter
+- **Template / Template (2-stage)** — copy to design a new encounter
+- Individual encounter tabs (L3–L40) — full design notes, flavor text, and per-stage parameters
+
+### `export_encounters.py`
+Reads individual encounter tabs and writes JSON to `app/src/main/assets/data/encounters/`. Run from `tools/sim/`:
+
+```bash
+python export_encounters.py
+```
+
+Requires `openpyxl`: `pip install openpyxl`
+
+### Other reference spreadsheets
+- `HearthCraft_Tier_Planner.xlsx` — enemy tier planning
+- `HearthCraft_Mechanics_Reference.xlsx` — combat constants reference
 
 ---
 
