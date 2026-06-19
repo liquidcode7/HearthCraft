@@ -204,15 +204,19 @@ deep minerals, things that grow without sunlight.
 - **Keldra** (Captain) — Youngest in the company. Ambitious in a way she hasn't
   learned to hide. Food: spicy. Quirk: bold flavors for a bold dwarf.
 
-#### The Freewake — Sea / Corsairs
-Free, chaotic, opportunistic. Answer to no flag and no crown. Eat what they can
-get, go where the money is — but learned the right meal before a hard job changes
-everything. Missions feel like raids, contracts, and opportunities seized.
-Ingredients lean toward sea herbs, salt-cured finds, exotic port goods.
+#### The Kingswake — Sea / Corsairs
+Númenórean-descended mariners — ancient bloodlines, formal bearing, kings three
+thousand years in the dust. The sea took most of that back. What remains is a
+fleet that answers to no crown, because their crown drowned with Númenor; that
+accepts no master, because they remember what mastery once was. Proud,
+deliberate, with a standard for how things are done that comes from somewhere
+older than the Age. Missions feel like contracted work and earned trust. Ingredients
+lean toward sea herbs, salt-cured finds, preserved stores from long voyages.
 
 **Members (V1 — 3 active, full roster in `docs/characters.md`):**
-- **Reva Tidecaller** (Captain) — Charismatic and completely unpredictable.
-  Decides in three seconds flat and is right often enough that no one argues.
+- **Reva Tidecaller** (Captain) — Descended from the old navigator families.
+  Carries herself with the quiet assurance of someone who knows what she is, even
+  if no one else does. Decides fast and is right often enough that no one argues.
   Food: light. Quirk: nothing heavy before a job.
 - **Silas Thorn** (Hunter/ranged) — Quiet, watchful. The fleet uses him as a
   compass — he always knows when something's wrong before it is. Food: herbal.
@@ -372,7 +376,7 @@ duration. Keep the resolution layer thin and replaceable.
 - *How many named band members does the player start with?* — 3 per band (V1).
   Full 8-member rosters are designed in `docs/characters.md` for V2+.
 - *Four starting bands?* — The Mithlost (elves/forest), The Undermarch
-  (dwarves/mountain), The Freewake (corsairs/sea), The Greycloaks
+  (dwarves/mountain), The Kingswake (corsairs/sea), The Greycloaks
   (wardens/borderlands).
 - *Ingredient quality tiers?* — No. Complexity lives in the cook's skill and
   decisions, not raw materials. Never add quality tiers.
@@ -385,3 +389,10 @@ duration. Keep the resolution layer thin and replaceable.
   buff-strength number as a prototype layer; V2+ implements the full stat model.
 - *Mission failure — partial success?* — No partial success. Failure is outright.
   Failed experiments also consume ingredients.
+- *Encounter vs Battleground vocabulary* — **Locked.** **Encounters** = single-stage
+  fights (the V1 unit; what `tools/sim/` runs). **Battlegrounds** = named historical
+  set-pieces (Fornost, Pelennor, Azanulbizar) — multi-stage, differently scored,
+  Campaign-layer content. Same underlying engine, different shape and scope. Reward
+  tables for Encounters are band-agnostic; Named Legendary drops belong to
+  Battlegrounds only. `missions.json` will be renamed `encounters.json` when the
+  Android build catches up.

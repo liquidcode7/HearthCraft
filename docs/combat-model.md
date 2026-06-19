@@ -315,18 +315,21 @@ locked. All others exported from the Encounter Builder are pre-tuned placeholder
 — treat their numbers as starting points, not final values.
 
 ### Neekerbreekers at the Marsh's Edge — recLevel 1 (the cooking tutorial)
-`resolve 50000 · drain 6 · spike 40 · spikeInterval 15 · physMit 0 · no statuses · durationCap 1500 (25 min)`
+`resolve 50000 · drain 12 · spike 75 · spikeInterval 13 (mean, ±50% jitter) · physMit 0 · no statuses · durationCap 1500 (25 min)`
 
 Drain-dominant sustain test. **Unwinnable with no food** (wipe in ~2 min — the
-lesson: go cook). With ~2–3 HP/s per member: squeaky 64% win, ~4 wounds.
-With ~3 HP/s: clean win. With ~4: pristine ceiling (drain-only fights cap here).
+lesson: go cook). Validated at band Lv1 (unlock floor), 5000 runs: FL1=27%, FL2=64%,
+FL3=98%, FL4=~100%. Food is the primary lever — FL3 solves this encounter permanently
+regardless of band level.
 
 ### Wolves in the Chetwood — recLevel 3
-`resolve 55000 · drain 12 · spike 55 · spikeInterval 10 · physMit 0 · no statuses · durationCap 1500`
+`resolve 60000 · drain 18 · spike 75 · spikeInterval 9 (mean, ±50% jitter) · physMit 0 · no statuses · durationCap 1500`
 
 Adds the second question: sustain AND whether the Warden can hold the line for
-the Keeper. Food bar rises from ~2–3 (Neeker) to ~5–7 (Wolves) — the cooking
-tier progression made physical. Under ~5 HP/s: Keeper-fell 100%. At ~7: clean.
+the Keeper. Validated at band Lv3 (unlock floor), 5000 runs: FL3=6%, FL4=81%,
+FL5=93%, FL6=97%, FL7=99%, FL8=~100%. Completely unwinnable at FL1/FL2.
+Needs max Hearthkeeper food (FL4) for a real chance; first Initiate level (FL5) is
+the comfort threshold.
 
 ---
 

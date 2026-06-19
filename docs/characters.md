@@ -19,7 +19,7 @@
 > vocabulary: sweet, hearty, light, spicy, herbal, earthy.
 >
 > Bands: The Mithlost (Forest/elves), The Undermarch (Mountain/dwarves),
-> The Freewake (Sea/Númenórean corsairs), The Greycloaks (Dúnedain of the North).
+> The Kingswake (Sea/Númenórean corsairs), The Greycloaks (Dúnedain of the North).
 
 ---
 
@@ -143,7 +143,7 @@ hard march, but they notice — and remember — who kept them fed.*
 
 ---
 
-## THE FREEWAKE — Sea, corsairs
+## THE KINGSWAKE — Sea, corsairs
 *Free, chaotic, opportunistic. Answer to no flag and no crown. Eat what they can
 get, go where the money is — but learned the right meal before a hard job changes
 everything.*
@@ -290,7 +290,7 @@ they are. Among themselves, that matters not at all.*
 |------|-------|---------|------------------------|----------|
 | Mithlost | Caranthir, Sereghil | Galadorn, Faelith | Lúthiel(m), Thalindel(r) | Aelindra, Orenmir |
 | Undermarch | Borin, Snorri | Thrain, Old Vidrun | Dagra(m), Brokk(r) | Keldra, Durgan |
-| Freewake | Marta, Bosun Harl | Old Cassia, Tally | Rook(m), Silas(r) | Reva, Garrick |
+| Kingswake | Marta, Bosun Harl | Old Cassia, Tally | Rook(m), Silas(r) | Reva, Garrick |
 | Greycloaks | Hollis, Thoral | Cael, Wrenna | Dav(m), Mira(r) | Aldric, Bregan |
 
 Losing any single member never wipes out a role — every role has a backup within

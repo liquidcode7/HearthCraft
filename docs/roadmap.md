@@ -175,6 +175,29 @@ designed. Each has a wishlist entry.
 - **Ettenmoors territory map layout** — needed before Phase 3B
 - **Faction-swap token exact mechanics** — needed before Phase 4C
 
+### Active Design Priorities (June 2026)
+
+Work explicitly queued — design these before building the relevant systems:
+
+1. **Crafting and gathering mechanics redesign** *(first priority)* — the current
+   system (flat gathering sessions, simple cooking tiers) needs a full design pass
+   before Phase 1C. Questions to answer: what does a gathering session feel like at
+   different levels? What are the meaningful decisions? How does farm/garden/forage
+   differentiate beyond output pool? What does cooking mastery feel like vs. just
+   unlocking higher-tier recipes?
+
+2. **Battlegrounds design** — full encounter roster, structure per battleground
+   (cleansing vs. defense vs. assault), clue system design, influence map behavior,
+   per-battleground provisioning requirements. Needed before Phase 2D.
+
+3. **Ettenmoors design** — territory map layout, faction structure, Valor economy
+   design, readiness gate definition, how provisioning scales across multiple forces.
+   Needed before Phase 3A.
+
+4. **Legendary item system** — stats, how items are found, upgrade path, economy
+   (cost to upgrade, Valor vs. gold, rare material gates). Named legendaries are
+   the long-term reward layer; design needed before Phase 2D or Phase 3B.
+
 ---
 
 ## What Never Changes

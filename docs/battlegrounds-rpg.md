@@ -13,7 +13,7 @@
 HearthCraft is two games sharing an economy: a provisioning idle game (gather,
 cook, discover, manage a band) that *fuels* a party combat RPG (stats, gear,
 roles, damage types, wounds, permadeath) fought across a roster of lore-accurate
-battlegrounds, where the player — the warlock-culinarian — is the indispensable
+battlegrounds, where the player — the provisioner — is the indispensable
 support that makes the impossible survivable.
 
 The connective tissue: **your cooking is the raid's sustain mechanic.** The band
@@ -425,7 +425,7 @@ one categorical heroic peak. Balanced in depth, distinct in domain.
   buying time nothing else could (Boromir at Amon Hen, Háma, the breach).
   Endurance made heroic — distinct from a buff or a heal.
 
-**HEALER — domain: life & corruption. Peak: the Pull-Back.**
+**HEALER — domain: life & corruption. Peak: Hands of Healing.**
 - Primary: restores party Morale (the sustain that stretches survivability).
 - Ongoing: **wound prevention** (good in-raid healing means FEWER grievous
   wounds to treat afterward — links to the Houses-of-Healing burden);
@@ -433,11 +433,11 @@ one categorical heroic peak. Balanced in depth, distinct in domain.
   teams with the Captain's dread-resistance vs horror, different jobs);
   **stamina pacing** (spend now vs conserve for a long raid — resource feel
   without a Power pool).
-- Peak — **the Pull-Back:** snatch a JUST-fallen member back from death mid-raid,
+- Peak — **Hands of Healing:** snatch a JUST-fallen member back from death mid-raid,
   reversing a casualty before the permadeath clock starts. Denial of death
   itself, once, when it matters most.
 
-**DAMAGE — domain: the enemy's existence. Peak: the Slaying.**
+**DAMAGE — domain: the enemy's existence. Peak: Deadeye.**
 - Primary: drives kill-speed (the `D_party` half of the two-pool race).
 - Ongoing: **damage-type mastery** (exploits enemy vulnerabilities — fire on
   wights, blades of Westernesse; makes knowing the bestiary mechanically
@@ -445,7 +445,7 @@ one categorical heroic peak. Balanced in depth, distinct in domain.
   (drops the dangerous enemies first — the whipping captain, the caster);
   **momentum** (early kills make later ones easier; clearing rabble frees focus
   for the real threat).
-- Peak — **the Slaying:** fell a Bane or champion in a single legendary blow
+- Peak — **Deadeye:** fell a Bane or champion in a single legendary blow
   (Bard & Smaug, Éowyn's strike, Túrin & Glaurung). The role that can kill the
   unkillable-by-others. NOTE: a Bane may fall to EITHER an inspired peak-Captain
   OR a legendary Slaying — two paths to the impossible kill, one per role.
@@ -457,7 +457,7 @@ Every role is load-bearing FOR THE OTHERS, so no single role can dominate:
   have kept people up to reach a survivable brink.
 - Keeper needs the Warden's threat-control to keep enemies off them.
 - Hunter needs the Captain's dread-resistance to function near the Nine, and the
-  tank to keep them alive long enough to land the Slaying.
+  tank to keep them alive long enough to land the Deadeye.
 Pull one out and the structure sags. This is what makes a party feel like a
 FELLOWSHIP rather than four independent stat-blocks.
 
@@ -465,7 +465,7 @@ FELLOWSHIP rather than four independent stat-blocks.
 
 Different conditions so the drama doesn't all proc at once at the brink:
 - Warden Last Stand → at the brink.
-- Keeper Pull-Back → when a member falls.
+- Keeper Hands of Healing → when a member falls.
 - Hunter Slaying → when facing a Bane/champion.
 - Captain Inspiration → at the PROJECTED-loss brink (forecast, not body count).
 One peak per role (clean, distinct). Reserve any SECOND peak for legendary

@@ -20,7 +20,7 @@ Everything in V1 exists to answer that question. Nothing else.
 
 ### Band Selection
 - Player chooses one of four bands at first launch: The Mithlost,
-  The Undermarch, The Freewake, The Greycloaks
+  The Undermarch, The Kingswake, The Greycloaks
 - Choice is permanent, flavor only, no mechanical difference
 - Each band has a name, a short description, and a regional flavor
 - Band choice determines mission names and ingredient flavor text
@@ -56,7 +56,7 @@ Everything in V1 exists to answer that question. Nothing else.
 - Completing a recipe produces a food item and grants Cooking XP
 - Gathering sessions also grant a small amount of Cooking XP
 - Starting recipe set: 8–10 hand-coded recipes
-- Recipes have a buff type (endurance, agility, focus, warmth, luck)
+- Recipes have a buff type (endurance, agility, acuity, warmth, luck)
   and a buff strength value
 - No recipe discovery in V1 — all recipes are hand-coded and visible
   in the recipe book from the start

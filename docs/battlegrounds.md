@@ -16,7 +16,7 @@ discrete, named battlegrounds drawn from the history of Middle-earth. Each is a
 self-contained scenario you unlock and select into — not a campaign, not a
 persistent place. A menu of escalating tests.
 
-Your role never changes: you are the warlock-culinarian, the indispensable
+Your role never changes: you are the provisioner, the indispensable
 support. In a battleground your provisioning is what lets a coalition force
 attempt something at the edge of possibility. You are the Captain in the LotRO
 sense — never the strongest in the room, but the reason the room holds together.

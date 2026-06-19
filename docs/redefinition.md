@@ -145,7 +145,7 @@ This was the central design worry, and the structure resolves it:
 - **Mission failure is outright** — no partial success. Failed experiments
   consume ingredients.
 - **Four starting bands as permanent flavor choices**, no mechanical difference:
-  The Mithlost, The Undermarch, The Freewake, The Greycloaks.
+  The Mithlost, The Undermarch, The Kingswake, The Greycloaks.
 - **GW2 seven-tier cooking structure** (Hearthkeeper → Grandmaster), no craft
   branches. Specialization trees deferred to post-max-level (wishlist).
 - **Grimoires gate deepest recipes** within tiers 3, 5, and 7 as rare drops.

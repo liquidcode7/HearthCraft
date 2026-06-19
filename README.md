@@ -54,7 +54,7 @@ Ancient, grey, lingering. The ones who stayed to fight a long defeat when others
 ### The Undermarch — Mountain / Dwarves
 Grim, loyal, stone-deep. Words mostly unnecessary. They will not complain about a hard march or a bad night, but they will notice — and remember — who kept them fed. Their missions go into the deep places: cave-ins or worse, holds to reclaim, passes to defend.
 
-### The Freewake — Sea / Númenórean Corsairs
+### The Kingswake — Sea / Númenórean Corsairs
 Their bloodlines trace to Númenór — mariners who carried the old knowledge of sail and star long after the island sank. They answer to no current king because they remember kings who have been dust for three thousand years. Proud, long-memoried, formal in ways that surprise newcomers. Of all the bands, only the Greycloaks share the same ancient blood — two branches of the same lineage, grown in different directions.
 
 ### The Greycloaks — Eriador / Dúnedain of the North
@@ -141,7 +141,7 @@ The provisioning loop is complete and playable. The combat model is fully design
 - Market for buying seeds with earned gold
 - Harvest collect mechanic — forage and farm results are claimed actively, not auto-deposited
 - Intro screen with opening lore, band selection, and welcome quotes
-- Four bands: The Mithlost, The Undermarch, The Freewake, The Greycloaks — each with four named members (Captain, Warden, Keeper, Hunter)
+- Four bands: The Mithlost, The Undermarch, The Kingswake, The Greycloaks — each with four named members (Captain, Warden, Keeper, Hunter)
 - Full combat model spec — party stats, DPS, mitigation, hazards, food-stat model, Inspiration (`docs/combat-model.md`)
 - 14 encounter JSON files across L1–L40 in `app/src/main/assets/data/encounters/`
 - Encounter design and tuning toolkit in `tools/sim/` (see below)

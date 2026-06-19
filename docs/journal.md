@@ -7,12 +7,12 @@
 
 ## Current Status — June 19, 2026
 
-**Phase:** V1 core loop complete. Combat model designed and tooled. Both Rung 0 encounters fully validated with correct band levels and fixed tier table.
-**V1 progress:** Core loop playable. Combat system designed in full (not yet built — V2+ destination). Two V1 encounters validated and locked.
-**What's working:** Full V1 loop. Combat simulator. Tier table fixed (no more zero-gain at tier boundaries). Neekerbreekers re-validated at band Lv1: 27/64/98/~100%. Wolves validated at band Lv3: FL3=6%, FL4=81%, FL5=93%, FL6=97%, FL7=99%, FL8=~100%. Full band×food matrix run for both encounters. HTML sim updated with cooking-level slider and stat-focus dropdowns.
-**What's not wired yet:** Full combat system (V2+). Encounter Builder food-level selector. 5th combat role not yet designed. Encounter/Battleground vocabulary not yet in design.md. missions.json needs replacing with encounters.json. Progression ladder not yet formally designed.
-**Next session:** Design the food/party/encounter progression ladder formally. Then move to recipe/XP design.
-**Open questions:** 5th role design. Rung-3 first-hazard fork (Cold vs Wakefulness). Encounter vs Battleground vocabulary not yet in design.md. XP design for cooking. Formal encounter rung progression ladder.
+**Phase:** V1 core loop complete. Combat model designed and tooled. Both Rung 0 encounters fully validated. Full doc audit complete. Kingswake rename done.
+**V1 progress:** Core loop playable. Combat system designed in full (not yet built — V2+ destination). Two V1 encounters validated and locked. All docs synced.
+**What's working:** Full V1 loop. Combat simulator. Both validated encounter JSONs have correct fight params. All docs in sync. Four bands: The Mithlost, The Undermarch, The Kingswake, The Greycloaks.
+**What's not wired yet:** Full combat system (V2+). missions.json → encounters.json rename. Encounter Builder food-level selector. 5th combat role not yet designed. Progression ladder not yet formally designed. Crafting/gathering mechanics redesign pending.
+**Next session:** Design the crafting and gathering mechanics (redesign pass). Then: Battlegrounds design, Ettenmoors design, legendary item system.
+**Open questions:** 5th role design. Rung-3 first-hazard fork (Cold vs Wakefulness). XP design for cooking. Formal encounter rung progression ladder. Crafting/gathering redesign scope.
 
 ---
 
@@ -938,6 +938,32 @@ Sim-tuning session. No Kotlin touched. All work in the combat simulator and enco
 
 ---
 
+## Session 14 — June 19, 2026
+**Repo-wide doc audit and sync**
+
+Full read of all docs, data files, and JSON encounters to find stale or inconsistent info. Eight issues found and fixed.
+
+**What was fixed:**
+- `app/src/main/assets/data/encounters/neekerbreekers_midgewater.json`: fight params corrected to validated numbers (`drain 6→12, spike 40→75, spikeIntervalSec 15→13`). The designNote had the right numbers but the actual stage block still had the old pre-tuning values.
+- `docs/combat-model.md`: "Tuned Encounters" section updated with final validated params and win-rate summaries for both encounters (was pre-tuning placeholder numbers).
+- `docs/battlegrounds.md`: deprecated "warlock-culinarian" title removed (CLAUDE.md: use "the player" or "the provisioner" until title is locked).
+- `docs/battlegrounds-rpg.md`: same deprecated title removed; heroic peak renames propagated — "the Pull-Back" → Hands of Healing, "the Slaying" → Deadeye (locked in redefinition.md, not yet synced here).
+- `docs/design.md`: Freewake identity reworked to match Númenórean-descended framing established in Session 14/16 (bands.json was updated then; design.md was not). Also added Encounter vs Battleground vocabulary to Resolved Open Questions.
+- `docs/v1-plan.md`: buff type "focus" → "acuity" (renamed Session 4, missed here).
+
+**Decisions made:**
+- None. This was a sync session only — no new design decisions.
+
+**Anything that diverged from docs/design.md:**
+- Nothing new. All changes brought docs into alignment with previously made decisions.
+
+**Coming up:**
+- Next session: redesign crafting and gathering mechanics (Wes's request).
+- Near term: formal encounter/food/party progression ladder; recipe/XP design.
+- Future ideas logged: Freewake name brainstorm (identity rework complete; name should follow).
+
+---
+
 ## Session 13 — June 19, 2026
 **Tier table fix, sim UI overhaul, full band×food validation matrices**
 
@@ -1020,3 +1046,25 @@ FL1/FL2 food = wipe at every band level. FL4 is the real entry point (80% at ban
 **Coming up:**
 - Next session: design the food/party/encounter progression ladder formally.
 - Near term: recipe/XP design. Encounter vs Battleground vocabulary into design.md.
+
+---
+
+## Session 15 — June 19, 2026
+**Band rename: The Freewake → The Kingswake; pending design work logged**
+
+**What was built:**
+- `app/src/main/assets/data/bands.json`: display name updated (`"The Freewake"` → `"The Kingswake"`). `bandId` unchanged (`corsair_fleet`) to preserve database compatibility.
+- `docs/design.md`, `docs/v1-plan.md`, `docs/redefinition.md`, `docs/characters.md` (×3 occurrences), `README.md` (×2 occurrences): all display references updated.
+- `docs/roadmap.md`: pending major design work added to Open Design Work section.
+
+**Decisions made:**
+- Band name: **The Kingswake** — "wake" carries the nautical world and a ship's mourning wake; "King's" carries the drowned king of Númenor without spelling it out. Sad and regal.
+- `bandId` stays `corsair_fleet` — changing a primary key would break saves. Display name only.
+- Journal historical entries left untouched — they correctly record what the band was called at the time.
+
+**Anything that diverged from docs/design.md:**
+- None. Name change only.
+
+**Coming up:**
+- Next session: redesign crafting and gathering mechanics (first priority).
+- Near term: Battlegrounds design, Ettenmoors design, legendary item system + economy.
