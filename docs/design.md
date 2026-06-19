@@ -308,6 +308,29 @@ raise the ceiling. Gathering and Cooking skill levels are uncapped.
 
 ---
 
+## Combat Roles and Damage Types
+
+Four roles, each with a distinct damage profile. Full mechanical spec in `docs/combat-model.md`.
+
+| Role | Color | Damage type | Stat | Notes |
+|---|---|---|---|---|
+| Warden (tank) | Blue `#2e6da4` | Physical (armor-affected) | Might | Guards Keeper from killing blows |
+| Hunter (DPS) | Red `#c0392b` | Physical (armor-affected) | Agility + Might | Primary armor penetrator |
+| Keeper (healer) | Purple `#7d5a93` | Magic (bypasses armor) | Will | Deals damage when not rescuing |
+| Captain (support) | Gold `#b8843c` | Hybrid — Mig×0.3 physical + Wil×0.2 magic | Might + Will | Dread resist aura + Red Dawn inspiration |
+
+**Captain hybrid split:** her physical output scales from Might (armor-affected); her magic output scales from Will (bypasses armor). Boosting Will via food shifts her toward more magic damage. Fate no longer contributes to her raw damage — it drives Inspiration odds instead.
+
+**Keeper damage formula:** `Wil × 0.9`. Magic-type: bypasses armor entirely. Zero on any tick the Keeper fires a rescue burst.
+
+**Sim color conventions** (Results tab):
+- Keeper healing output = Green `#5b7f63`
+- Captain's party boost (Will + Red Dawn combined) = Silver `#8a9aaa`
+- Physical damage type = Red `#c0392b`
+- Magic damage type = Purple `#7d5a93`
+
+---
+
 ## The Shape of the Whole Game (not V1 — for architectural awareness only)
 
 The provisioning loop is the core of a two-half game. These layers exist in

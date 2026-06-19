@@ -54,11 +54,11 @@ Inspiration.
 
 Only from members with HP > 0 and not grievous:
 
-- **Warden:** `Mig × 0.5`
-- **Hunter (Agi):** `Agi + Mig × 0.4`
-- **Hunter (Mig):** `Mig + Agi × 0.4`
-- **Keeper:** `Wil × 0.9` (zero on any tick it spends a rescue/burst)
-- **Captain:** `Mig × 0.3 + Fat × 0.2`
+- **Warden:** `Mig × 0.5` — physical, subject to armor
+- **Hunter (Agi):** `Agi + Mig × 0.4` — physical, subject to armor
+- **Hunter (Mig):** `Mig + Agi × 0.4` — physical, subject to armor
+- **Keeper:** `Wil × 0.9` — **magic-type, bypasses armor** (zero on any tick it spends a rescue/burst)
+- **Captain:** hybrid damage — **physical:** `Mig × 0.3` (subject to armor) + **magic:** `Wil × 0.2` (bypasses armor). Boosting Will via food increases her magic output; boosting Might increases her martial output. Both halves show in the damage-type pie chart. Fate no longer contributes to raw damage — it drives Inspiration odds instead.
 
 ---
 
@@ -150,11 +150,11 @@ min-maxing. HP/s is a **separate universal sustain layer** on top of stat boosts
 Old abstract buff vocabulary (Endurance, Agility, Acuity, Warmth, Luck) is
 **retired.** Food now directly touches the five base stats:
 
-- **Might** — melee damage, Warden penetration, Captain DPS
+- **Might** — melee damage, Warden penetration, Captain physical DPS
 - **Agility** — Hunter DPS (dominant), armor penetration
 - **Vitality** — Morale pool size (Vit × 16)
-- **Will** — Keeper heal magnitude, Dread resistance, Captain aura, Inspiration
-- **Fate** — Inspiration odds, critical heals
+- **Will** — Keeper damage + heal magnitude, Dread resistance, Captain magic DPS, Inspiration
+- **Fate** — Inspiration odds (Captain's aura). No longer contributes to raw damage.
 
 **"Cook the right dish for the right member"** is the provisioning puzzle.
 

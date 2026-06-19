@@ -7,12 +7,12 @@
 
 ## Current Status — June 19, 2026
 
-**Phase:** V1 core loop complete. Combat model designed and tooled. Both Rung 0 encounters fully validated. Full doc audit complete. Kingswake rename done. Sim now shows per-character DPS and damage mitigation charts.
-**V1 progress:** Core loop playable. Combat system designed in full (not yet built — V2+ destination). Two V1 encounters validated and locked. All docs synced.
-**What's working:** Full V1 loop. Combat simulator with per-character DPS meter (live + results) and damage mitigated vs. magic bypass chart. Both validated encounter JSONs correct. Four bands synced.
-**What's not wired yet:** Full combat system (V2+). missions.json → encounters.json rename. Encounter Builder food-level selector. 5th combat role not yet designed. Progression ladder not yet formally designed. Crafting/gathering mechanics redesign pending.
+**Phase:** V1 core loop complete. Combat model designed and tooled. Sim Results tab fully rebuilt with MMO-style bar meters, pie chart, and Captain hybrid damage. All docs updated.
+**V1 progress:** Core loop playable. Combat simulator complete with MMO bar meters. Two V1 encounters validated and locked. All docs synced.
+**What's working:** Full V1 loop. Sim Results tab has MMO DPS meter, Captain's boost bar, Keeper healing bar, damage-type pie chart, armor mitigation bars, Dread mitigation bars. Captain now deals hybrid physical/magic damage (Mig × 0.3 physical + Wil × 0.2 magic). Character colors locked: Hunter red, Warden blue, Keeper purple, Captain gold.
+**What's not wired yet:** Full combat system (V2+). missions.json → encounters.json rename. Encounter Builder food-level selector. 5th combat role not yet designed. Fate stat role needs design attention (currently only used for Shadow drain; removed from Captain damage).
 **Next session:** Design the crafting and gathering mechanics (redesign pass). Then: Battlegrounds design, Ettenmoors design, legendary item system.
-**Open questions:** 5th role design. Rung-3 first-hazard fork (Cold vs Wakefulness). XP design for cooking. Formal encounter rung progression ladder. Crafting/gathering redesign scope.
+**Open questions:** 5th role design. Rung-3 first-hazard fork (Cold vs Wakefulness). XP design for cooking. Formal encounter rung progression ladder. Crafting/gathering redesign scope. Fate stat design (what does Fate DO in combat beyond Shadow drain?). Melee vs. ranged DPS subtype design (logged to wishlist).
 
 ---
 
@@ -1089,3 +1089,34 @@ FL1/FL2 food = wipe at every band level. FL4 is the real entry point (80% at ban
 **Coming up:**
 - Next session: redesign crafting and gathering mechanics (first priority).
 - Near term: Battlegrounds design, Ettenmoors design, legendary item system + economy.
+
+---
+
+## Session 17 — June 19, 2026
+**Sim: MMO-style DPS meters, pie chart, Captain hybrid damage, color system locked**
+
+**What was built:**
+- `tools/sim/hearthcraft_fight_sim.html`: Results tab fully rebuilt. Replaced three line charts (DPS per character, mitigation, armor vs. magic) with MMO-style bar meters and a pie chart.
+- New Results cards: DPS per character (bar meter), Captain's boost (silver bar — Will + Red Dawn combined), Keeper healing (green bar), damage type pie chart (physical/magic, extensible), armor mitigation (absorbed vs. through), Dread mitigation (Will + Hope bars).
+- `meterChart()` and `pieChart()` helper functions added. Bar meters are HTML/CSS divs; pie chart is SVG.
+- Character color system locked: Hunter red `#c0392b`, Warden blue `#2e6da4`, Keeper purple `#7d5a93`, Captain gold `#b8843c`.
+- Captain redesigned as 50/50 hybrid damage dealer: physical = `Mig × 0.3` (armor-affected), magic = `Wil × 0.2` (bypasses armor). Will now drives her magic output; Fate removed from raw damage formula.
+- Keeper healing tracked per tick (`healBy.keeper`), Red Dawn boost tracked per tick (`dawnBoost`), Captain physical/magic split tracked (`effBy.captain_phys`, `effBy.captain_magic`).
+- `docs/combat-model.md`: all role damage formulas updated with damage types and stat roles.
+- `docs/design.md`: new Combat Roles and Damage Types section added with color table and Captain hybrid notes.
+- `future/wishlist.md`: melee vs. ranged DPS subtype design question logged.
+
+**Decisions made:**
+- Captain magic damage scales from Will, not Fate. `Mig × 0.3` physical + `Wil × 0.2` magic. Food that boosts Will shifts her toward more magic output — strategically interesting.
+- Fate removed from Captain's raw damage. Its V1 role is now solely Shadow drain resistance (tracked alongside Will). Fate's intended role (Inspiration odds, critical heals) is deferred to V2+.
+- Results line charts for DPS-per-character and mitigation removed — time-dimension data was not useful there; summary meters are clearer.
+- Pie chart architected to accept an array of slices so Westernesse, fire, and other future damage types are a push to an array.
+
+**Anything that diverged from docs/design.md:**
+- Captain's damage formula changed from `Mig × 0.3 + Fat × 0.2` to `Mig × 0.3 + Wil × 0.2`. `docs/design.md` and `docs/combat-model.md` updated.
+- Character colors changed from existing sim colors to locked design palette. All docs updated.
+
+**Coming up:**
+- Next session: Fate stat design (what does it DO in combat beyond Shadow drain?). Then crafting/gathering redesign.
+- Near term: Battlegrounds design, Ettenmoors design, legendary item system + economy.
+- Future ideas logged: melee vs. ranged DPS subtype design question.

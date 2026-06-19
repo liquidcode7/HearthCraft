@@ -672,7 +672,7 @@ function dpsBreakdown(){
     let r=0;
     if(k==="keeper"){if(M[k].action!=="burst")r=M[k].wil*0.9;}
     else if(k==="hunter")r=M[k].agi+M[k].mig*0.4;else if(k==="warden")r=M[k].mig*0.5;
-    else if(k==="captain")r=M[k].mig*0.3+M[k].fat*0.2;
+    else if(k==="captain")r=M[k].mig*0.3+M[k].wil*0.2;
     rawBy[k]=r;raw+=r;});
   if(windows.dawn>0){raw*=1.5;ORDER.forEach(k=>rawBy[k]*=1.5);}
   // PHYSICAL: computed party penetration reduces armor
@@ -695,17 +695,21 @@ function dpsBreakdown(){
   const effBy={};
   ORDER.forEach(k=>{
     if(k==="captain"){
-      effBy.captain_phys=rawBy.captain*0.5*(1-physAfter)*(1-dreadAfter);
-      effBy.captain_magic=rawBy.captain*0.5*(1-dreadAfter);
+      const captPhysRaw=M.captain.grievous?0:M.captain.mig*0.3*(windows.dawn>0?1.5:1);
+      const captMagicRaw=M.captain.grievous?0:M.captain.wil*0.2*(windows.dawn>0?1.5:1);
+      effBy.captain_phys=captPhysRaw*(1-physAfter)*(1-dreadAfter);
+      effBy.captain_magic=captMagicRaw*(1-dreadAfter);
       effBy.captain=effBy.captain_phys+effBy.captain_magic;
     } else {
       const isPhys=k!=="keeper";
       effBy[k]=rawBy[k]*(isPhys?(1-physAfter)*(1-dreadAfter):(1-dreadAfter));
     }
   });
-  // damage mitigated — Captain's physical half counts toward armor absorption, magic half bypasses
-  const physMitTotal=(rawBy.warden+rawBy.hunter+rawBy.captain*0.5)*physAfter*(1-dreadAfter);
-  const magicDmg=rawBy.keeper*(1-dreadAfter)+(rawBy.captain*0.5)*(1-dreadAfter);
+  // damage mitigated — Captain's Mig-driven half counts toward armor absorption, Will-driven half bypasses
+  const captPhysRawGlobal=M.captain.grievous?0:M.captain.mig*0.3*(windows.dawn>0?1.5:1);
+  const captMagicRawGlobal=M.captain.grievous?0:M.captain.wil*0.2*(windows.dawn>0?1.5:1);
+  const physMitTotal=(rawBy.warden+rawBy.hunter+captPhysRawGlobal)*physAfter*(1-dreadAfter);
+  const magicDmg=rawBy.keeper*(1-dreadAfter)+captMagicRawGlobal*(1-dreadAfter);
   // Red Dawn boost this tick: when active, raw was already multiplied by 1.5; delta = raw/1.5 * 0.5
   const dawnBoost=windows.dawn>0 ? (raw/1.5)*0.5 : 0;
   return {raw,physRaw,physAfter,dreadRaw,dreadAfter,eff:Math.max(0,eff),

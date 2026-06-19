@@ -137,6 +137,21 @@
 
 ---
 
+## Combat Role Subtype Design (V2+)
+
+**Melee vs. ranged DPS by faction.** Different bands will have the Hunter role
+filled by either a melee striker or a ranged archer, and this distinction will
+need mechanical locking before V2 combat is built. Questions to resolve:
+- Does melee DPS scale differently than ranged? (e.g., melee = higher Might coefficient; ranged = Agility-dominant as now)
+- Are there enemy types that resist ranged or melee differently?
+- Does the Hunter flavor slider (`hunterA` vs `hunterM`) become a melee/ranged flag instead of just a stat weight?
+- How does this interact with armor penetration? (ranged = Agi pen; melee = Mig pen?)
+
+Decision must be locked before the first V2 battleground roster is designed.
+Each band's DPS member identity (melee vs. ranged) should be canonical in `docs/characters.md`.
+
+---
+
 ## Design Identity Constraints (Battlegrounds, V5+)
 
 These rules must be honored when the Battlegrounds endgame mode is eventually
