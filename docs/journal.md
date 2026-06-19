@@ -7,12 +7,12 @@
 
 ## Current Status — June 19, 2026
 
-**Phase:** V1 core loop complete. Combat model designed and tooled. Both Rung 0 encounters validated: Neekerbreekers locked, Wolves in the Chetwood locked.
+**Phase:** V1 core loop complete. Combat model designed and tooled. Both Rung 0 encounters fully validated with correct band levels and fixed tier table.
 **V1 progress:** Core loop playable. Combat system designed in full (not yet built — V2+ destination). Two V1 encounters validated and locked.
-**What's working:** Full V1 loop. Combat simulator. Neekerbreekers confirmed (25/66/98/100% Lv1–4 food). Wolves locked at party Lv3: Lv3 food 6%, Lv4 food 81%, Lv6 91%, Lv7 98%, Lv8 ~100% (drain=18, spike=75, spikeiv=9, boss=60000).
-**What's not wired yet:** Full combat system (V2+). Food-level selector in Encounter Builder (currently raw HP/s inputs, not cooking-level dropdowns). 5th combat role not yet designed. Encounter/Battleground vocabulary not yet in design.md. missions.json needs to be replaced with encounters.json. Food/party/encounter progression ladder not yet formally designed.
-**Next session:** Design the food/party/encounter progression ladder formally — which food level and party level unlocks each rung. Then add food-level dropdown to Encounter Builder. Then move to recipe/XP design.
-**Open questions:** 5th role design. Rung-3 first-hazard fork (Cold vs Wakefulness). Encounter vs Battleground vocabulary not yet in design.md. XP design for cooking. Food-level dropdown for Encounter Builder (should map cooking level → HP/s like --rlevel does). Formal encounter rung progression ladder (what food level makes each rung winnable).
+**What's working:** Full V1 loop. Combat simulator. Tier table fixed (no more zero-gain at tier boundaries). Neekerbreekers re-validated at band Lv1: 27/64/98/~100%. Wolves validated at band Lv3: FL3=6%, FL4=81%, FL5=93%, FL6=97%, FL7=99%, FL8=~100%. Full band×food matrix run for both encounters. HTML sim updated with cooking-level slider and stat-focus dropdowns.
+**What's not wired yet:** Full combat system (V2+). Encounter Builder food-level selector. 5th combat role not yet designed. Encounter/Battleground vocabulary not yet in design.md. missions.json needs replacing with encounters.json. Progression ladder not yet formally designed.
+**Next session:** Design the food/party/encounter progression ladder formally. Then move to recipe/XP design.
+**Open questions:** 5th role design. Rung-3 first-hazard fork (Cold vs Wakefulness). Encounter vs Battleground vocabulary not yet in design.md. XP design for cooking. Formal encounter rung progression ladder.
 
 ---
 
@@ -934,4 +934,89 @@ Sim-tuning session. No Kotlin touched. All work in the combat simulator and enco
 
 **Coming up:**
 - Next session: design the food/party/encounter progression ladder. Formalize the rung-by-rung design target. Then add food-level dropdown to Encounter Builder.
+- Near term: recipe/XP design. Encounter vs Battleground vocabulary into design.md.
+
+---
+
+## Session 13 — June 19, 2026
+**Tier table fix, sim UI overhaul, full band×food validation matrices**
+
+No Kotlin touched. All work in the simulator, HTML sim, and encounter JSONs.
+
+**What was built:**
+- `tools/sim/run_sim.js` — tier table floors bumped by 1 HP/s at every tier boundary
+- `tools/sim/hearthcraft_fight_sim.html` — tier table fix synced; per-member HP/s sliders replaced with single cooking-level slider; stat-focus sliders replaced with dropdowns styled to match parchment theme
+- `app/src/main/assets/data/encounters/neekerbreekers_midgewater.json` — design note corrected with validated band Lv1 numbers
+- `app/src/main/assets/data/encounters/wolves_chetwood.json` — design note updated with full matrix results
+- `tools/sim/HearthCraft_Encounter_Builder.xlsx` — winCurve + simCmd columns added for validated encounters
+
+**Bug fixed: tier boundary HP/s gap**
+
+Every tier floor matched the previous tier's ceiling — so Lv4→Lv5, Lv9→Lv10, etc. gave zero HP/s improvement. Crossing a tier boundary felt like nothing. Fix: bump each tier floor by 1.
+
+Old vs new floors:
+
+| Tier | Old hpsLo | New hpsLo |
+|---|---|---|
+| Initiate (Lv5) | 10 | 11 |
+| Apprentice (Lv10) | 18 | 19 |
+| Journeyman (Lv16) | 30 | 31 |
+| Adept (Lv23) | 44 | 45 |
+| Master (Lv31) | 62 | 63 |
+| Grandmaster (Lv41) | 86 | 87 |
+
+**Correct band level baseline established**
+
+Previous runs used band Lv3 for Neekerbreekers — wrong. Correct unlock floor is band Lv1. Wolves unlock floor is band Lv3. All prior Neekers numbers were slightly generous (more morale buffer than a fresh band actually has). New validated numbers at correct floors below.
+
+**Full band × food validation matrices (1000 runs per cell)**
+
+HP/s per food level (fixed tier table):
+- FL1=5.0, FL2=5.7, FL3=7.4, FL4=10.0, FL5=11.0, FL6=11.6, FL7=13.0, FL8=15.2
+
+### Neekerbreekers — band Lv1 is unlock floor
+*(boss 50k · drain 12 · spike 75 · spikeiv 13 · duration 25:00)*
+
+| Band Lv | FL1  | FL2  | FL3  | FL4   | FL5   | FL6+  |
+|---------|------|------|------|-------|-------|-------|
+| 1       | 27%  | 67%  | 97%  | ~100% | 100%  | 100%  |
+| 2       | 36%  | 75%  | 99%  | 100%  | 100%  | 100%  |
+| 3       | 47%  | 80%  | 99%  | 100%  | 100%  | 100%  |
+| 4       | 54%  | 87%  | 99%  | 100%  | 100%  | 100%  |
+| 5       | 66%  | 90%  | 100% | 100%  | 100%  | 100%  |
+| 6       | 73%  | 93%  | 100% | 100%  | 100%  | 100%  |
+| 7       | 79%  | 96%  | 100% | 100%  | 100%  | 100%  |
+| 8       | 83%  | 95%  | 100% | 100%  | 100%  | 100%  |
+
+FL1 food at band Lv1 = 27% — the tutorial "go cook" lesson. FL3 food solves Neekers permanently regardless of band level.
+
+### Wolves in the Chetwood — band Lv3 is unlock floor
+*(boss 60k · drain 18 · spike 75 · spikeiv 9 · duration 25:00)*
+
+| Band Lv | FL1 | FL2 | FL3  | FL4  | FL5  | FL6  | FL7  | FL8   |
+|---------|-----|-----|------|------|------|------|------|-------|
+| 1       | 0%  | 0%  | 3%   | 68%  | 83%  | 89%  | 97%  | ~100% |
+| 2       | 0%  | 0%  | 6%   | 72%  | 89%  | 94%  | 99%  | ~100% |
+| 3       | 0%  | 0%  | 7%   | 80%  | 94%  | 95%  | 99%  | 100%  |
+| 4       | 0%  | 0%  | 8%   | 88%  | 96%  | 99%  | ~100%| 100%  |
+| 5       | 0%  | 0%  | 14%  | 90%  | 98%  | 99%  | ~100%| 100%  |
+| 6       | 0%  | 0%  | 18%  | 94%  | 98%  | ~100%| 100% | 100%  |
+| 7       | 0%  | 0%  | 27%  | 96%  | 99%  | ~100%| 100% | 100%  |
+| 8       | 0%  | 0%  | 33%  | 97%  | ~100%| ~100%| 100% | 100%  |
+
+FL1/FL2 food = wipe at every band level. FL4 is the real entry point (80% at band Lv3). FL5 (first Initiate level) now cleanly separates from FL4 — the tier fix worked.
+
+**Key observations from the matrices:**
+- Food is the dominant lever; band level is secondary but meaningful. Lv4 food on Wolves improves from 80% (band Lv3) to 97% (band Lv8) purely from morale growth and Keeper Will scaling.
+- The Hunter takes the majority of wounds in both encounters — most fragile role, catches stray spikes. Expected by design.
+- Keeper barely gets scratched when food is adequate — Warden guard mechanic functioning correctly.
+- Neekers is essentially solved at FL3 regardless of band level. Wolves has a real food ladder all the way to FL8.
+
+**Decisions made:**
+- Tier boundary fix: +1 HP/s at every tier floor is the rule going forward. Tier crossings must always feel like a real reward.
+- Correct band level validation baseline: always validate at the unlock floor (band Lv = recLevel of encounter), not at an arbitrary higher level.
+- Band×food matrix is the standard validation artifact for any new encounter — run it, include it in the journal.
+
+**Coming up:**
+- Next session: design the food/party/encounter progression ladder formally.
 - Near term: recipe/XP design. Encounter vs Battleground vocabulary into design.md.
