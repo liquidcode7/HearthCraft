@@ -106,7 +106,25 @@
   and "second breakfast." The player character, who also never fights,
   is basically a Hobbit. There is something to this.
 
-## Technical / Platform
+## Combat System (Simulator / V2+)
+
+- **Sim test: magic damage must not be reduced by physMit** — write a headless test
+  (in `run_sim.js` or a dedicated test script) that sets physMit to a high value (e.g. 80%),
+  runs a short fight, and asserts that Keeper effective DPS equals Keeper raw DPS × (1 − dread)
+  with zero armor reduction. Catches any future refactor that accidentally routes magic damage
+  through `physAfter`. The new "damage mitigated vs. magic bypass" chart makes this visually
+  obvious in the browser, but a scripted assertion is the real safety net.
+
+ — a `magMit %` on the enemy (parallel to `physMit %`) that
+  resists magic damage. Currently the Keeper's Will-based attacks bypass armor entirely,
+  which is correct at Rung 0 but may become unbalanced as magic damage scales at higher
+  rungs or with stronger Keepers. When magic DPS starts outpacing physical in the sim's
+  "damage mitigated vs. magic bypass" chart, introduce a `magMit` slider and a
+  corresponding party counter (Radiance is the natural candidate, or a dedicated
+  Spirit-penetration stat). Design the counter before adding the mitigation so the
+  provisioner always has an answer.
+
+
 
 - **Forgejo migration** — move repo from GitHub to self-hosted Forgejo
   when convenient. Trivial git remote swap, no rush.
