@@ -7,9 +7,9 @@
 
 ## Current Status — June 19, 2026
 
-**Phase:** V1 core loop complete. Combat model designed and tooled. Both Rung 0 encounters fully validated. Full doc audit complete. Kingswake rename done.
+**Phase:** V1 core loop complete. Combat model designed and tooled. Both Rung 0 encounters fully validated. Full doc audit complete. Kingswake rename done. Sim now shows per-character DPS and damage mitigation charts.
 **V1 progress:** Core loop playable. Combat system designed in full (not yet built — V2+ destination). Two V1 encounters validated and locked. All docs synced.
-**What's working:** Full V1 loop. Combat simulator. Both validated encounter JSONs have correct fight params. All docs in sync. Four bands: The Mithlost, The Undermarch, The Kingswake, The Greycloaks.
+**What's working:** Full V1 loop. Combat simulator with per-character DPS meter (live + results) and damage mitigated vs. magic bypass chart. Both validated encounter JSONs correct. Four bands synced.
 **What's not wired yet:** Full combat system (V2+). missions.json → encounters.json rename. Encounter Builder food-level selector. 5th combat role not yet designed. Progression ladder not yet formally designed. Crafting/gathering mechanics redesign pending.
 **Next session:** Design the crafting and gathering mechanics (redesign pass). Then: Battlegrounds design, Ettenmoors design, legendary item system.
 **Open questions:** 5th role design. Rung-3 first-hazard fork (Cold vs Wakefulness). XP design for cooking. Formal encounter rung progression ladder. Crafting/gathering redesign scope.
@@ -1064,6 +1064,27 @@ FL1/FL2 food = wipe at every band level. FL4 is the real entry point (80% at ban
 
 **Anything that diverged from docs/design.md:**
 - None. Name change only.
+
+**Coming up:**
+- Next session: redesign crafting and gathering mechanics (first priority).
+- Near term: Battlegrounds design, Ettenmoors design, legendary item system + economy.
+
+---
+
+## Session 16 — June 19, 2026
+**Sim: per-character DPS meter and damage mitigated chart**
+
+**What was built:**
+- `tools/sim/hearthcraft_fight_sim.html`: per-character DPS meter added to the Live tab (new "DPS per character" gauge panel, live-updating each tick). Shows each member's effective DPS after all mitigations, or "grievous/down/rescuing" state when applicable.
+- `tools/sim/hearthcraft_fight_sim.html`: two new charts in the Results tab — "DPS per character" (line chart, all four members over the fight) and "Damage mitigated vs. magic bypassing armor" (physical DPS lost to armor in red, Keeper magic DPS bypassing armor in purple). The mitigation chart only renders when physical mitigation > 0.
+- `dpsBreakdown()` refactored to compute per-member raw and effective DPS, then return `effBy`, `physMitTotal`, and `magicDmg` for both live display and series recording.
+
+**Decisions made:**
+- Keeper (Cael) is classified as a magic dealer — his damage bypasses physical armor entirely, only Dread can reduce it. Warden, Hunter, Captain are physical dealers subject to armor. This is confirmed by the sim math and now visually verifiable.
+- Stat growth (level 1–20) stays linear — superlinear growth would make encounter tuning brittle and shift the interesting power curve away from the provisioner's food/cooking skill, where it belongs. The S-curve on cooking tiers (SCURVE_P = 1.8) is where increasing returns live.
+
+**Anything that diverged from docs/design.md:**
+- None.
 
 **Coming up:**
 - Next session: redesign crafting and gathering mechanics (first priority).

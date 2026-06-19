@@ -319,9 +319,15 @@
         <div class="g-row"><span>Keeper</span><span id="g_keep">&#8212;</span></div>
         <div class="g-row"><span id="g_ttklabel">Time-to-kill</span><span id="g_ttk">&#8212;</span></div>
       </div>
+      <div class="panel gauge"><div class="g-h">DPS per character</div>
+        <div class="g-row"><span>Borin (Warden)</span><span id="g_dps_warden"><b>&#8212;</b></span></div>
+        <div class="g-row"><span>Mira (Hunter)</span><span id="g_dps_hunter"><b>&#8212;</b></span></div>
+        <div class="g-row"><span>Cael (Keeper)</span><span id="g_dps_keeper"><b>&#8212;</b></span></div>
+        <div class="g-row"><span>Aelindra (Captain)</span><span id="g_dps_captain"><b>&#8212;</b></span></div>
+        <div class="g-row" style="margin-top:4px;border-top:1px solid var(--rule);padding-top:4px"><span style="font-size:10px;color:#8a7355">Keeper magic bypasses armor</span></div>
+      </div>
     </div>
     <div class="panel"><div class="panel-h">Engagement Log</div><div class="log" id="log"></div></div>
-  </div>
 
   <!-- ===================== TAB 3: RESULTS ===================== -->
   <div class="tab" id="pane_results">
@@ -332,6 +338,8 @@
         <div class="panel chart-card"><div class="ch-h">Effective DPS over time</div><div class="ch-body" id="ch_dps"></div><div class="chart-legend" id="lg_dps"></div></div>
         <div class="panel chart-card"><div class="ch-h">Party Morale over time</div><div class="ch-body" id="ch_morale"></div><div class="chart-legend" id="lg_morale"></div></div>
         <div class="panel chart-card"><div class="ch-h">Mitigation &#8212; DPS preserved by counters</div><div class="ch-body" id="ch_mit"></div><div class="chart-legend" id="lg_mit"></div></div>
+        <div class="panel chart-card"><div class="ch-h">DPS per character</div><div class="ch-body" id="ch_dpschar"></div><div class="chart-legend" id="lg_dpschar"></div></div>
+        <div class="panel chart-card"><div class="ch-h">Damage mitigated vs. magic bypassing armor</div><div class="ch-body" id="ch_dmgmit"></div><div class="chart-legend" id="lg_dmgmit"></div></div>
         <div class="panel chart-card"><div class="ch-h">Wounds accumulated</div><div class="ch-body" id="ch_wounds"></div><div class="chart-legend" id="lg_wounds"></div></div>
         <div class="panel chart-card"><div class="ch-h">Shadow &#8212; party spirit (Will + Fate)</div><div class="ch-body" id="ch_spirit"></div><div class="chart-legend" id="lg_spirit"></div></div>
       </div>
@@ -639,12 +647,16 @@ function penBreakdown(){
 }
 // returns full breakdown incl penetration + Dread(Will+Hope) + Shadow effects
 function dpsBreakdown(){
-  if(P.unkill)return {raw:0,physAfter:0,dreadAfter:0,eff:0,penSaved:0,willSaved:0,hopeSaved:0,pen:penBreakdown()};
+  const ZERO={warden:0,hunter:0,keeper:0,captain:0};
+  if(P.unkill)return {raw:0,physAfter:0,dreadAfter:0,eff:0,penSaved:0,willSaved:0,hopeSaved:0,pen:penBreakdown(),effBy:{...ZERO},physMitTotal:0,magicDmg:0};
+  const rawBy={warden:0,hunter:0,keeper:0,captain:0};
   let raw=0;ORDER.forEach(k=>{if(M[k].grievous||M[k].hp<=0)return;
-    if(k==="keeper"){if(M[k].action!=="burst")raw+=M[k].wil*0.9;}
-    else if(k==="hunter")raw+=M[k].agi+M[k].mig*0.4;else if(k==="warden")raw+=M[k].mig*0.5;
-    else if(k==="captain")raw+=M[k].mig*0.3+M[k].fat*0.2;});
-  if(windows.dawn>0)raw*=1.5;
+    let r=0;
+    if(k==="keeper"){if(M[k].action!=="burst")r=M[k].wil*0.9;}
+    else if(k==="hunter")r=M[k].agi+M[k].mig*0.4;else if(k==="warden")r=M[k].mig*0.5;
+    else if(k==="captain")r=M[k].mig*0.3+M[k].fat*0.2;
+    rawBy[k]=r;raw+=r;});
+  if(windows.dawn>0){raw*=1.5;ORDER.forEach(k=>rawBy[k]*=1.5);}
   // PHYSICAL: computed party penetration reduces armor
   const pen=penBreakdown();
   const physRaw=P.phys;
@@ -661,8 +673,20 @@ function dpsBreakdown(){
   const dreadNoHope=Math.max(0,dreadRaw*(1-willCut));
   const effNoWill=raw*(1-physAfter)*(1-dreadNoWill);
   const effNoHope=raw*(1-physAfter)*(1-dreadNoHope);
+  // per-member effective DPS: each member's share of raw, scaled by the same global mitigators
+  // Keeper is magic-only; Hunter/Warden/Captain are physical (subject to armor). Dread hits everyone.
+  const PHYS_ROLES={warden:true,hunter:true,captain:true,keeper:false};
+  const effBy={};
+  ORDER.forEach(k=>{
+    const mult=PHYS_ROLES[k]?(1-physAfter)*(1-dreadAfter):(1-dreadAfter);
+    effBy[k]=rawBy[k]*mult;
+  });
+  // damage mitigated breakdown (per tick, for the series)
+  const physMitTotal=raw*physAfter*(1-dreadAfter);     // armor absorbed from physical dealers
+  const magicDmg=rawBy.keeper*(1-dreadAfter);          // keeper magic bypasses armor — confirm it lands
   return {raw,physRaw,physAfter,dreadRaw,dreadAfter,eff:Math.max(0,eff),
-    penSaved:Math.max(0,eff-effNoPen), willSaved:Math.max(0,eff-effNoWill), hopeSaved:Math.max(0,eff-effNoHope), pen};
+    penSaved:Math.max(0,eff-effNoPen), willSaved:Math.max(0,eff-effNoWill), hopeSaved:Math.max(0,eff-effNoHope),
+    pen, effBy, physMitTotal:Math.max(0,physMitTotal), magicDmg:Math.max(0,magicDmg)};
 }
 function sustain(){let s=0;ORDER.forEach(k=>{if(!M[k].grievous)s+=foodOf(k);});return s;}
 function refreshRead(){buildParty();const drain=+$("drain").value,spike=+$("spike").value,iv=+$("spikeiv").value;
@@ -772,6 +796,8 @@ function stepOnce(){
   // record time-series frame
   const incoming=P.drain+P.spike/P.spikeiv;
   series.push({t,boss:boss,dps:bd.eff,raw:bd.raw,penSaved:bd.penSaved,willSaved:bd.willSaved,hopeSaved:bd.hopeSaved,sustain:sustain(),incoming,
+    effBy:{warden:bd.effBy.warden,hunter:bd.effBy.hunter,keeper:bd.effBy.keeper,captain:bd.effBy.captain},
+    physMitTotal:bd.physMitTotal||0, magicDmg:bd.magicDmg||0,
     spirit:{wil:ORDER.reduce((a,k)=>a+(M[k].grievous?0:M[k].wil),0),fat:ORDER.reduce((a,k)=>a+(M[k].grievous?0:M[k].fat),0)},
     spiritBase:{wil:ORDER.reduce((a,k)=>a+M[k].wilBase,0),fat:ORDER.reduce((a,k)=>a+M[k].fatBase,0)},
     morale:{warden:Math.max(0,M.warden.hp),hunter:Math.max(0,M.hunter.hp),keeper:Math.max(0,M.keeper.hp),captain:Math.max(0,M.captain.hp)},
@@ -802,6 +828,7 @@ function updLive(bd,boss,incoming){
   if(showDread){$("g_dreadval").textContent="\u2212"+Math.round(bd.dreadAfter*100)+"%";$("g_willsave").textContent="+"+Math.round(bd.willSaved)+" dps";$("g_hopesave").textContent="+"+Math.round(bd.hopeSaved)+" dps";}
   if(showShadow){const lost=ORDER.reduce((a,k)=>a+(M[k].grievous?0:M[k].shDrain),0);$("g_shadowval").textContent="\u2212"+Math.round(lost)+" spirit";}
   $("g_dps").innerHTML="<b>"+Math.round(bd.eff)+"</b>";
+  if(bd.effBy){ORDER.forEach(k=>{const el=$("g_dps_"+k);if(el)el.innerHTML=M[k].grievous?'<span class="no">grievous</span>':(M[k].hp<=0?'<span class="no">down</span>':(k==="keeper"&&M[k].action==="burst"?'<span style="color:var(--keeper)">rescuing</span>':"<b>"+Math.round(bd.effBy[k])+"</b>"));});}
   $("g_keep").innerHTML=M.keeper.grievous?'<span class="no">grievous</span>':(M.keeper.action==="burst"?'<span class="no">rescuing</span>':'<span class="ok">attacking</span>')+` <span style="color:#8a7355">(${RESCUE_CAP-rescuesUsed}/${RESCUE_CAP} rescues left)</span>`;
   $("g_ttk").textContent=P.unkill?fmtT(Math.max(0,maxT-t)):(bd.eff>0?Math.ceil(boss/bd.eff)+"s":"\u221e");
   $("clock").textContent=fmtT(t);$("speed").textContent=P.unkill?"surviving":`${Math.round(bd.eff)} dps`;
@@ -875,6 +902,7 @@ $("reset").addEventListener("click",()=>{clearInterval(timer);running=false;t=0;
   $("log").innerHTML="";$("clock").textContent="0:00";$("runstate").textContent="not yet run";
   $("results_empty").style.display="";$("results_body").style.display="none";series=[];events=[];
   ["g_sus","g_inc","g_hold","g_raw","g_dps","g_keep","g_ttk"].forEach(id=>$(id).textContent="\u2014");$("speed").textContent="\u2014";
+  ORDER.forEach(k=>{const el=$("g_dps_"+k);if(el)el.innerHTML="<b>\u2014</b>";});
   buildParty();refreshBoss();refreshRead();updEffects();statPreview();updDurButtons();});
 
 /* ===================== INTERACTIVE CHARTS ===================== */
@@ -933,6 +961,23 @@ function renderResults(){
       {name:"preserved by Hope",color:"#b8843c",pts:series.map(s=>({x:s.t,y:s.hopeSaved})),fmt:v=>"+"+Math.round(v)+" dps"},
     ],xmax,mitMax,{});}
   else{$("ch_mit").innerHTML='<div class="empty" style="padding:30px 14px;text-align:center">No armor or Dread in this fight — set Physical mit. or toggle Dread to see how much penetration, Captain Will, and Hope each preserve.</div>';$("lg_mit").innerHTML="";}
+  // DPS per character
+  const dpsCharMax=Math.max(10,...ORDER.flatMap(k=>series.map(s=>s.effBy?s.effBy[k]||0:0)));
+  lineChart("ch_dpschar","lg_dpschar",ORDER.map(k=>({name:M[k].tpl.name+" ("+M[k].role+")",color:TPL[k==="hunter"?"hunterA":k].color,
+    pts:series.map(s=>({x:s.t,y:s.effBy?s.effBy[k]||0:0})),fmt:v=>Math.round(v)+" dps"})),xmax,dpsCharMax,{});
+  // Damage mitigated vs magic bypass
+  const anyPhysMit=P.phys>0&&series.some(s=>s.physMitTotal>0);
+  const anyMagic=series.some(s=>s.magicDmg>0);
+  if(anyPhysMit||anyMagic){
+    const dmgMitMax=Math.max(10,...series.map(s=>Math.max(s.physMitTotal||0,s.magicDmg||0)));
+    lineChart("ch_dmgmit","lg_dmgmit",[
+      {name:"Physical DPS absorbed by armor",color:"#9a3526",pts:series.map(s=>({x:s.t,y:s.physMitTotal||0})),fmt:v=>Math.round(v)+" dps lost to armor"},
+      {name:"Keeper magic DPS (bypasses armor)",color:"#7d5a93",pts:series.map(s=>({x:s.t,y:s.magicDmg||0})),fmt:v=>Math.round(v)+" dps (unblocked)"},
+    ],xmax,dmgMitMax,{});
+  } else {
+    $("ch_dmgmit").innerHTML='<div class="empty" style="padding:30px 14px;text-align:center">No armor in this fight — set Physical mit. % to see how much physical DPS armor absorbs vs. how much of the Keeper\'s magic damage bypasses it.</div>';
+    $("lg_dmgmit").innerHTML="";
+  }
   // Wounds
   lineChart("ch_wounds","lg_wounds",ORDER.map(k=>({name:M[k].tpl.name,color:TPL[k==="hunter"?"hunterA":k].color,pts:series.map(s=>({x:s.t,y:s.wounds[k]})),fmt:v=>Math.round(v)+" wounds"})),xmax,GRIEVOUS,{yfmt:v=>Math.round(v)});
   // spirit (Will+Fate) drain under Shadow
