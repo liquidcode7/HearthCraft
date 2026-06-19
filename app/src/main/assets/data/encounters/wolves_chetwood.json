@@ -14,10 +14,10 @@
       "type": "attrition",
       "objective": "kill",
       "durationSec": 1500,
-      "resolve": 55000,
-      "drain": 12,
-      "spike": 55,
-      "spikeIntervalSec": 10,
+      "resolve": 60000,
+      "drain": 18,
+      "spike": 75,
+      "spikeIntervalSec": 9,
       "physMitPct": 0,
       "dread": 0,
       "shadow": 0,
@@ -28,5 +28,5 @@
       "stageFlavor": ""
     }
   ],
-  "designNote": "Onramp rung 2 (Design B, swarm). ~20-min grind through a wolf-pack. Asks TWO questions: sustain (drain) AND whether the Warden can hold the line so the Keeper survives the wolf-lunges (spikes). Needs a better meal than the Neekerbreekers: ~5 HP/s squeaks by ragged (Keeper falls ~13%), ~7 clean. Under ~5 the Warden is overwhelmed and the healer drops (Keeper-fell 100%). physMit stays 0 \u2014 armor is a LATER rung's question."
+  "designNote": "Onramp rung 2 (Design B, swarm). ~20-min grind through a wolf-pack. Asks TWO questions: sustain (drain) AND whether the Warden can hold the line so the Keeper survives the wolf-lunges (spikes). Validated at party Lv3 @ 5000 runs: Lv3 food (~7 HP/s) 6%, Lv4 food (~10 HP/s) 81%, Lv6 food (~11 HP/s) 91%, Lv7 food (~12 HP/s) 98%, Lv8 food (~15 HP/s) ~100%. Needs max Hearthkeeper food (Lv4) for a real chance. physMit stays 0 \u2014 armor is a LATER rung's question."
 }

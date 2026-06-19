@@ -7,12 +7,12 @@
 
 ## Current Status — June 19, 2026
 
-**Phase:** V1 core loop complete. Combat model designed and tooled. Encounter tuning underway — Neekerbreekers fully validated, Wolves pending.
-**V1 progress:** Core loop playable. Combat system designed in full (not yet built — V2+ destination). Two V1 encounters in progress: Neekerbreekers locked, Wolves next.
-**What's working:** Full V1 loop. Combat simulator with variable spikes, convex HP/s curve, --rlevel flag, close-call stats, Company tab (character cards). Neekerbreekers confirmed at 5000 runs (25/66/98/100% across Lv1–4 food). Encounter Builder has Design Notes sheet.
-**What's not wired yet:** Full combat system (V2+). Wolves encounter not yet validated. 5th combat role not yet designed. Encounter/Battleground vocabulary not yet in design.md. missions.json needs to be replaced with encounters.json.
-**Next session:** Tune Wolves in the Chetwood. Nail the food progression ladder across both Rung 0 encounters. Then lock both and move to the recipe/XP design.
-**Open questions:** 5th role design (party-of-5 vs field-4-from-roster; identity; Inspiration). Rung-3 first-hazard fork (Cold vs Wakefulness). Exact magnitude tuning for all combat constants. Encounter vs Battleground vocabulary not yet in design.md. XP design for cooking (first-cook bonus, preference match bonus, antidote prep bonus, diminishing returns on repetition).
+**Phase:** V1 core loop complete. Combat model designed and tooled. Both Rung 0 encounters validated: Neekerbreekers locked, Wolves in the Chetwood locked.
+**V1 progress:** Core loop playable. Combat system designed in full (not yet built — V2+ destination). Two V1 encounters validated and locked.
+**What's working:** Full V1 loop. Combat simulator. Neekerbreekers confirmed (25/66/98/100% Lv1–4 food). Wolves locked at party Lv3: Lv3 food 6%, Lv4 food 81%, Lv6 91%, Lv7 98%, Lv8 ~100% (drain=18, spike=75, spikeiv=9, boss=60000).
+**What's not wired yet:** Full combat system (V2+). Food-level selector in Encounter Builder (currently raw HP/s inputs, not cooking-level dropdowns). 5th combat role not yet designed. Encounter/Battleground vocabulary not yet in design.md. missions.json needs to be replaced with encounters.json. Food/party/encounter progression ladder not yet formally designed.
+**Next session:** Design the food/party/encounter progression ladder formally — which food level and party level unlocks each rung. Then add food-level dropdown to Encounter Builder. Then move to recipe/XP design.
+**Open questions:** 5th role design. Rung-3 first-hazard fork (Cold vs Wakefulness). Encounter vs Battleground vocabulary not yet in design.md. XP design for cooking. Food-level dropdown for Encounter Builder (should map cooking level → HP/s like --rlevel does). Formal encounter rung progression ladder (what food level makes each rung winnable).
 
 ---
 
@@ -894,3 +894,44 @@ Cooking XP design (design intent, not yet built):
 - Near term: add Encounter vs Battleground vocabulary to design.md.
 - Near term: design per-band encounter flavor for Neekerbreekers and Wolves (Greycloaks-native), then design the Undermarch/Mithlost/Freewake equivalents.
 - Future ideas logged: character cards in-game (not just in the sim) — noted but deferred.
+
+---
+
+## Session 12 — June 19, 2026
+**Encounter tuning: Wolves in the Chetwood validated and locked**
+
+Sim-tuning session. No Kotlin touched. All work in the combat simulator and encounter JSON.
+
+**What was built:**
+- `encounters/wolves_chetwood.json` — params tuned and validated: drain=18, spike=75, spikeIntervalSec=9, resolve=60000. designNote updated with validated win rates.
+
+**Tuning methodology:**
+- Ran multiple trials across drain/spike/boss-resolve space at party Lv3, food Lv3–8 (5000 runs each).
+- Anchored on party level 3 (encounter recLevel = 3, so earliest possible unlock).
+- Target curve: Lv3 food should barely work (~5–10%); Lv4 food is the real threshold (~80%); Lv6–7 food feels well-prepared (~90–98%); Lv8 food is decisive (~100%).
+- Rejected earlier params (drain=12, spike=55) that made Lv3 food an 85% win — too easy for a Rung 2 encounter that should demand better provisioning than the tutorial.
+
+**Validated win rates (party Lv3, 5000 runs):**
+- Lv3 Hearthkeeper food (~7.4 HP/s): 5.8% win
+- Lv4 Hearthkeeper food (~10 HP/s): 80.9% win
+- Lv6 Initiate food (~10.7 HP/s): 90.8% win
+- Lv7 Initiate food (~12.3 HP/s): 98.3% win
+- Lv8 Initiate food (~14.8 HP/s): ~100% win
+
+**Design decisions made:**
+- Wolves demands max Hearthkeeper food (Lv4, Tier 1 ceiling) to have a real chance. This is the right message: Neekerbreekers taught you to cook; Wolves punishes you if you go in underprepared.
+- The steep jump from 6% → 81% between Lv3 and Lv4 food is intentional. Lv4 = last level of Tier 1 = largest within-tier gain. The convex curve is doing its job.
+- physMit remains 0 — armor is a Rung 3+ question.
+
+**Raised in session (not yet resolved):**
+- The Encounter Builder Excel uses raw HP/s inputs rather than cooking-level selectors. Should add a food-level dropdown that maps cooking level → HP/s the same way `--rlevel` does. This would make the tool self-consistent with the sim.
+- Need to formally design the food/party/encounter progression ladder: which cooking level gates each encounter rung? This is the core design question that makes progression predictable for both the player and the designer.
+
+**What's not in session scope (deferred):**
+- Encounter Builder food-level dropdown
+- Formal progression ladder design
+- Per-band flavor for Wolves (Greycloaks-native; other bands need their own Chetwood equivalents)
+
+**Coming up:**
+- Next session: design the food/party/encounter progression ladder. Formalize the rung-by-rung design target. Then add food-level dropdown to Encounter Builder.
+- Near term: recipe/XP design. Encounter vs Battleground vocabulary into design.md.
