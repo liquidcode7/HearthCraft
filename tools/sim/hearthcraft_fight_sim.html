@@ -361,7 +361,7 @@ const fmtT=s=>`${Math.floor(s/60)}:${String(Math.max(0,s)%60).padStart(2,"0")}`;
 function roster(){const hk=(+$("hflav").value===1)?"hunterM":"hunterA";return {warden:TPL.warden,hunter:TPL[hk],keeper:TPL.keeper,captain:TPL.captain};}
 
 let MODE=0,SPEED=1,running=false,timer=null,t=0,P=null,maxT=0;
-let M={},events=[],fired={},windows={},baFired=false,series=[],rescuesUsed=0,wardsUsed=0,inspBoost=0;
+let M={},events=[],fired={},windows={},baFired=false,series=[],rescuesUsed=0,wardsUsed=0,inspBoost=0,prevTrouble=0;
 const SPEED_MS=[1000,250,62,0];
 
 function showTab(name){['setup','live','results'].forEach(n=>{$('pane_'+n).classList.toggle('on',n===name);$('tab_'+n).classList.toggle('on',n===name);});}
@@ -630,12 +630,14 @@ function stepOnce(){
     if(P.shadow>0&&t%120===0){const lost=ORDER.reduce((a,k)=>a+(M[k].grievous?0:M[k].shDrain),0);
       if(lost>2)log(`The Shadow has stolen ${Math.round(lost)} spirit from the band — Will and Fate sink lower.`,"t");}
   }
-  if(inspBoost>0)inspBoost=Math.max(0,inspBoost-0.005); // decay the Captain's post-Dawn boost over ~20s
-  if(windows.horn<=0&&!fired.horn&&inTrouble()>=2&&!M.warden.grievous&&M.warden.hp>0&&inspRoll(P.hornBase,inspBoost)){fired.horn=true;windows.horn=8;M.warden.horn=true;
+  if(inspBoost>0)inspBoost=Math.max(0,inspBoost-0.005);
+  const nowTrouble=inTrouble(), crisisEdge=nowTrouble>=2&&prevTrouble<2;
+  if(crisisEdge&&!fired.horn&&!M.warden.grievous&&M.warden.hp>0&&inspRoll(P.hornBase,inspBoost)){fired.horn=true;windows.horn=8;M.warden.horn=true;
     log(`&#10022; THE HORN OF GONDOR — ${M.warden.tpl.name} blows the Horn of Gondor and refuses to fall`,"insp");events.push({t,kind:"The Horn of Gondor",who:M.warden.tpl.name});}
-  if(windows.dawn<=0&&!fired.dawn&&inTrouble()>=2&&!M.captain.grievous&&M.captain.hp>0&&inspRoll(P.dawnBase,0)){fired.dawn=true;windows.dawn=10;act.forEach(k=>{M[k].hp=Math.min(M[k].max,M[k].hp+M[k].max*0.15);});
-    inspBoost=0.15; // Red Dawn — the Captain's cry lifts all hearts; Grace/Horn/Arrow each gain +15% flat for the next ~30s
+  if(crisisEdge&&!fired.dawn&&!M.captain.grievous&&M.captain.hp>0&&inspRoll(P.dawnBase,0)){fired.dawn=true;windows.dawn=10;act.forEach(k=>{M[k].hp=Math.min(M[k].max,M[k].hp+M[k].max*0.15);});
+    inspBoost=0.15;
     log(`&#10022; WRATH, RUIN, AND THE RED DAWN — ${M.captain.tpl.name} cries: 'Now for wrath, now for ruin, and the red dawn!' (all Inspirations boosted)`,"insp");events.push({t,kind:"Wrath, Ruin, and the Red Dawn",who:M.captain.tpl.name});}
+  prevTrouble=nowTrouble;
   const bd=dpsBreakdown();let boss=window._boss;if(!P.unkill)boss=Math.max(0,boss-bd.eff);window._boss=boss;
   if(!baFired&&!M.hunter.grievous&&M.hunter.hp>0){const elapsed=t/maxT;const ttk=bd.eff>0?boss/bd.eff:1e9;const trem=maxT-t;
     const losing=P.unkill?(elapsed>0.5):(ttk>trem&&elapsed>0.4);
@@ -706,7 +708,7 @@ function finish(label,cls){clearInterval(timer);running=false;const v=$("verdict
   buildSummary(label);renderResults();$("results_empty").style.display="none";$("results_body").style.display="";showTab('results');}
 
 function prep(){buildParty();$("log").innerHTML="";t=0;P=curParams();maxT=P.duration;window._boss=P.boss;
-  events=[];fired={};windows={dawn:0,horn:0};baFired=false;series=[];rescuesUsed=0;wardsUsed=0;inspBoost=0;
+  events=[];fired={};windows={dawn:0,horn:0};baFired=false;series=[];rescuesUsed=0;wardsUsed=0;inspBoost=0;prevTrouble=0;
   $("verdict").textContent="ENGAGED";$("verdict").className="verdict v-fighting";
   // --- verbose startup log ---
   const sus=sustain(), drain=P.drain, spike=P.spike, iv=P.spikeiv;
@@ -743,7 +745,7 @@ function runLoop(){if(SPEED===3){let g=0;while(!stepOnce()&&g++<20000){}return;}
 function start(){if(running)return;prep();running=true;$("run").innerHTML="&#8230; fighting";$("runstate").textContent="running…";showTab('live');runLoop();}
 $("run").addEventListener("click",start);
 $("step").addEventListener("click",()=>{if(!running){if(t===0||series.length===0)prep();showTab('live');stepOnce();}});
-$("reset").addEventListener("click",()=>{clearInterval(timer);running=false;t=0;inspBoost=0;
+$("reset").addEventListener("click",()=>{clearInterval(timer);running=false;t=0;inspBoost=0;prevTrouble=0;
   $("verdict").textContent="AWAITING ORDERS";$("verdict").className="verdict v-fighting";$("run").innerHTML="&#9654; Run";
   $("log").innerHTML="";$("clock").textContent="0:00";$("runstate").textContent="not yet run";
   $("results_empty").style.display="";$("results_body").style.display="none";series=[];events=[];

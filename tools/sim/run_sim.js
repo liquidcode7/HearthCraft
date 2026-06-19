@@ -43,7 +43,7 @@ function parseArgs() {
     runs:      parseInt(get("--runs", "1000")),
     level:     num("--level",    10),
     duration:  num("--duration", 1800),
-    food:      { warden:food[0]||26, hunter:food[1]||20, keeper:food[2]||22, captain:food[3]||24 },
+    food:      { warden:food[0]??26, hunter:food[1]??20, keeper:food[2]??22, captain:food[3]??24 },
     boss:      num("--boss",    8500),
     drain:     num("--drain",   70),
     spike:     num("--spike",   160),
@@ -128,6 +128,7 @@ function runFight(cfg, verbose) {
   const events  = [];
   const logs    = [];
   const lg = (msg) => { if (verbose) logs.push(`${fmtT(t).padStart(5)} ${msg}`); };
+  let prevTrouble = 0; // track last tick's trouble count to detect rising edge
 
   while (true) {
     t++;
@@ -228,22 +229,25 @@ function runFight(cfg, verbose) {
       if (M[k].hp > 5) M[k].atZero = false;
     });
 
-    // Inspiration: Horn of Gondor (Warden)
+    // Inspiration: Horn of Gondor (Warden) — rolls once on rising edge into crisis, not every tick
     if (inspBoost > 0) inspBoost = Math.max(0, inspBoost - 0.005);
-    if (!fired.horn && windows.horn<=0 && inTrouble()>=2 && !M.warden.grievous && M.warden.hp>0 && inspRoll(cfg.hornBase, inspBoost)) {
+    const nowTrouble = inTrouble();
+    const crisisEdge = nowTrouble >= 2 && prevTrouble < 2; // just crossed the threshold
+    if (!fired.horn && crisisEdge && !M.warden.grievous && M.warden.hp>0 && inspRoll(cfg.hornBase, inspBoost)) {
       fired.horn=true; windows.horn=8;
       events.push({t, kind:"The Horn of Gondor", who:M.warden.tpl.name});
       lg(`★ HORN OF GONDOR — ${M.warden.tpl.name}`);
     }
 
-    // Inspiration: Wrath, Ruin, and the Red Dawn (Captain)
-    if (!fired.dawn && windows.dawn<=0 && inTrouble()>=2 && !M.captain.grievous && M.captain.hp>0 && inspRoll(cfg.dawnBase, 0)) {
+    // Inspiration: Wrath, Ruin, and the Red Dawn (Captain) — same rising-edge gate
+    if (!fired.dawn && crisisEdge && !M.captain.grievous && M.captain.hp>0 && inspRoll(cfg.dawnBase, 0)) {
       fired.dawn=true; windows.dawn=10;
       act.forEach(k => { M[k].hp = Math.min(M[k].max, M[k].hp + M[k].max*0.15); });
       inspBoost = 0.15;
       events.push({t, kind:"Wrath, Ruin, and the Red Dawn", who:M.captain.tpl.name});
       lg(`★ RED DAWN — ${M.captain.tpl.name} (inspBoost +0.15 for ~30s)`);
     }
+    prevTrouble = nowTrouble;
 
     // DPS tick
     const bd = dpsBreakdown();
