@@ -649,7 +649,7 @@ function penBreakdown(){
 // returns full breakdown incl penetration + Dread(Will+Hope) + Shadow effects
 function dpsBreakdown(){
   const ZERO={warden:0,hunter:0,keeper:0,captain:0};
-  if(P.unkill)return {raw:0,physAfter:0,dreadAfter:0,eff:0,penSaved:0,willSaved:0,hopeSaved:0,pen:penBreakdown(),effBy:{...ZERO},physMitTotal:0,magicDmg:0};
+  if(P.unkill)return {raw:0,physAfter:0,dreadAfter:0,eff:0,penSaved:0,willSaved:0,hopeSaved:0,pen:penBreakdown(),effBy:{warden:0,hunter:0,keeper:0,captain:0,captain_phys:0,captain_magic:0},physMitTotal:0,magicDmg:0,dawnBoost:0};
   const rawBy={warden:0,hunter:0,keeper:0,captain:0};
   let raw=0;ORDER.forEach(k=>{if(M[k].grievous||M[k].hp<=0)return;
     let r=0;
@@ -674,20 +674,26 @@ function dpsBreakdown(){
   const dreadNoHope=Math.max(0,dreadRaw*(1-willCut));
   const effNoWill=raw*(1-physAfter)*(1-dreadNoWill);
   const effNoHope=raw*(1-physAfter)*(1-dreadNoHope);
-  // per-member effective DPS: each member's share of raw, scaled by the same global mitigators
-  // Keeper is magic-only; Hunter/Warden/Captain are physical (subject to armor). Dread hits everyone.
-  const PHYS_ROLES={warden:true,hunter:true,captain:true,keeper:false};
+  // per-member effective DPS: Keeper is magic-only; Hunter/Warden are physical; Captain is 50/50 hybrid.
   const effBy={};
   ORDER.forEach(k=>{
-    const mult=PHYS_ROLES[k]?(1-physAfter)*(1-dreadAfter):(1-dreadAfter);
-    effBy[k]=rawBy[k]*mult;
+    if(k==="captain"){
+      effBy.captain_phys=rawBy.captain*0.5*(1-physAfter)*(1-dreadAfter);
+      effBy.captain_magic=rawBy.captain*0.5*(1-dreadAfter);
+      effBy.captain=effBy.captain_phys+effBy.captain_magic;
+    } else {
+      const isPhys=k!=="keeper";
+      effBy[k]=rawBy[k]*(isPhys?(1-physAfter)*(1-dreadAfter):(1-dreadAfter));
+    }
   });
-  // damage mitigated breakdown (per tick, for the series)
-  const physMitTotal=raw*physAfter*(1-dreadAfter);     // armor absorbed from physical dealers
-  const magicDmg=rawBy.keeper*(1-dreadAfter);          // keeper magic bypasses armor — confirm it lands
+  // damage mitigated — Captain's physical half counts toward armor absorption, magic half bypasses
+  const physMitTotal=(rawBy.warden+rawBy.hunter+rawBy.captain*0.5)*physAfter*(1-dreadAfter);
+  const magicDmg=rawBy.keeper*(1-dreadAfter)+(rawBy.captain*0.5)*(1-dreadAfter);
+  // Red Dawn boost this tick: when active, raw was already multiplied by 1.5; delta = raw/1.5 * 0.5
+  const dawnBoost=windows.dawn>0 ? (raw/1.5)*0.5 : 0;
   return {raw,physRaw,physAfter,dreadRaw,dreadAfter,eff:Math.max(0,eff),
     penSaved:Math.max(0,eff-effNoPen), willSaved:Math.max(0,eff-effNoWill), hopeSaved:Math.max(0,eff-effNoHope),
-    pen, effBy, physMitTotal:Math.max(0,physMitTotal), magicDmg:Math.max(0,magicDmg)};
+    pen, effBy, physMitTotal:Math.max(0,physMitTotal), magicDmg:Math.max(0,magicDmg), dawnBoost};
 }
 function sustain(){let s=0;ORDER.forEach(k=>{if(!M[k].grievous)s+=foodOf(k);});return s;}
 function refreshRead(){buildParty();const drain=+$("drain").value,spike=+$("spike").value,iv=+$("spikeiv").value;
@@ -706,7 +712,7 @@ function inTrouble(){return active().filter(k=>M[k].hp/M[k].max<0.35).length;}
 const inspRoll=(base,boost)=>Math.random()<(base+boost);
 
 function stepOnce(){
-  t++;
+  t++;let tickHeal=0;
   if(windows.dawn>0)windows.dawn--;
   if(windows.horn>0){windows.horn--;if(windows.horn===0&&M.warden)M.warden.horn=false;}
   const act=active();
@@ -738,7 +744,7 @@ function stepOnce(){
   // food healing (steady, LIVING ONLY — food sustains the standing; it does not revive a member who has fallen to zero)
   act.forEach(k=>{if(M[k].hp<=0)return;const incPer=P.drain/act.length;let heal=foodOf(k);const soft=incPer*1.5;if(heal>soft)heal=soft+(heal-soft)*0.4;
     if(!(windows.horn>0&&k==="warden"))M[k].hp=Math.min(M[k].max,M[k].hp+heal);});
-  if(rescue){const burst=(40+M.keeper.wil*4)*P.burstmul;M[rescue].hp=Math.min(M[rescue].max,Math.max(M[rescue].hp,0)+burst);M.keeper.action="burst";rescuesUsed++;
+  if(rescue){const burst=(40+M.keeper.wil*4)*P.burstmul;tickHeal=burst;M[rescue].hp=Math.min(M[rescue].max,Math.max(M[rescue].hp,0)+burst);M.keeper.action="burst";rescuesUsed++;
     log(`Cael bursts ${M[rescue].tpl.name} clear of zero (+${Math.round(burst)}) — rescue ${rescuesUsed} of ${RESCUE_CAP}`,"h");}
   // --- SHADOW (Model C): drains Will+Fate toward a floor; RADIANCE RAISES THE FLOOR (so partial Radiance meaningfully limits how deep the spirit sinks, full Radiance nearly stops it). Cascades into heals/dread-resist/inspiration. ---
   if(P.shadow>0){
@@ -797,8 +803,8 @@ function stepOnce(){
   // record time-series frame
   const incoming=P.drain+P.spike/P.spikeiv;
   series.push({t,boss:boss,dps:bd.eff,raw:bd.raw,penSaved:bd.penSaved,willSaved:bd.willSaved,hopeSaved:bd.hopeSaved,sustain:sustain(),incoming,
-    effBy:{warden:bd.effBy.warden,hunter:bd.effBy.hunter,keeper:bd.effBy.keeper,captain:bd.effBy.captain},
-    physMitTotal:bd.physMitTotal||0, magicDmg:bd.magicDmg||0,
+    effBy:{warden:bd.effBy.warden,hunter:bd.effBy.hunter,keeper:bd.effBy.keeper,captain:bd.effBy.captain,captain_phys:bd.effBy.captain_phys||0,captain_magic:bd.effBy.captain_magic||0},
+    physMitTotal:bd.physMitTotal||0, magicDmg:bd.magicDmg||0, dawnBoost:bd.dawnBoost||0, healBy:{keeper:tickHeal},
     spirit:{wil:ORDER.reduce((a,k)=>a+(M[k].grievous?0:M[k].wil),0),fat:ORDER.reduce((a,k)=>a+(M[k].grievous?0:M[k].fat),0)},
     spiritBase:{wil:ORDER.reduce((a,k)=>a+M[k].wilBase,0),fat:ORDER.reduce((a,k)=>a+M[k].fatBase,0)},
     morale:{warden:Math.max(0,M.warden.hp),hunter:Math.max(0,M.hunter.hp),keeper:Math.max(0,M.keeper.hp),captain:Math.max(0,M.captain.hp)},
