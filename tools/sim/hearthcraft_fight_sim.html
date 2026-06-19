@@ -962,6 +962,47 @@ function lineChart(host,legendHost,lines,xmax,ymax,opts){
     showTip(ev.clientX,ev.clientY,rows);});
   hit.addEventListener("mouseleave",hideTip);
 }
+function meterChart(hostId, rows, unit, footerLabel) {
+  rows = rows.slice().sort((a,b)=>b.value-a.value);
+  const total = rows.reduce((s,r)=>s+r.value, 0);
+  const maxVal = rows.length ? rows[0].value : 1;
+  let html = '<div class="meter-list">';
+  rows.forEach(r => {
+    const pct = total > 0 ? Math.round(r.value / total * 100) : 0;
+    const barW = maxVal > 0 ? Math.round(r.value / maxVal * 100) : 0;
+    html += `<div class="meter-row-grid">
+      <span class="meter-label">${r.name}</span>
+      <div class="meter-bar-wrap"><div class="meter-bar-fill" style="width:${barW}%;background:${r.color}"></div></div>
+      <span class="meter-value">${r.value.toFixed(1)} ${unit}</span>
+      <span class="meter-pct">${pct}%</span>
+    </div>`;
+  });
+  html += '</div>';
+  if(footerLabel !== undefined) {
+    html += `<div class="meter-footer">${footerLabel}: ${total.toFixed(1)} ${unit}</div>`;
+  }
+  $(hostId).innerHTML = html;
+}
+function pieChart(hostId, legendHostId, slices) {
+  const total = slices.reduce((s,sl)=>s+sl.value, 0);
+  if(total <= 0){$(hostId).innerHTML='<div class="empty" style="padding:20px;text-align:center">No damage dealt.</div>';return;}
+  const CX=80,CY=80,R=68,W=160,H=160;
+  let svg=`<svg viewBox="0 0 ${W} ${H}" width="160" height="160" style="display:block;margin:0 auto">`;
+  let ang=-Math.PI/2;
+  slices.forEach(sl=>{
+    if(sl.value<=0)return;
+    const a=(sl.value/total)*2*Math.PI, ea=ang+a;
+    const x1=CX+R*Math.cos(ang),y1=CY+R*Math.sin(ang);
+    const x2=CX+R*Math.cos(ea),y2=CY+R*Math.sin(ea);
+    svg+=`<path d="M${CX},${CY} L${x1.toFixed(2)},${y1.toFixed(2)} A${R},${R} 0 ${a>Math.PI?1:0},1 ${x2.toFixed(2)},${y2.toFixed(2)} Z" fill="${sl.color}" stroke="#efe6d2" stroke-width="1.5"/>`;
+    const mid=ang+a/2, pct=Math.round(sl.value/total*100);
+    if(pct>=8)svg+=`<text x="${(CX+R*0.62*Math.cos(mid)).toFixed(1)}" y="${(CY+R*0.62*Math.sin(mid)+4).toFixed(1)}" text-anchor="middle" style="font-size:11px;fill:#fff;font-weight:700;font-family:Georgia,serif">${pct}%</text>`;
+    ang=ea;
+  });
+  svg+='</svg>';
+  $(hostId).innerHTML=`<div class="pie-wrap">${svg}</div>`;
+  if(legendHostId)$(legendHostId).innerHTML='<div class="pie-legend">'+slices.map(sl=>`<span><span class="pie-swatch" style="background:${sl.color}"></span>${sl.name}: ${sl.value.toFixed(1)} dps (${Math.round(sl.value/total*100)}%)</span>`).join('')+'</div>';
+}
 function renderResults(){
   if(!series.length)return;const xmax=series[series.length-1].t;
   // DPS over time
