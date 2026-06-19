@@ -65,6 +65,8 @@
   input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--ember);border:3px solid #f7f0de;cursor:pointer;box-shadow:0 2px 5px rgba(0,0,0,.3);transition:transform .08s,box-shadow .08s}
   input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.15);box-shadow:0 3px 8px rgba(0,0,0,.35)}
   input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:var(--ember);border:3px solid #f7f0de;cursor:pointer}
+  select{font-family:inherit;font-size:13px;background:var(--parch2);border:1px solid var(--rule);color:var(--ink);padding:3px 6px;border-radius:3px;cursor:pointer;width:100%}
+  select:focus{outline:2px solid var(--ember);outline-offset:1px}
   .seg{display:flex;gap:5px;margin-bottom:5px}
   .seg button{flex:1;font-family:inherit;font-size:12px;padding:8px 6px;border:1px solid var(--rule);background:#f1e8d2;color:var(--ink);border-radius:4px;cursor:pointer;font-weight:600;transition:background .12s,color .12s,transform .08s,box-shadow .08s}
   .seg button:hover:not(.on){background:#e8dcc4;transform:translateY(-1px);box-shadow:0 2px 5px rgba(60,40,20,.12)}
@@ -247,10 +249,10 @@
           <div class="ctl"><label>Cooking level <span class="val" id="v_rlevel">4 Hearthkeeper</span></label><input type="range" id="rlevel" min="1" max="50" value="4"></div>
           <div class="gnote" id="rlevel_hps" style="margin-top:4px">&#8594; 10.0 HP/s per member</div>
           <div class="effect" style="margin-top:6px">Food also boosts STATS. Pick each meal's stat focus &#8212; this feeds damage, penetration (Agi/Mig), healing (Wil), etc.</div>
-          <div class="ctl"><label>Warden meal favors <span class="val" id="v_sw">Vit</span></label><input type="range" id="sw" min="0" max="4" value="2"></div>
-          <div class="ctl"><label>Hunter meal favors <span class="val" id="v_sh">Agi</span></label><input type="range" id="sh" min="0" max="4" value="1"></div>
-          <div class="ctl"><label>Keeper meal favors <span class="val" id="v_sk">Wil</span></label><input type="range" id="sk" min="0" max="4" value="3"></div>
-          <div class="ctl"><label>Captain meal favors <span class="val" id="v_sc">Wil</span></label><input type="range" id="sc" min="0" max="4" value="3"></div>
+          <div class="ctl"><label>Warden meal favors</label><select id="sw"><option value="0">Mig</option><option value="1">Agi</option><option value="2" selected>Vit</option><option value="3">Wil</option><option value="4">Fat</option></select></div>
+          <div class="ctl"><label>Hunter meal favors</label><select id="sh"><option value="0">Mig</option><option value="1" selected>Agi</option><option value="2">Vit</option><option value="3">Wil</option><option value="4">Fat</option></select></div>
+          <div class="ctl"><label>Keeper meal favors</label><select id="sk"><option value="0">Mig</option><option value="1">Agi</option><option value="2">Vit</option><option value="3" selected>Wil</option><option value="4">Fat</option></select></div>
+          <div class="ctl"><label>Captain meal favors</label><select id="sc"><option value="0">Mig</option><option value="1">Agi</option><option value="2">Vit</option><option value="3" selected>Wil</option><option value="4">Fat</option></select></div>
           <div class="ctl"><label>Food stat boost strength <span class="val" id="v_foodstat">0</span></label><input type="range" id="foodstat" min="0" max="30" value="0"><div class="effect">how many points the favored stat gains (0 = stats from level only)</div></div>
         </div>
         <div class="ctl-group">
@@ -496,7 +498,7 @@ $("rlevel").addEventListener("input",e=>{
 });
 $("hflav").addEventListener("input",e=>{$("v_hflav").textContent=(+e.target.value===1)?"might":"agility";if(!running){buildParty();refreshRead();statPreview();}});
 $("burstmul").addEventListener("input",e=>{$("v_burst").textContent=(+e.target.value/100).toFixed(1)+"\u00d7";});
-["sw","sh","sk","sc"].forEach(id=>{const vid="v_"+id;$(id).addEventListener("input",e=>{$(vid).textContent=STAT_LABEL[STAT_KEYS[+e.target.value]];if(!running){buildParty();statPreview();refreshRead();}});});
+["sw","sh","sk","sc"].forEach(id=>{$(id).addEventListener("change",()=>{if(!running){buildParty();statPreview();refreshRead();}});});
 $("foodstat").addEventListener("input",e=>{$("v_foodstat").textContent=e.target.value;if(!running){buildParty();statPreview();refreshRead();}});
 /* ---- Encounter import (spreadsheet -> sim) ---- */
 let _encList=[];
