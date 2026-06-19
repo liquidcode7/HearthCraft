@@ -103,7 +103,7 @@
   .gauge .g-row.sub{font-size:10.5px;color:#8a7355;padding-left:10px}
   .gauge .g-row .ok{color:var(--good);font-weight:600}.gauge .g-row .no{color:var(--bad);font-weight:600}
   .gauge .g-row .save{color:var(--keeper);font-weight:600}
-  .log{height:150px;overflow-y:auto;font-size:11px;line-height:1.55;color:#5a4730;padding:8px 11px;font-family:"SF Mono",ui-monospace,Menlo,monospace}
+  .log{height:240px;overflow-y:auto;font-size:11px;line-height:1.55;color:#5a4730;padding:8px 11px;font-family:"SF Mono",ui-monospace,Menlo,monospace}
   .log .t{color:var(--bad)}.log .h{color:var(--keeper)}.log .g{color:var(--good)}.log .insp{color:var(--insp);font-weight:700}
 
   /* results */
@@ -247,7 +247,6 @@
           <h3 onclick="this.parentElement.classList.toggle('open')">Wounds &amp; the Keeper <span>&#9432;</span></h3>
           <div class="gnote">Zero Morale = one wound (keep fighting). 5 wounds = grievous = out, needs the Houses of Healing. The Keeper burst-rescues whoever hits zero (one at a time) and deals magic damage otherwise.</div>
           <div class="ctl"><label>Keeper rescue burst mult. <span class="val" id="v_burst">1.0&#215;</span></label><input type="range" id="burstmul" min="50" max="200" value="100"><div class="effect">base burst scales with Keeper's Will</div></div>
-          <div class="ctl"><label>Inspiration rarity <span class="val" id="v_insprare">normal</span></label><input type="range" id="insprare" min="0" max="2" value="1"></div>
         </div>
         <div class="seg" style="margin-top:8px">
           <button id="spd1" onclick="setSpeed(0)">1&#215;</button><button id="spd4" class="on" onclick="setSpeed(1)">4&#215;</button>
@@ -362,7 +361,7 @@ const fmtT=s=>`${Math.floor(s/60)}:${String(Math.max(0,s)%60).padStart(2,"0")}`;
 function roster(){const hk=(+$("hflav").value===1)?"hunterM":"hunterA";return {warden:TPL.warden,hunter:TPL[hk],keeper:TPL.keeper,captain:TPL.captain};}
 
 let MODE=0,SPEED=1,running=false,timer=null,t=0,P=null,maxT=0;
-let M={},events=[],fired={},windows={},baFired=false,series=[],rescuesUsed=0,wardsUsed=0;
+let M={},events=[],fired={},windows={},baFired=false,series=[],rescuesUsed=0,wardsUsed=0,inspBoost=0;
 const SPEED_MS=[1000,250,62,0];
 
 function showTab(name){['setup','live','results'].forEach(n=>{$('pane_'+n).classList.toggle('on',n===name);$('tab_'+n).classList.toggle('on',n===name);});}
@@ -376,7 +375,6 @@ const live={dur:"v_dur",boss:"v_boss",drain:"v_drain",spike:"v_spike",spikeiv:"v
 Object.keys(live).forEach(id=>{const el=$(id),out=$(live[id]);
   el.addEventListener("input",()=>{out.textContent=(id==="dur")?fmtT(+el.value):el.value;if(!running){buildParty();refreshRead();refreshBoss();updEffects();statPreview();}});});
 $("hflav").addEventListener("input",e=>{$("v_hflav").textContent=(+e.target.value===1)?"might":"agility";if(!running){buildParty();refreshRead();statPreview();}});
-$("insprare").addEventListener("input",e=>{$("v_insprare").textContent=["rare","normal","frequent"][+e.target.value];});
 $("burstmul").addEventListener("input",e=>{$("v_burst").textContent=(+e.target.value/100).toFixed(1)+"\u00d7";});
 ["sw","sh","sk","sc"].forEach(id=>{const vid="v_"+id;$(id).addEventListener("input",e=>{$(vid).textContent=STAT_LABEL[STAT_KEYS[+e.target.value]];if(!running){buildParty();statPreview();refreshRead();}});});
 $("foodstat").addEventListener("input",e=>{$("v_foodstat").textContent=e.target.value;if(!running){buildParty();statPreview();refreshRead();}});
@@ -449,7 +447,7 @@ function loadEncPaste(){const txt=document.getElementById("enc_paste").value.tri
   st.textContent=_encList.length+" encounter(s) loaded from paste. Pick one \u2192";}
 
 
-function curParams(){const ins=[0.6,1,1.6][+$("insprare").value];
+function curParams(){
   return {lvl:+$("lvl").value,duration:+$("dur").value,boss:+$("boss").value,drain:+$("drain").value,spike:+$("spike").value,spikeiv:+$("spikeiv").value,
     phys:(MODE===1?0:+$("phys").value/100),unkill:MODE===1,burstmul:+$("burstmul").value/100,
     dread:statusOn("dread")/100, hope:antidoteOn("hope"),
@@ -458,7 +456,8 @@ function curParams(){const ins=[0.6,1,1.6][+$("insprare").value];
     cold:statusOn("cold"),warmth:antidoteOn("warmth"),
     heat:statusOn("heat"),heatease:antidoteOn("heatease"),
     wake:statusOn("wake"),alert:antidoteOn("alert"),
-    graceBase:0.10*ins,hornBase:0.02*ins,dawnBase:0.02*ins,blackArrowCap:0.03*ins};}
+    // Fixed 5% base for Grace/Horn/Dawn; Black Arrow grows with time. Captain Red Dawn boosts others via inspBoost state.
+    graceBase:0.05,hornBase:0.03,dawnBase:0.03,blackArrowCap:0.06};}
 function foodOf(k){return +({warden:$("fw"),hunter:$("fh"),keeper:$("fk"),captain:$("fc")}[k]).value;}
 
 function buildStatusRows(){
@@ -556,8 +555,8 @@ function log(msg,cls){const l=$("log"),d=document.createElement("div");
   d.innerHTML=`<span style="color:#a8956d">${fmtT(t).padStart(5," ")}</span> ${cls?`<span class="${cls}">`:""}${msg}${cls?"</span>":""}`;
   l.appendChild(d);l.scrollTop=l.scrollHeight;}
 function active(){return ORDER.filter(k=>!M[k].grievous);}
-function inTrouble(){return active().filter(k=>M[k].hp/M[k].max<0.30).length;}
-const inspRoll=(m,base)=>Math.random()<base*(1+(m.wil+m.fat)/200);
+function inTrouble(){return active().filter(k=>M[k].hp/M[k].max<0.35).length;}
+const inspRoll=(base,boost)=>Math.random()<(base+boost);
 
 function stepOnce(){
   t++;
@@ -609,19 +608,39 @@ function stepOnce(){
    if(extra>0)act.forEach(k=>{M[k].hp-=extra/act.length;});}
   ORDER.forEach(k=>{if(M[k].grievous)return;
     if(M[k].hp<=0&&!M[k].atZero){M[k].atZero=true;M[k].wounds++;log(`${M[k].tpl.name} hits zero — a wound (${M[k].wounds}/${GRIEVOUS})`,"t");
-      if(M[k].wounds>=GRIEVOUS){if(!M.keeper.grievous&&M.keeper.hp>0&&inspRoll(M.keeper,P.graceBase)){M[k].wounds=0;M[k].hp=Math.round(M[k].max*0.4);M[k].atZero=false;
+      if(M[k].wounds>=GRIEVOUS){if(!M.keeper.grievous&&M.keeper.hp>0&&inspRoll(P.graceBase,inspBoost)){M[k].wounds=0;M[k].hp=Math.round(M[k].max*0.4);M[k].atZero=false;
           log(`&#10022; LAURELIN'S GRACE — Cael calls upon Laurelin's Grace, and the shadow loosens its hold on ${M[k].tpl.name}`,"insp");events.push({t,kind:"Laurelin's Grace",who:M[k].tpl.name});}
         else{M[k].grievous=true;log(`${M[k].tpl.name} takes a GRIEVOUS wound — out of the fight`,"t");events.push({t,kind:"grievous",who:M[k].tpl.name});}}}
     if(M[k].hp>5)M[k].atZero=false;});
-  if(windows.horn<=0&&!fired.horn&&inTrouble()>=2&&!M.warden.grievous&&M.warden.hp>0&&inspRoll(M.warden,P.hornBase)){fired.horn=true;windows.horn=8;M.warden.horn=true;
+  // --- periodic flavor commentary ---
+  if(t>0&&t%60===0){
+    const pct=active().length/4;const bd2=dpsBreakdown();const trem=maxT-t;
+    // rescue fuel check
+    if(rescuesUsed>=3&&rescuesUsed<RESCUE_CAP)log(`Keeper has used ${rescuesUsed} of ${RESCUE_CAP} rescues — the well is getting shallow.`,"t");
+    else if(rescuesUsed>=RESCUE_CAP)log(`Keeper has no rescues left — the next fall is a wound with no catch.`,"t");
+    // boss milestone callouts
+    if(!P.unkill){const bpct=window._boss/P.boss;
+      if(bpct<=0.5&&bpct>0.45&&!fired.halfBlood){fired.halfBlood=true;log(`The enemy host has lost half its resolve — the band's damage is landing.`,"g");}
+      if(bpct<=0.25&&bpct>0.20&&!fired.quarterBlood){fired.quarterBlood=true;log(`Enemy resolve below a quarter — push harder.`,"g");}
+    }
+    // morale state pulse
+    const low=active().filter(k=>M[k].hp/M[k].max<0.40);
+    if(low.length>=2)log(`${low.map(k=>M[k].tpl.name).join(" and ")} are running low — the Keeper's eye is everywhere.`,"t");
+    // shadow escalation
+    if(P.shadow>0&&t%120===0){const lost=ORDER.reduce((a,k)=>a+(M[k].grievous?0:M[k].shDrain),0);
+      if(lost>2)log(`The Shadow has stolen ${Math.round(lost)} spirit from the band — Will and Fate sink lower.`,"t");}
+  }
+  if(inspBoost>0)inspBoost=Math.max(0,inspBoost-0.005); // decay the Captain's post-Dawn boost over ~20s
+  if(windows.horn<=0&&!fired.horn&&inTrouble()>=2&&!M.warden.grievous&&M.warden.hp>0&&inspRoll(P.hornBase,inspBoost)){fired.horn=true;windows.horn=8;M.warden.horn=true;
     log(`&#10022; THE HORN OF GONDOR — ${M.warden.tpl.name} blows the Horn of Gondor and refuses to fall`,"insp");events.push({t,kind:"The Horn of Gondor",who:M.warden.tpl.name});}
-  if(windows.dawn<=0&&!fired.dawn&&inTrouble()>=2&&!M.captain.grievous&&M.captain.hp>0&&inspRoll(M.captain,P.dawnBase)){fired.dawn=true;windows.dawn=10;act.forEach(k=>{M[k].hp=Math.min(M[k].max,M[k].hp+M[k].max*0.15);});
-    log(`&#10022; WRATH, RUIN, AND THE RED DAWN — ${M.captain.tpl.name} cries: 'Now for wrath, now for ruin, and the red dawn!'`,"insp");events.push({t,kind:"Wrath, Ruin, and the Red Dawn",who:M.captain.tpl.name});}
+  if(windows.dawn<=0&&!fired.dawn&&inTrouble()>=2&&!M.captain.grievous&&M.captain.hp>0&&inspRoll(P.dawnBase,0)){fired.dawn=true;windows.dawn=10;act.forEach(k=>{M[k].hp=Math.min(M[k].max,M[k].hp+M[k].max*0.15);});
+    inspBoost=0.15; // Red Dawn — the Captain's cry lifts all hearts; Grace/Horn/Arrow each gain +15% flat for the next ~30s
+    log(`&#10022; WRATH, RUIN, AND THE RED DAWN — ${M.captain.tpl.name} cries: 'Now for wrath, now for ruin, and the red dawn!' (all Inspirations boosted)`,"insp");events.push({t,kind:"Wrath, Ruin, and the Red Dawn",who:M.captain.tpl.name});}
   const bd=dpsBreakdown();let boss=window._boss;if(!P.unkill)boss=Math.max(0,boss-bd.eff);window._boss=boss;
   if(!baFired&&!M.hunter.grievous&&M.hunter.hp>0){const elapsed=t/maxT;const ttk=bd.eff>0?boss/bd.eff:1e9;const trem=maxT-t;
     const losing=P.unkill?(elapsed>0.5):(ttk>trem&&elapsed>0.4);
     if(losing){const rise=Math.min(P.blackArrowCap,(elapsed-0.4)*P.blackArrowCap*2.5);
-      if(Math.random()<rise*(1+(M.hunter.wil+M.hunter.fat)/200)){baFired=true;
+      if(inspRoll(rise,inspBoost)){baFired=true;
         if(P.unkill){maxT-=Math.round(P.duration*0.15);log(`&#10022; BLACK ARROW — ${M.hunter.tpl.name} looses a flaming arrow — the terror recoils, the clock shortens`,"insp");events.push({t,kind:"Black Arrow (flaming)",who:M.hunter.tpl.name});}
         else{boss=Math.max(0,boss-P.boss*0.35);window._boss=boss;log(`&#10022; BLACK ARROW — ${M.hunter.tpl.name} draws the Black Arrow — go now, and speed well!`,"insp");events.push({t,kind:"Black Arrow",who:M.hunter.tpl.name});}}}}
   // record time-series frame
@@ -687,14 +706,44 @@ function finish(label,cls){clearInterval(timer);running=false;const v=$("verdict
   buildSummary(label);renderResults();$("results_empty").style.display="none";$("results_body").style.display="";showTab('results');}
 
 function prep(){buildParty();$("log").innerHTML="";t=0;P=curParams();maxT=P.duration;window._boss=P.boss;
-  events=[];fired={};windows={dawn:0,horn:0};baFired=false;series=[];rescuesUsed=0;wardsUsed=0;
+  events=[];fired={};windows={dawn:0,horn:0};baFired=false;series=[];rescuesUsed=0;wardsUsed=0;inspBoost=0;
   $("verdict").textContent="ENGAGED";$("verdict").className="verdict v-fighting";
-  log(P.unkill?"The band sets itself against a terror that cannot be slain — endure.":"The band sets upon the enemy host.","");}
+  // --- verbose startup log ---
+  const sus=sustain(), drain=P.drain, spike=P.spike, iv=P.spikeiv;
+  const incoming=drain+spike/iv;
+  const margin=sus-incoming;
+  log(P.unkill?`The band sets itself against a terror that cannot be slain — endure for ${fmtT(maxT)}.`:`The band draws weapons. The enemy host holds ${Math.round(P.boss)} resolve.`,"");
+  log(`Provisions: Warden ${foodOf("warden")}/s · Hunter ${foodOf("hunter")}/s · Keeper ${foodOf("keeper")}/s · Captain ${foodOf("captain")}/s → ${Math.round(sus)}/s total sustain`,"");
+  if(drain>0||spike>0){
+    let pressStr=`Pressure: `;
+    if(drain>0)pressStr+=`steady drain ${drain}/s spread over standing members`;
+    if(drain>0&&spike>0)pressStr+=` · `;
+    if(spike>0)pressStr+=`spikes ${spike} potency every ${iv}s (random target)`;
+    pressStr+=` → ~${Math.round(incoming)}/s combined`;
+    log(pressStr,"");
+  }
+  if(margin>=0){log(`Sustain holds: ${Math.round(sus)}/s in, ~${Math.round(incoming)}/s out — surplus ${Math.round(margin)}/s. The Keeper's real job is catching spikes.`,"g");}
+  else{log(`Sustain gap: ${Math.round(sus)}/s in, ~${Math.round(incoming)}/s out — deficit ${Math.round(Math.abs(margin))}/s. Members will bleed down over time.`,"t");}
+  if(!P.unkill){const bd=dpsBreakdown();const ttk=bd.eff>0?Math.ceil(P.boss/bd.eff):99999;
+    if(ttk<=maxT*0.6)log(`Damage looks strong — ${Math.round(bd.eff)} effective DPS, kill in ~${fmtT(ttk)} (${Math.round(ttk/maxT*100)}% of the clock).`,"g");
+    else if(ttk<=maxT)log(`Damage is thin — ${Math.round(bd.eff)} effective DPS, kill in ~${fmtT(ttk)}. Cuts it close.`,"");
+    else log(`Damage deficit — ${Math.round(bd.eff)} effective DPS, can't kill in time. Stalemate likely unless an Inspiration turns the fight.`,"t");}
+  const hazards=[];
+  if(P.dread>0)hazards.push(`Dread (${Math.round(P.dread*100)}%) — suppresses all damage; countered by Hope and Captain's Will`);
+  if(P.shadow>0)hazards.push(`Shadow (${P.shadow}) — drains Will and Fate toward a floor; Radiance raises that floor`);
+  if(P.cold>0)hazards.push(`Cold (${P.cold}) — extra Morale drain${P.warmth>0?" (Warmth antidote active)":""}`);
+  if(P.heat>0)hazards.push(`Heat (${P.heat}) — extra Morale drain${P.heatease>0?" (Heat-ease active)":""}`);
+  if(P.disease>0)hazards.push(`Disease (${P.disease}) — extra Morale drain${P.hale>0?" (Hale active)":""}`);
+  if(P.wake>0)hazards.push(`Wakefulness (${P.wake}) — extra Morale drain${P.alert>0?" (Alert active)":""}`);
+  if(hazards.length)hazards.forEach(h=>log(`Hazard: ${h}`,"t"));
+  else log(`No hazards — a clean fight.`,"");
+  log(`Rescues: Cael holds ${RESCUE_CAP} burst rescues and ${WARD_CAP} Warden lethal-spike guards. Inspirations fire at 5% per trigger.`,""  );
+  log(`――― ENGAGED ―――`,"");}
 function runLoop(){if(SPEED===3){let g=0;while(!stepOnce()&&g++<20000){}return;}timer=setInterval(()=>{if(stepOnce())clearInterval(timer);},SPEED_MS[SPEED]);}
 function start(){if(running)return;prep();running=true;$("run").innerHTML="&#8230; fighting";$("runstate").textContent="running…";showTab('live');runLoop();}
 $("run").addEventListener("click",start);
 $("step").addEventListener("click",()=>{if(!running){if(t===0||series.length===0)prep();showTab('live');stepOnce();}});
-$("reset").addEventListener("click",()=>{clearInterval(timer);running=false;t=0;
+$("reset").addEventListener("click",()=>{clearInterval(timer);running=false;t=0;inspBoost=0;
   $("verdict").textContent="AWAITING ORDERS";$("verdict").className="verdict v-fighting";$("run").innerHTML="&#9654; Run";
   $("log").innerHTML="";$("clock").textContent="0:00";$("runstate").textContent="not yet run";
   $("results_empty").style.display="";$("results_body").style.display="none";series=[];events=[];
