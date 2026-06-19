@@ -1008,44 +1008,86 @@ function pieChart(hostId, legendHostId, slices) {
 }
 function renderResults(){
   if(!series.length)return;const xmax=series[series.length-1].t;
-  // DPS over time
+  const avg=key=>series.reduce((s,f)=>s+(f[key]||0),0)/series.length;
+  const avgBy=k=>series.reduce((s,f)=>s+(f.effBy?f.effBy[k]||0:0),0)/series.length;
+
+  // Effective DPS over time (line chart — shows the time dimension)
   const dpsMax=Math.max(10,...series.map(s=>Math.max(s.dps,s.incoming)));
   lineChart("ch_dps","lg_dps",[
     {name:"Effective DPS",color:"#4a6c93",pts:series.map(s=>({x:s.t,y:s.dps})),fmt:v=>Math.round(v)+" dps"},
     {name:"Incoming pressure",color:"#9a3526",pts:series.map(s=>({x:s.t,y:s.incoming})),fmt:v=>Math.round(v)+"/s"},
   ],xmax,dpsMax,{});
-  // Morale
+
+  // Morale over time (line chart)
   const mMax=Math.max(...ORDER.map(k=>series[0].maxmorale[k]));
   lineChart("ch_morale","lg_morale",ORDER.map(k=>({name:M[k].tpl.name+" ("+M[k].role+")",color:TPL[k==="hunter"?"hunterA":k].color,pts:series.map(s=>({x:s.t,y:s.morale[k]})),fmt:v=>Math.round(v)})),xmax,mMax,{});
-  // Mitigation preserved
-  const anyMit=series.some(s=>s.penSaved>0||s.willSaved>0||s.hopeSaved>0);
-  if(anyMit){const mitMax=Math.max(5,...series.map(s=>Math.max(s.penSaved,s.willSaved,s.hopeSaved)));
-    lineChart("ch_mit","lg_mit",[
-      {name:"preserved by Penetration",color:"#5b7f63",pts:series.map(s=>({x:s.t,y:s.penSaved})),fmt:v=>"+"+Math.round(v)+" dps"},
-      {name:"preserved by Captain Will",color:"#7d5a93",pts:series.map(s=>({x:s.t,y:s.willSaved})),fmt:v=>"+"+Math.round(v)+" dps"},
-      {name:"preserved by Hope",color:"#b8843c",pts:series.map(s=>({x:s.t,y:s.hopeSaved})),fmt:v=>"+"+Math.round(v)+" dps"},
-    ],xmax,mitMax,{});}
-  else{$("ch_mit").innerHTML='<div class="empty" style="padding:30px 14px;text-align:center">No armor or Dread in this fight — set Physical mit. or toggle Dread to see how much penetration, Captain Will, and Hope each preserve.</div>';$("lg_mit").innerHTML="";}
-  // DPS per character
-  const dpsCharMax=Math.max(10,...ORDER.flatMap(k=>series.map(s=>s.effBy?s.effBy[k]||0:0)));
-  lineChart("ch_dpschar","lg_dpschar",ORDER.map(k=>({name:M[k].tpl.name+" ("+M[k].role+")",color:TPL[k==="hunter"?"hunterA":k].color,
-    pts:series.map(s=>({x:s.t,y:s.effBy?s.effBy[k]||0:0})),fmt:v=>Math.round(v)+" dps"})),xmax,dpsCharMax,{});
-  // Damage mitigated vs magic bypass
-  const anyPhysMit=P.phys>0&&series.some(s=>s.physMitTotal>0);
-  const anyMagic=series.some(s=>s.magicDmg>0);
-  if(anyPhysMit||anyMagic){
-    const dmgMitMax=Math.max(10,...series.map(s=>Math.max(s.physMitTotal||0,s.magicDmg||0)));
-    lineChart("ch_dmgmit","lg_dmgmit",[
-      {name:"Physical DPS absorbed by armor",color:"#9a3526",pts:series.map(s=>({x:s.t,y:s.physMitTotal||0})),fmt:v=>Math.round(v)+" dps lost to armor"},
-      {name:"Keeper magic DPS (bypasses armor)",color:"#7d5a93",pts:series.map(s=>({x:s.t,y:s.magicDmg||0})),fmt:v=>Math.round(v)+" dps (unblocked)"},
-    ],xmax,dmgMitMax,{});
+
+  // DPS per character — MMO bar meter
+  meterChart("ch_dpschar",[
+    {name:"Mira (Hunter)",     color:"#c0392b", value:avgBy("hunter")},
+    {name:"Borin (Warden)",    color:"#2e6da4", value:avgBy("warden")},
+    {name:"Cael (Keeper)",     color:"#7d5a93", value:avgBy("keeper")},
+    {name:"Aelindra (Capt.)", color:"#b8843c", value:avgBy("captain")},
+  ],"dps","Party total");
+
+  // Captain's boost — Will + Red Dawn averaged over fight
+  const avgWillSaved=avg("willSaved"), avgHopeSaved=avg("hopeSaved"), avgDawnBoost=avg("dawnBoost");
+  const captainBoostTotal=avgWillSaved+avgDawnBoost;
+  if(captainBoostTotal>0.1||avgHopeSaved>0.1){
+    meterChart("ch_captainboost",[
+      {name:"Captain Will + Red Dawn", color:"#8a9aaa", value:captainBoostTotal},
+      {name:"Hope (food antidote)",    color:"#c9a84c", value:avgHopeSaved},
+    ],"dps","Total boost");
   } else {
-    $("ch_dmgmit").innerHTML='<div class="empty" style="padding:30px 14px;text-align:center">No armor in this fight — set Physical mit. % to see how much physical DPS armor absorbs vs. how much of the Keeper\'s magic damage bypasses it.</div>';
-    $("lg_dmgmit").innerHTML="";
+    $("ch_captainboost").innerHTML='<div class="empty" style="padding:24px 14px;text-align:center">No Dread active and Red Dawn did not fire — enable Dread or run a long fight to see the Captain\'s boost.</div>';
   }
-  // Wounds
+
+  // Keeper healing — green bar
+  const avgHeal=series.reduce((s,f)=>s+(f.healBy?f.healBy.keeper||0:0),0)/series.length;
+  if(avgHeal>0.01){
+    meterChart("ch_keeperheal",[
+      {name:"Cael (Keeper)", color:"#5b7f63", value:avgHeal},
+    ],"hp/s","Avg HP/s restored");
+  } else {
+    $("ch_keeperheal").innerHTML='<div class="empty" style="padding:24px 14px;text-align:center">No rescues fired this engagement — Keeper spent all time on damage.</div>';
+  }
+
+  // Damage dealt to enemy by type — pie chart
+  const avgCaptPhys=series.reduce((s,f)=>s+(f.effBy?f.effBy.captain_phys||0:0),0)/series.length;
+  const avgCaptMagic=series.reduce((s,f)=>s+(f.effBy?f.effBy.captain_magic||0:0),0)/series.length;
+  const physDps=avgBy("warden")+avgBy("hunter")+avgCaptPhys;
+  const magicDps=avgBy("keeper")+avgCaptMagic;
+  pieChart("ch_damagetype","lg_damagetype",[
+    {name:"Physical", color:"#c0392b", value:physDps},
+    {name:"Magic",    color:"#7d5a93", value:magicDps},
+  ]);
+
+  // Armor mitigation — what armor absorbed vs what got through
+  const avgPhysAbsorbed=avg("physMitTotal");
+  if(P.phys>0&&(avgPhysAbsorbed>0||physDps>0)){
+    meterChart("ch_armormet",[
+      {name:"Absorbed by armor", color:"#c0392b", value:avgPhysAbsorbed},
+      {name:"Through armor",     color:"#5b7f63", value:physDps},
+    ],"dps","Total physical attempted");
+  } else {
+    $("ch_armormet").innerHTML='<div class="empty" style="padding:24px 14px;text-align:center">No armor in this fight — set Physical mit. % on Setup to see the breakdown.</div>';
+  }
+
+  // Dread mitigation — Will + Hope counters
+  const anyDread=series.some(s=>s.willSaved>0||s.hopeSaved>0||s.dawnBoost>0);
+  if(anyDread){
+    meterChart("ch_dreadmet",[
+      {name:"Saved by Captain Will + Red Dawn", color:"#b8843c", value:captainBoostTotal},
+      {name:"Saved by Hope",                   color:"#c9a84c", value:avgHopeSaved},
+    ],"dps","Total Dread countered");
+  } else {
+    $("ch_dreadmet").innerHTML='<div class="empty" style="padding:24px 14px;text-align:center">No Dread in this fight — toggle Dread on the enemy to see how Will and Hope counter it.</div>';
+  }
+
+  // Wounds accumulated (line chart)
   lineChart("ch_wounds","lg_wounds",ORDER.map(k=>({name:M[k].tpl.name,color:TPL[k==="hunter"?"hunterA":k].color,pts:series.map(s=>({x:s.t,y:s.wounds[k]})),fmt:v=>Math.round(v)+" wounds"})),xmax,GRIEVOUS,{yfmt:v=>Math.round(v)});
-  // spirit (Will+Fate) drain under Shadow
+
+  // Shadow spirit drain (line chart, conditional)
   const sawShadow=series.some(s=>s.spirit.wil<s.spiritBase.wil-0.5||s.spirit.fat<s.spiritBase.fat-0.5);
   if(sawShadow){const spMax=Math.max(...series.map(s=>Math.max(s.spiritBase.wil,s.spiritBase.fat)));
     lineChart("ch_spirit","lg_spirit",[
@@ -1053,7 +1095,8 @@ function renderResults(){
       {name:"Party Fate",color:"#b8843c",pts:series.map(s=>({x:s.t,y:s.spirit.fat})),fmt:v=>Math.round(v)},
     ],xmax,spMax,{});}
   else{$("ch_spirit").innerHTML='<div class="empty" style="padding:30px 14px;text-align:center">No Shadow in this fight — toggle Shadow on the enemy to watch it drain the party\'s Will and Fate (and Radiance hold it back).</div>';$("lg_spirit").innerHTML="";}
-  // inspiration timeline
+
+  // Inspiration timeline
   const insps=events.filter(e=>/Grace|Horn|Red Dawn|Black Arrow/.test(e.kind));
   $("insp_list").innerHTML=insps.length?insps.map(e=>`<div class="insp-row"><span class="it">${fmtT(e.t)}</span><span class="ik">${e.kind}</span><span>&#8212; ${e.who}</span></div>`).join(""):'<div class="empty">No Inspirations fired this engagement. They are rare grace — most fights pass without them.</div>';
 }
