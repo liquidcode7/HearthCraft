@@ -69,6 +69,8 @@ Everything in V1 exists to answer that question. Nothing else.
   must meet the minimum (easy: 0, medium: 3, hard: 6)
 - Each mission has: a name, a flavor description, a vitality requirement,
   a required buff strength (affects success odds), a duration, and a reward table
+- Mission durations scale with band level: below level 10, missions run 20–30
+  minutes; level 10 and above, missions run 30–45 minutes
 - Player feeds the band (selects a prepared food item) then sends them
 - Mission runs in background via WorkManager
 - Missions are difficult when first unlocked but always attemptable

@@ -7,12 +7,12 @@
 
 ## Current Status — June 19, 2026
 
-**Phase:** V1 core loop complete. Combat model designed and tooled. Toolkit documented in README.  
-**V1 progress:** Core loop playable. Band selection, gathering, cooking, missions, and notifications all wired. Combat system designed in full (not yet built — V2+ destination).  
-**What's working:** Full V1 loop. `docs/combat-model.md` (complete combat spec). Encounter tuning toolkit live in `tools/sim/` (HTML simulator + 3 spreadsheets + 14 encounter JSONs). Two tuned encounters validated (Neekerbreekers L1, Wolves L3). README updated to document the toolkit.  
-**What's not wired yet:** Full combat system (V2+). V1 missions still use simplified buff-strength model. 5th combat role (melee DPS) not yet designed.  
-**Next session:** Play the V1 build to test feel. Then: decide whether any V1 code needs updating for combat forward-compat, or move to designing V2 combat integration.  
-**Open questions:** 5th role design (party-of-5 vs field-4-from-roster; identity; Inspiration). Rung-3 first-hazard fork (Cold vs Wakefulness). Exact magnitude tuning for all combat constants.
+**Phase:** V1 core loop complete. Combat model designed and tooled. Simulator redesigned with band level cap and duration presets.  
+**V1 progress:** Core loop playable. Combat system designed in full (not yet built — V2+ destination). Band combat level cap set at 20.  
+**What's working:** Full V1 loop. Combat simulator with capped band level slider (1–20), 6-button duration picker (20–45 min), valid range highlighted per level, larger controls and polished click animations.  
+**What's not wired yet:** Full combat system (V2+). 5th combat role (melee DPS) not yet designed.  
+**Next session:** Play the V1 build to test feel. Decide V2 scope — combat integration vs alchemy/recipe discovery.  
+**Open questions:** 5th role design (party-of-5 vs field-4-from-roster; identity; Inspiration). Rung-3 first-hazard fork (Cold vs Wakefulness). Exact magnitude tuning for all combat constants. Mettle as a display label for band readiness (deferred).
 
 ---
 
@@ -776,3 +776,42 @@ the current state of the project.
 - Next session: play V1 build, confirm feel of the core loop
 - Near term: decide V2 scope — combat integration vs alchemy/recipe discovery
 - Open design thread: 5th combat role
+
+---
+
+## Session 10 — June 19, 2026
+**Simulator redesign: band level cap, duration presets, UI polish**
+
+**What was built:**
+- `tools/sim/hearthcraft_fight_sim.html`: Band level slider capped at 20 (was 60).
+  Duration slider replaced with 6 preset buttons (20/25/30/35/40/45 min). Valid
+  range highlighted per level — L1–9: 20–30 min active, higher options dimmed;
+  L10–20: 30–45 min active, lower options dimmed. Range sliders enlarged (6px
+  track, 20px thumb). Control labels and value displays made larger and bolder.
+  Buttons have hover-lift and click animations. Tab bar buttons have hover
+  transitions. Panel body padding increased for roomier layout.
+- `docs/design.md`: Added band combat level cap of 20 (gathering and cooking
+  XP skills uncapped). Added mission duration rule to Missions section.
+- `docs/v1-plan.md`: Added mission duration rule to Missions section.
+
+**Decisions made:**
+- Band combat level cap is 20 for V1, subject to change with future expansions.
+  Gathering and cooking skill XP levels are explicitly uncapped — only the band's
+  combat level is capped, not the player's craft progression.
+- Mission durations: below level 10 = 20–30 min; level 10+ = 30–45 min.
+  This is reflected in the simulator's button highlighting and hint text.
+- "Mettle" as a composite combat readiness metric was discussed and deferred.
+  Recommendation: keep vitality (mission access gate) and buff strength (success
+  probability) as separate axes. "Mettle" may be valuable as a display label
+  for band readiness — not a new mechanic, just better vocabulary. Logged as
+  an open question.
+
+**Anything that diverged from docs/design.md:**
+- None. design.md updated to match all decisions.
+
+**Coming up:**
+- Next session: balance check on encounter difficulty vs squad level — 20 may
+  not be the right ceiling; need to run encounters across the level range and
+  see where the curve breaks.
+- Near term: play V1 build; V2 scope decision.
+- Future ideas logged: none this session.

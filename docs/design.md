@@ -279,6 +279,8 @@ for them is personal, not transactional.
 - Failure: nothing. Possible member wound or loss per conditions above.
 - The player always sees the vitality requirement before confirming
 - Harder missions return rarer ingredients and more money
+- **Mission durations** scale with band level: below level 10, missions run
+  20–30 minutes; level 10 and above, missions run 30–45 minutes.
 
 ---
 
@@ -295,6 +297,10 @@ Three independent axes that reinforce each other:
    how far both skill tracks have been pushed.
 
 A player can be high on one axis and low on another. No single forced path.
+
+**Band combat level cap: 20 (V1).** The simulator and encounter design treat band
+level as the primary difficulty axis. V1 caps this at 20; later expansions may
+raise the ceiling. Gathering and Cooking skill levels are uncapped.
 
 ---
 
