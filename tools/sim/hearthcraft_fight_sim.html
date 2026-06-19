@@ -758,9 +758,14 @@ function stepOnce(){
         target="warden"; guarded=true; wardsUsed++;
       }
     }
-    if(target){const hit=P.spike;M[target].hp-=hit;
-      if(guarded)log(`${M.warden.tpl.name} throws himself across a killing blow meant for ${M.keeper.tpl.name} (${Math.round(hit)}) — guard ${wardsUsed} of ${WARD_CAP}`,"s");
-      else log(`a heavy blow strikes ${M[target].tpl.name} (${Math.round(hit)})`,"t");}
+    if(target){const hit=P.spike;
+      if(!guarded&&Math.random()<M[target].fat*0.004){
+        log(`${M[target].tpl.name} slips the blow — Fate ${Math.round(M[target].fat)} (near miss)`,"g");
+      } else {
+        M[target].hp-=hit;
+        if(guarded)log(`${M.warden.tpl.name} throws himself across a killing blow meant for ${M.keeper.tpl.name} (${Math.round(hit)}) — guard ${wardsUsed} of ${WARD_CAP}`,"s");
+        else log(`a heavy blow strikes ${M[target].tpl.name} (${Math.round(hit)})`,"t");
+      }}
   }
   // food healing (steady, LIVING ONLY — food sustains the standing; it does not revive a member who has fallen to zero)
   act.forEach(k=>{if(M[k].hp<=0)return;const incPer=P.drain/act.length;let heal=foodOf(k);const soft=incPer*1.5;if(heal>soft)heal=soft+(heal-soft)*0.4;
@@ -784,7 +789,7 @@ function stepOnce(){
    if(extra>0)act.forEach(k=>{M[k].hp-=extra/act.length;});}
   ORDER.forEach(k=>{if(M[k].grievous)return;
     if(M[k].hp<=0&&!M[k].atZero){M[k].atZero=true;M[k].wounds++;log(`${M[k].tpl.name} hits zero — a wound (${M[k].wounds}/${GRIEVOUS})`,"t");
-      if(M[k].wounds>=GRIEVOUS){if(!M.keeper.grievous&&M.keeper.hp>0&&inspRoll(P.graceBase,inspBoost)){M[k].wounds=0;M[k].hp=Math.round(M[k].max*0.4);M[k].atZero=false;
+      if(M[k].wounds>=GRIEVOUS){if(!M.keeper.grievous&&M.keeper.hp>0&&inspRoll(Math.min(0.25,P.graceBase+M.keeper.fat*0.003),inspBoost)){M[k].wounds=0;M[k].hp=Math.round(M[k].max*0.4);M[k].atZero=false;
           log(`&#10022; LAURELIN'S GRACE — Cael calls upon Laurelin's Grace, and the shadow loosens its hold on ${M[k].tpl.name}`,"insp");events.push({t,kind:"Laurelin's Grace",who:M[k].tpl.name});}
         else{M[k].grievous=true;log(`${M[k].tpl.name} takes a GRIEVOUS wound — out of the fight`,"t");events.push({t,kind:"grievous",who:M[k].tpl.name});}}}
     if(M[k].hp>5)M[k].atZero=false;});
@@ -808,9 +813,9 @@ function stepOnce(){
   }
   if(inspBoost>0)inspBoost=Math.max(0,inspBoost-0.005);
   const nowTrouble=inTrouble(), crisisEdge=nowTrouble>=2&&prevTrouble<2;
-  if(crisisEdge&&!fired.horn&&!M.warden.grievous&&M.warden.hp>0&&inspRoll(P.hornBase,inspBoost)){fired.horn=true;windows.horn=8;M.warden.horn=true;
+  if(crisisEdge&&!fired.horn&&!M.warden.grievous&&M.warden.hp>0&&inspRoll(Math.min(0.25,P.hornBase+M.warden.fat*0.003),inspBoost)){fired.horn=true;windows.horn=8;M.warden.horn=true;
     log(`&#10022; THE HORN OF GONDOR — ${M.warden.tpl.name} blows the Horn of Gondor and refuses to fall`,"insp");events.push({t,kind:"The Horn of Gondor",who:M.warden.tpl.name});}
-  if(crisisEdge&&!fired.dawn&&!M.captain.grievous&&M.captain.hp>0&&inspRoll(P.dawnBase,0)){fired.dawn=true;windows.dawn=10;act.forEach(k=>{M[k].hp=Math.min(M[k].max,M[k].hp+M[k].max*0.15);});
+  if(crisisEdge&&!fired.dawn&&!M.captain.grievous&&M.captain.hp>0&&inspRoll(Math.min(0.25,P.dawnBase+M.captain.fat*0.003),0)){fired.dawn=true;windows.dawn=10;act.forEach(k=>{M[k].hp=Math.min(M[k].max,M[k].hp+M[k].max*0.15);});
     inspBoost=0.15;
     log(`&#10022; WRATH, RUIN, AND THE RED DAWN — ${M.captain.tpl.name} cries: 'Now for wrath, now for ruin, and the red dawn!' (all Inspirations boosted)`,"insp");events.push({t,kind:"Wrath, Ruin, and the Red Dawn",who:M.captain.tpl.name});}
   prevTrouble=nowTrouble;
@@ -818,7 +823,7 @@ function stepOnce(){
   if(!baFired&&!M.hunter.grievous&&M.hunter.hp>0){const elapsed=t/maxT;const ttk=bd.eff>0?boss/bd.eff:1e9;const trem=maxT-t;
     const losing=P.unkill?(elapsed>0.5):(ttk>trem&&elapsed>0.4);
     if(losing){const rise=Math.min(P.blackArrowCap,(elapsed-0.4)*P.blackArrowCap*2.5);
-      if(inspRoll(rise,inspBoost)){baFired=true;
+      if(inspRoll(rise+M.hunter.fat*0.003,inspBoost)){baFired=true;
         if(P.unkill){maxT-=Math.round(P.duration*0.15);log(`&#10022; BLACK ARROW — ${M.hunter.tpl.name} looses a flaming arrow — the terror recoils, the clock shortens`,"insp");events.push({t,kind:"Black Arrow (flaming)",who:M.hunter.tpl.name});}
         else{boss=Math.max(0,boss-P.boss*0.35);window._boss=boss;log(`&#10022; BLACK ARROW — ${M.hunter.tpl.name} draws the Black Arrow — go now, and speed well!`,"insp");events.push({t,kind:"Black Arrow",who:M.hunter.tpl.name});}}}}
   // record time-series frame

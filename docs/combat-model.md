@@ -154,7 +154,7 @@ Old abstract buff vocabulary (Endurance, Agility, Acuity, Warmth, Luck) is
 - **Agility** — Hunter DPS (dominant), armor penetration
 - **Vitality** — Morale pool size (Vit × 16)
 - **Will** — Keeper damage + heal magnitude, Dread resistance, Captain magic DPS, Inspiration
-- **Fate** — Inspiration odds (Captain's aura). No longer contributes to raw damage.
+- **Fate** — two live mechanics: (1) boosts each member's Inspiration trigger rate (`base + Fat × 0.003`, cap 0.25); (2) grants spike evasion (`Fat × 0.004` chance to slip a spike entirely). Shadow drains Fate, making both effects weaker under pressure. No longer contributes to raw damage.
 
 **"Cook the right dish for the right member"** is the provisioning puzzle.
 
@@ -236,6 +236,33 @@ Tune these separately from core balance; do not let them carry the fight.
 - **Captain — "Wrath, Ruin, and the Red Dawn":** party-wide HP burst (can
   revive downed members). Epic / Aragorn at the Black Gate feel.
 
+### Fate and Inspiration rates
+
+Each member's Fate stat contributes to their own Inspiration trigger rate:
+
+```
+trigger chance = min(0.25, base + memberFate × 0.003)
+```
+
+The cap (0.25) prevents Fate from crowding out every other factor at extreme
+values. Shadow drains Fate, which softens all Inspiration chances simultaneously
+— high-Shadow fights are harsher on morale *and* less likely to produce miraculous
+reversals.
+
+### Fate and spike evasion
+
+Each standing member has a per-spike chance to slip a blow entirely:
+
+```
+evasion chance = memberFate × 0.004
+```
+
+A near-miss logs in green: `"[Name] slips the blow — Fate [value] (near miss)"`.
+This is not a Warden guard — it fires on any standing target, including the Keeper.
+Shadow drains Fate, reducing this protection over time. The design intention: high
+Fate characters (Keeper, Captain) are naturally luckier; provisioning Fate-boosting
+food amplifies this further.
+
 ---
 
 ## Key Constants
@@ -251,6 +278,8 @@ rescue burst      = 40 + Wil × 4  (× burstmul)
 food heal softcap = 1.5 × (drain / standing count); excess at 0.4 effectiveness
 SHADOW_FLOOR      = 0.55   // base floor with no Radiance
 SHADOW_RATE       = 0.0011 // per-tick stat drain per point of shadow severity
+Fate insp coef    = 0.003  // per Fate point added to Inspiration base rate (cap 0.25)
+Fate evade coef   = 0.004  // per Fate point chance to slip a spike entirely
 tick              = 1 second
 ```
 

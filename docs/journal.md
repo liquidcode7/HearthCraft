@@ -7,12 +7,12 @@
 
 ## Current Status — June 19, 2026
 
-**Phase:** V1 core loop complete. Combat model designed and tooled. Sim Results tab fully rebuilt with MMO-style bar meters, pie chart, and Captain hybrid damage. All docs updated.
-**V1 progress:** Core loop playable. Combat simulator complete with MMO bar meters. Two V1 encounters validated and locked. All docs synced.
-**What's working:** Full V1 loop. Sim Results tab has MMO DPS meter, Captain's boost bar, Keeper healing bar, damage-type pie chart, armor mitigation bars, Dread mitigation bars. Captain now deals hybrid physical/magic damage (Mig × 0.3 physical + Wil × 0.2 magic). Character colors locked: Hunter red, Warden blue, Keeper purple, Captain gold.
-**What's not wired yet:** Full combat system (V2+). missions.json → encounters.json rename. Encounter Builder food-level selector. 5th combat role not yet designed. Fate stat role needs design attention (currently only used for Shadow drain; removed from Captain damage).
-**Next session:** Design the crafting and gathering mechanics (redesign pass). Then: Battlegrounds design, Ettenmoors design, legendary item system.
-**Open questions:** 5th role design. Rung-3 first-hazard fork (Cold vs Wakefulness). XP design for cooking. Formal encounter rung progression ladder. Crafting/gathering redesign scope. Fate stat design (what does Fate DO in combat beyond Shadow drain?). Melee vs. ranged DPS subtype design (logged to wishlist).
+**Phase:** V1 core loop complete. Combat model fully designed and tooled. Fate stat now has two live mechanics: Inspiration rate boost and spike evasion.
+**V1 progress:** Core loop playable. Combat simulator complete with MMO bar meters, pie chart, Fate mechanics wired. Two V1 encounters validated and locked. All docs synced.
+**What's working:** Full V1 loop. Sim engine: Fate boosts all four Inspiration trigger rates (`base + Fat × 0.003`, cap 0.25) and grants spike evasion (`Fat × 0.004`). Captain hybrid damage (Mig × 0.3 phys + Wil × 0.2 magic). MMO Results tab fully built.
+**What's not wired yet:** Full combat system (V2+). missions.json → encounters.json rename. Encounter Builder food-level selector. 5th combat role not yet designed. Balance retuning for Fate (expected to need Shadow counter-pressure — deferred).
+**Next session:** Crafting and gathering mechanics redesign pass. Or: Battlegrounds design, Ettenmoors design.
+**Open questions:** 5th role design. Rung-3 first-hazard fork (Cold vs Wakefulness). XP design for cooking. Fate balance (flagged: Fate likely too strong without Shadow counter; Shadow mechanics may need deepening to compensate). Melee vs. ranged DPS subtype (logged to wishlist).
 
 ---
 
@@ -1120,3 +1120,31 @@ FL1/FL2 food = wipe at every band level. FL4 is the real entry point (80% at ban
 - Next session: Fate stat design (what does it DO in combat beyond Shadow drain?). Then crafting/gathering redesign.
 - Near term: Battlegrounds design, Ettenmoors design, legendary item system + economy.
 - Future ideas logged: melee vs. ranged DPS subtype design question.
+
+---
+
+## Session 18 — June 19, 2026
+**Sim: Fate mechanics — Inspiration rate boost and spike evasion**
+
+**What was built:**
+- `tools/sim/hearthcraft_fight_sim.html`: Two Fate mechanics wired into the fight engine.
+  - Spike evasion: each standing member has `Fat × 0.004` chance to slip a spike entirely. Near-misses log in green. Evasion does not fire if the Warden is guarding (guard takes priority).
+  - Inspiration rate boost: all four Inspirations now use `min(0.25, base + memberFate × 0.003)` as their trigger probability. Each member's own Fate stat boosts their own Inspiration.
+- `docs/combat-model.md`: Fate mechanics section added under Inspirations. Key Constants updated with `Fate insp coef = 0.003` and `Fate evade coef = 0.004`. Stat roles entry for Fate updated with both mechanics.
+
+**Decisions made:**
+- Fate cap at 0.25 for Inspiration trigger rate — prevents Fate-stacking from making Inspirations feel scripted.
+- Evasion does not trigger on guarded spikes — the Warden's guard is a deliberate sacrifice; fate shouldn't undo it.
+- Each member uses their own Fate for their own Inspiration. The Captain's high Fate feeds Red Dawn; the Keeper's high Fate feeds Grace.
+- Shadow draining Fate is now meaningful in two ways: reduces Inspiration frequency AND reduces spike evasion. Shadow-heavy fights are harder on both fronts.
+
+**Anything that diverged from docs/design.md:**
+- Nothing new — Fate mechanics were undesigned before this session. `combat-model.md` is now authoritative.
+
+**Known balance flag:**
+- Fate may push too strong at current coefficients, particularly with high-Fate members (Keeper 12, Captain 13). Shadow mechanics may need deepening to provide counter-pressure. Flagged by user — will revisit when rebalancing. Do not tune before seeing it in play.
+
+**Coming up:**
+- Next session: Crafting and gathering redesign pass (or Battlegrounds design).
+- Near term: Balance pass once Fate effects are visible in sim runs. Shadow deepening if Fate proves too dominant.
+- Future ideas logged: none this session.
