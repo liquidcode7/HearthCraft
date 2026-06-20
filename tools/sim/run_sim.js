@@ -32,8 +32,7 @@ const TPL = {
   captain: { name:"Aelin", role:"Captain", soak:true,  start:{mig:8, agi:7, vit:12,wil:13,fat:13}, grow:{mig:0.20,agi:0.20,vit:0.40,wil:0.45,fat:0.45} },
 };
 const ORDER        = ["warden","hunter","keeper","captain"];
-const PEN_COEF     = { warden:{stat:"mig",k:0.25}, hunter:{stat:"agi",k:0.90}, keeper:{stat:"agi",k:0.15}, captain:{stat:"mig",k:0.20} };
-const PEN_SCALE    = 110;
+const PEN_SCALE    = 80;  // must match hearthcraft_fight_sim.html
 const SHADOW_FLOOR = 0.55;
 const SHADOW_RATE  = 0.0011;
 const RESCUE_CAP   = 5;
@@ -117,6 +116,7 @@ function parseArgs() {
     spike:     num("--spike",   160),
     spikeiv:   num("--spikeiv", 12),
     phys:      num("--phys",    0) / 100,
+    potency:   num("--potency", 0),
     dread:     num("--dread",   0) / 100,
     hope:      num("--hope",    0),
     shadow:    num("--shadow",  0),
@@ -185,16 +185,14 @@ function runFight(cfg, verbose) {
       else if (k==="captain") raw += M[k].mig * 0.3 + M[k].wil * 0.2;
     });
     if (windows.dawn > 0) raw *= 1.5;
-    // penetration
-    let penTotal = 0;
-    ORDER.forEach(k => { if (M[k].grievous) return; const c=PEN_COEF[k]; penTotal += M[k][c.stat]*c.k; });
-    const physAfter = Math.max(0, cfg.phys * (1 - Math.min(1, penTotal/PEN_SCALE)));
+    // penetration via draught potency
+    const physAfter = Math.max(0, cfg.phys * (1 - Math.min(1, cfg.potency/PEN_SCALE)));
     // dread
     const capWil = !M.captain.grievous ? M.captain.wil : 0;
     const willCut = Math.min(1, capWil/100), hopeCut = Math.min(1, cfg.hope/100);
     const dreadAfter = Math.max(0, cfg.dread * (1 - Math.min(1, willCut+hopeCut)));
     const eff = Math.max(0, raw * (1-physAfter) * (1-dreadAfter));
-    return { raw, eff, physAfter, dreadAfter, penTotal };
+    return { raw, eff, physAfter, dreadAfter, potency: cfg.potency };
   }
 
   let t=0, boss=cfg.boss, maxT=cfg.duration;
@@ -412,7 +410,7 @@ function report(cfg, res) {
   console.log("\n═══ HearthCraft Headless Sim ═══");
   console.log(`Runs: ${n}  |  Level ${cfg.level}  |  Duration ${fmtT(cfg.duration)}  |  ${cfg.survival?"SURVIVAL":"ATTRITION"}`);
   console.log(`Boss ${cfg.boss} resolve  |  Drain ${cfg.drain}/s  |  Spike ${cfg.spike} every ${cfg.spikeiv}s`);
-  if (cfg.phys>0) console.log(`Armor ${Math.round(cfg.phys*100)}%`);
+  if (cfg.phys>0) console.log(`Armor ${Math.round(cfg.phys*100)}% | Draught potency ${cfg.potency} / ${PEN_SCALE}`);
   // food line
   const anyMemberRecipe = cfg.memberRecipes && Object.values(cfg.memberRecipes).find(r => r !== null);
   if (anyMemberRecipe && cfg.flArg !== null) {
