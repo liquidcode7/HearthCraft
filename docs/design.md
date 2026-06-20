@@ -122,9 +122,14 @@ at every tier. Higher tiers add **breadth** (minor boosts to other stats), but
 the focus magnitude stays high — a focused low-tier recipe stays relevant for
 min-maxing. HP/s is a **separate universal sustain layer** on top of stat boosts.
 
-Food boosts the five base stats directly (Might / Agility / Vitality / Will /
-Fate) plus HP per second. "Cook the right dish for the right member" is the
-provisioning puzzle. The old abstract buff vocabulary is **retired.**
+Food boosts four base stats directly (Might / Agility / Vitality / Will) plus
+HP per second. "Cook the right dish for the right member" is the provisioning
+puzzle. The old abstract buff vocabulary is **retired.**
+
+**Fate cannot be increased by food.** Fate is innate — it grows with band level
+but cannot be cooked into. This keeps Fate as a stable background quality of each
+member rather than an optimisable food stat. Lucky Dumplings (the former Fate
+recipe) has been removed.
 
 Six **hazard antidotes** are secondary effects carried by specific recipes:
 

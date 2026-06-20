@@ -40,12 +40,11 @@ const FOOD_MODEL = (function () {
   // Mirrors app/src/main/assets/data/recipes.json stat fields.
   // primaryStat / secondaryStat null = antidote/healing recipe (no stat bonus yet).
   const RECIPES = [
-    { id:"hearthbread",       name:"Hearthbread",        levelRequired:1,  primaryStat:"vit", secondaryStat:"fat" },
+    { id:"hearthbread",       name:"Hearthbread",        levelRequired:1,  primaryStat:"vit", secondaryStat:"mig" },
     { id:"wanderers_supper",  name:"Wanderer's Supper",  levelRequired:1,  primaryStat:"agi", secondaryStat:"mig" },
-    { id:"contemplative_tea", name:"Contemplative Tea",  levelRequired:1,  primaryStat:"wil", secondaryStat:"fat" },
+    { id:"contemplative_tea", name:"Contemplative Tea",  levelRequired:1,  primaryStat:"wil", secondaryStat:"agi" },
     { id:"rangers_fare",      name:"Ranger's Fare",      levelRequired:1,  primaryStat:"mig", secondaryStat:"vit" },
     { id:"ember_porridge",    name:"Ember Porridge",     levelRequired:1,  primaryStat:null,  secondaryStat:null  },
-    { id:"lucky_dumplings",   name:"Lucky Dumplings",    levelRequired:3,  primaryStat:"fat", secondaryStat:"wil" },
     { id:"bilberry_tea",      name:"Bilberry Tea",       levelRequired:3,  primaryStat:null,  secondaryStat:null  },
     { id:"iron_stew",         name:"Iron Stew",          levelRequired:6,  primaryStat:"vit", secondaryStat:null  },
     { id:"stormcap_saute",    name:"Stormcap Sauté",     levelRequired:6,  primaryStat:"agi", secondaryStat:null  },

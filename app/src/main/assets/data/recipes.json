@@ -10,7 +10,7 @@
     "durationMs": 1800000,
     "levelRequired": 1,
     "primaryStat": "vit",
-    "secondaryStat": "fat",
+    "secondaryStat": "mig",
     "ingredients": [
       { "id": "hearthgrain", "qty": 2 },
       { "id": "forest_honey", "qty": 1 }
@@ -76,7 +76,7 @@
     "durationMs": 1800000,
     "levelRequired": 1,
     "primaryStat": "wil",
-    "secondaryStat": "fat",
+    "secondaryStat": "agi",
     "ingredients": [
       { "id": "sunpetal_herb", "qty": 2 },
       { "id": "moonpetal", "qty": 1 }
@@ -126,24 +126,6 @@
       { "id": "heartflame_pepper", "qty": 2 },
       { "id": "ironroot", "qty": 1 },
       { "id": "hearthgrain", "qty": 1 }
-    ]
-  },
-  {
-    "id": "lucky_dumplings",
-    "name": "Lucky Dumplings",
-    "description": "The recipe makes no practical sense and yet it works, consistently, in the way that a few things in the world simply do. Cave truffle and pale cap wrapped in hearthgrain dough. Eat them before something uncertain. Outcomes improve.",
-    "buffType": "luck",
-    "flavorTag": "earthy",
-    "baseBuffStrength": 10,
-    "buffStrengthPerLevel": 0.4,
-    "durationMs": 3600000,
-    "levelRequired": 3,
-    "primaryStat": "fat",
-    "secondaryStat": "wil",
-    "ingredients": [
-      { "id": "cave_truffle", "qty": 1 },
-      { "id": "pale_cap", "qty": 1 },
-      { "id": "hearthgrain", "qty": 2 }
     ]
   },
   {

@@ -190,13 +190,14 @@ FL = cookingLevel − recipe.levelRequired + 1
 
 | Recipe | Primary | Secondary | levelRequired |
 |---|---|---|---|
-| Hearthbread | Vit | Fat | 1 |
+| Hearthbread | Vit | Mig | 1 |
 | Wanderer's Supper | Agi | Mig | 1 |
-| Contemplative Tea | Wil | Fat | 1 |
+| Contemplative Tea | Wil | Agi | 1 |
 | Ranger's Fare | Mig | Vit | 1 |
-| Lucky Dumplings | Fat | Wil | 3 |
 
 Stat bonuses are additive: +1 Vit = +16 morale, +1 Wil = +0.9 Keeper DPS and +4 rescue burst, etc.
+
+**Fate cannot be increased by food.** Fate is an innate quality of each band member — it grows with level but cannot be cooked into. Food affects Mig, Agi, Vit, and Wil only.
 
 Each party member can eat a different recipe. The player chooses — nothing forces role-matched food.
 
