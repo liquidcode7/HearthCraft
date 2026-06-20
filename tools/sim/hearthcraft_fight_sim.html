@@ -242,7 +242,7 @@
         </div>
         <div class="ctl-group" id="r_phys">
           <h3 onclick="this.parentElement.classList.toggle('open')">Physical mitigation (armor) <span>&#9432;</span></h3>
-          <div class="gnote">Armor eats martial damage. Penetration is computed from the PARTY's stats (Agility for strikers, Might for bruisers) &#8212; not a buff. The Live/Results tabs decompose exactly who punches through and by how much.</div>
+          <div class="gnote">Armor eats martial damage. Penetration comes from the party&#8217;s draught potency (set in Provisioning below) &#8212; not from character stats. Magic damage (Keeper, Captain&#8217;s Will half) bypasses armor entirely.</div>
           <div class="ctl"><label>Physical mit. % <span class="val" id="v_phys">0</span></label><input type="range" id="phys" min="0" max="90" value="0"><div class="effect" id="e_phys"></div></div>
         </div>
         <div class="ctl-group open">
@@ -250,9 +250,14 @@
           <div class="gnote">Toggle the debuffs/hazards this enemy inflicts. Dread suppresses damage (countered by Captain's Will + Hope). Shadow drains Will+Fate over time (countered by Radiance) &#8212; only certain foes carry it (great spiders, Ringwraiths, Balrog). Cold/Heat/Disease/Wakefulness press Morale (countered by Warmth/Heat-ease/Hale/Alert).</div>
           <div id="status_rows"></div>
         </div>
+        <div class="ctl-group open">
+          <h3 onclick="this.parentElement.classList.toggle('open')">Provisioning &#8212; draught <span>&#9432;</span></h3>
+          <div class="gnote">One draught for the whole party. Potency strips armor from physical damage &#8212; the only way to crack armored encounters. Leave at 0 if no potency draught equipped. Entry-tier potency draught: ~45. Mid-tier: ~65.</div>
+          <div class="ctl"><label>Party draught potency <span class="val" id="v_draught_potency">0</span></label><input type="range" id="draught_potency" min="0" max="100" value="0" oninput="document.getElementById('v_draught_potency').textContent=this.value;if(!running)refreshRead();"></div>
+        </div>
         <div class="ctl-group">
           <h3 onclick="this.parentElement.classList.toggle('open')">Provisioning &#8212; antidotes <span>&#9432;</span></h3>
-          <div class="gnote">Check the hazard answers you provisioned, and set their strength (stands in for food tier). Each answers its matching status.</div>
+          <div class="gnote">Check the draught antidotes you provisioned. Each answers its matching hazard status. Set strength to represent the draught&#8217;s tier.</div>
           <div id="antidote_rows"></div>
         </div>
       </div></div>
@@ -515,8 +520,7 @@ const STATUSES=[
 ];
 const ANTIDOTES={hope:"Hope",radiance:"Radiance",hale:"Hale",warmth:"Warmth",heatease:"Heat-ease",alert:"Alert"};
 // penetration: each role penetrates armor via a stat, weighted. (melee5 slot reserved for the fifth role.)
-const PEN_COEF={warden:{stat:"mig",k:0.25},hunter:{stat:"agi",k:0.9},keeper:{stat:"agi",k:0.15},captain:{stat:"mig",k:0.2}};
-const PEN_SCALE=110; // tuning: higher = armor harder to fully strip (retuned from validation)
+const PEN_SCALE=80; // armor penetration scale — draught potency / PEN_SCALE = armor strip fraction
 const SHADOW_FLOOR=0.55; // base floor at low severity; Model C: Radiance raises the floor, harsher Shadow lowers the deep-floor
 const SHADOW_RATE=0.0011; // per-tick drain per point of shadow strength
 const RESCUE_CAP=5;
@@ -639,6 +643,7 @@ function buildStatusRows(){
 function onStatusToggle(){ if(!running){refreshRead();refreshBoss();} }
 function statusOn(id){const c=$("st_"+id);return c&&c.checked?(+$("sl_"+id).value):0;}
 function antidoteOn(a){const c=$("an_"+a);return c&&c.checked?(+$("al_"+a).value):0;}
+function draughtPotency(){return +($("draught_potency")||{value:0}).value||0;}
 // food stat bonuses per member — driven by recipe select + cooking level via food_model.js
 const RECIPE_SELECTS={warden:"rw",hunter:"rh",keeper:"rk",captain:"rc"};
 function memberRecipeId(k){return $(RECIPE_SELECTS[k])?.value||"";}
@@ -696,19 +701,12 @@ function refreshBoss(){
 function updEffects(){const drainPer=+$("drain").value/4;
   $("e_drain").textContent=`each member soaks ~${Math.round(drainPer)}/s steady &#8212; food should cover it`;
   $("e_spike").textContent=+$("spike").value>0?`spikes drive members to zero &#8212; the Keeper must catch them`:`no spikes &#8212; pure steady drain`;
-  $("e_phys").textContent=+$("phys").value>0?`armor cut by the party's computed penetration (see Live tab)`:``;}
+  $("e_phys").textContent=+$("phys").value>0?`armor cut by party draught potency (see Provisioning &#8212; draught below)`:``;}
 
-// party penetration, decomposed by member (each via their pen stat)
-function penBreakdown(){
-  let total=0, parts=[];
-  ORDER.forEach(k=>{ if(M[k].grievous)return; const c=PEN_COEF[k]; if(!c)return;
-    const contrib=M[k][c.stat]*c.k; total+=contrib; parts.push({who:k,name:M[k].tpl.name,stat:c.stat,val:contrib});});
-  return {total,parts};
-}
 // returns full breakdown incl penetration + Dread(Will+Hope) + Shadow effects
 function dpsBreakdown(){
   const ZERO={warden:0,hunter:0,keeper:0,captain:0};
-  if(P.unkill)return {raw:0,physAfter:0,dreadAfter:0,eff:0,penSaved:0,willSaved:0,hopeSaved:0,pen:penBreakdown(),effBy:{warden:0,hunter:0,keeper:0,captain:0,captain_phys:0,captain_magic:0},physMitTotal:0,magicDmg:0,dawnBoost:0};
+  if(P.unkill)return {raw:0,physAfter:0,dreadAfter:0,eff:0,penSaved:0,willSaved:0,hopeSaved:0,potency:0,effBy:{warden:0,hunter:0,keeper:0,captain:0,captain_phys:0,captain_magic:0},physMitTotal:0,magicDmg:0,dawnBoost:0};
   const rawBy={warden:0,hunter:0,keeper:0,captain:0};
   let raw=0;ORDER.forEach(k=>{if(M[k].grievous||M[k].hp<=0)return;
     let r=0;
@@ -717,10 +715,10 @@ function dpsBreakdown(){
     else if(k==="captain")r=M[k].mig*0.3+M[k].wil*0.2;
     rawBy[k]=r;raw+=r;});
   if(windows.dawn>0){raw*=1.5;ORDER.forEach(k=>rawBy[k]*=1.5);}
-  // PHYSICAL: computed party penetration reduces armor
-  const pen=penBreakdown();
+  // PHYSICAL: draught potency reduces armor
+  const potency=draughtPotency();
   const physRaw=P.phys;
-  const physAfter=Math.max(0,physRaw*(1-Math.min(1,pen.total/PEN_SCALE)));
+  const physAfter=Math.max(0,physRaw*(1-Math.min(1,potency/PEN_SCALE)));
   // DREAD: Will (stat, current = possibly shadow-drained) + Hope (flat %, additive then cap)
   const capWill=(!M.captain.grievous)?M.captain.wil:0;
   const dreadRaw=P.dread;
@@ -756,7 +754,7 @@ function dpsBreakdown(){
   const dawnBoost=windows.dawn>0 ? (raw/1.5)*0.5 : 0;
   return {raw,physRaw,physAfter,dreadRaw,dreadAfter,eff:Math.max(0,eff),
     penSaved:Math.max(0,eff-effNoPen), willSaved:Math.max(0,eff-effNoWill), hopeSaved:Math.max(0,eff-effNoHope),
-    pen, effBy, physMitTotal:Math.max(0,physMitTotal), magicDmg:Math.max(0,magicDmg), dawnBoost};
+    potency, effBy, physMitTotal:Math.max(0,physMitTotal), magicDmg:Math.max(0,magicDmg), dawnBoost};
 }
 function sustain(){let s=0;ORDER.forEach(k=>{if(!M[k].grievous)s+=foodOf(k);});return s;}
 function refreshRead(){buildParty();const drain=+$("drain").value,spike=+$("spike").value,iv=+$("spikeiv").value;
@@ -901,7 +899,7 @@ function updLive(bd,boss,incoming){
   $("g_dreadrow").style.display=showDread?"":"none";$("g_willrow").style.display=showDread?"":"none";$("g_hoperow").style.display=showDread?"":"none";
   $("g_shadowrow").style.display=showShadow?"":"none";
   if(showPhys){$("g_phys").textContent="\u2212"+Math.round(bd.physAfter*100)+"%";$("g_pensave").textContent="+"+Math.round(bd.penSaved)+" dps";
-    $("g_pendetail").innerHTML="&nbsp;&nbsp;"+bd.pen.parts.filter(p=>p.val>=1).map(p=>`${p.name} +${Math.round(p.val)} (${STAT_LABEL[p.stat]})`).join(", ")+` &#8594; pen ${Math.round(bd.pen.total)}`;}
+    $("g_pendetail").innerHTML=`&nbsp;&nbsp;Draught potency ${Math.round(bd.potency||0)} / ${PEN_SCALE} &#8594; strips ${Math.round((1-Math.min(1,(bd.potency||0)/PEN_SCALE))*100)}% of armor`;}
   if(showDread){$("g_dreadval").textContent="\u2212"+Math.round(bd.dreadAfter*100)+"%";$("g_willsave").textContent="+"+Math.round(bd.willSaved)+" dps";$("g_hopesave").textContent="+"+Math.round(bd.hopeSaved)+" dps";}
   if(showShadow){const lost=ORDER.reduce((a,k)=>a+(M[k].grievous?0:M[k].shDrain),0);$("g_shadowval").textContent="\u2212"+Math.round(lost)+" spirit";}
   $("g_dps").innerHTML="<b>"+Math.round(bd.eff)+"</b>";
