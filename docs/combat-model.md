@@ -347,15 +347,18 @@ locked. All others exported from the Encounter Builder are pre-tuned placeholder
 `resolve 50000 · drain 12 · spike 75 · spikeInterval 13 (mean, ±50% jitter) · physMit 0 · no statuses · durationCap 1500 (25 min)`
 
 Drain-dominant sustain test. **Unwinnable with no food** (wipe in ~2 min — the
-lesson: go cook). Validated at band Lv1 (unlock floor), 5000 runs: FL1=40%, FL2=76%,
-FL3=98%, FL4=~100%. Food is the primary lever — FL3 solves this encounter permanently
-regardless of band level.
+lesson: go cook). Validated at band Lv1 (unlock floor), 5000 runs with role-matched
+food (W: Hearthbread, H: Wanderer's Supper, K: Contemplative Tea, C: Ranger's Fare):
+FL1=47%, FL2=79%, FL3=99%, FL4=~100%. Food is the primary lever — FL3 solves this
+encounter permanently regardless of band level.
 
-**Note:** Pre-Fate validation showed FL1=27%, FL2=64%. The ~12pp uplift across
-food levels is Fate running unchecked — Neekerbreekers has no Shadow, so nothing
-suppresses Fate evasion or Inspiration rates. This is intentional for an early-game
-encounter. Shadow encounters in harder content will naturally restore difficulty.
-See `future/wishlist.md` for the full Fate/Shadow balance note.
+The ~47% at FL1 is intentional: the player loses about half the time with the earliest
+food, enough to signal that better provisioning matters without being demoralizing.
+
+**Validation history:**
+- Pre-Fate, HP/s only: FL1=27%, FL2=64%
+- Post-Fate, HP/s only: FL1=40%, FL2=76% (Fate running unchecked, no Shadow to suppress it)
+- Post-stat-bonuses (current): FL1=47%, FL2=79% (role-matched food; Fate still cannot be food-boosted)
 
 ### Wolves in the Chetwood — recLevel 3
 `resolve 60000 · drain 18 · spike 75 · spikeInterval 9 (mean, ±50% jitter) · physMit 0 · no statuses · durationCap 1500`

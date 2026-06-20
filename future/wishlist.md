@@ -152,9 +152,9 @@ a fixed offset.
 3. Do not retune Fate coefficients in isolation for no-Shadow encounters. Neekerbreekers
    is the wrong test bed for Fate balance.
 
-**Locked encounter baselines (post-Fate, no Shadow):**
-- Neekerbreekers FL1=40%, FL2=76%, FL3=98%, FL4=~100%
-- Wolves in the Chetwood: not yet re-validated post-Fate (do this before V2 combat)
+**Locked encounter baselines (post-stat-bonuses, role-matched food, no Shadow):**
+- Neekerbreekers FL1=47%, FL2=79%, FL3=99%, FL4=~100%
+- Wolves in the Chetwood: not yet re-validated post-stat-bonuses (do this before V2 combat)
 
 ---
 
