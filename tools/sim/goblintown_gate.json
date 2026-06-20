@@ -1,0 +1,32 @@
+{
+  "id": "goblintown_gate",
+  "name": "Goblin-town Gate",
+  "region": "Misty Mountains",
+  "tier": "Rabble",
+  "recLevel": 5,
+  "resupply": "none",
+  "rewards": "Goblin-forged scraps, mountain ore, coin",
+  "flavorIntro": "The passage narrows here. Mailed sentinels hold the gate — not many, but their armour turns your blades. You need more than strength. You need the right preparation.",
+  "designNote": "Rung 1 encounter — teaches potency. Without a potency draught the party cannot drain resolve fast enough despite surviving fine. physMit is deliberately modest (22%) so the lesson lands: even light armor walls you without penetration.",
+  "stages": [
+    {
+      "stageId": "gate",
+      "label": "The Mailed Guard",
+      "type": "attrition",
+      "objective": "kill",
+      "durationSec": 1500,
+      "resolve": 115000,
+      "drain": 20,
+      "spike": 60,
+      "spikeIntervalSec": 14,
+      "physMitPct": 22,
+      "dread": 0,
+      "shadow": 0,
+      "disease": 0,
+      "cold": 0,
+      "heat": 0,
+      "wakefulness": 0,
+      "stageFlavor": "The goblins hold their ground. Their mail deflects every blow that would have ended them in the Chetwood."
+    }
+  ]
+}
