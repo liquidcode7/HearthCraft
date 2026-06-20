@@ -3,56 +3,25 @@
 // Same math as hearthcraft_fight_sim.html — no DOM required.
 // Usage:
 //   node run_sim.js [--runs N] [--level L] [--duration S] [--food W,H,K,C]
-//                   [--rlevel R]  (recipe cooking level 1-50; sets uniform HP/s from tier table)
+//                   [--rlevel R]       (cooking level 1-50; HP/s from tier table, no stat bonuses)
+//                   [--recipe ID]      (same recipe for all members; combined with --rlevel or --fl)
+//                   [--fl N]           (food level 1-4+; combined with --recipe)
+//                   [--recipes W,H,K,C]  (per-member recipe IDs; combined with --rlevel or --fl)
 //                   [--boss R] [--drain D] [--spike S] [--spikeiv I]
 //                   [--phys P] [--dread V] [--shadow V] [--cold V] [--heat V]
 //                   [--disease V] [--wake V] [--hope V] [--radiance V]
 //                   [--hale V] [--warmth V] [--heatease V] [--alert V]
 //                   [--survival] [--hunter might] [--burstmul F] [--verbose]
 //
-// --food sets raw HP/s per member (W,H,K,C). --rlevel sets a single cooking
-// level and derives HP/s from the tier table (same value for all members).
-// --rlevel is overridden by --food if both are provided.
+// Food precedence (highest wins):
+//   --food         raw HP/s per member, no stat bonuses
+//   --recipes+--fl per-member recipe IDs + food level → per-member stat bonuses + HP/s
+//   --recipe+--fl  all members same recipe + food level
+//   --rlevel       HP/s from tier table only (no stat bonuses)
 //
 // Runs N fights and prints aggregate stats + Inspiration fire rates.
 
-// ── recipe level → HP/s (piecewise linear from Tier Planner) ──────────────
-// Tier breakpoints: [cookLvlStart, cookLvlEnd, hpsMin, hpsMax]
-const TIER_TABLE = [
-  { tier:1, title:"Hearthkeeper", lo:1,  hi:4,  hpsLo:5,   hpsHi:10  },
-  { tier:2, title:"Initiate",     lo:5,  hi:9,  hpsLo:11,  hpsHi:18  },
-  { tier:3, title:"Apprentice",   lo:10, hi:15, hpsLo:19,  hpsHi:30  },
-  { tier:4, title:"Journeyman",   lo:16, hi:22, hpsLo:31,  hpsHi:44  },
-  { tier:5, title:"Adept",        lo:23, hi:30, hpsLo:45,  hpsHi:62  },
-  { tier:6, title:"Master",       lo:31, hi:40, hpsLo:63,  hpsHi:86  },
-  { tier:7, title:"Grandmaster",  lo:41, hi:50, hpsLo:87,  hpsHi:110 },
-];
-
-// Convex power: > 1 gives slow start within each tier (small early gains,
-// bigger gains as you approach the tier ceiling). This creates a natural pull
-// toward the next tier — the last level of each tier is the biggest reward.
-// Tier boundaries stay anchored; only the within-tier shape changes.
-const SCURVE_P = 1.8;
-
-function recipeLevelToHps(rl) {
-  const rlClamped = Math.max(1, Math.min(50, Math.round(rl)));
-  for (const t of TIER_TABLE) {
-    if (rlClamped >= t.lo && rlClamped <= t.hi) {
-      const frac = (rlClamped - t.lo) / Math.max(1, t.hi - t.lo);
-      const curved = Math.pow(frac, SCURVE_P); // steep at tier entry, flattens toward tier cap
-      return +(t.hpsLo + curved * (t.hpsHi - t.hpsLo)).toFixed(1);
-    }
-  }
-  return 5;
-}
-
-function recipeLevelLabel(rl) {
-  const rlClamped = Math.max(1, Math.min(50, Math.round(rl)));
-  for (const t of TIER_TABLE) {
-    if (rlClamped >= t.lo && rlClamped <= t.hi) return `Lv${rlClamped} ${t.title}`;
-  }
-  return `Lv${rlClamped}`;
-}
+const FM = require('./food_model');
 
 // ── constants (mirrored from the browser sim) ──────────────────────────────
 const TPL = {
@@ -82,13 +51,50 @@ function parseArgs() {
   const get = (flag, def) => { const i = a.indexOf(flag); return i>=0 ? a[i+1] : def; };
   const num = (flag, def) => parseFloat(get(flag, def));
 
-  // --rlevel derives uniform HP/s from the tier table; --food overrides it
-  const rLevel   = a.includes("--rlevel") ? parseFloat(get("--rlevel", "1")) : null;
-  const derivedHps = rLevel !== null ? recipeLevelToHps(rLevel) : null;
-  const foodStr  = get("--food", null);
+  // Food resolution: --food > --recipes/--recipe + --fl/--rlevel > --rlevel
+  const recipeArg  = get("--recipe",  null);   // single recipe for all members
+  const recipesArg = get("--recipes", null);   // comma-separated per-member (W,H,K,C)
+  const flArg      = a.includes("--fl") ? parseInt(get("--fl", "1")) : null;
+  const rLevel     = a.includes("--rlevel") ? parseFloat(get("--rlevel", "1")) : null;
+
+  // Per-member recipe IDs: --recipes W,H,K,C overrides --recipe for everyone
+  const memberRecipes = { warden:null, hunter:null, keeper:null, captain:null };
+  if (recipesArg) {
+    const parts = recipesArg.split(",");
+    ["warden","hunter","keeper","captain"].forEach((k,i) => { memberRecipes[k] = parts[i]?.trim() || null; });
+  } else if (recipeArg) {
+    Object.keys(memberRecipes).forEach(k => { memberRecipes[k] = recipeArg; });
+  }
+
+  // Resolve HP/s and per-member stat bonuses
+  let derivedHps = null, effectiveRL = null;
+  const memberStatBonuses = { warden:{}, hunter:{}, keeper:{}, captain:{} };
+
+  const anyRecipe = Object.values(memberRecipes).find(r => r !== null);
+  if (anyRecipe && flArg !== null) {
+    // FL given explicitly: derive cooking level from the first found recipe + fl
+    const r = FM.RECIPES.find(r => r.id === anyRecipe);
+    effectiveRL = r ? r.levelRequired + flArg - 1 : (rLevel || 1);
+    derivedHps  = FM.recipeLevelToHps(effectiveRL);
+    ["warden","hunter","keeper","captain"].forEach(k => {
+      if (memberRecipes[k]) memberStatBonuses[k] = FM.statBonusesAt(memberRecipes[k], flArg);
+    });
+  } else if (anyRecipe && rLevel !== null) {
+    effectiveRL = rLevel;
+    derivedHps  = FM.recipeLevelToHps(rLevel);
+    ["warden","hunter","keeper","captain"].forEach(k => {
+      if (memberRecipes[k]) memberStatBonuses[k] = FM.statBonusesForCookLevel(memberRecipes[k], rLevel);
+    });
+  } else if (rLevel !== null) {
+    effectiveRL = rLevel;
+    derivedHps  = FM.recipeLevelToHps(rLevel);
+  }
+
+  const foodStr = get("--food", null);
   let food;
   if (foodStr) {
     food = foodStr.split(",").map(Number);
+    ["warden","hunter","keeper","captain"].forEach(k => { memberStatBonuses[k] = {}; });
   } else if (derivedHps !== null) {
     food = [derivedHps, derivedHps, derivedHps, derivedHps];
   } else {
@@ -100,7 +106,11 @@ function parseArgs() {
     level:     num("--level",    10),
     duration:  num("--duration", 1800),
     food:      { warden:food[0]??26, hunter:food[1]??20, keeper:food[2]??22, captain:food[3]??24 },
-    rLevel,   // null if not provided
+    memberStatBonuses,  // per-member { vit:2, fat:1 } etc
+    memberRecipes,
+    recipeArg,
+    flArg,
+    rLevel: effectiveRL,
     derivedHps,
     boss:      num("--boss",    8500),
     drain:     num("--drain",   70),
@@ -140,16 +150,21 @@ function runFight(cfg, verbose) {
   const hTpl  = cfg.hunterMight ? TPL.hunterM : TPL.hunterA;
   const tpls  = { warden:TPL.warden, hunter:hTpl, keeper:TPL.keeper, captain:TPL.captain };
 
-  // build party
+  // build party — apply per-member food stat bonuses on top of base stats
   const M = {};
   ORDER.forEach(k => {
     const tpl = tpls[k];
-    const max = moraleOf(tpl, lvl);
+    const sb  = (cfg.memberStatBonuses && cfg.memberStatBonuses[k]) || {};
+    const baseMig = statAt(tpl,"mig",lvl) + (sb.mig||0);
+    const baseAgi = statAt(tpl,"agi",lvl) + (sb.agi||0);
+    const baseVit = statAt(tpl,"vit",lvl) + (sb.vit||0);
+    const baseWil = statAt(tpl,"wil",lvl) + (sb.wil||0);
+    const baseFat = statAt(tpl,"fat",lvl) + (sb.fat||0);
+    const max = Math.round(30 + baseVit * 16);
     M[k] = {
       key:k, tpl, max, hp:max, wounds:0, grievous:false, atZero:false,
-      mig: statAt(tpl,"mig",lvl), agi: statAt(tpl,"agi",lvl),
-      vit: statAt(tpl,"vit",lvl), wil: statAt(tpl,"wil",lvl), fat: statAt(tpl,"fat",lvl),
-      wilBase: statAt(tpl,"wil",lvl), fatBase: statAt(tpl,"fat",lvl), shDrain:0,
+      mig:baseMig, agi:baseAgi, vit:baseVit, wil:baseWil, fat:baseFat,
+      wilBase:baseWil, fatBase:baseFat, shDrain:0,
     };
   });
 
@@ -398,10 +413,32 @@ function report(cfg, res) {
   console.log(`Runs: ${n}  |  Level ${cfg.level}  |  Duration ${fmtT(cfg.duration)}  |  ${cfg.survival?"SURVIVAL":"ATTRITION"}`);
   console.log(`Boss ${cfg.boss} resolve  |  Drain ${cfg.drain}/s  |  Spike ${cfg.spike} every ${cfg.spikeiv}s`);
   if (cfg.phys>0) console.log(`Armor ${Math.round(cfg.phys*100)}%`);
-  // food line: show recipe level + HP/s if --rlevel was used, otherwise raw HP/s
-  if (cfg.rLevel !== null) {
-    const label = recipeLevelLabel(cfg.rLevel);
-    console.log(`Food: ${label}  →  ${cfg.derivedHps} HP/s per member`);
+  // food line
+  const anyMemberRecipe = cfg.memberRecipes && Object.values(cfg.memberRecipes).find(r => r !== null);
+  if (anyMemberRecipe && cfg.flArg !== null) {
+    const flLabel = `FL${cfg.flArg}  →  ${cfg.derivedHps} HP/s per member`;
+    const perMember = ["warden","hunter","keeper","captain"].map(k => {
+      const rid = cfg.memberRecipes[k];
+      if (!rid) return `${k[0].toUpperCase()}: none`;
+      const r = FM.RECIPES.find(r => r.id === rid);
+      const sb = cfg.memberStatBonuses[k] || {};
+      const bStr = Object.entries(sb).map(([s,n])=>`+${n}${s}`).join(" ") || "HP/s";
+      return `${k[0].toUpperCase()}: ${r ? r.name : rid} [${bStr}]`;
+    }).join("  |  ");
+    console.log(`Food ${flLabel}`);
+    console.log(`     ${perMember}`);
+  } else if (anyMemberRecipe && cfg.rLevel !== null) {
+    console.log(`Food: ${FM.recipeLevelLabel(cfg.rLevel)}  →  ${cfg.derivedHps} HP/s per member`);
+    const perMember = ["warden","hunter","keeper","captain"].map(k => {
+      const rid = cfg.memberRecipes[k]; if (!rid) return "";
+      const sb = cfg.memberStatBonuses[k] || {};
+      const bStr = Object.entries(sb).map(([s,n])=>`+${n}${s}`).join(" ") || "HP/s";
+      const r = FM.RECIPES.find(r => r.id === rid);
+      return `${k[0].toUpperCase()}: ${r ? r.name : rid} [${bStr}]`;
+    }).filter(Boolean).join("  |  ");
+    if (perMember) console.log(`     ${perMember}`);
+  } else if (cfg.rLevel !== null) {
+    console.log(`Food: ${FM.recipeLevelLabel(cfg.rLevel)}  →  ${cfg.derivedHps} HP/s per member`);
   } else {
     console.log(`Food W/H/K/C: ${cfg.food.warden}/${cfg.food.hunter}/${cfg.food.keeper}/${cfg.food.captain}/s`);
   }
