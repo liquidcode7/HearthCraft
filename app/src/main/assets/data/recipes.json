@@ -9,6 +9,8 @@
     "buffStrengthPerLevel": 0.4,
     "durationMs": 1800000,
     "levelRequired": 1,
+    "primaryStat": "vit",
+    "secondaryStat": "fat",
     "ingredients": [
       { "id": "hearthgrain", "qty": 2 },
       { "id": "forest_honey", "qty": 1 }
@@ -40,6 +42,8 @@
     "buffStrengthPerLevel": 0.4,
     "durationMs": 1800000,
     "levelRequired": 1,
+    "primaryStat": "agi",
+    "secondaryStat": "mig",
     "ingredients": [
       { "id": "wanderer_fig", "qty": 2 },
       { "id": "duskberry", "qty": 1 }
@@ -62,8 +66,8 @@
     ]
   },
   {
-    "id": "scholars_tea",
-    "name": "Scholar's Tea",
+    "id": "contemplative_tea",
+    "name": "Contemplative Tea",
     "description": "A simple infusion brewed from sunpetal herb and a few moonpetal leaves. Pale gold in the cup. Clears the mind like opening a window.",
     "buffType": "acuity",
     "flavorTag": "herbal",
@@ -71,6 +75,8 @@
     "buffStrengthPerLevel": 0.4,
     "durationMs": 1800000,
     "levelRequired": 1,
+    "primaryStat": "wil",
+    "secondaryStat": "fat",
     "ingredients": [
       { "id": "sunpetal_herb", "qty": 2 },
       { "id": "moonpetal", "qty": 1 }
@@ -132,10 +138,29 @@
     "buffStrengthPerLevel": 0.4,
     "durationMs": 3600000,
     "levelRequired": 3,
+    "primaryStat": "fat",
+    "secondaryStat": "wil",
     "ingredients": [
       { "id": "cave_truffle", "qty": 1 },
       { "id": "pale_cap", "qty": 1 },
       { "id": "hearthgrain", "qty": 2 }
+    ]
+  },
+  {
+    "id": "rangers_fare",
+    "name": "Ranger's Fare",
+    "description": "Cooked down over a small fire with the minimum of fuss. Ironroot for endurance, pale caps for what they add that no one quite explains. What rangers carry when they travel long and fight hard at the end of it. It does not taste like much. It works.",
+    "buffType": "endurance",
+    "flavorTag": "earthy",
+    "baseBuffStrength": 10,
+    "buffStrengthPerLevel": 0.4,
+    "durationMs": 1800000,
+    "levelRequired": 1,
+    "primaryStat": "mig",
+    "secondaryStat": "vit",
+    "ingredients": [
+      { "id": "ironroot", "qty": 2 },
+      { "id": "pale_cap", "qty": 1 }
     ]
   },
   {
