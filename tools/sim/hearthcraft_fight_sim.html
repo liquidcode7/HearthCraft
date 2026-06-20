@@ -360,6 +360,8 @@
         <div class="panel chart-card"><div class="ch-h">Dread mitigation</div><div id="ch_dreadmet"></div></div>
         <div class="panel chart-card"><div class="ch-h">Wounds accumulated</div><div class="ch-body" id="ch_wounds"></div><div class="chart-legend" id="lg_wounds"></div></div>
         <div class="panel chart-card"><div class="ch-h">Shadow &#8212; party spirit (Will + Fate)</div><div class="ch-body" id="ch_spirit"></div><div class="chart-legend" id="lg_spirit"></div></div>
+        <div class="panel chart-card"><div class="ch-h">Fate &#8212; spikes slipped</div><div id="ch_fatespike"></div></div>
+        <div class="panel chart-card"><div class="ch-h">Fate &#8212; Inspiration trigger rates</div><div id="ch_fateinsp"></div></div>
       </div>
       <div class="panel insp-timeline" style="margin-top:14px"><div class="panel-h" style="margin:-10px -14px 8px">Inspiration Timeline</div><div id="insp_list"></div></div>
       <div class="note">All DPS values are averages over the full engagement. Hover line charts for per-second values.</div>
@@ -503,7 +505,7 @@ const fmtT=s=>`${Math.floor(s/60)}:${String(Math.max(0,s)%60).padStart(2,"0")}`;
 function roster(){const hk=(+$("hflav").value===1)?"hunterM":"hunterA";return {warden:TPL.warden,hunter:TPL[hk],keeper:TPL.keeper,captain:TPL.captain};}
 
 let MODE=0,SPEED=1,running=false,timer=null,t=0,P=null,maxT=0;
-let M={},events=[],fired={},windows={},baFired=false,series=[],rescuesUsed=0,wardsUsed=0,inspBoost=0,prevTrouble=0,nextSpikeAt=0;
+let M={},events=[],fired={},windows={},baFired=false,series=[],rescuesUsed=0,wardsUsed=0,inspBoost=0,prevTrouble=0,nextSpikeAt=0,spikesTotal=0;
 const SPEED_MS=[1000,250,62,0];
 
 function showTab(name){['setup','live','results','company'].forEach(n=>{$('pane_'+n).classList.toggle('on',n===name);$('tab_'+n).classList.toggle('on',n===name);});}
@@ -627,7 +629,7 @@ function buildParty(){const lvl=+$("lvl").value,R=roster();M={};
   ORDER.forEach(k=>{const tpl=R[k],max=moraleOf(tpl,lvl);
     M[k]={key:k,tpl,role:tpl.role,cls:tpl.cls,soak:tpl.soak,color:tpl.color,max,hp:max,wounds:0,grievous:false,atZero:false,action:"",horn:false,
       mig:stat(tpl,"mig",lvl)+foodStatBonus(k,"mig"),agi:stat(tpl,"agi",lvl)+foodStatBonus(k,"agi"),vit:stat(tpl,"vit",lvl)+foodStatBonus(k,"vit"),wil:stat(tpl,"wil",lvl)+foodStatBonus(k,"wil"),fat:stat(tpl,"fat",lvl)+foodStatBonus(k,"fat"),
-      wilBase:stat(tpl,"wil",lvl)+foodStatBonus(k,"wil"),fatBase:stat(tpl,"fat",lvl)+foodStatBonus(k,"fat"),shDrain:0};});
+      wilBase:stat(tpl,"wil",lvl)+foodStatBonus(k,"wil"),fatBase:stat(tpl,"fat",lvl)+foodStatBonus(k,"fat"),shDrain:0,fatEvades:0,spikesTargeted:0};});
   renderParty();}
 function statPreview(){const lvl=+$("lvl").value,R=roster();
   $("statpreview").innerHTML=ORDER.map(k=>{const t=R[k];return `${t.role}: Mig ${Math.round(stat(t,"mig",lvl))} Agi ${Math.round(stat(t,"agi",lvl))} Vit ${Math.round(stat(t,"vit",lvl))} Wil ${Math.round(stat(t,"wil",lvl))} Fat ${Math.round(stat(t,"fat",lvl))}`;}).join("<br>");}
@@ -759,8 +761,10 @@ function stepOnce(){
       }
     }
     if(target){const hit=P.spike;
+      spikesTotal++;M[target].spikesTargeted++;
       if(!guarded&&Math.random()<M[target].fat*0.004){
         log(`${M[target].tpl.name} slips the blow — Fate ${Math.round(M[target].fat)} (near miss)`,"g");
+        M[target].fatEvades++;
       } else {
         M[target].hp-=hit;
         if(guarded)log(`${M.warden.tpl.name} throws himself across a killing blow meant for ${M.keeper.tpl.name} (${Math.round(hit)}) — guard ${wardsUsed} of ${WARD_CAP}`,"s");
@@ -892,7 +896,7 @@ function finish(label,cls){clearInterval(timer);running=false;const v=$("verdict
   buildSummary(label);renderResults();$("results_empty").style.display="none";$("results_body").style.display="";showTab('results');}
 
 function prep(){buildParty();$("log").innerHTML="";t=0;P=curParams();maxT=P.duration;window._boss=P.boss;
-  events=[];fired={};windows={dawn:0,horn:0};baFired=false;series=[];rescuesUsed=0;wardsUsed=0;inspBoost=0;prevTrouble=0;
+  events=[];fired={};windows={dawn:0,horn:0};baFired=false;series=[];rescuesUsed=0;wardsUsed=0;inspBoost=0;prevTrouble=0;spikesTotal=0;
   nextSpikeAt=Math.round(P.spikeiv*(0.5+Math.random()));
   $("verdict").textContent="ENGAGED";$("verdict").className="verdict v-fighting";
   // --- verbose startup log ---
@@ -1108,6 +1112,42 @@ function renderResults(){
   // Inspiration timeline
   const insps=events.filter(e=>/Grace|Horn|Red Dawn|Black Arrow/.test(e.kind));
   $("insp_list").innerHTML=insps.length?insps.map(e=>`<div class="insp-row"><span class="it">${fmtT(e.t)}</span><span class="ik">${e.kind}</span><span>&#8212; ${e.who}</span></div>`).join(""):'<div class="empty">No Inspirations fired this engagement. They are rare grace — most fights pass without them.</div>';
+
+  // Fate — spikes slipped
+  if(spikesTotal>0){
+    meterChart("ch_fatespike",ORDER.map(k=>({
+      name:M[k].tpl.name+" ("+M[k].tpl.role+")",
+      color:TPL[k==="hunter"?"hunterA":k].color,
+      value:M[k].fatEvades
+    })),"slipped",`Total spikes: ${spikesTotal}`);
+  } else {
+    $("ch_fatespike").innerHTML='<div class="empty" style="padding:24px 14px;text-align:center">No spikes in this fight — set spike potency on Setup to see Fate evasion.</div>';
+  }
+
+  // Fate — Inspiration trigger rates (one row per Inspiration showing effective % at fight end)
+  {
+    const inspDefs=[
+      {name:"Laurelin’s Grace", k:"keeper",  base:P.graceBase,      color:"#7d5a93", fired:events.some(e=>e.kind==="Laurelin's Grace")},
+      {name:"Horn of Gondor",        k:"warden",  base:P.hornBase,       color:"#2e6da4", fired:!!fired.horn},
+      {name:"Red Dawn",              k:"captain", base:P.dawnBase,       color:"#b8843c", fired:!!fired.dawn},
+      {name:"Black Arrow (peak)",    k:"hunter",  base:P.blackArrowCap,  color:"#c0392b", fired:baFired},
+    ];
+    let html='<div class="meter-list">';
+    inspDefs.forEach(d=>{
+      const rate=Math.min(0.25,d.base+M[d.k].fat*0.003);
+      const pct=Math.round(rate*100);
+      const barW=Math.round(rate/0.25*100);
+      const firedHtml=d.fired?'<span style="color:var(--good);font-weight:700">fired</span>':'<span style="color:#8a7355">no</span>';
+      html+=`<div class="meter-row-grid">
+        <span class="meter-label">${d.name}</span>
+        <div class="meter-bar-wrap"><div class="meter-bar-fill" style="width:${barW}%;background:${d.color}"></div></div>
+        <span class="meter-value">${pct}% trigger</span>
+        <span class="meter-pct">${firedHtml}</span>
+      </div>`;
+    });
+    html+='</div><div class="meter-footer">Cap: 25% &middot; formula: base + Fate &times; 0.003 &middot; Black Arrow shows peak late-fight rate</div>';
+    $("ch_fateinsp").innerHTML=html;
+  }
 }
 
 // Duration preset buttons
