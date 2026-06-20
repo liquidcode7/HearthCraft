@@ -519,7 +519,6 @@ const STATUSES=[
   {id:"wake",  name:"Wakefulness",anti:"alert", kind:"drain"},
 ];
 const ANTIDOTES={hope:"Hope",radiance:"Radiance",hale:"Hale",warmth:"Warmth",heatease:"Heat-ease",alert:"Alert"};
-// penetration: each role penetrates armor via a stat, weighted. (melee5 slot reserved for the fifth role.)
 const PEN_SCALE=80; // armor penetration scale — draught potency / PEN_SCALE = armor strip fraction
 const SHADOW_FLOOR=0.55; // base floor at low severity; Model C: Radiance raises the floor, harsher Shadow lowers the deep-floor
 const SHADOW_RATE=0.0011; // per-tick drain per point of shadow strength
@@ -899,7 +898,7 @@ function updLive(bd,boss,incoming){
   $("g_dreadrow").style.display=showDread?"":"none";$("g_willrow").style.display=showDread?"":"none";$("g_hoperow").style.display=showDread?"":"none";
   $("g_shadowrow").style.display=showShadow?"":"none";
   if(showPhys){$("g_phys").textContent="\u2212"+Math.round(bd.physAfter*100)+"%";$("g_pensave").textContent="+"+Math.round(bd.penSaved)+" dps";
-    $("g_pendetail").innerHTML=`&nbsp;&nbsp;Draught potency ${Math.round(bd.potency||0)} / ${PEN_SCALE} &#8594; strips ${Math.round((1-Math.min(1,(bd.potency||0)/PEN_SCALE))*100)}% of armor`;}
+    $("g_pendetail").innerHTML=`&nbsp;&nbsp;Draught potency ${Math.round(bd.potency||0)} / ${PEN_SCALE} &#8594; strips ${Math.round(Math.min(1,(bd.potency||0)/PEN_SCALE)*100)}% of armor`;}
   if(showDread){$("g_dreadval").textContent="\u2212"+Math.round(bd.dreadAfter*100)+"%";$("g_willsave").textContent="+"+Math.round(bd.willSaved)+" dps";$("g_hopesave").textContent="+"+Math.round(bd.hopeSaved)+" dps";}
   if(showShadow){const lost=ORDER.reduce((a,k)=>a+(M[k].grievous?0:M[k].shDrain),0);$("g_shadowval").textContent="\u2212"+Math.round(lost)+" spirit";}
   $("g_dps").innerHTML="<b>"+Math.round(bd.eff)+"</b>";
