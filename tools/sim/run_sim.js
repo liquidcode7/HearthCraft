@@ -128,6 +128,9 @@ function parseArgs() {
     hornBase:       num("--horn",   0.03),
     dawnBase:       num("--dawn",   0.03),
     blackArrowCap:  num("--ba-cap", 0.06),
+    // Fate tuning knobs — override the design coefficients for balance testing
+    fateEvadeCoef:  num("--fate-evade", 0.004),
+    fateInspCoef:   num("--fate-insp",  0.003),
   };
 }
 
@@ -164,7 +167,7 @@ function runFight(cfg, verbose) {
       if (k==="keeper")  { if (M[k]._action !== "burst") raw += M[k].wil * 0.9; }
       else if (k==="hunter")  raw += M[k].agi + M[k].mig * 0.4;
       else if (k==="warden")  raw += M[k].mig * 0.5;
-      else if (k==="captain") raw += M[k].mig * 0.3 + M[k].fat * 0.2;
+      else if (k==="captain") raw += M[k].mig * 0.3 + M[k].wil * 0.2;
     });
     if (windows.dawn > 0) raw *= 1.5;
     // penetration
@@ -231,8 +234,12 @@ function runFight(cfg, verbose) {
         }
       }
       if (target) {
-        M[target].hp -= spikeRoll;
-        lg(`spike → ${M[target].tpl.name} (${Math.round(spikeRoll)})`);
+        if (Math.random() < M[target].fat * cfg.fateEvadeCoef) {
+          lg(`${M[target].tpl.name} slips the blow — Fate ${Math.round(M[target].fat)} (near miss)`);
+        } else {
+          M[target].hp -= spikeRoll;
+          lg(`spike → ${M[target].tpl.name} (${Math.round(spikeRoll)})`);
+        }
       }
     }
 
@@ -279,7 +286,7 @@ function runFight(cfg, verbose) {
         M[k].atZero = true; M[k].wounds++;
         lg(`${M[k].tpl.name} hits zero — wound ${M[k].wounds}/${GRIEVOUS}`);
         if (M[k].wounds >= GRIEVOUS) {
-          if (!M.keeper.grievous && M.keeper.hp>0 && inspRoll(cfg.graceBase, inspBoost)) {
+          if (!M.keeper.grievous && M.keeper.hp>0 && inspRoll(Math.min(0.25, cfg.graceBase + M.keeper.fat*cfg.fateInspCoef), inspBoost)) {
             M[k].wounds=0; M[k].hp=Math.round(M[k].max*0.4); M[k].atZero=false;
             events.push({t, kind:"Laurelin's Grace", who:M[k].tpl.name});
             lg(`★ LAURELIN'S GRACE — ${M[k].tpl.name} pulled back`);
@@ -297,14 +304,14 @@ function runFight(cfg, verbose) {
     if (inspBoost > 0) inspBoost = Math.max(0, inspBoost - 0.005);
     const nowTrouble = inTrouble();
     const crisisEdge = nowTrouble >= 2 && prevTrouble < 2; // just crossed the threshold
-    if (!fired.horn && crisisEdge && !M.warden.grievous && M.warden.hp>0 && inspRoll(cfg.hornBase, inspBoost)) {
+    if (!fired.horn && crisisEdge && !M.warden.grievous && M.warden.hp>0 && inspRoll(Math.min(0.25, cfg.hornBase + M.warden.fat*cfg.fateInspCoef), inspBoost)) {
       fired.horn=true; windows.horn=8;
       events.push({t, kind:"The Horn of Gondor", who:M.warden.tpl.name});
       lg(`★ HORN OF GONDOR — ${M.warden.tpl.name}`);
     }
 
     // Inspiration: Wrath, Ruin, and the Red Dawn (Captain) — same rising-edge gate
-    if (!fired.dawn && crisisEdge && !M.captain.grievous && M.captain.hp>0 && inspRoll(cfg.dawnBase, 0)) {
+    if (!fired.dawn && crisisEdge && !M.captain.grievous && M.captain.hp>0 && inspRoll(Math.min(0.25, cfg.dawnBase + M.captain.fat*cfg.fateInspCoef), 0)) {
       fired.dawn=true; windows.dawn=10;
       act.forEach(k => { M[k].hp = Math.min(M[k].max, M[k].hp + M[k].max*0.15); });
       inspBoost = 0.15;
@@ -325,7 +332,7 @@ function runFight(cfg, verbose) {
       const losing = cfg.survival ? elapsed>0.5 : (ttk>trem && elapsed>0.4);
       if (losing) {
         const rise = Math.min(cfg.blackArrowCap, (elapsed-0.4)*cfg.blackArrowCap*2.5);
-        if (inspRoll(rise, inspBoost)) {
+        if (inspRoll(rise + M.hunter.fat*cfg.fateInspCoef, inspBoost)) {
           baFired=true;
           if (cfg.survival) { maxT -= Math.round(cfg.duration*0.15); events.push({t, kind:"Black Arrow (flaming)", who:M.hunter.tpl.name}); lg(`★ BLACK ARROW — clock cut`); }
           else              { boss = Math.max(0, boss-cfg.boss*0.35); events.push({t, kind:"Black Arrow", who:M.hunter.tpl.name}); lg(`★ BLACK ARROW — 35% resolve chunk`); }

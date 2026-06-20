@@ -119,6 +119,45 @@
 
 ---
 
+## Fate Balance — Shadow as the Missing Counterweight
+
+**The problem:** Fate's two live mechanics (spike evasion at `Fat × 0.004`, Inspiration
+rate boost at `base + Fat × 0.003`) are strong enough in isolation to shift encounter
+win rates by ~12 percentage points across food levels. Neekerbreekers at FL1 moved from
+27% → 40% after Fate was added. Attempts to compensate by tweaking enemy drain values
+revealed a deeper design mismatch: drain is deterministic (constant HP/s pressure), but
+Fate is stochastic (probabilistic near-misses and Inspiration triggers). Cancelling a
+probabilistic mechanic with an arithmetic offset works in aggregate but feels wrong in
+play — you end up fighting a floating bubble with a sledgehammer.
+
+**Why it was accepted:** Neekerbreekers has no Shadow, so Fate runs unchecked there.
+That's correct for an early no-magic encounter — lucky near-misses and the occasional
+Inspiration should make early fights feel survivable and miraculous. The 27% baseline was
+a pre-Fate artifact. 40% with Fate active is the new locked reality for this encounter.
+
+**The designed fix that isn't built yet:** Shadow was always intended as Fate's
+counterbalance. Shadow drains Will and Fate toward a floor over time. In a Shadow
+encounter, a high-Fate party starts lucky but gets progressively less lucky as the
+Shadow deepens — evasion chances drop, Inspiration trigger rates drop. The player
+counterplays with Radiance food to raise the drain floor. This creates the right
+stochastic tension: Fate vs Shadow is a race between fortune and darkness, not
+a fixed offset.
+
+**What needs to happen before the combat system ships:**
+1. Validate that Shadow encounters (Mirkwood, Moria, Morgul-vale) produce win rates
+   that match the pre-Fate baseline at their intended food levels — specifically, that
+   Shadow suppresses Fate enough to restore the difficulty curve at higher rungs.
+2. If Shadow suppression is insufficient, tune the Shadow drain rate (`SHADOW_RATE`)
+   or the Fate coefficients — but tune them together as a pair, not independently.
+3. Do not retune Fate coefficients in isolation for no-Shadow encounters. Neekerbreekers
+   is the wrong test bed for Fate balance.
+
+**Locked encounter baselines (post-Fate, no Shadow):**
+- Neekerbreekers FL1=40%, FL2=76%, FL3=98%, FL4=~100%
+- Wolves in the Chetwood: not yet re-validated post-Fate (do this before V2 combat)
+
+---
+
 ## Combat System (Simulator / V2+)
 
 - **The 5th role (melee DPS)** — slot reserved in the sim and Mechanics Reference.
