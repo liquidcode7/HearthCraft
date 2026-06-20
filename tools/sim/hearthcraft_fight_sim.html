@@ -178,6 +178,7 @@
 #enc_select{font-family:inherit;font-size:13px;padding:6px;border:1px solid #d8c9a8;border-radius:4px;max-width:340px}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="food_model.js"></script>
 </head>
 <body>
 <div class="wrap">
@@ -259,15 +260,38 @@
       <div class="panel"><div class="panel-h">Band &amp; Provisioning</div><div class="panel-b">
         <div class="ctl-group">
           <h3 onclick="this.parentElement.classList.toggle('open')">Provisioning &#8212; food level <span>&#9432;</span></h3>
-          <div class="gnote">Cooking level sets the food quality all members eat. Higher levels give more HP/s — how fast the Keeper and party regenerate morale between hits.</div>
+          <div class="gnote">Cooking level sets food quality (HP/s). Each member also eats a recipe that boosts their primary stat — pick the recipe that suits their role.</div>
           <div class="ctl"><label>Cooking level <span class="val" id="v_rlevel">4 Hearthkeeper</span></label><input type="range" id="rlevel" min="1" max="50" value="4"></div>
           <div class="gnote" id="rlevel_hps" style="margin-top:4px">&#8594; 10.0 HP/s per member</div>
-          <div class="effect" style="margin-top:6px">Food also boosts STATS. Pick each meal's stat focus &#8212; this feeds damage, penetration (Agi/Mig), healing (Wil), etc.</div>
-          <div class="ctl"><label>Warden meal favors</label><select id="sw"><option value="0">Mig</option><option value="1">Agi</option><option value="2" selected>Vit</option><option value="3">Wil</option><option value="4">Fat</option></select></div>
-          <div class="ctl"><label>Hunter meal favors</label><select id="sh"><option value="0">Mig</option><option value="1" selected>Agi</option><option value="2">Vit</option><option value="3">Wil</option><option value="4">Fat</option></select></div>
-          <div class="ctl"><label>Keeper meal favors</label><select id="sk"><option value="0">Mig</option><option value="1">Agi</option><option value="2">Vit</option><option value="3" selected>Wil</option><option value="4">Fat</option></select></div>
-          <div class="ctl"><label>Captain meal favors</label><select id="sc"><option value="0">Mig</option><option value="1">Agi</option><option value="2">Vit</option><option value="3" selected>Wil</option><option value="4">Fat</option></select></div>
-          <div class="ctl"><label>Food stat boost strength <span class="val" id="v_foodstat">0</span></label><input type="range" id="foodstat" min="0" max="30" value="0"><div class="effect">how many points the favored stat gains (0 = stats from level only)</div></div>
+          <div class="ctl" style="margin-top:8px"><label>Warden eats</label><select id="rw" onchange="onRecipeChange()">
+            <option value="">&#8212; no recipe</option>
+            <option value="hearthbread" selected>Hearthbread (Vit &#8594; Mig)</option>
+            <option value="wanderers_supper">Wanderer's Supper (Agi &#8594; Mig)</option>
+            <option value="contemplative_tea">Contemplative Tea (Wil &#8594; Agi)</option>
+            <option value="rangers_fare">Ranger's Fare (Mig &#8594; Vit)</option>
+          </select></div>
+          <div class="ctl"><label>Hunter eats</label><select id="rh" onchange="onRecipeChange()">
+            <option value="">&#8212; no recipe</option>
+            <option value="hearthbread">Hearthbread (Vit &#8594; Mig)</option>
+            <option value="wanderers_supper" selected>Wanderer's Supper (Agi &#8594; Mig)</option>
+            <option value="contemplative_tea">Contemplative Tea (Wil &#8594; Agi)</option>
+            <option value="rangers_fare">Ranger's Fare (Mig &#8594; Vit)</option>
+          </select></div>
+          <div class="ctl"><label>Keeper eats</label><select id="rk" onchange="onRecipeChange()">
+            <option value="">&#8212; no recipe</option>
+            <option value="hearthbread">Hearthbread (Vit &#8594; Mig)</option>
+            <option value="wanderers_supper">Wanderer's Supper (Agi &#8594; Mig)</option>
+            <option value="contemplative_tea" selected>Contemplative Tea (Wil &#8594; Agi)</option>
+            <option value="rangers_fare">Ranger's Fare (Mig &#8594; Vit)</option>
+          </select></div>
+          <div class="ctl"><label>Captain eats</label><select id="rc" onchange="onRecipeChange()">
+            <option value="">&#8212; no recipe</option>
+            <option value="hearthbread">Hearthbread (Vit &#8594; Mig)</option>
+            <option value="wanderers_supper">Wanderer's Supper (Agi &#8594; Mig)</option>
+            <option value="contemplative_tea">Contemplative Tea (Wil &#8594; Agi)</option>
+            <option value="rangers_fare" selected>Ranger's Fare (Mig &#8594; Vit)</option>
+          </select></div>
+          <div class="gnote" id="food_bonus_summary" style="margin-top:6px;font-style:italic"></div>
         </div>
         <div class="ctl-group">
           <h3 onclick="this.parentElement.classList.toggle('open')">The band <span>&#9432;</span></h3>
@@ -522,12 +546,10 @@ $("rlevel").addEventListener("input",e=>{
   const rl=+e.target.value,hps=recipeLevelToHps(rl);
   $("v_rlevel").textContent=recipeLevelLabel(rl);
   $("rlevel_hps").textContent="→ "+hps+" HP/s per member";
-  if(!running){buildParty();refreshRead();refreshBoss();updEffects();statPreview();}
+  if(!running){buildParty();refreshRead();refreshBoss();updEffects();statPreview();refreshFoodSummary();}
 });
 $("hflav").addEventListener("input",e=>{$("v_hflav").textContent=(+e.target.value===1)?"might":"agility";if(!running){buildParty();refreshRead();statPreview();}});
 $("burstmul").addEventListener("input",e=>{$("v_burst").textContent=(+e.target.value/100).toFixed(1)+"\u00d7";});
-["sw","sh","sk","sc"].forEach(id=>{$(id).addEventListener("change",()=>{if(!running){buildParty();statPreview();refreshRead();}});});
-$("foodstat").addEventListener("input",e=>{$("v_foodstat").textContent=e.target.value;if(!running){buildParty();statPreview();refreshRead();}});
 /* ---- Encounter import (spreadsheet -> sim) ---- */
 let _encList=[];
 function _setCtl(id,val){const el=document.getElementById(id);if(!el||val===''||val==null||isNaN(+val))return;
@@ -617,22 +639,40 @@ function buildStatusRows(){
 function onStatusToggle(){ if(!running){refreshRead();refreshBoss();} }
 function statusOn(id){const c=$("st_"+id);return c&&c.checked?(+$("sl_"+id).value):0;}
 function antidoteOn(a){const c=$("an_"+a);return c&&c.checked?(+$("al_"+a).value):0;}
-// food stat focus per member
-function foodFocus(k){const map={warden:"sw",hunter:"sh",keeper:"sk",captain:"sc"};return STAT_KEYS[+$(map[k]).value];}
-function foodStatBonus(k,statKey){ // returns points added to statKey for member k from their meal
-  const strength=+$("foodstat").value; if(strength<=0)return 0;
-  const focus=foodFocus(k);
-  if(statKey===focus) return strength;            // full to favored
-  return Math.round(strength*0.25);               // minor breadth to others
+// food stat bonuses per member — driven by recipe select + cooking level via food_model.js
+const RECIPE_SELECTS={warden:"rw",hunter:"rh",keeper:"rk",captain:"rc"};
+function memberRecipeId(k){return $(RECIPE_SELECTS[k])?.value||"";}
+function memberFoodBonuses(k){
+  const rid=memberRecipeId(k); if(!rid)return {};
+  return FOOD_MODEL.statBonusesForCookLevel(rid,+$("rlevel").value);
+}
+function foodStatBonus(k,statKey){return memberFoodBonuses(k)[statKey]||0;}
+function onRecipeChange(){if(!running){buildParty();statPreview();refreshFoodSummary();}}
+function refreshFoodSummary(){
+  const rl=+$("rlevel").value;
+  const lines=ORDER.map(k=>{
+    const rid=memberRecipeId(k); if(!rid)return null;
+    const r=FOOD_MODEL.RECIPES.find(r=>r.id===rid);
+    const summary=FOOD_MODEL.bonusSummary(rid,rl);
+    return `${r?r.name:rid}: ${summary}`;
+  }).filter(Boolean);
+  $("food_bonus_summary").innerHTML=lines.join(" &nbsp;&#183;&nbsp; ")||"No stat recipes selected";
 }
 function buildParty(){const lvl=+$("lvl").value,R=roster();M={};
-  ORDER.forEach(k=>{const tpl=R[k],max=moraleOf(tpl,lvl);
+  ORDER.forEach(k=>{const tpl=R[k];
+    const sb=memberFoodBonuses(k);
+    const bvit=sb.vit||0;
+    const max=Math.round(30+(stat(tpl,"vit",lvl)+bvit)*16);
     M[k]={key:k,tpl,role:tpl.role,cls:tpl.cls,soak:tpl.soak,color:tpl.color,max,hp:max,wounds:0,grievous:false,atZero:false,action:"",horn:false,
-      mig:stat(tpl,"mig",lvl)+foodStatBonus(k,"mig"),agi:stat(tpl,"agi",lvl)+foodStatBonus(k,"agi"),vit:stat(tpl,"vit",lvl)+foodStatBonus(k,"vit"),wil:stat(tpl,"wil",lvl)+foodStatBonus(k,"wil"),fat:stat(tpl,"fat",lvl)+foodStatBonus(k,"fat"),
-      wilBase:stat(tpl,"wil",lvl)+foodStatBonus(k,"wil"),fatBase:stat(tpl,"fat",lvl)+foodStatBonus(k,"fat"),shDrain:0,fatEvades:0,spikesTargeted:0};});
+      mig:stat(tpl,"mig",lvl)+(sb.mig||0),agi:stat(tpl,"agi",lvl)+(sb.agi||0),vit:stat(tpl,"vit",lvl)+bvit,wil:stat(tpl,"wil",lvl)+(sb.wil||0),fat:stat(tpl,"fat",lvl)+(sb.fat||0),
+      wilBase:stat(tpl,"wil",lvl)+(sb.wil||0),fatBase:stat(tpl,"fat",lvl)+(sb.fat||0),shDrain:0,fatEvades:0,spikesTargeted:0};});
   renderParty();}
 function statPreview(){const lvl=+$("lvl").value,R=roster();
-  $("statpreview").innerHTML=ORDER.map(k=>{const t=R[k];return `${t.role}: Mig ${Math.round(stat(t,"mig",lvl))} Agi ${Math.round(stat(t,"agi",lvl))} Vit ${Math.round(stat(t,"vit",lvl))} Wil ${Math.round(stat(t,"wil",lvl))} Fat ${Math.round(stat(t,"fat",lvl))}`;}).join("<br>");}
+  $("statpreview").innerHTML=ORDER.map(k=>{
+    const t=R[k],sb=memberFoodBonuses(k);
+    const fmt=(base,bonus)=>bonus?`<b>${Math.round(base+bonus)}</b>`:`${Math.round(base)}`;
+    return `${t.role}: Mig ${fmt(stat(t,"mig",lvl),sb.mig)} Agi ${fmt(stat(t,"agi",lvl),sb.agi)} Vit ${fmt(stat(t,"vit",lvl),sb.vit)} Wil ${fmt(stat(t,"wil",lvl),sb.wil)} Fat ${Math.round(stat(t,"fat",lvl))}`;
+  }).join("<br>");}
 function woundPips(n){let s="";for(let i=0;i<GRIEVOUS;i++)s+=`<span class="${i<n?'wound-pip':'wound-empty'}">&#9670;</span>`;return s;}
 function renderParty(){const host=$("party");host.innerHTML="";
   ORDER.forEach(k=>{const m=M[k],pct=Math.max(0,(m.hp/m.max)*100),wc=(k==="hunter")?"role-h":"";
@@ -1172,7 +1212,7 @@ $("lvl").addEventListener("input", ()=>{updDurHint();updDurButtons();});
 
 // init
 buildStatusRows();
-setMode(0);refreshBoss();buildParty();refreshRead();updEffects();statPreview();updDurHint();updDurButtons();
+setMode(0);refreshBoss();buildParty();refreshRead();updEffects();statPreview();refreshFoodSummary();updDurHint();updDurButtons();
 
 </script>
 </body>
