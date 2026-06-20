@@ -122,19 +122,16 @@ Pressure on the party:
 
 ## Physical Mitigation and Penetration
 
-**effArmor** = `physMit × (1 - min(1, partyPen / PEN_SCALE))`
+**effArmor** = `physMit × (1 - min(1, draughtPotency / PEN_SCALE))`
 
-`PEN_SCALE = 110`. Penetration is not a buff — it is computed from party stats:
+`PEN_SCALE = 80`. Penetration comes from the party's **draught** — a single
+party-wide choice, not from character stats. Magic damage (Keeper, Captain's
+Will half) bypasses armor entirely and is unaffected by physMit.
 
-| Member | Pen stat | Coefficient |
-|---|---|---|
-| Warden | Mig | 0.25 |
-| Hunter | Agi | 0.90 (dominant) |
-| Keeper | Agi | 0.15 |
-| Captain | Mig | 0.20 |
+`draughtPotency` = the potency value of the equipped draught (0 if none). Entry-tier
+potency draughts carry ~45 potency. Mid-tier ~65. No draught → full armor applies.
 
-Total penetration = Σ (standing, non-grievous) `penStat × coef`. Higher Agility
-from food raises the Hunter's contribution and is the primary armor-counter.
+Stat-based penetration coefficients (the old PEN_COEF system) are removed.
 
 ---
 
@@ -193,6 +190,21 @@ speed. Partial Radiance always helps. Full Radiance nearly stops the drain.
 
 Cascades: draining Will weakens Keeper rescues AND Dread resistance (Shadow
 makes Dread worse when both are present). Draining Fate lowers Inspiration odds.
+
+### Draughts (party-wide provisioning)
+
+One draught choice per encounter, applied to all party members. Draughts carry
+**potency** and/or **antidote** effects — distinct from food, which handles stats
+and HP/s only.
+
+- **Low-tier draughts:** one effect only (potency OR one antidote)
+- **High-tier draughts:** up to two effects; secondary effect weaker than a
+  dedicated single-effect draught. No draught ever carries three effects.
+
+Antidotes are draught properties. Food no longer carries antidote effects.
+
+In regions with both armor and a hazard, the player chooses: potency draught or
+antidote draught. High-tier draughts can cover both at reduced efficiency.
 
 ### Shadow vs Dread — the lore carve
 
@@ -270,7 +282,7 @@ food amplifies this further.
 ```
 morale            = round(30 + Vit × 16)
 stat(L)           = start + grow × (L - 1)
-PEN_SCALE         = 110
+PEN_SCALE         = 80
 RESCUE_CAP        = 5      // Keeper rescues per fight
 WARD_CAP          = 3      // Warden lethal-spike guards per fight
 GRIEVOUS          = 5      // wounds → grievous
@@ -368,6 +380,15 @@ the Keeper. Validated at band Lv3 (unlock floor), 5000 runs: FL3=6%, FL4=81%,
 FL5=93%, FL6=97%, FL7=99%, FL8=~100%. Completely unwinnable at FL1/FL2.
 Needs max Hearthkeeper food (FL4) for a real chance; first Initiate level (FL5) is
 the comfort threshold.
+
+### Goblin-town Gate — recLevel 5
+`resolve 115000 · drain 20 · spike 60 · spikeInterval 14 · physMit 22% · no statuses · durationCap 1500`
+
+First armored encounter. Rung 1 — teaches potency. Drain is moderate; the party
+survives without difficulty. The failure mode is **timeout**: without a potency
+draught the resolve pool does not die in time (boss near-dead at clock expiry).
+Validated at band Lv5, 5000 runs, FL4 role-matched food:
+no potency: 0%, entry potency draught (45): 97.7%.
 
 ---
 

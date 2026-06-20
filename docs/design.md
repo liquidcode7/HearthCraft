@@ -320,7 +320,7 @@ Four roles, each with a distinct damage profile. Full mechanical spec in `docs/c
 | Role | Color | Damage type | Stat | Notes |
 |---|---|---|---|---|
 | Warden (tank) | Blue `#2e6da4` | Physical (armor-affected) | Might | Guards Keeper from killing blows |
-| Hunter (DPS) | Red `#c0392b` | Physical (armor-affected) | Agility + Might | Primary armor penetrator |
+| Hunter (DPS) | Red `#c0392b` | Physical (armor-affected) | Agility + Might | Dominant physical DPS; armor countered by party draught potency |
 | Keeper (healer) | Purple `#7d5a93` | Magic (bypasses armor) | Will | Deals damage when not rescuing |
 | Captain (support) | Gold `#b8843c` | Hybrid — Mig×0.3 physical + Wil×0.2 magic | Might + Will | Dread resist aura + Red Dawn inspiration |
 
