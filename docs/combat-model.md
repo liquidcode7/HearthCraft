@@ -410,22 +410,18 @@ clear reduces the boss stage's resolve; arriving battered means full resolve.
 
 ## Open Threads
 
-1. **The 5th role (melee DPS)** — the one genuine open design thread. Slot
-   reserved in sim and Mechanics Reference. Decide: party-of-5 vs
-   field-4-from-roster; its identity vs. the Might Hunter; name/template/
-   Inspiration.
-2. **All magnitudes are placeholders** — stat growth, mitigation per bestiary
+Active design questions that need resolution before the relevant system is built.
+Deferred V2+ items and polish tasks live in `future/wishlist.md`.
+
+1. **All magnitudes are placeholders** — stat growth, mitigation per bestiary
    tier, wound count (~5), Keeper burst size + the 5-cap, Inspiration base
    chances, spike potency/interval, drain-vs-sustain margins, severity per-point
-   scales.
-3. **Black Arrow IP review** before public ship.
-4. **Hazard taxonomy** fleshed out as regions are designed.
-5. **Rung-3 first-hazard fork** — which environmental hazard does the player
+   scales. Validate after each tuning pass in the sim.
+2. **Hazard taxonomy** — fleshed out as regions are designed. Each new region
+   locks in which hazard it carries and adds it to the encounter ladder.
+3. **Rung-3 first-hazard fork** — which environmental hazard does the player
    meet first: Cold→Warmth (most intuitive) or Old Forest's Wakefulness (most
    geographically natural step out of the Shire)?
-6. **Simulator slider alignment** — status sliders still use raw values; the
-   1–10 severity scale is locked in the spreadsheet/schema. Align the sim
-   sliders to 1–10 as a polish pass.
 
 ---
 

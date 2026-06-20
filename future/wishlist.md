@@ -106,7 +106,33 @@
   and "second breakfast." The player character, who also never fights,
   is basically a Hobbit. There is something to this.
 
+## Recipe Discovery and Alchemy (V2)
+
+- **Ingredient combination interface** — how many slots does the experimentation
+  screen have? What does a failed experiment feel like vs. a discovery moment?
+  Design this before building the recipe discovery engine.
+
+- **Alchemy discovery system** — does Alchemy have its own combinatorial
+  discovery mechanic, or are recipes level-gated (unlock at tier N)? The cooking
+  discovery system and the Alchemy discovery system may diverge here. Decide
+  before building either.
+
+---
+
 ## Combat System (Simulator / V2+)
+
+- **The 5th role (melee DPS)** — slot reserved in the sim and Mechanics Reference.
+  Needs full design before the Campaign combat system is built. Key questions:
+  party-of-5 vs field-4-from-roster; its mechanical identity vs the Might Hunter;
+  name, template member, and what its Inspiration is.
+
+- **Black Arrow IP review** — the Hunter Inspiration "Black Arrow" is direct
+  Tolkien coinage. Needs review before public ship to confirm it falls under fair
+  use or needs a rename.
+
+- **Simulator slider alignment** — status sliders (Cold, Heat, Disease, etc.)
+  still use raw internal values. The encounter JSON schema uses a locked 1–10
+  severity scale. Align the sim sliders to match the schema as a polish pass.
 
 - **Sim test: magic damage must not be reduced by physMit** — write a headless test
   (in `run_sim.js` or a dedicated test script) that sets physMit to a high value (e.g. 80%),

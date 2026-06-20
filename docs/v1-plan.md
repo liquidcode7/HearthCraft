@@ -2,7 +2,7 @@
 
 > This is the source of truth for what is in V1.
 > Do not implement anything not listed here without explicit approval.
-> Deferred ideas go in `docs/wishlist.md`, not here.
+> Deferred ideas go in `future/wishlist.md`, not here.
 
 ---
 
@@ -111,7 +111,7 @@ Everything in V1 exists to answer that question. Nothing else.
 
 ## What V1 Does NOT Include
 
-If any of these come up during V1 development, add to `docs/wishlist.md`
+If any of these come up during V1 development, add to `future/wishlist.md`
 and continue.
 
 - Alchemy — full V2 system
@@ -140,7 +140,7 @@ One logical change per commit. Never commit a broken build.
 
 ### Phase 0 — Project Setup
 - [ ] Add CLAUDE.md to repo root
-- [ ] Add docs/ folder with design.md, v1-plan.md, wishlist.md
+- [ ] Add docs/ folder with design.md, v1-plan.md; wishlist at future/wishlist.md
 - [ ] Add .gitignore entries for local.properties and build outputs
   if not already present
 - [ ] Verify `./gradlew build` passes on clean project
@@ -258,7 +258,7 @@ Each screen: `[v1] Add [screen name] screen`
 ### Phase 10 — V1 Complete
 - [ ] Install on device and play for at least one week
 - [ ] Note what feels good, what feels missing, what is confusing
-- [ ] Fill `docs/wishlist.md` with observations
+- [ ] Fill `future/wishlist.md` with observations
 - [ ] Decide V2 priorities based on what playing actually felt like
 
 ---

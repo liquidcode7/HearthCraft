@@ -388,9 +388,9 @@ duration. Keep the resolution layer thin and replaceable.
 *(Resolve before building the relevant system)*
 
 - **Player title** — [PLACEHOLDER]. Do not use Hearthwright or warlock-culinarian.
-- How many ingredient combination slots does the experimentation interface have?
-  (V2 question — recipe discovery is not in V1)
-- Does Alchemy have its own discovery system or are recipes level-gated? (V2)
+
+V2+ open questions (recipe discovery interface, Alchemy discovery system) are
+tracked in `future/wishlist.md`.
 
 **Resolved:**
 - *How are band member losses triggered?* — Below 60% of required buff strength
