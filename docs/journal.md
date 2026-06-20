@@ -5,14 +5,14 @@
 
 ---
 
-## Current Status — June 19, 2026
+## Current Status — June 20, 2026
 
-**Phase:** V1 core loop complete. Combat model fully designed and tooled. Fate stat now has two live mechanics: Inspiration rate boost and spike evasion.
-**V1 progress:** Core loop playable. Combat simulator complete with MMO bar meters, pie chart, Fate mechanics wired. Two V1 encounters validated and locked. All docs synced.
-**What's working:** Full V1 loop. Sim engine: Fate boosts all four Inspiration trigger rates (`base + Fat × 0.003`, cap 0.25) and grants spike evasion (`Fat × 0.004`). Captain hybrid damage (Mig × 0.3 phys + Wil × 0.2 magic). MMO Results tab fully built.
-**What's not wired yet:** Full combat system (V2+). missions.json → encounters.json rename. Encounter Builder food-level selector. 5th combat role not yet designed. Balance retuning for Fate (expected to need Shadow counter-pressure — deferred).
-**Next session:** Crafting and gathering mechanics redesign pass. Or: Battlegrounds design, Ettenmoors design.
-**Open questions:** 5th role design. Rung-3 first-hazard fork (Cold vs Wakefulness). XP design for cooking. Fate balance (flagged: Fate likely too strong without Shadow counter; Shadow mechanics may need deepening to compensate). Melee vs. ranged DPS subtype (logged to wishlist).
+**Phase:** V1 core loop complete. Food model redesigned with stat bonuses. Combat sim updated with per-member recipe selection. Neekerbreekers re-validated.
+**V1 progress:** Core loop playable. Sim fully updated: food_model.js shared module, per-member recipe dropdowns in browser sim and --recipes flag in headless runner, stat bonuses applied to party stats. Mechanics math reference written. Two encounters validated post-stat-bonuses.
+**What's working:** Full stat-based food model. Each member eats a role-matched recipe that boosts their primary stat (Vit/Agi/Wil/Mig). Fate cannot be food-boosted — it is innate and grows with level only. Lucky Dumplings removed. Browser sim shows per-member recipe selects with live bonus summary and bolded stat previews.
+**What's not wired yet:** Full combat system (V2+). Wolves in the Chetwood not re-validated post-stat-bonuses. Encounter 3 not yet designed. Ingredient scarcity model not locked. Browser sim still uses duplicated TIER_TABLE (not yet refactored to import from food_model.js).
+**Next session:** Design encounter 3 (first real difficulty ramp — what mechanic does it introduce?). Validate Wolves post-stat-bonuses. Discuss ingredient scarcity model.
+**Open questions:** Encounter 3 mechanic (armor? Dread? higher drain?). Ingredient scarcity tiers. 5th role design. Melee vs. ranged DPS subtype. Rung-3 first-hazard fork.
 
 ---
 
@@ -1148,3 +1148,34 @@ FL1/FL2 food = wipe at every band level. FL4 is the real entry point (80% at ban
 - Next session: Crafting and gathering redesign pass (or Battlegrounds design).
 - Near term: Balance pass once Fate effects are visible in sim runs. Shadow deepening if Fate proves too dominant.
 - Future ideas logged: none this session.
+
+---
+
+## Session 19 — June 20, 2026
+**Food model redesign: stat bonuses, shared module, Neekerbreekers re-validation**
+
+**What was built:**
+- `tools/sim/food_model.js`: New shared module containing TIER_TABLE, recipe definitions with primaryStat/secondaryStat, and helper functions (statBonusesAt, statBonusesForCookLevel, hpsAt, bonusSummary, flFromCookLevel). Used by both sims.
+- `tools/sim/run_sim.js`: Added `--recipe`, `--recipes W,H,K,C`, and `--fl` CLI flags for per-member recipe assignment with stat bonuses. Stat bonuses applied to member stats when building party. Requires food_model.js.
+- `tools/sim/hearthcraft_fight_sim.html`: Replaced per-member stat-focus selectors and strength slider with per-member recipe dropdowns (Hearthbread, Wanderer's Supper, Contemplative Tea, Ranger's Fare). Bonus summary line and bolded stat preview added. Loads food_model.js.
+- `app/src/main/assets/data/recipes.json`: Added primaryStat/secondaryStat to tier-1 stat recipes. Added Ranger's Fare (Mig/Vit, levelRequired 1). Renamed Scholar's Tea → Contemplative Tea. Removed Lucky Dumplings.
+- `docs/mechanics-math-reference.md`: New file — complete math reference for every formula, constant, and role breakdown in the combat system.
+- `docs/design.md`: Added rule that Fate cannot be food-boosted. Updated food stat list to four stats (not five).
+- `docs/combat-model.md`: Locked Neekerbreekers post-stat-bonus baselines (FL1=47%, FL2=79%).
+- `future/wishlist.md`: Updated Fate/Shadow balance note with new locked baselines.
+
+**Decisions made:**
+- **Fate cannot be increased by food.** Fate is innate — grows with band level but not cookable. Prevents a single recipe from dominating all encounters by gaming Inspiration rates and spike evasion.
+- **Lucky Dumplings removed.** Was the only Fate recipe. No natural replacement found that didn't reintroduce the same problem. Removed cleanly.
+- **Hearthbread secondary: Vit→Mig** (dense bread builds strength). **Contemplative Tea secondary: Wil→Agi** (clear mind sharpens reflexes). Both previously had Fat as secondary, now corrected.
+- **FL1 target set at ~47%** for Neekerbreekers — just below 50%, enough to signal "cook better food" without being demoralizing. Drain unchanged at 12; stat bonuses from the new food model naturally landed the encounter here.
+- **Food model uses role-matched defaults** (W: Hearthbread, H: Wanderer's Supper, K: Contemplative Tea, C: Ranger's Fare) as the reference point for encounter validation.
+- **food_model.js is the single source of truth** for recipe data and FL math in the sim toolchain.
+
+**Anything that diverged from docs/design.md:**
+- Fate no longer listed as a food-boostable stat. design.md updated.
+
+**Coming up:**
+- Next session: Design encounter 3 (first real difficulty ramp). Validate Wolves in the Chetwood post-stat-bonuses. Ingredient scarcity model.
+- Near term: 5th role design. Encounter 3 unlock mechanic.
+- Future ideas logged: Ingredient scarcity tiers (common/uncommon/rare) as the primary gate against food optimization abuse — noted in session, not yet logged to wishlist.
