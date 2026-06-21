@@ -81,26 +81,21 @@ The Keeper only deals damage when no rescue is needed. If a party member is at 0
 
 ## Armor Penetration
 
-Each active member contributes armor penetration toward reducing the enemy's physical mitigation:
-
-| Member | Pen stat | Coefficient |
-|---|---|---|
-| Warden | Mig | 0.25 |
-| Hunter | Agi | 0.90 |
-| Keeper | Agi | 0.15 |
-| Captain | Mig | 0.20 |
+Penetration comes from the party's **draught** — a single party-wide choice, not from character stats:
 
 ```
-penTotal = sum of (member stat × coefficient) for all active members
-physAfter = max(0,  physMit × (1 − min(1, penTotal / 110)))
+physAfter = max(0,  physMit × (1 − min(1, draughtPotency / PEN_SCALE)))
 ```
 
-`physMit` is the enemy's armor value (0.0 to 1.0). `110` is the penetration scale constant — a penTotal of 110 completely negates the armor.
+`physMit` is the enemy's armor value (0.0 to 1.0). `draughtPotency` is the potency value of the equipped draught (0 if none). A draught potency equal to `PEN_SCALE` fully negates the armor. Magic damage (Keeper, Captain's Will half) bypasses armor entirely.
 
-**Effective DPS** after armor and Dread:
+**Effective DPS** after armor, Dread, and per-tick jitter:
 ```
-DPS_effective = DPS_raw × (1 − physAfter) × (1 − dreadAfter)
+DPS_effective = DPS_raw × (1 − physAfter) × (1 − dreadAfter) × jitterFactor
+jitterFactor  = 1 + U(−JITTER, +JITTER)   // uniform random each tick
 ```
+
+`JITTER = 0.10` by default (±10%). Each tick's output varies around the mean — same average DPS over a long fight, real variance fight-to-fight. Set to 0 for fully deterministic output.
 
 ---
 
@@ -374,7 +369,8 @@ Black Arrow does NOT fire in sustain-failing fights — only in fights where the
 | GRIEVOUS | 5 | Wounds required to eliminate a member |
 | SHADOW_FLOOR | 0.55 | Base stat floor under Shadow (fraction of base) |
 | SHADOW_RATE | 0.0011 | Stat drain per tick per Shadow point |
-| PEN_SCALE | 110 | penTotal needed to fully negate armor |
+| PEN_SCALE | 80 | draughtPotency needed to fully negate armor |
+| JITTER | 0.10 | Per-tick DPS variance (±10%); 0 = deterministic |
 | SCURVE_P | 1.8 | Within-tier HP/s curve exponent |
 | fateEvadeCoef | 0.004 | Fate × this = spike evasion chance |
 | fateInspCoef | 0.003 | Fate × this = Inspiration rate bonus |

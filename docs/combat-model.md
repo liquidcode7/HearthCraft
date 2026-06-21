@@ -292,6 +292,7 @@ SHADOW_FLOOR      = 0.55   // base floor with no Radiance
 SHADOW_RATE       = 0.0011 // per-tick stat drain per point of shadow severity
 Fate insp coef    = 0.003  // per Fate point added to Inspiration base rate (cap 0.25)
 Fate evade coef   = 0.004  // per Fate point chance to slip a spike entirely
+JITTER            = 0.10   // per-tick DPS variance ±10%; U(−J, +J) multiplied onto effective DPS
 tick              = 1 second
 ```
 
