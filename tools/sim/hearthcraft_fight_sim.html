@@ -310,6 +310,11 @@
           <div class="gnote">Zero Morale = one wound (keep fighting). 5 wounds = grievous = out, needs the Houses of Healing. The Keeper burst-rescues whoever hits zero (one at a time) and deals magic damage otherwise.</div>
           <div class="ctl"><label>Keeper rescue burst mult. <span class="val" id="v_burst">1.0&#215;</span></label><input type="range" id="burstmul" min="50" max="200" value="100"><div class="effect">base burst scales with Keeper's Will</div></div>
         </div>
+        <div class="ctl-group">
+          <h3 onclick="this.parentElement.classList.toggle('open')">Sim variance <span>&#9432;</span></h3>
+          <div class="gnote">DPS jitter adds a random &#177; wobble to each tick&#8217;s damage output. 0 = fully deterministic (every fight identical). 10% is a light wobble. 20%+ creates wide outcome variance. Affects win-rate curves — retune encounters when changing this.</div>
+          <div class="ctl"><label>DPS jitter &#177;<span class="val" id="v_jitter">10</span>%</label><input type="range" id="jitter" min="0" max="30" value="10" oninput="document.getElementById('v_jitter').textContent=this.value;if(!running)refreshRead();"></div>
+        </div>
         <div class="seg" style="margin-top:8px">
           <button id="spd1" onclick="setSpeed(0)">1&#215;</button><button id="spd4" class="on" onclick="setSpeed(1)">4&#215;</button>
           <button id="spd16" onclick="setSpeed(2)">16&#215;</button><button id="spdmax" onclick="setSpeed(3)">Instant</button>
@@ -860,7 +865,7 @@ function stepOnce(){
     inspBoost=0.15;
     log(`&#10022; WRATH, RUIN, AND THE RED DAWN — ${M.captain.tpl.name} cries: 'Now for wrath, now for ruin, and the red dawn!' (all Inspirations boosted)`,"insp");events.push({t,kind:"Wrath, Ruin, and the Red Dawn",who:M.captain.tpl.name});}
   prevTrouble=nowTrouble;
-  const bd=dpsBreakdown();let boss=window._boss;if(!P.unkill)boss=Math.max(0,boss-bd.eff);window._boss=boss;
+  const bd=dpsBreakdown();let boss=window._boss;const _jit=(+($("jitter")||{value:10}).value)/100;if(!P.unkill)boss=Math.max(0,boss-bd.eff*(1+(Math.random()*2-1)*_jit));window._boss=boss;
   if(!baFired&&!M.hunter.grievous&&M.hunter.hp>0){const elapsed=t/maxT;const ttk=bd.eff>0?boss/bd.eff:1e9;const trem=maxT-t;
     const losing=P.unkill?(elapsed>0.5):(ttk>trem&&elapsed>0.4);
     if(losing){const rise=Math.min(P.blackArrowCap,(elapsed-0.4)*P.blackArrowCap*2.5);

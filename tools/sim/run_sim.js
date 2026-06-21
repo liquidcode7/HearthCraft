@@ -117,6 +117,7 @@ function parseArgs() {
     spikeiv:   num("--spikeiv", 12),
     phys:      num("--phys",    0) / 100,
     potency:   num("--potency", 0),
+    jitter:    num("--jitter",  10) / 100,
     dread:     num("--dread",   0) / 100,
     hope:      num("--hope",    0),
     shadow:    num("--shadow",  0),
@@ -335,7 +336,7 @@ function runFight(cfg, verbose) {
 
     // DPS tick
     const bd = dpsBreakdown();
-    if (!cfg.survival) boss = Math.max(0, boss - bd.eff);
+    if (!cfg.survival) boss = Math.max(0, boss - bd.eff * (1 + (Math.random()*2-1)*cfg.jitter));
 
     // Inspiration: Black Arrow (Hunter)
     if (!baFired && !M.hunter.grievous && M.hunter.hp>0) {
