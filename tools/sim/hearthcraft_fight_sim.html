@@ -111,6 +111,8 @@
   .wound-pip{color:var(--bad)}.wound-empty{color:#cabfa3}
   .m-action{font-size:10px;font-style:italic;color:var(--keeper);min-height:13px;margin-top:1px}
   .member .bar-fill{background:var(--surv)}.member.role-h .bar-fill{background:var(--win)}
+  .bar-reserve{position:absolute;top:0;height:100%;background:rgba(70,130,210,0.50);border-radius:0 2px 2px 0;transition:left .08s linear,width .08s linear}
+  .res-num{color:#4a7abf;font-size:9.5px;margin-left:4px;font-style:normal}
   .member.horn{box-shadow:0 0 0 2px var(--gold) inset}
   .statusline{display:flex;justify-content:space-between;align-items:center;padding:9px 15px;font-size:13px;margin-bottom:13px}
   .clock{font-variant-numeric:tabular-nums;color:#6a5638}
@@ -695,9 +697,10 @@ function loadEncFile(ev){const file=ev.target.files[0];if(!file)return;const st=
     const arr=XLSX.utils.sheet_to_json(wb.Sheets[name],{header:1,blankrows:false});
     const hi=_findHeader(arr);_encList=_rowsToEnc(arr[hi],arr.slice(hi+1));_fillDropdown();
     st.textContent=_encList.length+' encounter(s) loaded from "'+name+'". Pick one \u2192';
+    togglePaste(false);
   }catch(err){st.textContent="Could not read file: "+err.message;}};
   reader.readAsArrayBuffer(file);}
-function togglePaste(force){const w=document.getElementById("paste_wrap");w.style.display=(force||w.style.display==="none")?"block":"none";}
+function togglePaste(force){const w=document.getElementById("paste_wrap");w.style.display=force===true?"block":force===false?"none":w.style.display==="none"?"block":"none";}
 function loadEncPaste(){const txt=document.getElementById("enc_paste").value.trim();const st=document.getElementById("enc_status");if(!txt)return;
   const lines=txt.split(/\r?\n/).map(l=>l.indexOf("\t")>=0?l.split("\t"):l.split(","));
   const hi=_findHeader(lines);_encList=_rowsToEnc(lines[hi],lines.slice(hi+1));_fillDropdown();
@@ -762,10 +765,13 @@ function statPreview(){const lvl=+$("lvl").value,R=roster();
 function woundPips(n){let s="";for(let i=0;i<GRIEVOUS;i++)s+=`<span class="${i<n?'wound-pip':'wound-empty'}">&#9670;</span>`;return s;}
 function renderParty(){const host=$("party");host.innerHTML="";
   ORDER.forEach(k=>{const m=M[k],pct=Math.max(0,(m.hp/m.max)*100),wc=(k==="hunter")?"role-h":"";
+    const resPct=(m.reserve/m.max)*100;
+    const resBar=m.reserve>0?`<div class="bar-reserve" style="left:${pct}%;width:${resPct}%"></div>`:"";
+    const resNum=m.reserve>0?`<span class="res-num">+${Math.round(m.reserve)}</span>`:"";
     const el=document.createElement("div");el.className=`panel member ${wc} ${m.grievous?"grievous":""} ${m.horn?"horn":""}`;
     el.innerHTML=`<div class="m-top"><span class="m-name">${m.tpl.name}</span><span class="m-role ${m.cls}">${m.role}</span></div>
-      <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
-      <div class="m-hp-num"><span>Morale</span><span>${Math.max(0,Math.round(m.hp))} / ${m.max}</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div>${resBar}</div>
+      <div class="m-hp-num"><span>Morale</span><span>${Math.max(0,Math.round(m.hp))} / ${m.max}${resNum}</span></div>
       <div class="m-wounds">${woundPips(m.wounds)}</div><div class="m-action">${m.action||""}</div>`;
     host.appendChild(el);});}
 function tierName(d){return d<10?"&#8212; Rabble":d<20?"&#8212; Fell":d<32?"&#8212; Bane-tier":d<44?"&#8212; of the Nine":"&#8212; Nameless";}
