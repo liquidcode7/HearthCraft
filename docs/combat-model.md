@@ -70,9 +70,10 @@ and "one large creature" are mechanically identical — one pool, one fight.
 
 Pressure on the party:
 
-- **Steady drain / sec** — spread across **standing** members only. Downed
-  members have no morale left to bleed; loss concentrates pressure on survivors.
-  This is the solvable layer: provision correctly and it's handled.
+- **Steady drain / sec** — each active (non-grievous) member absorbs exactly
+  `drain / 4` per tick, independent of who else is standing. Losing a member
+  does **not** increase pressure on survivors. This is the solvable layer:
+  provision correctly and it's handled.
 - **Spikes** — every `spikeIntervalSec`, a spike of `spike` potency hits **one
   random standing member.** Pure random targeting — this is what makes spikes
   dangerous in a semi-autonomous fight: they can land on fragile members
@@ -107,9 +108,9 @@ Pressure on the party:
    burst of HP = `40 + Wil × 4` (× burstmul). The Keeper deals no DPS that
    tick. A **downed Keeper cannot rescue** — losing the Keeper is the spiral.
 
-5. **Food healing** — per-second HP to **living** members only. Diminishing
-   returns: full rate up to `1.5 × per-member incoming drain`; excess heals at
-   40% effectiveness. Provisions do not revive the fallen.
+5. **Food healing** — per-second HP to **living** members only. No softcap.
+   Overflow above max morale banks into a **reserve pool** (cap RMAX=50) that
+   absorbs spike damage before morale takes it. Provisions do not revive the fallen.
 
 6. **Victory** = kill the resolve pool with ≥ 1 member standing. Grievous
    casualties are survivable; the cost is Houses of Healing time, not a loss.
@@ -287,7 +288,8 @@ RESCUE_CAP        = 5      // Keeper rescues per fight
 WARD_CAP          = 3      // Warden lethal-spike guards per fight
 GRIEVOUS          = 5      // wounds → grievous
 rescue burst      = 40 + Wil × 4  (× burstmul)
-food heal softcap = 1.5 × (drain / standing count); excess at 0.4 effectiveness
+food heal (sink)  = overflow above max morale → reserve pool (cap RMAX=50); reserve absorbs spikes before morale
+RMAX              = 50     // reserve pool cap per member
 SHADOW_FLOOR      = 0.55   // base floor with no Radiance
 SHADOW_RATE       = 0.0011 // per-tick stat drain per point of shadow severity
 Fate insp coef    = 0.003  // per Fate point added to Inspiration base rate (cap 0.25)
@@ -357,21 +359,20 @@ locked. All others exported from the Encounter Builder are pre-tuned placeholder
 — treat their numbers as starting points, not final values.
 
 ### Neekerbreekers at the Marsh's Edge — recLevel 1 (the cooking tutorial)
-`resolve 50000 · drain 12 · spike 75 · spikeInterval 13 (mean, ±50% jitter) · physMit 0 · no statuses · durationCap 1500 (25 min)`
+`resolve 40000 · drain 16 · spike 75 · spikeInterval 13 · physMit 0 · no statuses · durationCap 1500 (25 min)`
 
-Drain-dominant sustain test. **Unwinnable with no food** (wipe in ~2 min — the
-lesson: go cook). Validated at band Lv1 (unlock floor), 5000 runs with role-matched
-food (W: Hearthbread, H: Wanderer's Supper, K: Contemplative Tea, C: Ranger's Fare):
-FL1=47%, FL2=79%, FL3=99%, FL4=~100%. Food is the primary lever — FL3 solves this
-encounter permanently regardless of band level.
+Cull fight (kill-to-win). **Unwinnable with no food** — the band bleeds out in minutes. Tuned with the independent member model (beta=0, decouple, sink). Four food tiers validated at band Lv1, 4000 runs:
 
-The ~47% at FL1 is intentional: the player loses about half the time with the earliest
-food, enough to signal that better provisioning matters without being demoralizing.
+| Cooking Level | HP/s | Win rate | Tier |
+|---|---|---|---|
+| CL1 | 5.0 | ~24% | T1 — risky |
+| CL2 | 5.2 | ~48% | T2 — coin flip |
+| CL3 | 5.4 | ~70% | T3 — solid |
+| CL4 | 5.6 | ~86% | T4 — strong |
 
-**Validation history:**
-- Pre-Fate, HP/s only: FL1=27%, FL2=64%
-- Post-Fate, HP/s only: FL1=40%, FL2=76% (Fate running unchecked, no Shadow to suppress it)
-- Post-stat-bonuses (current): FL1=47%, FL2=79% (role-matched food; Fate still cannot be food-boosted)
+Mastery food (6.0 HP/s, Initiate entry) gives ~97%.
+
+**Model:** Independent health bars. Each member takes drain/4 with no redistribution on member loss. Each member rolls their own spikes independently. Reserve pool (RMAX=50) absorbs spike damage before morale takes it.
 
 ### Wolves in the Chetwood — recLevel 3
 `resolve 60000 · drain 18 · spike 75 · spikeInterval 9 (mean, ±50% jitter) · physMit 0 · no statuses · durationCap 1500`

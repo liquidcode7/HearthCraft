@@ -115,13 +115,13 @@ A Captain with Wil 100 fully negates Dread. Hope food stacks on top.
 
 ## Enemy Drain
 
-Steady pressure applied every tick, distributed evenly across *standing* members (HP > 0, not grievous):
+Steady pressure applied every tick. Each active (non-grievous, HP > 0) member absorbs a fixed share:
 
 ```
-drain_per_member = drain / standing_count
+drain_per_member = drain / 4
 ```
 
-As members fall to 0 HP, the remaining standing members each absorb more drain. This is why losing a member mid-fight accelerates the collapse.
+The share is fixed at one quarter regardless of how many members are standing. Losing a member does **not** increase pressure on survivors — each member's fight is independent.
 
 ---
 
@@ -129,39 +129,52 @@ As members fall to 0 HP, the remaining standing members each absorb more drain. 
 
 Food provides healing every tick to active members (not grievous) who have HP > 0.
 
-**Softcap:**
+**Sink model (reserve pool):**
 ```
-incPer = drain / active_count        (drain share per active member)
-softcap = incPer × 1.5
-if food > softcap:
-    effective_heal = softcap + (food − softcap) × 0.4
-else:
-    effective_heal = food
+effective_heal = food          (no softcap penalty)
+overflow = max(0, hp + heal − max_morale)
+reserve  = min(RMAX, reserve + overflow)
+hp       = min(max_morale, hp + heal)
 ```
 
-Healing above the softcap is reduced to 40% efficiency. The softcap is 1.5× the drain each member absorbs — excess healing has diminishing returns.
+`RMAX = 50`. Healing above max morale banks into a reserve pool capped at 50. When a spike lands, the reserve absorbs damage first before morale takes it:
 
-**Example:** Wolves drain=18, 4 members → incPer=4.5 → softcap=6.75 HP/s. Food above 6.75 heals at 40%.
+```
+dmg_after_reserve = max(0, spike_dmg − reserve)
+reserve           = max(0, reserve − spike_dmg)
+hp               -= dmg_after_reserve
+```
+
+A full reserve gives a member an effective 50-point buffer against the next spike. Members who heal to max morale quickly are rewarded — their reserve fills and spikes hurt less.
 
 ---
 
 ## Food — Tier Table (HP/s per cooking level)
 
-Within-tier HP/s uses a convex curve (power 1.8): slow gains at the tier start, bigger gains near the ceiling. Tier boundaries are hard anchors.
+Within-tier HP/s uses a linear curve (power 1.0): each cooking level gives the same HP/s step within the tier. Tier boundaries are hard anchors.
 
-| Tier | Cooking level | HP/s range |
+| Tier | Cooking level | HP/s range | Step per CL |
+|---|---|---|---|
+| Hearthkeeper | 1–4 | 5.0 – 5.6 | +0.20 |
+| Initiate | 5–9 | 11 – 18 | +1.75 |
+| Apprentice | 10–15 | 19 – 30 | +2.20 |
+| Journeyman | 16–22 | 31 – 44 | +2.17 |
+| Adept | 23–30 | 45 – 62 | +2.43 |
+| Master | 31–40 | 63 – 86 | +2.56 |
+| Grandmaster | 41–50 | 87 – 110 | +2.56 |
+
+**Hearthkeeper CL→HP/s:**
+
+| CL | HP/s | Notes |
 |---|---|---|
-| Hearthkeeper | 1–4 | 5 – 10 |
-| Initiate | 5–9 | 11 – 18 |
-| Apprentice | 10–15 | 19 – 30 |
-| Journeyman | 16–22 | 31 – 44 |
-| Adept | 23–30 | 45 – 62 |
-| Master | 31–40 | 63 – 86 |
-| Grandmaster | 41–50 | 87 – 110 |
+| 1 | 5.0 | Neekerbreekers T1 (~24% win at drain=16) |
+| 2 | 5.2 | Neekerbreekers T2 (~48%) |
+| 3 | 5.4 | Neekerbreekers T3 (~70%) |
+| 4 | 5.6 | Neekerbreekers T4 (~86%) |
 
 ```
 frac   = (cookLevel − tier.lo) / (tier.hi − tier.lo)
-HP/s   = tier.hpsLo + frac^1.8 × (tier.hpsHi − tier.hpsLo)
+HP/s   = tier.hpsLo + frac^1.0 × (tier.hpsHi − tier.hpsLo)
 ```
 
 ---
@@ -371,7 +384,8 @@ Black Arrow does NOT fire in sustain-failing fights — only in fights where the
 | SHADOW_RATE | 0.0011 | Stat drain per tick per Shadow point |
 | PEN_SCALE | 80 | draughtPotency needed to fully negate armor |
 | JITTER | 0.10 | Per-tick DPS variance (±10%); 0 = deterministic |
-| SCURVE_P | 1.8 | Within-tier HP/s curve exponent |
+| SCURVE_P | 1.0 | Within-tier HP/s curve exponent (linear) |
+| RMAX | 50 | Reserve pool cap per member (sink mode) |
 | fateEvadeCoef | 0.004 | Fate × this = spike evasion chance |
 | fateInspCoef | 0.003 | Fate × this = Inspiration rate bonus |
 | graceBase | 0.05 | Laurelin's Grace base trigger rate |

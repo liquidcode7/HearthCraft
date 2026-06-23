@@ -5,14 +5,14 @@
 
 ---
 
-## Current Status — June 20, 2026
+## Current Status — June 23, 2026
 
-**Phase:** V1 core loop complete. Food model redesigned with stat bonuses. Combat sim updated with per-member recipe selection. Neekerbreekers re-validated.
-**V1 progress:** Core loop playable. Sim fully updated: food_model.js shared module, per-member recipe dropdowns in browser sim and --recipes flag in headless runner, stat bonuses applied to party stats. Mechanics math reference written. Two encounters validated post-stat-bonuses.
-**What's working:** Full stat-based food model. Each member eats a role-matched recipe that boosts their primary stat (Vit/Agi/Wil/Mig). Fate cannot be food-boosted — it is innate and grows with level only. Lucky Dumplings removed. Browser sim shows per-member recipe selects with live bonus summary and bolded stat previews.
-**What's not wired yet:** Full combat system (V2+). Wolves in the Chetwood not re-validated post-stat-bonuses. Encounter 3 not yet designed. Ingredient scarcity model not locked. Browser sim still uses duplicated TIER_TABLE (not yet refactored to import from food_model.js).
-**Next session:** Design encounter 3 (first real difficulty ramp — what mechanic does it introduce?). Validate Wolves post-stat-bonuses. Discuss ingredient scarcity model.
-**Open questions:** Encounter 3 mechanic (armor? Dread? higher drain?). Ingredient scarcity tiers. 5th role design. Melee vs. ranged DPS subtype. Rung-3 first-hazard fork.
+**Phase:** V1 core loop complete. All docs and sims fully reflect the independent member model and new food tier design.
+**V1 progress:** Full food model, headless sim, and browser sim consistent. Four food tiers per encounter locked. All design docs updated. Browser sim has built-in encounter presets.
+**What's working:** Browser sim uses independent drain (drain/4), per-member independent spikes, and sink/reserve healing. Encounter dropdown preloaded with Neekerbreekers/Wolves/Goblin-town Gate. Food model gives 5.0/5.2/5.4/5.6 HP/s for CL1–4.
+**What's not wired yet:** Full combat system (V2+). Wolves in the Chetwood not re-validated post food tier redesign. Initiate+ tier HP/s steps too wide for the transition band (needs tuning when higher encounters are designed).
+**Next session:** Validate Wolves in the Chetwood with new HP/s values. Re-run Goblin-town Gate. Design encounter 3 and tune its four tiers.
+**Open questions:** Initiate+ tier recalibration. 5th role design. Ingredient scarcity model.
 
 ---
 
@@ -1147,6 +1147,39 @@ FL1/FL2 food = wipe at every band level. FL4 is the real entry point (80% at ban
 **Coming up:**
 - Next session: Crafting and gathering redesign pass (or Battlegrounds design).
 - Near term: Balance pass once Fate effects are visible in sim runs. Shadow deepening if Fate proves too dominant.
+- Future ideas logged: none this session.
+
+---
+
+## Session 20 — June 22, 2026
+**Combat difficulty curve problem: root cause, fix, and four-tier design**
+
+**What was built:**
+- `tools/sim/run_sim.js`: Added `--beta`, `--decouple`, `--sink`, `--rmax` CLI flags for independent member model. beta=0 removes cascade, decouple makes each member roll spikes independently, sink replaces 40% softcap with a reserve pool.
+- `tools/sim/curve_lab.js`: Created abstract Monte Carlo lab testing 7 combat configurations (A–G). Proved Config E (beta=−0.6 + decouple + sink) widens the 20→80 win-rate band from 0.60 HP/s to 1.41 HP/s.
+- `tools/sim/combat_curve_spec.md`: Design spec written in the claude.ai session documenting the cliff problem, all five levers, and measured results.
+- `docs/combat-curve-problem.md`: Full design reference document — cliff problem diagnosis, all levers, simulation findings, three fight shapes, paths forward, open questions. Updated with the resolution.
+- `tools/sim/food_model.js`: SCURVE_P changed 1.8→1.0 (linear); Hearthkeeper hpsHi changed 10→5.6. Hearthkeeper CL1–4 now maps to exactly 5.0/5.2/5.4/5.6 HP/s.
+- `encounters/neekerbreekers_midgewater.json`: drain changed 18→16. designNote updated to reflect cull fight identity and four-tier win rates.
+- `docs/design.md`: Added "Encounter Difficulty — Four Food Tiers" design section documenting T1–T4 win rate targets.
+- `tools/sim/hearthcraft_fight_sim.html`: Rebuilt to match new mechanics — independent drain (drain/4 per member), per-member independent spike rolls, sink/reserve healing, updated TIER_TABLE and SCURVE_P. Built-in encounter dropdown pre-loaded with Neekerbreekers, Wolves, Goblin-town Gate (no spreadsheet needed to use them). RMAX=50 reserve pool constant added.
+- `docs/combat-model.md`: Updated drain description (cascade → independent), food healing rule (softcap → sink), Neekerbreekers entry (new resolve/drain/win rates), Key Constants.
+- `docs/mechanics-math-reference.md`: Updated drain formula, food HP/s section (sink model replacing softcap), tier table (SCURVE_P 1.0, Hearthkeeper 5.0–5.6 HP/s with per-CL breakdown), constants (RMAX=50 added).
+
+**Decisions made:**
+- **Four food tiers per encounter (not three).** T1≈25%/T2≈50%/T3≈70%/T4≈85–90%. The math simply cannot place T1 and T2 within 0.2 HP/s and T3 at 99% with consecutive cooking levels — four tiers with equal ~0.2 HP/s steps is the right shape.
+- **Hearthkeeper tier redesigned.** HP/s range narrowed from 5–10 to 5.0–5.6. S-curve exponent changed to 1.0 (linear). CL1=5.0/CL2=5.2/CL3=5.4/CL4=5.6. Adjacent levels are 0.2 HP/s apart — exactly the granularity needed to straddle the transition zone.
+- **Neekerbreekers drain changed to 16.** At drain=18, CL1 was in the fail zone (0.7%). At drain=16, CL1=5.0 HP/s lands at 24% — the T1 target.
+- **Independent member model is canonical.** beta=0 + decouple + sink is the correct long-term design. Cascade was a mistake.
+- **Neekerbreekers is a cull fight.** Narrative: clear an infestation for a hobbit farmer. Win by killing (resolve=40000), not by surviving.
+
+**Anything that diverged from docs/design.md:**
+- Four tiers per encounter (was three in prior planning). docs/design.md updated with "Encounter Difficulty — Four Food Tiers" section.
+- Hearthkeeper HP/s values are now 5.0–5.6 (was 5–10). Not previously documented in design.md (food model implementation detail, lives in food_model.js and combat-curve-problem.md).
+
+**Coming up:**
+- Next session: Validate Wolves in the Chetwood against new HP/s values. Re-run Goblin-town Gate test (Initiate tier food, armor mechanic). Design encounter 3 and tune its four tiers.
+- Near term: Initiate+ tier recalibration when those encounters are designed. Browser sim TIER_TABLE deduplication.
 - Future ideas logged: none this session.
 
 ---

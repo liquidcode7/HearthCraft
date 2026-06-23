@@ -478,9 +478,9 @@
 </div>
 <script>
 
-// ── recipe level → HP/s (same table as run_sim.js) ─────────────────────────
+// ── recipe level → HP/s (must match food_model.js) ──────────────────────────
 const TIER_TABLE=[
-  {tier:1,title:"Hearthkeeper",lo:1, hi:4, hpsLo:5,  hpsHi:10 },
+  {tier:1,title:"Hearthkeeper",lo:1, hi:4, hpsLo:5.0,hpsHi:5.6},
   {tier:2,title:"Initiate",    lo:5, hi:9, hpsLo:11, hpsHi:18 },
   {tier:3,title:"Apprentice",  lo:10,hi:15,hpsLo:19, hpsHi:30 },
   {tier:4,title:"Journeyman",  lo:16,hi:22,hpsLo:31, hpsHi:44 },
@@ -488,7 +488,7 @@ const TIER_TABLE=[
   {tier:6,title:"Master",      lo:31,hi:40,hpsLo:63, hpsHi:86 },
   {tier:7,title:"Grandmaster", lo:41,hi:50,hpsLo:87, hpsHi:110},
 ];
-const SCURVE_P=1.8;
+const SCURVE_P=1.0; // linear — CL1-4 Hearthkeeper = 5.0/5.2/5.4/5.6 HP/s
 function recipeLevelToHps(rl){
   rl=Math.max(1,Math.min(50,Math.round(rl)));
   for(const t of TIER_TABLE){
@@ -530,6 +530,7 @@ const SHADOW_RATE=0.0011; // per-tick drain per point of shadow strength
 const RESCUE_CAP=5;
 const WARD_CAP=3; // Keeper zero-rescues per fight (Laurelin's Grace is separate, uncapped)
 const GRIEVOUS=5;
+const RMAX=50; // reserve pool cap per member (sink mode) — absorbs spike damage before morale
 const $=id=>document.getElementById(id);
 const stat=(t,k,l)=>t.start[k]+t.grow[k]*(l-1);
 const moraleOf=(t,l)=>Math.round(30+stat(t,"vit",l)*16);
@@ -537,7 +538,7 @@ const fmtT=s=>`${Math.floor(s/60)}:${String(Math.max(0,s)%60).padStart(2,"0")}`;
 function roster(){const hk=(+$("hflav").value===1)?"hunterM":"hunterA";return {warden:TPL.warden,hunter:TPL[hk],keeper:TPL.keeper,captain:TPL.captain};}
 
 let MODE=0,SPEED=1,running=false,timer=null,t=0,P=null,maxT=0;
-let M={},events=[],fired={},windows={},baFired=false,series=[],rescuesUsed=0,wardsUsed=0,inspBoost=0,prevTrouble=0,nextSpikeAt=0,spikesTotal=0;
+let M={},events=[],fired={},windows={},baFired=false,series=[],rescuesUsed=0,wardsUsed=0,inspBoost=0,prevTrouble=0,spikesTotal=0;
 const SPEED_MS=[1000,250,62,0];
 
 function showTab(name){['setup','live','results','company'].forEach(n=>{$('pane_'+n).classList.toggle('on',n===name);$('tab_'+n).classList.toggle('on',n===name);});}
@@ -559,7 +560,13 @@ $("rlevel").addEventListener("input",e=>{
 $("hflav").addEventListener("input",e=>{$("v_hflav").textContent=(+e.target.value===1)?"might":"agility";if(!running){buildParty();refreshRead();statPreview();}});
 $("burstmul").addEventListener("input",e=>{$("v_burst").textContent=(+e.target.value/100).toFixed(1)+"\u00d7";});
 /* ---- Encounter import (spreadsheet -> sim) ---- */
-let _encList=[];
+// Built-in encounter presets — loaded into the picker on page init
+const BUILTIN_ENCOUNTERS=[
+  {id:"neekerbreekers_midgewater",name:"Neekerbreekers at the Marsh's Edge",recLevel:1,mode:"attrition",durationSec:1500,resolve:40000,drain:16,spike:75,spikeIntervalSec:13,physMitPct:0,dread:0,shadow:0,disease:0,cold:0,heat:0,wakefulness:0},
+  {id:"wolves_chetwood",name:"Wolves in the Chetwood",recLevel:3,mode:"attrition",durationSec:1500,resolve:60000,drain:18,spike:75,spikeIntervalSec:9,physMitPct:0,dread:0,shadow:0,disease:0,cold:0,heat:0,wakefulness:0},
+  {id:"goblintown_gate",name:"Goblin-town Gate",recLevel:5,mode:"attrition",durationSec:1500,resolve:115000,drain:20,spike:60,spikeIntervalSec:14,physMitPct:22,dread:0,shadow:0,disease:0,cold:0,heat:0,wakefulness:0},
+];
+let _encList=[...BUILTIN_ENCOUNTERS];
 function _setCtl(id,val){const el=document.getElementById(id);if(!el||val===''||val==null||isNaN(+val))return;
   if(el.max!==''&&+val>+el.max)el.max=String(val);
   if(el.min!==''&&+val<+el.min)el.min=String(val);
@@ -672,7 +679,7 @@ function buildParty(){const lvl=+$("lvl").value,R=roster();M={};
     const sb=memberFoodBonuses(k);
     const bvit=sb.vit||0;
     const max=Math.round(30+(stat(tpl,"vit",lvl)+bvit)*16);
-    M[k]={key:k,tpl,role:tpl.role,cls:tpl.cls,soak:tpl.soak,color:tpl.color,max,hp:max,wounds:0,grievous:false,atZero:false,action:"",horn:false,
+    M[k]={key:k,tpl,role:tpl.role,cls:tpl.cls,soak:tpl.soak,color:tpl.color,max,hp:max,reserve:0,wounds:0,grievous:false,atZero:false,action:"",horn:false,
       mig:stat(tpl,"mig",lvl)+(sb.mig||0),agi:stat(tpl,"agi",lvl)+(sb.agi||0),vit:stat(tpl,"vit",lvl)+bvit,wil:stat(tpl,"wil",lvl)+(sb.wil||0),fat:stat(tpl,"fat",lvl)+(sb.fat||0),
       wilBase:stat(tpl,"wil",lvl)+(sb.wil||0),fatBase:stat(tpl,"fat",lvl)+(sb.fat||0),shDrain:0,fatEvades:0,spikesTargeted:0};});
   renderParty();}
@@ -703,8 +710,8 @@ function refreshBoss(){
     STATUSES.forEach(st=>{const v=statusOn(st.id);if(v>0)mit.push(`${st.name} <b>${v}</b>`);});
     $("bossmit").innerHTML=mit.join(" &#183; ");}}
 function updEffects(){const drainPer=+$("drain").value/4;
-  $("e_drain").textContent=`each member soaks ~${Math.round(drainPer)}/s steady &#8212; food should cover it`;
-  $("e_spike").textContent=+$("spike").value>0?`spikes drive members to zero &#8212; the Keeper must catch them`:`no spikes &#8212; pure steady drain`;
+  $("e_drain").textContent=`each member soaks ${Math.round(drainPer)}/s independently — losing a member does not increase pressure on survivors`;
+  $("e_spike").textContent=+$("spike").value>0?`each member rolls their own spike independently — reserve pool absorbs the first hit if full`:`no spikes &#8212; pure steady drain`;
   $("e_phys").textContent=+$("phys").value>0?`armor cut by party draught potency (see Provisioning &#8212; draught below)`:``;}
 
 // returns full breakdown incl penetration + Dread(Will+Hope) + Shadow effects
@@ -785,37 +792,39 @@ function stepOnce(){
   // Keeper rescues someone at zero — but only if charges remain (capped per fight)
   if(!M.keeper.grievous && M.keeper.hp>0 && rescuesUsed<RESCUE_CAP){for(const k of ORDER){if(k==="keeper"||M[k].grievous)continue;if(M[k].hp<=0){rescue=k;break;}}M.keeper.action=rescue?"burst":"damage";}
   else if(!M.keeper.grievous){M.keeper.action="damage";}
-  const isSpike=(P.spike>0)&&(t>=nextSpikeAt);
-  // STEADY DRAIN: spread across STANDING members only — downed members have no morale left to bleed, so loss concentrates pressure on survivors
-  {const living=act.filter(k=>M[k].hp>0); if(living.length)living.forEach(k=>{M[k].hp-=P.drain/living.length;});}
-  // SPIKE: variable interval (±50% jitter around mean) and damage range (±30%) — creates genuine variance rather than a deterministic metronome
-  if(isSpike){
-    nextSpikeAt = t + Math.round(P.spikeiv * (0.5 + Math.random()));
-    const hit = P.spike * (0.7 + Math.random() * 0.6);
-    let target, guarded=false;
-    if(windows.horn>0&&!M.warden.grievous&&M.warden.hp>0){target="warden";}  // Horn of Gondor: Warden pulls ALL spikes for the window
-    else{
-      const living=act.filter(k=>M[k].hp>0);
-      target=living.length?living[Math.floor(Math.random()*living.length)]:null;
-      // THE TANK GUARDS THE HEALER FROM A KILLING BLOW ONLY: if a spike would DOWN a standing Keeper, a standing Warden takes it instead — but only WARD_CAP times per fight. Non-lethal spikes hit the Keeper normally.
-      if(target==="keeper" && (M.keeper.hp-hit)<=0 && M.warden.hp>0 && !M.warden.grievous && wardsUsed<WARD_CAP){
-        target="warden"; guarded=true; wardsUsed++;
-      }
-    }
-    if(target){const hit=P.spike;
+  // STEADY DRAIN: independent — each active member soaks drain/4, regardless of who else is standing
+  {act.filter(k=>M[k].hp>0).forEach(k=>{M[k].hp-=P.drain/4;});}
+  // SPIKES: per-member independent rolls — each tick every living member has a 1/(spikeiv×4) chance of being hit
+  // This matches the same expected party-wide rate as a global spike but makes each member's survival independent.
+  if(P.spike>0){
+    const pPerTick=1/(P.spikeiv*4);
+    act.filter(k=>M[k].hp>0).forEach(originalTarget=>{
+      if(Math.random()>=pPerTick)return;
+      const hit=P.spike*(0.7+Math.random()*0.6);
+      let target=originalTarget;let guarded=false;
+      if(windows.horn>0&&!M.warden.grievous&&M.warden.hp>0){target="warden";}  // Horn of Gondor pulls all spikes
+      else if(originalTarget==="keeper"&&(M.keeper.hp-hit)<=0&&M.warden.hp>0&&!M.warden.grievous&&wardsUsed<WARD_CAP){
+        target="warden";guarded=true;wardsUsed++;}
       spikesTotal++;M[target].spikesTargeted++;
       if(!guarded&&Math.random()<M[target].fat*0.004){
         log(`${M[target].tpl.name} slips the blow — Fate ${Math.round(M[target].fat)} (near miss)`,"g");
         M[target].fatEvades++;
       } else {
-        M[target].hp-=hit;
+        // Reserve pool absorbs spike damage before morale (sink model)
+        let dmg=hit;
+        if(M[target].reserve>0){const absorbed=Math.min(M[target].reserve,dmg);M[target].reserve-=absorbed;dmg-=absorbed;}
+        M[target].hp-=dmg;
         if(guarded)log(`${M.warden.tpl.name} throws himself across a killing blow meant for ${M.keeper.tpl.name} (${Math.round(hit)}) — guard ${wardsUsed} of ${WARD_CAP}`,"s");
+        else if(M[target].reserve>0||dmg<hit)log(`a blow strikes ${M[target].tpl.name} (${Math.round(hit)} — reserve absorbed ${Math.round(hit-dmg)})`,"t");
         else log(`a heavy blow strikes ${M[target].tpl.name} (${Math.round(hit)})`,"t");
-      }}
+      }
+    });
   }
-  // food healing (steady, LIVING ONLY — food sustains the standing; it does not revive a member who has fallen to zero)
-  act.forEach(k=>{if(M[k].hp<=0)return;const incPer=P.drain/act.length;let heal=foodOf(k);const soft=incPer*1.5;if(heal>soft)heal=soft+(heal-soft)*0.4;
-    if(!(windows.horn>0&&k==="warden"))M[k].hp=Math.min(M[k].max,M[k].hp+heal);});
+  // food healing (steady, LIVING ONLY) — overflow above max morale banks into the reserve pool (cap RMAX)
+  act.forEach(k=>{if(M[k].hp<=0)return;const heal=foodOf(k);
+    const next=M[k].hp+heal;
+    if(next>M[k].max){M[k].reserve=Math.min(RMAX,M[k].reserve+(next-M[k].max));}
+    if(!(windows.horn>0&&k==="warden"))M[k].hp=Math.min(M[k].max,next);});
   if(rescue){const burst=(40+M.keeper.wil*4)*P.burstmul;tickHeal=burst;M[rescue].hp=Math.min(M[rescue].max,Math.max(M[rescue].hp,0)+burst);M.keeper.action="burst";rescuesUsed++;
     log(`Cael bursts ${M[rescue].tpl.name} clear of zero (+${Math.round(burst)}) — rescue ${rescuesUsed} of ${RESCUE_CAP}`,"h");}
   // --- SHADOW (Model C): drains Will+Fate toward a floor; RADIANCE RAISES THE FLOOR (so partial Radiance meaningfully limits how deep the spirit sinks, full Radiance nearly stops it). Cascades into heals/dread-resist/inspiration. ---
@@ -939,7 +948,6 @@ function finish(label,cls){clearInterval(timer);running=false;const v=$("verdict
 
 function prep(){buildParty();$("log").innerHTML="";t=0;P=curParams();maxT=P.duration;window._boss=P.boss;
   events=[];fired={};windows={dawn:0,horn:0};baFired=false;series=[];rescuesUsed=0;wardsUsed=0;inspBoost=0;prevTrouble=0;spikesTotal=0;
-  nextSpikeAt=Math.round(P.spikeiv*(0.5+Math.random()));
   $("verdict").textContent="ENGAGED";$("verdict").className="verdict v-fighting";
   // --- verbose startup log ---
   const sus=sustain(), drain=P.drain, spike=P.spike, iv=P.spikeiv;
@@ -949,9 +957,9 @@ function prep(){buildParty();$("log").innerHTML="";t=0;P=curParams();maxT=P.dura
   log(`Provisions: Warden ${foodOf("warden")}/s · Hunter ${foodOf("hunter")}/s · Keeper ${foodOf("keeper")}/s · Captain ${foodOf("captain")}/s → ${Math.round(sus)}/s total sustain`,"");
   if(drain>0||spike>0){
     let pressStr=`Pressure: `;
-    if(drain>0)pressStr+=`steady drain ${drain}/s spread over standing members`;
+    if(drain>0)pressStr+=`steady drain ${drain}/s (${Math.round(drain/4)}/s per member, independent)`;
     if(drain>0&&spike>0)pressStr+=` · `;
-    if(spike>0)pressStr+=`spikes ${spike} potency every ${iv}s (random target)`;
+    if(spike>0)pressStr+=`spikes ${spike} potency — each member rolls independently every ~${iv}s`;
     pressStr+=` → ~${Math.round(incoming)}/s combined`;
     log(pressStr,"");
   }
@@ -1214,6 +1222,7 @@ $("lvl").addEventListener("input", ()=>{updDurHint();updDurButtons();});
 
 // init
 buildStatusRows();
+_fillDropdown(); // show built-in encounter presets on load
 setMode(0);refreshBoss();buildParty();refreshRead();updEffects();statPreview();refreshFoodSummary();updDurHint();updDurButtons();
 
 </script>
