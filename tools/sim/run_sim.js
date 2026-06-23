@@ -12,6 +12,10 @@
 //                   [--disease V] [--wake V] [--hope V] [--radiance V]
 //                   [--hale V] [--warmth V] [--heatease V] [--alert V]
 //                   [--survival] [--hunter might] [--burstmul F] [--verbose]
+//                   [--beta B]      (cascade exponent: 1=cascade/current, 0=neutral, <0=last-stand; default 1)
+//                   [--decouple]    (independent per-member spikes instead of one global spike)
+//                   [--sink]        (replace 40% softcap with a reserve pool that absorbs spikes first)
+//                   [--rmax R]      (reserve pool cap for --sink mode; default 50)
 //
 // Food precedence (highest wins):
 //   --food         raw HP/s per member, no stat bonuses
@@ -134,6 +138,10 @@ function parseArgs() {
     hunterMight: get("--hunter","agility") === "might",
     burstmul:  num("--burstmul", 1.0),
     verbose:   a.includes("--verbose"),
+    beta:      num("--beta",    1.0),    // cascade exponent (1=current, 0=neutral, <0=last-stand)
+    decouple:  a.includes("--decouple"),// independent per-member spikes
+    sink:      a.includes("--sink"),    // reserve pool instead of softcap
+    rmax:      num("--rmax",    50),    // reserve pool cap for sink mode
     // Inspiration rates (fixed in design; exposed for research runs)
     graceBase:      num("--grace",  0.05),
     hornBase:       num("--horn",   0.03),
@@ -166,6 +174,7 @@ function runFight(cfg, verbose) {
       key:k, tpl, max, hp:max, wounds:0, grievous:false, atZero:false,
       mig:baseMig, agi:baseAgi, vit:baseVit, wil:baseWil, fat:baseFat,
       wilBase:baseWil, fatBase:baseFat, shDrain:0,
+      reserve:0,  // sink-mode overflow buffer; absorbs spike damage before morale
     };
   });
 
@@ -227,44 +236,91 @@ function runFight(cfg, verbose) {
     }
 
     // steady drain (standing only)
-    if (live.length) live.forEach(k => { M[k].hp -= cfg.drain / live.length; });
+    // beta=1 → full cascade (current); beta=0 → neutral; beta<0 → last-stand (survivors face less drain)
+    if (live.length) {
+      const drainFactor = Math.pow(4 / live.length, cfg.beta);
+      live.forEach(k => { M[k].hp -= (cfg.drain / 4) * drainFactor; });
+    }
+
+    // spike application — shared by both global and decouple modes
+    function applySpike(target, dmg) {
+      // Fate evasion
+      if (Math.random() < M[target].fat * cfg.fateEvadeCoef) {
+        lg(`${M[target].tpl.name} slips the blow — Fate ${Math.round(M[target].fat)} (near miss)`);
+        return;
+      }
+      // sink mode: reserve pool absorbs damage before morale
+      if (cfg.sink && M[target].reserve > 0) {
+        const absorbed = Math.min(M[target].reserve, dmg);
+        M[target].reserve -= absorbed;
+        dmg -= absorbed;
+      }
+      if (dmg > 0) {
+        M[target].hp -= dmg;
+        lg(`spike → ${M[target].tpl.name} (${Math.round(dmg)})`);
+      }
+    }
 
     // spike — variable interval and damage range
-    const isSpike = (cfg.spike > 0) && (t >= nextSpikeAt);
-    if (isSpike) {
-      // schedule next spike: interval × U(0.5, 1.5) — uniform jitter around mean
-      nextSpikeAt = t + Math.round(cfg.spikeiv * (0.5 + Math.random()));
-      // damage roll: base × U(0.7, 1.3)
-      const spikeRoll = cfg.spike * (0.7 + Math.random() * 0.6);
-      let target = null;
-      if (windows.horn > 0 && !M.warden.grievous && M.warden.hp > 0) {
-        target = "warden";
-      } else {
-        const lv = live;
-        target = lv.length ? lv[Math.floor(Math.random()*lv.length)] : null;
-        if (target==="keeper" && (M.keeper.hp-spikeRoll)<=0 && M.warden.hp>0 && !M.warden.grievous && wardsUsed<WARD_CAP) {
-          target="warden"; wardsUsed++;
-          lg(`${M.warden.tpl.name} guards Cael from killing blow (guard ${wardsUsed}/${WARD_CAP})`);
+    if (cfg.spike > 0) {
+      if (cfg.decouple) {
+        // Each living member independently rolls their own spike each tick (same total rate as global)
+        const pPerTick = 1 / (cfg.spikeiv * 4);
+        for (const k of live) {
+          if (Math.random() < pPerTick) {
+            const spikeRoll = cfg.spike * (0.7 + Math.random() * 0.6);
+            let tgt = (windows.horn > 0 && !M.warden.grievous && M.warden.hp > 0) ? "warden" : k;
+            if (tgt === "keeper" && (M.keeper.hp - spikeRoll) <= 0 && M.warden.hp > 0 && !M.warden.grievous && wardsUsed < WARD_CAP) {
+              tgt = "warden"; wardsUsed++;
+              lg(`${M.warden.tpl.name} guards Cael from killing blow (guard ${wardsUsed}/${WARD_CAP})`);
+            }
+            applySpike(tgt, spikeRoll);
+          }
         }
-      }
-      if (target) {
-        if (Math.random() < M[target].fat * cfg.fateEvadeCoef) {
-          lg(`${M[target].tpl.name} slips the blow — Fate ${Math.round(M[target].fat)} (near miss)`);
-        } else {
-          M[target].hp -= spikeRoll;
-          lg(`spike → ${M[target].tpl.name} (${Math.round(spikeRoll)})`);
+      } else {
+        // Global spike: one per interval, hits a random standing member
+        const isSpike = t >= nextSpikeAt;
+        if (isSpike) {
+          nextSpikeAt = t + Math.round(cfg.spikeiv * (0.5 + Math.random()));
+          const spikeRoll = cfg.spike * (0.7 + Math.random() * 0.6);
+          let target = null;
+          if (windows.horn > 0 && !M.warden.grievous && M.warden.hp > 0) {
+            target = "warden";
+          } else {
+            target = live.length ? live[Math.floor(Math.random() * live.length)] : null;
+            if (target === "keeper" && (M.keeper.hp - spikeRoll) <= 0 && M.warden.hp > 0 && !M.warden.grievous && wardsUsed < WARD_CAP) {
+              target = "warden"; wardsUsed++;
+              lg(`${M.warden.tpl.name} guards Cael from killing blow (guard ${wardsUsed}/${WARD_CAP})`);
+            }
+          }
+          if (target) applySpike(target, spikeRoll);
         }
       }
     }
 
-    // food healing (standing only, soft cap)
+    // food healing (active members with hp > 0)
     act.forEach(k => {
       if (M[k].hp <= 0) return;
-      const incPer = cfg.drain / act.length;
-      let heal = cfg.food[k];
-      const soft = incPer * 1.5;
-      if (heal > soft) heal = soft + (heal-soft)*0.4;
-      if (!(windows.horn>0 && k==="warden")) M[k].hp = Math.min(M[k].max, M[k].hp + heal);
+      const hornBlock = windows.horn > 0 && k === "warden"; // Warden gets no food heal during Horn window
+      if (cfg.sink) {
+        // Sink mode: no throttle; overflow above max banks into a finite reserve that absorbs spikes
+        if (!hornBlock) {
+          const next = M[k].hp + cfg.food[k];
+          if (next > M[k].max) {
+            M[k].reserve = Math.min(cfg.rmax, M[k].reserve + (next - M[k].max));
+            M[k].hp = M[k].max;
+          } else {
+            M[k].hp = next;
+          }
+        }
+      } else {
+        // Softcap mode (default): healing above 1.5× drain-per-member runs at 40% efficiency
+        const incPer = cfg.drain / act.length;
+        let heal = cfg.food[k];
+        const soft = incPer * 1.5;
+        if (heal > soft) heal = soft + (heal - soft) * 0.4;
+        if (!hornBlock) M[k].hp = Math.min(M[k].max, M[k].hp + heal);
+      }
     });
 
     // Keeper rescue burst
@@ -410,6 +466,8 @@ function report(cfg, res) {
 
   console.log("\n═══ HearthCraft Headless Sim ═══");
   console.log(`Runs: ${n}  |  Level ${cfg.level}  |  Duration ${fmtT(cfg.duration)}  |  ${cfg.survival?"SURVIVAL":"ATTRITION"}`);
+  const modes = [`cascade β=${cfg.beta}`, cfg.decouple?"spikes:decoupled":"spikes:global", cfg.sink?`heal:sink(rmax=${cfg.rmax})`:"heal:softcap"].join("  ");
+  console.log(`Modes: ${modes}`);
   console.log(`Boss ${cfg.boss} resolve  |  Drain ${cfg.drain}/s  |  Spike ${cfg.spike} every ${cfg.spikeiv}s`);
   if (cfg.phys>0) console.log(`Armor ${Math.round(cfg.phys*100)}% | Draught potency ${cfg.potency} / ${PEN_SCALE}`);
   // food line

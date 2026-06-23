@@ -291,6 +291,27 @@ for them is personal, not transactional.
 - **Mission durations** scale with band level: below level 10, missions run
   20–30 minutes; level 10 and above, missions run 30–45 minutes.
 
+#### Encounter Difficulty — Four Food Tiers
+
+Each encounter is tuned against **four food quality tiers** defined by the player's
+cooking level within the recommended range. The party's food HP/s (healing per
+second) is the primary preparation axis:
+
+| Tier | Win target | Feel |
+|---|---|---|
+| T1 | ~25% | Risky — possible with luck, teaches "cook better" |
+| T2 | ~50% | Coin flip — clearly right approach but could go either way |
+| T3 | ~70–75% | Solid — likely to succeed with this preparation |
+| T4 | ~85–90% | Strong — reliable win for a prepared provisioner |
+
+Mastery-level food (one tier above the encounter's recommended range) can push
+win rates to 97–99%. No food is a fail state regardless of tier.
+
+The HP/s steps between tiers are small (~0.2 HP/s). Each encounter is tuned at a
+specific drain rate so the interesting zone — where food quality genuinely changes
+outcomes — aligns with the player's expected cooking level for that encounter.
+Full analysis in `docs/combat-curve-problem.md`.
+
 ---
 
 ## Progression Axes

@@ -7,7 +7,7 @@ const FOOD_MODEL = (function () {
 
   // ── HP/s tier table ─────────────────────────────────────────────────────────
   const TIER_TABLE = [
-    { tier:1, title:"Hearthkeeper", lo:1,  hi:4,  hpsLo:5,   hpsHi:10  },
+    { tier:1, title:"Hearthkeeper", lo:1,  hi:4,  hpsLo:5.0, hpsHi:5.6 },
     { tier:2, title:"Initiate",     lo:5,  hi:9,  hpsLo:11,  hpsHi:18  },
     { tier:3, title:"Apprentice",   lo:10, hi:15, hpsLo:19,  hpsHi:30  },
     { tier:4, title:"Journeyman",   lo:16, hi:22, hpsLo:31,  hpsHi:44  },
@@ -15,7 +15,8 @@ const FOOD_MODEL = (function () {
     { tier:6, title:"Master",       lo:31, hi:40, hpsLo:63,  hpsHi:86  },
     { tier:7, title:"Grandmaster",  lo:41, hi:50, hpsLo:87,  hpsHi:110 },
   ];
-  const SCURVE_P = 1.8;
+  // Linear (1.0) gives evenly-spaced HP/s steps within each tier. Hearthkeeper CL1-4 = 5.0/5.2/5.4/5.6 HP/s.
+  const SCURVE_P = 1.0;
 
   function recipeLevelToHps(rl) {
     const c = Math.max(1, Math.min(50, Math.round(rl)));
