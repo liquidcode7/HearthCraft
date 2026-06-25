@@ -186,7 +186,7 @@ a fixed offset.
   through `physAfter`. The new "damage mitigated vs. magic bypass" chart makes this visually
   obvious in the browser, but a scripted assertion is the real safety net.
 
- — a `magMit %` on the enemy (parallel to `physMit %`) that
+- **Magic mitigation (`magMit %`)** — a `magMit %` on the enemy (parallel to `physMit %`) that
   resists magic damage. Currently the Keeper's Will-based attacks bypass armor entirely,
   which is correct at Rung 0 but may become unbalanced as magic damage scales at higher
   rungs or with stronger Keepers. When magic DPS starts outpacing physical in the sim's
@@ -195,16 +195,18 @@ a fixed offset.
   Spirit-penetration stat). Design the counter before adding the mitigation so the
   provisioner always has an answer.
 
+---
 
+## Infrastructure
 
 - **Forgejo migration** — move repo from GitHub to self-hosted Forgejo
   when convenient. Trivial git remote swap, no rush.
 
+- **F-Droid submission** — submit to F-Droid once V1 is stable.
+
 - **Multiplayer ingredient trading** — if the game ever goes online,
   players of different bands trade region-exclusive ingredients.
   Noted as a natural mechanic, not a planned feature.
-
-- **F-Droid submission** — submit to F-Droid once V1 is stable.
 
 ---
 

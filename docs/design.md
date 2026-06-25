@@ -307,6 +307,8 @@ for them is personal, not transactional.
 
 #### Encounter Difficulty — Four Food Tiers
 
+> **V2+ combat system — not V1.** V1 uses a single buff-strength number for mission outcomes. This section describes the full HP/s encounter model that replaces it in V2+.
+
 Each encounter is tuned against **four food quality tiers** defined by the player's
 cooking level within the recommended range. The party's food HP/s (healing per
 second) is the primary preparation axis:
@@ -324,17 +326,17 @@ win rates to 97–99%. No food is a fail state regardless of tier.
 The HP/s steps between tiers are small (~0.2 HP/s). Each encounter is tuned at a
 specific drain rate so the interesting zone — where food quality genuinely changes
 outcomes — aligns with the player's expected cooking level for that encounter.
-Full analysis in `docs/combat-curve-problem.md`.
+Full analysis in `docs/combat-model.md` (Tuned Encounters section).
 
 ---
 
 ### The Burglar
 
-A fifth band member archetype — not a fifth combat role, but a *specialist*
-slotted into the party alongside the four fixed roles. The Hearthwright is
-**not** the burglar; burgling lives inside the band as a member archetype.
+> **V2+ — not in V1 scope.** Full design is here for architectural awareness. Do not build until promoted in `docs/v1-plan.md`.
 
-**Combat identity:**
+A fifth band member archetype — not a fifth combat role, but a *specialist*
+slotted into the party alongside the four fixed roles. The provisioner is
+**not** the burglar; burgling lives inside the band as a member archetype.
 - Near-zero DPS (rare procs only).
 - Very high dodge / avoidance — high-but-not-guaranteed. Certainty would
   flatten tension; variance is a curve-smoothing source, not a bug.
@@ -368,7 +370,7 @@ a burglar is a wager, not a free bonus.
   loyalty. Combined with win-or-nothing loot, hiring is a real money-sink wager.
 - *Late:* **recruit** one permanently. Always-available gleaning, no per-job fee,
   loot curve steps up. The emotional payoff — the hired stranger becomes family —
-  fits the Hearthwright-as-soul identity.
+  fits the provisioner-as-soul identity.
 
 Produces the desired rising loot curve: flat → bursty/conditional → high/steady.
 
@@ -402,9 +404,11 @@ no modern idiom. See `docs/voice-tone.md`.
 
 Three independent axes that reinforce each other:
 
-1. **Skill levels** — Gathering and Cooking XP. XP curve: each level costs
-   `level × 100` XP. One forage session = 50 XP. Pacing subject to revision
-   after playtesting.
+1. **Skill levels** — Gathering and Cooking XP. Each track uses a power-law
+   curve with tier-wall multipliers at cooking tier boundaries. Exact parameters
+   are in `PlayerRepository.kt` (constants and `xpToNext`) and calibrated in
+   `tools/sim/xp_lab.js`. Do not hardcode XP values here — use those files as
+   the source of truth.
 2. **Recipe book** — what the player has unlocked. Reflects investment and
    exploration.
 3. **Ingredient access** — what gathering sessions and missions return. Reflects
@@ -455,7 +459,7 @@ famous events constantly but never sharing the frame with named heroes. The
 player's bands fight their own desperate battles — a held pass the same night
 as Helm's Deep, a valley over; history records neither. This is the unsung
 logistics of the war made literal: the Fellowship gets the songs, your bands
-are the supply lines and side-skirmishes the chronicle forgot. The Hearthwright
+are the supply lines and side-skirmishes the chronicle forgot. The provisioner
 is the heart of that forgotten network — invisible to history, indispensable to
 everyone they feed.
 

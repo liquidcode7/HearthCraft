@@ -57,7 +57,7 @@ class MissionWorker @AssistedInject constructor(
             val multiplier = mission.rewardMultiplier
             val money = Random.nextInt(mission.rewardMoneyMin, mission.rewardMoneyMax + 1) * multiplier
             player.addMoney(money)
-            val rewardCount = Random.nextInt(1, 4) + (multiplier - 1)
+            val rewardCount = minOf(3, Random.nextInt(1, 4) + (multiplier - 1))
             mission.rewardTable.shuffled().take(rewardCount).forEach {
                 inventory.addIngredient(it, 1)
             }
@@ -98,7 +98,7 @@ class MissionWorker @AssistedInject constructor(
                         band.woundMember(it, grievous = false)
                     }
                 }
-                if (strengthRatio < 0.4f && Random.nextFloat() < 0.05f) {
+                if (strengthRatio < 0.6f && Random.nextFloat() < 0.33f) {
                     band.aliveMemberIds(bandId).randomOrNull()?.let {
                         band.killMember(it)
                     }

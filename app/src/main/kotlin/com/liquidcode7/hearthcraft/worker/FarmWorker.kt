@@ -47,7 +47,7 @@ class FarmWorker @AssistedInject constructor(
         player.addGatheringXp(PlayerRepository.XP_GATHER_SESSION)
         growing.setPendingResult(slotId, json)
 
-        val notifId = NOTIFICATION_ID_BASE + slotId.last().digitToInt()
+        val notifId = NOTIFICATION_ID_BASE + (slotId.lastOrNull()?.digitToIntOrNull() ?: 0)
         notify("Farm ready — tap to harvest", "${ingredient.name} is ready to collect.", notifId)
         return Result.success()
     }

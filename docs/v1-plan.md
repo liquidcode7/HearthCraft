@@ -56,12 +56,12 @@ Everything in V1 exists to answer that question. Nothing else.
 - Completing a recipe produces a food item and grants Cooking XP
 - Gathering sessions also grant a small amount of Cooking XP
 - Starting recipe set: 8–10 hand-coded recipes
-- Recipes have a buff type (endurance, agility, acuity, warmth, luck)
-  and a buff strength value
+- Recipes have a **buff strength** value (V1 simplification — the full stat
+  model lands in V2+; see `docs/design.md` Food & Buffs)
 - No recipe discovery in V1 — all recipes are hand-coded and visible
   in the recipe book from the start
 - Recipe book screen shows all known recipes with ingredients and
-  buff values
+  buff strength values
 
 ### Missions
 - 3 mission types per band: Easy, Medium, Hard

@@ -67,18 +67,37 @@ class PlayerRepository @Inject constructor(
             }
         }
 
+        // Precomputed cumulative XP thresholds: index i = total XP needed to reach level (i+1).
+        // Built once at class-load time; avoids O(n²) recomputation on every XP grant.
+        private val COOK_THRESHOLDS: IntArray = IntArray(MAX_LEVEL) { i ->
+            var total = 0; for (l in 1..i) total += xpToNext(l, Track.COOKING); total
+        }
+        private val GATHER_THRESHOLDS: IntArray = IntArray(MAX_LEVEL) { i ->
+            var total = 0; for (l in 1..i) total += xpToNext(l, Track.GATHERING); total
+        }
+
         // Total XP needed to reach a given level from level 1.
         fun totalXpForLevel(targetLevel: Int, track: Track): Int {
-            var total = 0
-            for (l in 1 until targetLevel) total += xpToNext(l, track)
-            return total
+            val idx = (targetLevel - 1).coerceIn(0, MAX_LEVEL - 1)
+            return when (track) {
+                Track.COOKING   -> COOK_THRESHOLDS[idx]
+                Track.GATHERING -> GATHER_THRESHOLDS[idx]
+            }
         }
 
         // Derive current level from a cumulative XP value.
         fun levelForTotalXp(xp: Int, track: Track): Int {
-            var level = 1
-            while (level < MAX_LEVEL && xp >= totalXpForLevel(level + 1, track)) level++
-            return level
+            val thresholds = when (track) {
+                Track.COOKING   -> COOK_THRESHOLDS
+                Track.GATHERING -> GATHER_THRESHOLDS
+            }
+            // Binary search for the highest level whose threshold is ≤ xp.
+            var lo = 0; var hi = MAX_LEVEL - 1
+            while (lo < hi) {
+                val mid = (lo + hi + 1) / 2
+                if (thresholds[mid] <= xp) lo = mid else hi = mid - 1
+            }
+            return lo + 1
         }
 
         // XP awarded per event — mirrors xp_lab.js CONFIG constants

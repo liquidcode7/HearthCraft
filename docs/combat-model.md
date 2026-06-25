@@ -411,6 +411,12 @@ Cull fight (kill-to-win). **Unwinnable with no food** — the band bleeds out in
 
 First Initiate food (6.0 HP/s, CL5) gives ~99%.
 
+> **Note:** these win rates are pre-stat-bonus baselines (HP/s only, no role-matched
+> stat bonuses applied). With role-matched food at FL1 (Hearthbread/Wanderer's Supper/
+> Contemplative Tea/Ranger's Fare), Neekerbreekers FL1 ≈ 47%, FL2 ≈ 79%, FL3 ≈ 99%.
+> The higher rates in `future/wishlist.md` (Fate Balance section) are the post-bonus
+> validated values — both are correct, just measured differently.
+
 **Model:** Independent health bars. Each member takes drain/4 with no redistribution on member loss. Each member rolls their own spikes independently. Reserve pool (RMAX=50) absorbs spike damage before morale takes it.
 
 ### Wolves in the Chetwood — recLevel 3
