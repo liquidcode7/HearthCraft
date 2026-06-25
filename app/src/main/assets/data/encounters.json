@@ -1,0 +1,290 @@
+[
+  {
+    "id": "mithlost_midges",
+    "bandId": "mithlost",
+    "name": "Midges at the Forest Margin",
+    "region": "Celondim woodland edge, Ered Luin",
+    "difficulty": "easy",
+    "recLevel": 1,
+    "requiredCookingLevel": 1,
+    "flavorIntro": "The forest margin has been unpassable at dusk for three weeks. A biting, clicking swarm thick enough to turn back a horse. The elves know this ground and can drive them back — if they are fed.",
+    "flavorLine": "Drive them back before nightfall. They know this ground.",
+    "rewardMoneyMin": 15,
+    "rewardMoneyMax": 25,
+    "rewardMultiplier": 1,
+    "durationMs": 1500000,
+    "rewardTable": ["moonpetal", "wanderer_fig", "stormcap"],
+    "stages": [
+      {
+        "stageId": "main",
+        "label": "Midge Cull",
+        "type": "attrition",
+        "objective": "kill",
+        "durationSec": 1500,
+        "resolve": 40000,
+        "drain": 16,
+        "spike": 75,
+        "spikeIntervalSec": 13,
+        "physMitPct": 0,
+        "dread": 0, "shadow": 0, "disease": 0,
+        "cold": 0, "heat": 0, "wakefulness": 0
+      }
+    ]
+  },
+  {
+    "id": "mithlost_wargs",
+    "bandId": "mithlost",
+    "name": "Wargs on the Mountain Slopes",
+    "region": "Ered Luin high passes, above Celondim",
+    "difficulty": "medium",
+    "recLevel": 3,
+    "requiredCookingLevel": 5,
+    "flavorIntro": "A pack of wargs has come down from the high passes and is ranging the slopes above Celondim. Bold, organized, not ordinary wolves. A well-provisioned company can drive them back.",
+    "flavorLine": "Not wolves. Wargs. Hearthkeeper food won't hold them.",
+    "rewardMoneyMin": 40,
+    "rewardMoneyMax": 60,
+    "rewardMultiplier": 2,
+    "durationMs": 1500000,
+    "rewardTable": ["ironbark_resin", "moonpetal", "stormcap", "cave_truffle"],
+    "stages": [
+      {
+        "stageId": "main",
+        "label": "Warg Pack",
+        "type": "attrition",
+        "objective": "kill",
+        "durationSec": 1500,
+        "resolve": 60000,
+        "drain": 18,
+        "spike": 75,
+        "spikeIntervalSec": 9,
+        "physMitPct": 0,
+        "dread": 0, "shadow": 0, "disease": 0,
+        "cold": 0, "heat": 0, "wakefulness": 0
+      }
+    ]
+  },
+  {
+    "id": "mithlost_goblins",
+    "bandId": "mithlost",
+    "name": "Goblin Scouts at the Forest Margin",
+    "region": "Ered Luin, western woodland edge",
+    "difficulty": "hard",
+    "recLevel": 5,
+    "requiredCookingLevel": 5,
+    "flavorIntro": "Goblins probing down from the mountain passes above Celondim. They have been watching the tree-line for three nights. They are armored in scavenged plate — not the rabble you expected.",
+    "flavorLine": "Armored. Organized. Hearthkeeper food will not carry your band through this.",
+    "rewardMoneyMin": 100,
+    "rewardMoneyMax": 150,
+    "rewardMultiplier": 4,
+    "durationMs": 1500000,
+    "rewardTable": ["cave_truffle", "ironbark_resin", "moonpetal", "stormcap"],
+    "stages": [
+      {
+        "stageId": "main",
+        "label": "Goblin Incursion",
+        "type": "attrition",
+        "objective": "kill",
+        "durationSec": 1500,
+        "resolve": 68000,
+        "drain": 20,
+        "spike": 60,
+        "spikeIntervalSec": 14,
+        "physMitPct": 35,
+        "dread": 0, "shadow": 0, "disease": 0,
+        "cold": 0, "heat": 0, "wakefulness": 0
+      }
+    ]
+  },
+  {
+    "id": "undermarch_bats",
+    "bandId": "undermarch",
+    "name": "Cave Bats in the Lower Halls",
+    "region": "Thorin's Halls, Blue Mountains — lower tunnels",
+    "difficulty": "easy",
+    "recLevel": 1,
+    "requiredCookingLevel": 1,
+    "flavorIntro": "The lower access tunnels are impassable. A colony of cave bats, disturbed by recent stonework, has swarmed and blocked the passage. Dense, disorienting, hard to fight in the dark. A fed band can push through.",
+    "flavorLine": "Tight, dark, and loud. Nothing they haven't handled before.",
+    "rewardMoneyMin": 15,
+    "rewardMoneyMax": 25,
+    "rewardMultiplier": 1,
+    "durationMs": 1500000,
+    "rewardTable": ["pale_cap", "cave_truffle", "stormcap"],
+    "stages": [
+      {
+        "stageId": "main",
+        "label": "Bat Colony",
+        "type": "attrition",
+        "objective": "kill",
+        "durationSec": 1500,
+        "resolve": 40000,
+        "drain": 16,
+        "spike": 75,
+        "spikeIntervalSec": 13,
+        "physMitPct": 0,
+        "dread": 0, "shadow": 0, "disease": 0,
+        "cold": 0, "heat": 0, "wakefulness": 0
+      }
+    ]
+  },
+  {
+    "id": "undermarch_wolves",
+    "bandId": "undermarch",
+    "name": "Mountain Wolves on the Outer Passes",
+    "region": "Blue Mountains, passes above Thorin's Halls",
+    "difficulty": "medium",
+    "recLevel": 3,
+    "requiredCookingLevel": 5,
+    "flavorIntro": "The outer passes have been dangerous since the last snowmelt. A pack of mountain wolves, lean and territorial, has been raiding supply routes. They move at night and do not yield without a fight.",
+    "flavorLine": "Mountain wolves. They don't scare easily and they don't leave until they're made to.",
+    "rewardMoneyMin": 40,
+    "rewardMoneyMax": 60,
+    "rewardMultiplier": 2,
+    "durationMs": 1500000,
+    "rewardTable": ["cave_truffle", "stormcap", "pale_cap", "ironbark_resin"],
+    "stages": [
+      {
+        "stageId": "main",
+        "label": "Wolf Pack",
+        "type": "attrition",
+        "objective": "kill",
+        "durationSec": 1500,
+        "resolve": 60000,
+        "drain": 18,
+        "spike": 75,
+        "spikeIntervalSec": 9,
+        "physMitPct": 0,
+        "dread": 0, "shadow": 0, "disease": 0,
+        "cold": 0, "heat": 0, "wakefulness": 0
+      }
+    ]
+  },
+  {
+    "id": "undermarch_goblins",
+    "bandId": "undermarch",
+    "name": "Goblin Assault on the Outer Gate",
+    "region": "Blue Mountains, Thorin's Halls approach",
+    "difficulty": "hard",
+    "recLevel": 5,
+    "requiredCookingLevel": 5,
+    "flavorIntro": "Mountain goblins, mail-clad and organized, hit the outer approach to Thorin's Halls before dawn. Not a raid — a test of the defenses. Your band answers the alarm.",
+    "flavorLine": "Armored. They know what they're doing. Your band needs to eat before they answer this.",
+    "rewardMoneyMin": 100,
+    "rewardMoneyMax": 150,
+    "rewardMultiplier": 4,
+    "durationMs": 1500000,
+    "rewardTable": ["cave_truffle", "ironbark_resin", "pale_cap", "stormcap"],
+    "stages": [
+      {
+        "stageId": "main",
+        "label": "Goblin Assault",
+        "type": "attrition",
+        "objective": "kill",
+        "durationSec": 1500,
+        "resolve": 68000,
+        "drain": 20,
+        "spike": 60,
+        "spikeIntervalSec": 14,
+        "physMitPct": 35,
+        "dread": 0, "shadow": 0, "disease": 0,
+        "cold": 0, "heat": 0, "wakefulness": 0
+      }
+    ]
+  },
+  {
+    "id": "greycloaks_neekerbreekers",
+    "bandId": "greycloaks",
+    "name": "Neekerbreekers at the Marsh's Edge",
+    "region": "Northern Midgewater, east of Staddle",
+    "difficulty": "easy",
+    "recLevel": 1,
+    "requiredCookingLevel": 1,
+    "flavorIntro": "A hobbit farmer outside Staddle has had enough. The neekerbreekers have been at the marsh-edge crops for three seasons running — a writhing mass of clicking, biting insects. Clear them out, and the farmer will sleep easy.",
+    "flavorLine": "They know this ground. Should be back by nightfall — if they're fed.",
+    "rewardMoneyMin": 15,
+    "rewardMoneyMax": 25,
+    "rewardMultiplier": 1,
+    "durationMs": 1500000,
+    "rewardTable": ["moonpetal", "duskberry", "stormcap"],
+    "stages": [
+      {
+        "stageId": "main",
+        "label": "Neekerbreeker Cull",
+        "type": "attrition",
+        "objective": "kill",
+        "durationSec": 1500,
+        "resolve": 40000,
+        "drain": 16,
+        "spike": 75,
+        "spikeIntervalSec": 13,
+        "physMitPct": 0,
+        "dread": 0, "shadow": 0, "disease": 0,
+        "cold": 0, "heat": 0, "wakefulness": 0
+      }
+    ]
+  },
+  {
+    "id": "greycloaks_wolves",
+    "bandId": "greycloaks",
+    "name": "Wolves in the Chetwood",
+    "region": "Chetwood, east of Bree",
+    "difficulty": "medium",
+    "recLevel": 3,
+    "requiredCookingLevel": 5,
+    "flavorIntro": "Yellow eyes ring the firelight. The pack has trailed the band since dusk, and hunger has made them bold.",
+    "flavorLine": "They've been circling since dusk. Hearthkeeper food won't hold them.",
+    "rewardMoneyMin": 40,
+    "rewardMoneyMax": 60,
+    "rewardMultiplier": 2,
+    "durationMs": 1500000,
+    "rewardTable": ["ironbark_resin", "moonpetal", "cave_truffle", "duskberry"],
+    "stages": [
+      {
+        "stageId": "main",
+        "label": "Wolf Pack",
+        "type": "attrition",
+        "objective": "kill",
+        "durationSec": 1500,
+        "resolve": 60000,
+        "drain": 18,
+        "spike": 75,
+        "spikeIntervalSec": 9,
+        "physMitPct": 0,
+        "dread": 0, "shadow": 0, "disease": 0,
+        "cold": 0, "heat": 0, "wakefulness": 0
+      }
+    ]
+  },
+  {
+    "id": "greycloaks_goblins",
+    "bandId": "greycloaks",
+    "name": "Goblin Raiders on the East Road",
+    "region": "The Lone-lands, East Road",
+    "difficulty": "hard",
+    "recLevel": 5,
+    "requiredCookingLevel": 5,
+    "flavorIntro": "A goblin warband has come down from the hills and is working the stretch of road east of Weathertop. They have been raiding for days. Your band intercepts them at dusk.",
+    "flavorLine": "Armored raiders. They've been at this for days. The band needs to be ready.",
+    "rewardMoneyMin": 100,
+    "rewardMoneyMax": 150,
+    "rewardMultiplier": 4,
+    "durationMs": 1500000,
+    "rewardTable": ["cave_truffle", "ironbark_resin", "moonpetal", "stormcap"],
+    "stages": [
+      {
+        "stageId": "main",
+        "label": "Goblin Raiders",
+        "type": "attrition",
+        "objective": "kill",
+        "durationSec": 1500,
+        "resolve": 68000,
+        "drain": 20,
+        "spike": 60,
+        "spikeIntervalSec": 14,
+        "physMitPct": 35,
+        "dread": 0, "shadow": 0, "disease": 0,
+        "cold": 0, "heat": 0, "wakefulness": 0
+      }
+    ]
+  }
+]
