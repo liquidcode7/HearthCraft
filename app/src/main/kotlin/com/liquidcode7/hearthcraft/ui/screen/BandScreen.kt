@@ -43,6 +43,7 @@ fun BandScreen(
     inventoryViewModel: InventoryViewModel = hiltViewModel()
 ) {
     val activeMission by bandViewModel.activeMission.collectAsState()
+    val activeEncounterSession by bandViewModel.activeEncounterSession.collectAsState()
     val members by bandViewModel.members.collectAsState()
     val hasAliveMembers by bandViewModel.hasAliveMembers.collectAsState()
     val encounters by bandViewModel.encounters.collectAsState()
@@ -74,13 +75,18 @@ fun BandScreen(
             Spacer(modifier = Modifier.height(12.dp))
         }
 
-        if (activeMission != null) {
-            val encounterName = encounters.find { it.encounterId == activeMission!!.missionId }?.name
-                ?: activeMission!!.missionId
+        if (activeMission != null || activeEncounterSession != null) {
+            val encounterName = activeEncounterSession?.let { es ->
+                encounters.find { it.encounterId == es.encounterId }?.name ?: es.encounterId
+            } ?: activeMission?.let { ms ->
+                encounters.find { it.encounterId == ms.missionId }?.name ?: ms.missionId
+            } ?: ""
+            val startedAtMs = activeEncounterSession?.startedAtMs ?: activeMission!!.startedAtMs
+            val durationMs  = activeEncounterSession?.durationMs  ?: activeMission!!.durationMs
             MissionActiveCard(
                 missionName = encounterName,
-                startedAtMs = activeMission!!.startedAtMs,
-                durationMs = activeMission!!.durationMs
+                startedAtMs = startedAtMs,
+                durationMs = durationMs
             )
             Spacer(modifier = Modifier.height(16.dp))
         }
@@ -148,7 +154,7 @@ fun BandScreen(
                     )
                 }
             }
-        } else if (activeMission == null) {
+        } else if (activeMission == null && activeEncounterSession == null) {
             Spacer(modifier = Modifier.height(16.dp))
             OutlinedButton(onClick = onMissionBoard, modifier = Modifier.fillMaxWidth()) {
                 Text("Mission Board")

@@ -13,6 +13,8 @@ private const val WARD_CAP     = 3
 private const val GRIEVOUS     = 5
 private const val RMAX         = 50f
 private const val JITTER       = 0.10f
+private const val SHADOW_FLOOR = 0.55f   // matches run_sim.js — used when shadow encounters are added (V2)
+private const val SHADOW_RATE  = 0.0011f // per-tick stat drain per point of shadow severity (V2)
 
 enum class Outcome { VICTORY, DEFEAT, STALEMATE }
 
@@ -41,6 +43,8 @@ object EncounterEngine {
     fun resolve(stage: Stage, members: List<MemberInput>, seed: Long = System.nanoTime()): EncounterResult {
         val rng = Random(seed)
         val physMit = stage.physMitPct / 100f
+        // Draught is party-wide (docs/combat-model.md: "one draught choice per encounter, applied to all party members").
+        // All members receive the same value from BandRepository.memberInputsForBand — reading first() is safe.
         val draughtPotency = members.firstOrNull()?.draughtPotency ?: 0f
         val effArmor = physMit * (1f - min(1f, draughtPotency / PEN_SCALE))
 
@@ -111,6 +115,7 @@ object EncounterEngine {
             for (m in standing()) {
                 applyDamage(m, drainPerMember)
             }
+            // TODO(v2): shadow drain tick — apply SHADOW_RATE drain to Will/Fate toward SHADOW_FLOOR per stage.shadow severity
 
             // ── Spike ─────────────────────────────────────────────────────────
             if (t >= nextSpike) {

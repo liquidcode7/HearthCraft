@@ -488,7 +488,7 @@ for feel; validate per-band encounters before V2 combat ships.
 | Band | Rung 0a (swarm/drain — Neekerbreekers slot) | Rung 0b (spike-heavy — Wolves slot) |
 |---|---|---|
 | **Greycloaks** | Neekerbreekers at the Marsh's Edge *(validated)* | Wolves in the Chetwood *(validated)* |
-| **Mithlost** | Young spiders at the forest margin (Ered Luin woodland edge) | Wargs on the mountain slopes above Celondim |
+| **Mithlost** | Midges at the forest margin (Celondim woodland edge, Ered Luin) — `mithlost_midges` | Wargs on the mountain slopes above Celondim — `mithlost_wargs` |
 | **Undermarch** | Cave bats in the lower halls (Blue Mountain tunnels — swarming, claustrophobic, deep-dark) | Mountain wolves on the outer passes above Thorin's Halls |
 | **Kingswake** | TBD — home region not yet locked | TBD |
 

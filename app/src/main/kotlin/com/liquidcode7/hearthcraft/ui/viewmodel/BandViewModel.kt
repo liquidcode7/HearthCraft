@@ -144,6 +144,14 @@ class BandViewModel @Inject constructor(
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val activeEncounterSession: StateFlow<com.liquidcode7.hearthcraft.data.db.EncounterSession?> = activeBandId
+        .flatMapLatest { bandId ->
+            if (bandId == null) flowOf(null)
+            else sessions.observeEncounter(bandId)
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
+
     val hasAliveMembers: StateFlow<Boolean> = members
         .map { list -> list.isEmpty() || list.any { it.isAlive } }
         .distinctUntilChanged()
@@ -175,6 +183,7 @@ class BandViewModel @Inject constructor(
         val food      = _selectedFood.value ?: return
         val encounter = _selectedEncounter.value ?: return
         val bandId    = activeBandId.value ?: return
+        // safe on UI thread: EncounterRepository.get() is a pure in-memory list lookup (not a DB call)
         val enc       = encounterRepo.get(encounter.encounterId) ?: return
         viewModelScope.launch {
             if (sessions.activeEncounter(bandId) != null) return@launch
