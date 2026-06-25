@@ -215,17 +215,13 @@ private fun WelcomePage(
 }
 
 private fun welcomeFor(bandId: String): Pair<String, String> = when (bandId) {
-    "druid_circle" -> Pair(
+    "mithlost" -> Pair(
         "We have kept our own counsel for a long time. That you are here suggests something has shifted. We will see what you are made of before we say more.",
         "Aelindra"
     )
-    "dwarven_company" -> Pair(
+    "undermarch" -> Pair(
         "You cook. We fight. Keep the food coming and we'll have nothing to argue about.",
         "Borin Ironmantle"
-    )
-    "corsair_fleet" -> Pair(
-        "Our ancestors were given dominion over the sea and the wisdom to hold it. The sea took most of that back. What remains is long memory and a certain standard. Set our table to that standard and you will find no more steadfast company in the West.",
-        "Reva Tidecaller"
     )
     "greycloaks" -> Pair(
         "The borderlands do not forgive the unprepared. Keep us fed. We'll do the rest.",
