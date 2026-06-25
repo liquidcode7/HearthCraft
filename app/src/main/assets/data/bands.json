@@ -14,13 +14,6 @@
     "flavorNote": "They call you the Provender. Among dwarves, that is high praise."
   },
   {
-    "id": "corsair_fleet",
-    "name": "The Kingswake",
-    "region": "Sea",
-    "description": "Their bloodlines trace to Númenór — mariners who carried the old knowledge of sail and star long after the island sank beneath the waves. They answer to no current king because they remember kings who have been dust for three thousand years. Proud, long-memoried, and formal in ways that surprise newcomers. They have learned hard lessons about what endures and what does not.",
-    "flavorNote": "They call you the Galley Witch. Among those who remember old Númenór, that title carries more weight than it sounds."
-  },
-  {
     "id": "greycloaks",
     "name": "The Greycloaks",
     "region": "Eriador",
@@ -28,3 +21,4 @@
     "flavorNote": "They do not give you a title. What they give you is their trust — and among the Dúnedain, that is rarer and worth more."
   }
 ]
+

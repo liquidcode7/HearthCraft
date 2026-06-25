@@ -15,8 +15,7 @@ import com.liquidcode7.hearthcraft.MainActivity
 import com.liquidcode7.hearthcraft.data.model.HarvestItem
 import com.liquidcode7.hearthcraft.data.repository.GameDataRepository
 import com.liquidcode7.hearthcraft.data.repository.PlayerRepository
-import com.liquidcode7.hearthcraft.data.repository.SessionRepository
-import dagger.assisted.Assisted
+import com.liquidcode7.hearthcraft.data.repository.SessionRepositoryimport dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import androidx.hilt.work.HiltWorker
 import kotlinx.serialization.encodeToString
@@ -62,7 +61,7 @@ class GatheringWorker @AssistedInject constructor(
             }
         }
 
-        player.addGatheringXp(XP_GATHERING_FORAGE)
+        player.addGatheringXp(PlayerRepository.XP_GATHER_SESSION)
 
         val json = Json.encodeToString(harvestItems.toList())
         sessions.setPendingForageResult(json)
@@ -96,7 +95,6 @@ class GatheringWorker @AssistedInject constructor(
         const val MODE_FORAGE = "forage"
         const val MODE_FARM = "farm"
         const val NOTIFICATION_ID = 1
-        private const val XP_GATHERING_FORAGE = 50
         private const val SEED_DROP_CHANCE = 0.25f
 
         fun buildRequest(level: Int, durationMs: Long): OneTimeWorkRequest =

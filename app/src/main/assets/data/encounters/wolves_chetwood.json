@@ -28,5 +28,5 @@
       "stageFlavor": ""
     }
   ],
-  "designNote": "Onramp rung 2 (Design B, swarm). ~20-min grind through a wolf-pack. Asks TWO questions: sustain (drain) AND whether the Warden can hold the line so the Keeper survives the wolf-lunges (spikes). Validated at band Lv3 (unlock floor), 5000 runs: Lv3 food 6%, Lv4 81%, Lv5 93%, Lv6 97%, Lv7 99%, Lv8 ~100%. Completely unwinnable at Lv1/Lv2 food (0% at any band level). Needs max Hearthkeeper food (Lv4) for a real chance; first Initiate food (Lv5) is the comfort threshold. Band leveling helps meaningfully \u2014 Lv4 food improves from 80% at band Lv3 to 97% at band Lv8. physMit stays 0 \u2014 armor is a LATER rung's question."
+  "designNote": "Rung 2 encounter. Demands you push through the Initiate tier \u2014 Hearthkeeper food doesn't cut it. Validated post-tier-table-fix at band Lv3 (unlock floor), 1000 runs, role-matched food defaults: FL4(5.6 HP/s)=0%, FL5(6.0)=7%, FL6(6.8)=57%, FL7(7.5)=91%, FL8(8.3)=99%. FL5 is the entry gate; FL6 is the real threshold; FL7+ is comfortable. physMit stays 0 \u2014 armor is a Rung 3+ question. IP: 'Wolves' is generic \u2014 no review needed."
 }

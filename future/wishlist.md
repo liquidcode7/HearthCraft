@@ -7,6 +7,12 @@
 
 ## Gameplay Systems
 
+- **Achievements** — discrete milestone rewards (XP, resources, money) for meaningful first-time and
+  cumulative accomplishments. Examples: "First Pristine Harvest," "Fed the band three wins in a row,"
+  "Mastered your first recipe." Fits the design identity: reinforces the same spike XP moments the
+  pacing system already rewards. Build as a V1.5 layer once the core loop is tested — the XP and
+  resource reward infrastructure will already exist.
+
 - **Member inspection screen** — tap a member to open a full detail panel: large
   name and role header, personality blurb and flavor text, colored stat bars
   (green for Vitality, red for wounds, blue for Might, etc.) in a proper RPG
@@ -217,7 +223,139 @@ Each band's DPS member identity (melee vs. ranged) should be canonical in `docs/
 
 ---
 
-## Design Identity Constraints (Battlegrounds, V5+)
+---
+
+## Racial Affinities (design stalled — revisit before V2 campaign)
+
+**Status: unresolved. Multiple directions explored and rejected. Captured so we
+don't re-pitch them.**
+
+**Settled groundwork:**
+- Base stats are (tentatively) race-blind. Might is Might for a dwarf or an
+  elf. Leaning no to racial base-stat differences, consistent with "greatness
+  is made not born." Not finalized.
+- No XP bonuses — rejected: a progression multiplier is just delayed raw power
+  and punishes fielding the "slow" race.
+
+**Directions explored and REJECTED (do not re-pitch these):**
+- Situational affinities (regional sourcing grade, food affinity, hazard
+  resistance by race) — the whole affinity family. Didn't land.
+- The "unique verb" model (delve / commune / slip / treat-with) — race as a
+  content key. Rejected.
+- Emotional / aftermath traits (how a race handles loss, fear, scars). Rejected.
+- Rules-rewriting traits (alt resource loops, Stellaris-style).
+- Passive unique-output economies (a dwarf hold producing a good only they make).
+- Social/reaction systems (NPCs price or treat you differently by race).
+- Identity-by-restriction (what a race can't do).
+- World-state traits (night/season/stone-keyed bonuses).
+
+**Direction not yet written into the design doc — worth revisiting:**
+Express racial identity through existing systems:
+- *Regional sourcing affinity:* each race pulls better grade/character from
+  matching terrain (dwarves in the deep, elves in woodland/night-blooming,
+  wardens in trackless wild). Plugs into SWG-style quality; rewards using the
+  right band for the right region.
+- *Food affinity:* a band eats best from its own culinary tradition — makes
+  band-regional ingredient flavors mechanically matter.
+- *Hazard resistance as character:* dwarves shrug off dark/deep, elves resist
+  cold/dread, wardens endure the wild. "Who is the right band to send where."
+
+Guard: keep these as *affinities that suggest the right tool for a region*,
+not raw power that makes one band strictly better.
+
+**Open bonus questions:**
+- Bonuses on bands/fighters (combat-side) vs the Hearthwright (gathering-side)
+  vs both?
+- Fixed trait vs *growable* (a dwarf band that gets better in the deep the more
+  they fight there — fits "greatness is made not born" but more complex)?
+- The Hearthwright is a hobbit — hobbits have their own racial character too
+  (homely, lucky, hardy, unobtrusive). Relevant to gathering/burgling design.
+
+---
+
+## Burglar — Open Design Questions
+
+The settled mechanic is in `docs/design.md`. These are the unresolved threads:
+
+- **5th role or party-of-5?** Is the burglar a 5th role that sits in a fixed
+  party-of-5, or does party composition change (field-4-from-5 roster, meaning
+  you can send the burglar out without a standard role)? Combat model currently
+  assumes four fixed roles. Decide before building the burglar.
+- **Avoidance scaling:** flat, or does it scale with provisioning? (Keeps it
+  inside the "food is the source of power" spine if so.)
+- **Gleaning timing:** continuous through the fight (race to bank the haul
+  while the party is whole — more like actual burgling) vs end-of-fight payout
+  (late exposure threatens the whole haul — more brutal). Continuous is the
+  current lean.
+- **Courtship vs purchase:** making "permanent recruit" feel earned vs bought.
+  Stronger version — you recruit a burglar you've *already hired repeatedly*;
+  the specific hobbit who has ridden along on enough jobs and eaten enough of
+  your cooking decides to stay. Needs a small tracking system; real scope
+  question.
+- **Hireable master burglar:** originally raised as a possible named late-game
+  acquisition — a renowned burglar hobbit, a cut above the inn-door hires.
+  Partly absorbed into the hire→recruit arc but the "esteemed / master" variant
+  (distinct from repeated inn hiring) is still on the table. Decide inside the
+  full burglar design.
+
+---
+
+## Inspiration Stat-Scaling (optional knob — not decided)
+
+An optional variant for Black Arrow and Bullroarer's Five-Iron: let the resolve
+chunk scale modestly with the driving stat (higher Might → harder Bullroarer;
+higher Agility/Fate → deeper Black Arrow), capped so a maxed stat lands at
+~18–20%. Keeps the inspiration "earned through provisioning" rather than purely
+random. Decide when the Inspiration system is tuned in the sim.
+
+---
+
+## Encounter Ladder Placement vs. the Eastward Journey
+
+**Open thread raised by the three-era narrative structure.**
+
+The current V1/sim encounter placement is a placeholder. Goblin-town at recLevel
+5 puts armored goblins in era 1 (western Eriador), but Goblin-town is deep in
+the High Pass of the Misty Mountains — logically a post-Rivendell, post-hinge
+destination. Placing it at level 5 is almost certainly too early given the
+geography.
+
+Before the campaign encounter ladder is locked:
+- Map each encounter to its era (1 = Eriador pre-Rivendell, 2 = east of
+  mountains) and verify the placement is geographically defensible.
+- Goblin-town should sit in era 2 (post-hinge), probably recLevel 8–10 or later.
+- The era 1 armored-enemy rung (Rung 1, "pierce armor?") needs a different
+  teacher foe — likely mailed Men of Bree-land's fringe, hill-men, or the
+  wolves of the Chetwood being the natural Rung 0/1 bridge.
+- The three-era structure and the encounter ladder must be designed together,
+  not independently.
+
+---
+
+## Narrative Tone Fork (open — decide before content pass)
+
+Tolkien holds both registers:
+- **Cozy and humane** — warmth against a hard world; the hearth as answer to
+  the dark.
+- **Quietly tragic** — the Long Defeat; sustaining an effort that may not be
+  won; grief carried without complaint.
+
+Which is *dominant* changes how all narrative reads. Decide before the narrative
+content pass begins. See `docs/voice-tone.md` for more detail.
+
+---
+
+## Kingswake Home Region (placeholder)
+
+The Kingswake's starting region is not yet decided. Candidates discussed:
+- **Grey Havens** — the obvious Númenórean-descended maritime anchor in
+  western Eriador, though tonally complex (it is Círdan's haven, not a
+  Númenórean one).
+- **Lond Daer** — the old Númenórean anchorage south of the Greyflood; less
+  prominent in Tolkien canon but more historically plausible for the bloodline.
+
+Resolve when the three-era narrative frame is written in detail.
+
 
 These rules must be honored when the Battlegrounds endgame mode is eventually
 built. Captured here so they aren't forgotten during V2/V3 design decisions.

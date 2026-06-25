@@ -155,22 +155,22 @@ Within-tier HP/s uses a linear curve (power 1.0): each cooking level gives the s
 
 | Tier | Cooking level | HP/s range | Step per CL |
 |---|---|---|---|
-| Hearthkeeper | 1–4 | 5.0 – 5.6 | +0.20 |
-| Initiate | 5–9 | 11 – 18 | +1.75 |
-| Apprentice | 10–15 | 19 – 30 | +2.20 |
-| Journeyman | 16–22 | 31 – 44 | +2.17 |
-| Adept | 23–30 | 45 – 62 | +2.43 |
-| Master | 31–40 | 63 – 86 | +2.56 |
-| Grandmaster | 41–50 | 87 – 110 | +2.56 |
+| Hearthkeeper | 1–4  | 5.0 – 5.6   | +0.20 |
+| Initiate     | 5–9  | 6.0 – 9.0   | +0.75 |
+| Apprentice   | 10–15 | 10.0 – 17.0 | +1.40 |
+| Journeyman   | 16–22 | 18.0 – 30.0 | +2.00 |
+| Adept        | 23–30 | 31.0 – 46.0 | +2.14 |
+| Master       | 31–40 | 47.0 – 76.0 | +3.22 |
+| Grandmaster  | 41–50 | 77.0 – 120.0 | +4.78 |
 
 **Hearthkeeper CL→HP/s:**
 
 | CL | HP/s | Notes |
 |---|---|---|
-| 1 | 5.0 | Neekerbreekers T1 (~24% win at drain=16) |
-| 2 | 5.2 | Neekerbreekers T2 (~48%) |
-| 3 | 5.4 | Neekerbreekers T3 (~70%) |
-| 4 | 5.6 | Neekerbreekers T4 (~86%) |
+| 1 | 5.0 | Neekerbreekers FL1 (~29% win at drain=16) |
+| 2 | 5.2 | Neekerbreekers FL2 (~55%) |
+| 3 | 5.4 | Neekerbreekers FL3 (~80%) |
+| 4 | 5.6 | Neekerbreekers FL4 (~91%) |
 
 ```
 frac   = (cookLevel − tier.lo) / (tier.hi − tier.lo)

@@ -44,7 +44,7 @@ class FarmWorker @AssistedInject constructor(
         val items = listOf(HarvestItem(ingredientId, ingredient.name, qty, ingredient.rarity))
         val json = Json.encodeToString(items)
 
-        player.addGatheringXp(XP_FARM)
+        player.addGatheringXp(PlayerRepository.XP_GATHER_SESSION)
         growing.setPendingResult(slotId, json)
 
         val notifId = NOTIFICATION_ID_BASE + slotId.last().digitToInt()
@@ -78,7 +78,6 @@ class FarmWorker @AssistedInject constructor(
         const val KEY_LEVEL = "level"
         const val NOTIFICATION_ID_BASE = 10
         private const val BASE_YIELD = 6
-        private const val XP_FARM = 40
 
         fun buildRequest(slotId: String, ingredientId: String, level: Int, durationMs: Long): OneTimeWorkRequest =
             OneTimeWorkRequestBuilder<FarmWorker>()

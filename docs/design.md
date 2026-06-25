@@ -178,6 +178,9 @@ within. All bands are equivalent in power.
 ### The Four Starting Bands
 
 #### The Mithlost — Forest / Elves
+**Home region: Celondim / Duillond, western Ered Luin** — the elf-havens at the
+coast; the last of the Eldar lingering in the West.
+
 Ancient, grey, lingering. The ones who stayed to fight a long defeat when others
 sailed West. Sorrowful, faithful, deadlier than their gentleness suggests.
 Missions feel like stewardship and a rearguard action against encroaching shadow.
@@ -196,6 +199,10 @@ grow in old-growth forests.
   alone. Speaks in single words. Food: hearty. Quirk: dense, plain, eaten standing.
 
 #### The Undermarch — Mountain / Dwarves
+**Home region: Thorin's Halls, southern Ered Luin (Blue Mountains)** — the
+established Third-Age dwarf-hold; deep halls, exiles working their craft far
+from lost Erebor.
+
 Grim, loyal, stone-deep. Words mostly unnecessary. They will not complain about a
 hard march, but they notice — and remember — who kept them fed. Missions feel like
 deep delves and the defense of ancient holds. Ingredients lean toward cave fungi,
@@ -210,6 +217,10 @@ deep minerals, things that grow without sunlight.
   learned to hide. Food: spicy. Quirk: bold flavors for a bold dwarf.
 
 #### The Kingswake — Sea / Corsairs
+**Home region: [PLACEHOLDER — not yet decided. Candidate: Grey Havens / Lond Daer
+(the old Númenórean anchorage south of the Greyflood). To be locked when the
+narrative frame is written.)]**
+
 Númenórean-descended mariners — ancient bloodlines, formal bearing, kings three
 thousand years in the dust. The sea took most of that back. What remains is a
 fleet that answers to no crown, because their crown drowned with Númenor; that
@@ -231,6 +242,9 @@ lean toward sea herbs, salt-cured finds, preserved stores from long voyages.
   Food: hearty. Quirk: plenty of it.
 
 #### The Greycloaks — Eriador / Dúnedain of the North
+**Home region: Bree-land** — crossroads of the world, ranging country, the
+wardens' natural beat.
+
 The remnant of the line of Isildur — heirs to a kingdom that fell and was never
 rebuilt. They walk the wild lands of Eriador not as wanderers but as guardians
 bound by an oath older than the Shire. They have no home because their home is
@@ -314,6 +328,76 @@ Full analysis in `docs/combat-curve-problem.md`.
 
 ---
 
+### The Burglar
+
+A fifth band member archetype — not a fifth combat role, but a *specialist*
+slotted into the party alongside the four fixed roles. The Hearthwright is
+**not** the burglar; burgling lives inside the band as a member archetype.
+
+**Combat identity:**
+- Near-zero DPS (rare procs only).
+- Very high dodge / avoidance — high-but-not-guaranteed. Certainty would
+  flatten tension; variance is a curve-smoothing source, not a bug.
+- Gleans extra loot from fights.
+- **Exposure scales with party cohesion (the key mechanic).** While the party
+  is whole, the burglar barely draws aggro and mostly takes no damage — enemy
+  attention is distributed across the band. As bandmates fall, the burglar
+  becomes increasingly exposed: attention that was spread across the band finds
+  the one squishy target left. A burglar in a healthy party is untouchable; the
+  last-one-standing burglar is the most exposed they've ever been, with no
+  staying power to fall back on.
+
+This reuses the combat cascade (already built) expressed through one member's
+vulnerability — economical design. It also self-corrects a potential exploit:
+a high-avoid unit would otherwise be the best candidate to cheese unwinnable
+survival/escape fights, but this makes them weakest exactly when you'd try to
+abuse that. The in-fiction read is obvious: the burglar thrives behind a strong
+party and flounders alone.
+
+**Indirection worth keeping:** you protect the burglar by provisioning the
+*rest* of the party well. Their survival is the burglar's armor. The burglar
+ties back into whole-party care without adding a new provisioning slot.
+
+**Loot rule:** you gain the burgled loot only if you **win** the fight. Fielding
+a burglar is a wager, not a free bonus.
+
+**The hire → recruit arc:**
+- *Early:* no burglar. Learn combat and cooking first; the burglar's arrival
+  later feels like an earned upgrade.
+- *Mid:* **hire** a burglar per job, paid in coin. Transactional, temporary, no
+  loyalty. Combined with win-or-nothing loot, hiring is a real money-sink wager.
+- *Late:* **recruit** one permanently. Always-available gleaning, no per-job fee,
+  loot curve steps up. The emotional payoff — the hired stranger becomes family —
+  fits the Hearthwright-as-soul identity.
+
+Produces the desired rising loot curve: flat → bursty/conditional → high/steady.
+
+**The running gag — "it's always a hobbit" (deadpan):**
+You hire a **burglar** from the nearest inn. The hire option stays deadpan
+forever — "Hire a burglar," never "hire a hobbit." The UI plays it completely
+straight and never acknowledges the pattern. Without fail, every hired burglar
+is a hobbit. The comedy lives in the band members' reactions, which escalate
+over many hires: early — mild, almost unremarked; middle — noticing out loud;
+later — full affectionate resignation, bets among the band on whether the next
+one breaks the trend (they never do). The gag tells a truth about Middle-earth
+(burgling *is* a hobbit profession), and by the time you permanently recruit
+one, the bit has built genuine fondness. The band protecting the little one
+without quite saying so is the tone to hit.
+
+All band member lines about the burglar must follow the voice and tone guide —
+no modern idiom. See `docs/voice-tone.md`.
+
+**Open questions** (to resolve when the burglar is designed in full — see
+`future/wishlist.md`):**
+- Is the burglar a 5th role or does party composition change (field-4-from-5
+  roster approach)?
+- Does avoidance scale with food/provisioning?
+- Does gleaning happen continuously through the fight or as an end-of-fight
+  payout?
+- Recruitment: is "permanent" earned by repeated hiring, or bought outright?
+
+---
+
 ## Progression Axes
 
 Three independent axes that reinforce each other:
@@ -363,6 +447,72 @@ The provisioning loop is the core of a two-half game. These layers exist in
 `future/` and must NOT be built until promoted to `docs/`. They are noted here
 so architectural decisions in V1 don't accidentally foreclose them. Full
 structure is in `docs/redefinition.md`.
+
+### Narrative Frame — Adjacent to the Fellowship
+
+The game runs *parallel* to the canonical War of the Ring, brushing against
+famous events constantly but never sharing the frame with named heroes. The
+player's bands fight their own desperate battles — a held pass the same night
+as Helm's Deep, a valley over; history records neither. This is the unsung
+logistics of the war made literal: the Fellowship gets the songs, your bands
+are the supply lines and side-skirmishes the chronicle forgot. The Hearthwright
+is the heart of that forgotten network — invisible to history, indispensable to
+everyone they feed.
+
+The canonical timeline gives the eastward journey a free spine: the War of the
+Ring already has a route and a rising clock (Eriador → Rivendell → mountains →
+Rohan/Gondor), so the canonical escalation *is* the progression structure.
+
+**IP approach:** IP is not a constraint here. Named heroes, their dialogue,
+the Fellowship on screen — all are on the table. The creative *lean* worth
+weighing: great events felt as distant weather, plus rare well-placed cameos,
+often hit harder than a constant parade, and keep your own bands the
+protagonists rather than small figures beside giants. Glimpses (riders that
+might be the Three Hunters, a recently-left campsite, news of a grey wizard)
+are cheap and evocative. Spend cameos where they land.
+
+**Northern/eastern fronts** are an underused opportunity: Dale, Erebor,
+Mirkwood, the Lonely Mountain let the dwarves and woodland-elves shine on
+*their* home ground.
+
+### Three-Era Structure
+
+**Era 1 — Free era (Eriador, Fellowship-independent).** Three bands with
+separate home bubbles (Celondim for elves; Thorin's Halls for dwarves;
+Bree-land for Dúnedain) converge in the Lone-Lands (mechanical
+palette-merge) and expand outward through the arms of western Eriador.
+Pre-war country — mostly yours to develop:
+- **Eregion / Enedwaith / Dunland** — the seeding of Saruman's betrayal,
+  before it breaks.
+- **Fornost & Carn Dûm / Angmar** — present-day ruins, haunted, questions
+  unanswered. No "Angmar is still active" timeline problem; they are simply
+  places that fell, seeds for later visions.
+
+**Transition A — the Rivendell hinge: Elrond's charge.** Geographic
+chokepoint and narrative gate in the same place. Elrond is on screen — named,
+written, given weight. His house launched the quest; he is the right figure
+to turn the unified operation eastward into the Fellowship's footsteps. The
+bands become one operation *before* being pointed east — a fellowship of their
+own, then sent after the real one.
+
+**Era 2 — Hounding era (east of the mountains, war's wake).** Cross Moria
+post-Fellowship (deep dark in their wake, present danger you survive), then
+Lothlórien, the Anduin, the open Rohan/Gondor war. Fellowship-adjacency
+becomes the organizing flavor; the "unsung logistics of the war" theme finally
+has an open war to pay off behind.
+
+**Palette merge (bands converging) is early, Lone-Lands. Era hinge is later,
+Rivendell.** These are two separate transitions, not one.
+
+### Encounter Placement and the Eastward Journey
+
+**Open thread — see `future/wishlist.md` for the full encounter ladder
+placement question.** The narrative frame makes some V1 encounter placeholders
+obviously wrong: Goblin-town at recLevel 5 places armored goblins *before* the
+Rivendell hinge (era 1), which conflicts with the eastward journey logic —
+Goblin-town is deep in the Misty Mountains, a post-hinge destination. Encounter
+placement must be reconciled with the three-era geography before the encounter
+roster is locked for the campaign layer.
 
 **The Campaign (the core game).** Cooking, provisioning, gathering, recipe
 discovery, band members (meet them, feed them, bond, grow them), and battlegrounds

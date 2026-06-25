@@ -107,7 +107,7 @@ private fun OpeningPage(onContinue: () -> Unit) {
         )
         Spacer(modifier = Modifier.height(16.dp))
         Text(
-            "Four companies keep their own counsel in these days. Each holds a different corner " +
+            "Three companies keep their own counsel in these days. Each holds a different corner " +
             "of the free world. Each has its reasons for staying.",
             style = MaterialTheme.typography.bodyMedium
         )

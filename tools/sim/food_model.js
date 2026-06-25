@@ -7,15 +7,17 @@ const FOOD_MODEL = (function () {
 
   // ── HP/s tier table ─────────────────────────────────────────────────────────
   const TIER_TABLE = [
-    { tier:1, title:"Hearthkeeper", lo:1,  hi:4,  hpsLo:5.0, hpsHi:5.6 },
-    { tier:2, title:"Initiate",     lo:5,  hi:9,  hpsLo:11,  hpsHi:18  },
-    { tier:3, title:"Apprentice",   lo:10, hi:15, hpsLo:19,  hpsHi:30  },
-    { tier:4, title:"Journeyman",   lo:16, hi:22, hpsLo:31,  hpsHi:44  },
-    { tier:5, title:"Adept",        lo:23, hi:30, hpsLo:45,  hpsHi:62  },
-    { tier:6, title:"Master",       lo:31, hi:40, hpsLo:63,  hpsHi:86  },
-    { tier:7, title:"Grandmaster",  lo:41, hi:50, hpsLo:87,  hpsHi:110 },
+    { tier:1, title:"Hearthkeeper", lo:1,  hi:4,  hpsLo:5.0, hpsHi:5.6  },
+    { tier:2, title:"Initiate",     lo:5,  hi:9,  hpsLo:6.0, hpsHi:9.0  },
+    { tier:3, title:"Apprentice",   lo:10, hi:15, hpsLo:10.0, hpsHi:17.0 },
+    { tier:4, title:"Journeyman",   lo:16, hi:22, hpsLo:18.0, hpsHi:30.0 },
+    { tier:5, title:"Adept",        lo:23, hi:30, hpsLo:31.0, hpsHi:46.0 },
+    { tier:6, title:"Master",       lo:31, hi:40, hpsLo:47.0, hpsHi:76.0 },
+    { tier:7, title:"Grandmaster",  lo:41, hi:50, hpsLo:77.0, hpsHi:120.0},
   ];
-  // Linear (1.0) gives evenly-spaced HP/s steps within each tier. Hearthkeeper CL1-4 = 5.0/5.2/5.4/5.6 HP/s.
+  // Linear (1.0) gives evenly-spaced HP/s steps within each tier.
+  // T1 (Hearthkeeper) CL1-4 = 5.0/5.2/5.4/5.6 HP/s. Each tier boundary is +1 HP/s above
+  // the previous tier's ceiling (T1→T2 is +0.4, intentionally tight — T1 was compressed by design).
   const SCURVE_P = 1.0;
 
   function recipeLevelToHps(rl) {

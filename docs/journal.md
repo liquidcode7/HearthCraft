@@ -5,14 +5,14 @@
 
 ---
 
-## Current Status — June 23, 2026
+## Current Status — June 25, 2026
 
-**Phase:** V1 core loop complete. All docs and sims fully reflect the independent member model and new food tier design.
-**V1 progress:** Full food model, headless sim, and browser sim consistent. Four food tiers per encounter locked. All design docs updated. Browser sim has built-in encounter presets.
-**What's working:** Browser sim uses independent drain (drain/4), per-member independent spikes, and sink/reserve healing. Encounter dropdown preloaded with Neekerbreekers/Wolves/Goblin-town Gate. Food model gives 5.0/5.2/5.4/5.6 HP/s for CL1–4.
-**What's not wired yet:** Full combat system (V2+). Wolves in the Chetwood not re-validated post food tier redesign. Initiate+ tier HP/s steps too wide for the transition band (needs tuning when higher encounters are designed).
-**Next session:** Validate Wolves in the Chetwood with new HP/s values. Re-run Goblin-town Gate. Design encounter 3 and tune its four tiers.
-**Open questions:** Initiate+ tier recalibration. 5th role design. Ingredient scarcity model.
+**Phase:** V1 core loop complete. XP & leveling simulator built. Placeholder constants intentionally rough — tuning work starts next.
+**V1 progress:** Full food model, headless sim, browser sim, and now XP lab all consistent. Encounter presets locked. Food model gives 5.0/5.2/5.4/5.6 HP/s for CL1–4.
+**What's working:** Design docs updated with parked-topic material: band starting regions, three-era narrative frame, Burglar archetype, Inspirations (Black Arrow chunk 35%→18%, Bullroarer's Five-Iron added), voice & tone guide created, Galadriel's Mirrors filed to future/design/.
+**What's not wired yet:** XP constants are untuned placeholders. WIN_XP dominates Explorer cooking XP (~72%). Level curve too steep: Cook Tier 4+ unreachable in 200 days. Goblin-town placement is geographically wrong (era 1 placeholder — needs era 2 relocation).
+**Next session:** Tune xp_lab CONFIG to hit the grind-ratio target (steady ≈ 55–70%, spikes ≈ 30–45%). Fix curve steepness. Confirm Explorer leads Grinder to Tier 5.
+**Open questions:** XP constant calibration (REPEAT_XP, WIN_XP, curveA/P). Initiate+ tier HP/s recalibration. Encounter ladder placement vs. three-era geography (Goblin-town at Lv5 is too early). 5th role design. Ingredient scarcity model. Kingswake home region.
 
 ---
 
@@ -1212,3 +1212,101 @@ FL1/FL2 food = wipe at every band level. FL4 is the real entry point (80% at ban
 - Next session: Design encounter 3 (first real difficulty ramp). Validate Wolves in the Chetwood post-stat-bonuses. Ingredient scarcity model.
 - Near term: 5th role design. Encounter 3 unlock mechanic.
 - Future ideas logged: Ingredient scarcity tiers (common/uncommon/rare) as the primary gate against food optimization abuse — noted in session, not yet logged to wishlist.
+
+---
+
+## Session 22 — June 25, 2026
+**XP & Leveling Simulator — xp_lab.js**
+
+**What was built:**
+- `tools/sim/xp_lab.js`: Node simulator answering pacing, grind-ratio, and curve-shape questions for both the Cooking and Gathering level tracks (1–50). Single-file, all weights in one CONFIG block at the top, mirrors curve_lab.js style. `require('./food_model')` for TIER_TABLE — no duplication.
+- Supports four level-curve shapes: `linear`, `power`, `exponential`, `tierWall` (power + multiplier at tier-boundary levels). Gathering uses its own constants but same machinery.
+- Soft diminishing returns (`softDR`) flattens to a floor rather than zeroing — grind stays rewarding.
+- Grade sampler: gathering level raises mean quality floor; region ceiling (world-stage gated) hard-caps the top.
+- Four player profiles: Explorer (intended play), Grinder, Completionist, Idle-only.
+- Idle/active asymmetry modeled: gathering XP from 48 background forage cycles/day (wall-clock); cooking XP gated by active engagement.
+- Five output sections: milestone table, XP source breakdown (grind-ratio readout), ASCII level-over-days bar chart, Explorer-vs-Grinder comparison, sensitivity sweeps (DISC_XP, curve exponent P, curve shape).
+
+**Decisions made:**
+- `require('./food_model')` used for TIER_TABLE and tier mapping — single source of truth, as specified.
+- Seeded PRNG (mulberry32) used so results are reproducible and sweeps are comparable.
+- All CONFIG constants commented as PLACEHOLDERS. The sim's job is to find good values, not assume them.
+- Grade distribution: sampled by soft weighting around a mean that rises with gathering level, hard-capped by region ceiling. This respects the structural rule: level = floor/consistency, region = ceiling.
+- World-stage gating models cook-level thresholds for region access, capping available recipes, ingredients, and grade ceiling. Keeps XP from scaling unboundedly before the world opens.
+
+**Baseline run findings (placeholders are broken in expected ways — that's the point):**
+- Level curve is too steep: Explorer reaches Cook Tier 3 at day 171, everything else `>200d`. curveA/P need reduction.
+- WIN_XP dominates Explorer cooking: 72% of total cook XP. Target is steady ≈ 55–70%. Cut WIN_XP or raise REPEAT_XP substantially.
+- Gathering outpaces cooking: Explorer Gather Lv25 vs Cook Lv10 at day 200 — asymmetry is working mechanically but ratio may be too extreme once cook XP is rebalanced.
+- Gathering grind ratio is too flat (94.5% steady): FIRSTSOURCE_XP barely registers because ingredient discovery rate is slow. Raise FIRSTSOURCE_XP or discovery probability.
+- Grinder vs Explorer comparison is degenerate (both stuck before Tier 5) until the curve is fixed.
+
+**Anything that diverged from docs/design.md:**
+- Nothing — sim is a tuning instrument, not a design decision.
+
+**Coming up:**
+- Next session: Tune xp_lab CONFIG — cut WIN_XP, raise REPEAT_XP, flatten the curve — until the grind-ratio target (steady 55–70%, spikes 30–45%) is hit and Explorer visibly leads Grinder to Tier 5.
+- Near term: Validate Wolves in the Chetwood. Design encounter 3.
+- Future ideas logged: None this session.
+
+---
+
+## Session 20 — June 25, 2026
+**Design filing: parked topics integrated into docs**
+
+No code written. Wes handed over a large block of parked design material. Settled
+design-ready content was integrated into the authoritative docs; unresolved topics
+were filed into `future/`.
+
+**What was built:**
+- `docs/design.md`: Band starting regions added to each band header (Mithlost →
+  Celondim/Duillond; Undermarch → Thorin's Halls; Greycloaks → Bree-land;
+  Kingswake → placeholder pending narrative frame). Three-era narrative structure
+  and the "adjacent to the Fellowship" frame added as a new subsection inside
+  "Shape of the Whole Game." Encounter placement open thread noted (Goblin-town
+  placement is era-geography wrong). Burglar archetype added as a full subsection
+  under The Band (cohesion-exposure mechanic, loot-on-win rule, hire→recruit arc,
+  the running hobbit gag, open questions listed).
+- `docs/combat-model.md`: Black Arrow resolve chunk corrected 35% → 18% with
+  rationale. Bullroarer's Five-Iron added as the Might-Hunter inspiration.
+  Inspiration flavor text subsection added with seed lines for all five
+  inspirations and the stat-agnostic vs. named-member open choice.
+- `docs/voice-tone.md` (new): full voice and tone guide. Core rule, rules of the
+  register, race/culture voice table, vocabulary discipline, burglar-gag worked
+  example, tone fork open question.
+- `future/design/galadriel-mirrors.md` (new): full design capture for the
+  Galadriel's Mirrors system — lore framing, outlast-fight mechanic, knowledge-
+  only rewards, post-Moria gating, return-loop, campaign-gated secrets.
+- `future/wishlist.md`: new sections appended — Racial Affinities (all explored/
+  rejected directions captured so they aren't re-pitched), Burglar open design
+  questions, Inspiration stat-scaling optional knob, Encounter Ladder Placement
+  vs. eastward journey geography, Narrative Tone Fork, Kingswake home region
+  placeholder.
+
+**Decisions made:**
+- Black Arrow chunk: 35% → 18%. 35% rescued badly-provisioned fights (outcome
+  randomness overriding preparation failure — design-philosophy violation). 18%
+  pulls a close loss back to winnable without rescuing a bad one.
+- Bullroarer's Five-Iron: locked as the Might-Hunter inspiration. Same mechanical
+  role as Black Arrow. Named for Bandobras Took knocking Golfimbul's head off —
+  lore-native deep-cut gag.
+- Three-era structure: Era 1 (Eriador, free), Rivendell hinge (Elrond's charge),
+  Era 2 (east of mountains, war's wake). Palette merge (bands converge) is early
+  at the Lone-Lands; era hinge is later at Rivendell. Two separate transitions.
+- Goblin-town at recLevel 5 is geographically wrong (era 1 placement, but
+  Goblin-town is post-hinge territory). Flagged as an open thread; encounter
+  ladder placement must be reconciled with three-era geography before campaign
+  layer is locked.
+- Voice & tone guide is now authoritative for all player-facing writing.
+
+**Anything that diverged from docs/design.md:**
+- Nothing diverged — this session only added material.
+
+**Coming up:**
+- Next session: Tune xp_lab CONFIG (the deferred XP-calibration task from last
+  session — this session was design filing only).
+- Near term: Reconcile encounter ladder placement with three-era geography.
+  Goblin-town needs to move; the Rung 1 armored-enemy teacher foe for era 1
+  needs a replacement.
+- Future ideas logged: Galadriel's Mirrors, racial affinities, burglar open
+  questions, Kingswake home region, encounter placement — all in future/.

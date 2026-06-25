@@ -61,6 +61,8 @@ class MissionWorker @AssistedInject constructor(
             mission.rewardTable.shuffled().take(rewardCount).forEach {
                 inventory.addIngredient(it, 1)
             }
+            player.addCookingXp(PlayerRepository.XP_COOK_WIN)
+            player.addGatheringXp(PlayerRepository.XP_GATHER_WIN)
             notify("Mission Complete", "${mission.name} — your band has returned.", NOTIFICATION_ID)
         } else {
             applyFailureConsequences(mission.difficulty, mission.bandId, strengthRatio)
