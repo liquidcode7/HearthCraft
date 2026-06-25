@@ -78,7 +78,7 @@ class EncounterWorker @AssistedInject constructor(
                 notify("No Result", "${encounter.name} — the band held but couldn't finish it.")
             }
             Outcome.DEFEAT -> {
-                applyWounds(result.woundsByMember, bandId)
+                applyWounds(result.woundsByMember)
                 band.grantMissionStats(bandId, succeeded = false)
                 notify("Mission Failed", "${encounter.name} — your band did not prevail.")
             }
@@ -88,7 +88,7 @@ class EncounterWorker @AssistedInject constructor(
         return Result.success()
     }
 
-    private suspend fun applyWounds(woundsByMember: Map<String, Int>, bandId: String) {
+    private suspend fun applyWounds(woundsByMember: Map<String, Int>) {
         woundsByMember.forEach { (memberId, wounds) ->
             when {
                 wounds >= 5 -> band.killMember(memberId)
