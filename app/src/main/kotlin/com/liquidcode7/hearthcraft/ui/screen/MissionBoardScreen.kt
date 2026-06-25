@@ -83,6 +83,7 @@ fun MissionBoardScreen(
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(
                     onClick = { bandViewModel.sendOnEncounter() },
+                    enabled = selectedEncounter?.isUnlocked == true,
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text("Send — ${selectedEncounter?.name}")
