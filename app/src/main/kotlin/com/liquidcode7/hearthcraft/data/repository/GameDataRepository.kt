@@ -5,7 +5,6 @@ import com.liquidcode7.hearthcraft.data.model.Band
 import com.liquidcode7.hearthcraft.data.model.BandMember
 import com.liquidcode7.hearthcraft.data.model.Encounter
 import com.liquidcode7.hearthcraft.data.model.Ingredient
-import com.liquidcode7.hearthcraft.data.model.Mission
 import com.liquidcode7.hearthcraft.data.model.Recipe
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.serialization.json.Json
@@ -23,10 +22,6 @@ class GameDataRepository @Inject constructor(
     val ingredients: List<Ingredient> by lazy { load("ingredients.json") }
     val recipes: List<Recipe> by lazy { load("recipes.json") }
     val encounters: List<Encounter> by lazy { load("encounters.json") }
-
-    // Keep missions as a shim until MissionWorker is updated in Task 9
-    @Deprecated("Use encounters instead")
-    val missions: List<Mission> by lazy { load("missions.json") }
 
     private inline fun <reified T> load(filename: String): List<T> =
         json.decodeFromString(context.assets.open("data/$filename").bufferedReader().readText())
