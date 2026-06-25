@@ -4,14 +4,15 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
+import com.liquidcode7.hearthcraft.data.db.EncounterSession
 import com.liquidcode7.hearthcraft.data.db.MissionSession
-import com.liquidcode7.hearthcraft.data.model.Mission
 import com.liquidcode7.hearthcraft.data.repository.BandRepository
+import com.liquidcode7.hearthcraft.data.repository.EncounterRepository
 import com.liquidcode7.hearthcraft.data.repository.GameDataRepository
 import com.liquidcode7.hearthcraft.data.repository.InventoryRepository
 import com.liquidcode7.hearthcraft.data.repository.PlayerRepository
 import com.liquidcode7.hearthcraft.data.repository.SessionRepository
-import com.liquidcode7.hearthcraft.worker.MissionWorker
+import com.liquidcode7.hearthcraft.worker.EncounterWorker
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -34,6 +35,7 @@ private const val SECOND_BAND_UNLOCK_COOKING_LEVEL = 6
 class BandViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val gameData: GameDataRepository,
+    private val encounterRepo: EncounterRepository,
     private val band: BandRepository,
     private val inventory: InventoryRepository,
     private val sessions: SessionRepository,
@@ -78,7 +80,7 @@ class BandViewModel @Inject constructor(
         if (!isSecondBandUnlocked.value) return
         _viewingSecond.value = !_viewingSecond.value
         _selectedFood.value = null
-        _selectedMission.value = null
+        _selectedEncounter.value = null
     }
 
     val members: StateFlow<List<BandMemberWithState>> = combine(
@@ -112,12 +114,27 @@ class BandViewModel @Inject constructor(
         .map { list -> list.filter { it.isAlive }.maxOfOrNull { it.vitality } ?: 0 }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
 
-    val missions: StateFlow<List<Mission>> = activeBandId
-        .map { bandId ->
-            if (bandId == null) emptyList()
-            else gameData.missions.filter { it.bandId == bandId }
+    val encounters: StateFlow<List<EncounterDetail>> = combine(
+        activeBandId, members, cookingLevel
+    ) { bandId, memberList, cookLvl ->
+        if (bandId == null) return@combine emptyList()
+        val maxVit = memberList.filter { it.isAlive }.maxOfOrNull { it.vitality } ?: 0
+        encounterRepo.forBand(bandId).map { enc ->
+            EncounterDetail(
+                encounterId          = enc.id,
+                name                 = enc.name,
+                difficulty           = enc.difficulty,
+                recLevel             = enc.recLevel,
+                requiredCookingLevel = enc.requiredCookingLevel,
+                flavorLine           = enc.flavorLine,
+                rewardMoneyMin       = enc.rewardMoneyMin,
+                rewardMoneyMax       = enc.rewardMoneyMax,
+                rewardMultiplier     = enc.rewardMultiplier,
+                physMitPct           = enc.stages.firstOrNull()?.physMitPct ?: 0f,
+                isUnlocked           = maxVit >= enc.recLevel && cookLvl >= enc.requiredCookingLevel
+            )
         }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val activeMission: StateFlow<MissionSession?> = activeBandId
@@ -135,11 +152,15 @@ class BandViewModel @Inject constructor(
     private val _selectedFood = MutableStateFlow<PreparedFoodDetail?>(null)
     val selectedFood: StateFlow<PreparedFoodDetail?> = _selectedFood.asStateFlow()
 
-    private val _selectedMission = MutableStateFlow<Mission?>(null)
-    val selectedMission: StateFlow<Mission?> = _selectedMission.asStateFlow()
+    private val _selectedEncounter = MutableStateFlow<EncounterDetail?>(null)
+    val selectedEncounter: StateFlow<EncounterDetail?> = _selectedEncounter.asStateFlow()
+
+    private val _draughtPotency = MutableStateFlow(0f)
+    val draughtPotency: StateFlow<Float> = _draughtPotency.asStateFlow()
 
     fun selectFood(detail: PreparedFoodDetail) { _selectedFood.value = detail }
-    fun selectMission(mission: Mission) { _selectedMission.value = mission }
+    fun selectEncounter(detail: EncounterDetail) { _selectedEncounter.value = detail }
+    fun setDraught(potency: Float) { _draughtPotency.value = potency }
 
     fun treatWound(memberId: String, food: PreparedFoodDetail) {
         viewModelScope.launch {
@@ -150,29 +171,38 @@ class BandViewModel @Inject constructor(
         }
     }
 
-    fun sendOnMission() {
-        val food = _selectedFood.value ?: return
-        val mission = _selectedMission.value ?: return
-        val bandId = activeBandId.value ?: return
+    fun sendOnEncounter() {
+        val food      = _selectedFood.value ?: return
+        val encounter = _selectedEncounter.value ?: return
+        val bandId    = activeBandId.value ?: return
+        val enc       = encounterRepo.get(encounter.encounterId) ?: return
         viewModelScope.launch {
-            if (sessions.activeMission(bandId) != null) return@launch
-            val request = MissionWorker.buildRequest(
-                missionId = mission.id,
-                buffStrength = food.buffStrength,
-                durationMs = mission.durationMs
+            if (sessions.activeEncounter(bandId) != null) return@launch
+            // V1: all members get same HP/s from the food's buffStrength.
+            // Full per-member provisioning is a V2 polish task.
+            val hps = food.buffStrength.toFloat() / 10f  // scale: buffStrength 50 → 5.0 HP/s
+            val hpsList = listOf(hps, hps, hps, hps)
+            val request = EncounterWorker.buildRequest(
+                encounterId    = encounter.encounterId,
+                bandId         = bandId,
+                draughtPotency = _draughtPotency.value,
+                hps            = hpsList,
+                durationMs     = enc.durationMs
             )
             WorkManager.getInstance(context).enqueue(request)
-            sessions.startMission(
-                MissionSession(
-                    bandId = bandId,
-                    missionId = mission.id,
-                    buffStrength = food.buffStrength,
-                    startedAtMs = System.currentTimeMillis(),
-                    durationMs = mission.durationMs,
-                    workRequestId = request.id.toString()
+            sessions.startEncounter(
+                EncounterSession(
+                    bandId         = bandId,
+                    encounterId    = encounter.encounterId,
+                    draughtPotency = _draughtPotency.value,
+                    startedAtMs    = System.currentTimeMillis(),
+                    durationMs     = enc.durationMs,
+                    workRequestId  = request.id.toString()
                 )
             )
             inventory.removePreparedFood(food.recipeId)
+            _selectedFood.value = null
+            _selectedEncounter.value = null
         }
     }
 }
