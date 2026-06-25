@@ -7,12 +7,12 @@
 
 ## Current Status — June 25, 2026
 
-**Phase:** V1 core loop complete. XP & leveling simulator built. Placeholder constants intentionally rough — tuning work starts next.
-**V1 progress:** Full food model, headless sim, browser sim, and now XP lab all consistent. Encounter presets locked. Food model gives 5.0/5.2/5.4/5.6 HP/s for CL1–4.
-**What's working:** Design docs updated with parked-topic material: band starting regions, three-era narrative frame, Burglar archetype, Inspirations (Black Arrow chunk 35%→18%, Bullroarer's Five-Iron added), voice & tone guide created, Galadriel's Mirrors filed to future/design/.
-**What's not wired yet:** XP constants are untuned placeholders. WIN_XP dominates Explorer cooking XP (~72%). Level curve too steep: Cook Tier 4+ unreachable in 200 days. Goblin-town placement is geographically wrong (era 1 placeholder — needs era 2 relocation).
-**Next session:** Tune xp_lab CONFIG to hit the grind-ratio target (steady ≈ 55–70%, spikes ≈ 30–45%). Fix curve steepness. Confirm Explorer leads Grinder to Tier 5.
-**Open questions:** XP constant calibration (REPEAT_XP, WIN_XP, curveA/P). Initiate+ tier HP/s recalibration. Encounter ladder placement vs. three-era geography (Goblin-town at Lv5 is too early). 5th role design. Ingredient scarcity model. Kingswake home region.
+**Phase:** V2 Encounter Engine complete. Real combat resolver wired into the Android app. The band selection screen now shows three canonical bands; the mission board runs actual EncounterEngine fights.
+**V1 progress:** All phases complete. Core loop fully wired with real combat math.
+**What's working:** EncounterEngine (headless combat resolver, direct port of run_sim.js). Nine encounters across three bands. DB migrated to v6 (EncounterSession entity). EncounterWorker resolves fights using actual drain/spike/armor/rescue math. MissionBoardScreen and BandScreen use encounter API. Kingswake gone. Band IDs canonical (mithlost/undermarch/greycloaks).
+**What's not wired yet:** Per-member food provisioning (all members get same HP/s — full "cook the right dish for the right member" puzzle is V2 polish). MissionWorker still exists for in-flight session backward compat. Room schema 6.json appears after first successful build (must be staged/committed then). Build not verified via Gradle (SSL cert issue in environment — verify in Android Studio).
+**Next session:** Build in Android Studio, install on device, play the loop. Tune XP constants (xp_lab deferred from last session). Fix Room schema 6.json after first build. After playing: assess what V2 polish is most needed.
+**Open questions:** XP constant calibration still deferred. Per-member food provisioning design. Draught item system (currently hardcoded potency values 0/45/65). 5th role design.
 
 ---
 
@@ -1310,3 +1310,78 @@ were filed into `future/`.
   needs a replacement.
 - Future ideas logged: Galadriel's Mirrors, racial affinities, burglar open
   questions, Kingswake home region, encounter placement — all in future/.
+
+---
+
+## Session 21 — June 25, 2026
+**V2 Encounter Engine: full combat resolver wired into Android**
+
+Replaced the placeholder buff-strength mission model with a real headless combat
+engine. Twelve tasks, three phases. Executed via subagent-driven development.
+
+**What was built:**
+
+Phase 1 — Data:
+- `app/src/main/assets/data/bands.json`: rewritten with canonical IDs
+  (mithlost/undermarch/greycloaks), canonical regions, Kingswake removed, deprecated player titles removed
+- `app/src/main/assets/data/band_members.json`: bandIds updated to match
+- `app/src/main/kotlin/.../ui/screen/BandSelectionScreen.kt`: corsair_fleet branch removed, IDs fixed
+- `app/src/main/assets/data/encounters.json` (new): nine encounters across three bands.
+  Easy (Rung 0a swarm), medium (Rung 0b spike-heavy), hard (Rung 1 armored goblin incursion).
+  All parameters match validated combat-model.md values.
+
+Phase 2 — Model/engine:
+- `data/model/Encounter.kt` (new): Encounter and Stage data classes, all fields
+  matching encounters.json schema
+- `engine/EncounterEngine.kt` (new): headless combat resolver, direct Kotlin port of
+  tools/sim/run_sim.js. Constants match exactly: PEN_SCALE=80, RESCUE_CAP=5,
+  WARD_CAP=3, GRIEVOUS=5, RMAX=50, JITTER=0.10. All DPS formulas match.
+- `engine/EncounterEngineTest.kt` (new): three probabilistic unit tests
+- `data/repository/EncounterRepository.kt` (new): forBand(), get()
+- `data/repository/GameDataRepository.kt`: added encounters lazy load
+- `data/db/EncounterSession.kt` (new): Room entity for active encounter sessions
+- `data/db/dao/EncounterSessionDao.kt` (new): upsert, observe, get, clear
+- `data/db/HearthCraftDatabase.kt`: version bumped 5→6, AutoMigration, EncounterSession added
+- `di/DatabaseModule.kt`: provideEncounterSessionDao added
+- `data/repository/SessionRepository.kt`: observeEncounter, activeEncounter, startEncounter, clearEncounter added
+
+Phase 3 — Wiring:
+- `worker/EncounterWorker.kt` (new): WorkManager worker, loads encounter, builds
+  MemberInput from live stats, calls EncounterEngine.resolve(), applies wounds/rewards
+- `data/repository/BandRepository.kt`: memberInputsForBand() (suspend) added
+- `ui/viewmodel/UiModels.kt`: EncounterDetail data class added
+- `ui/viewmodel/BandViewModel.kt`: missions replaced by encounters StateFlow,
+  sendOnMission replaced by sendOnEncounter, draughtPotency + draught selector added,
+  activeEncounterSession StateFlow added
+- `ui/screen/MissionBoardScreen.kt`: rewritten to encounter API, draught selector,
+  locked/unlocked state display
+- `ui/screen/BandScreen.kt`: migrated to encounter API, active session display fixed
+- `app/src/main/assets/data/missions.json`: deleted
+- `app/src/main/assets/data/encounters/` subfolder: all old per-band sim stubs deleted
+
+**Decisions made:**
+- Kingswake / corsair_fleet: removed entirely. Three bands only.
+- Per-member food provisioning: deferred. All members currently receive the same
+  HP/s from the selected food item. Full "cook the right dish for the right member"
+  puzzle is V2 polish.
+- MissionWorker kept: active MissionSessions from pre-upgrade must complete cleanly.
+- Tick order: EncounterEngine runs food→DPS→drain→spike (slight 1-tick difference
+  from JS sim which runs drain→spike→food). Party is ~1 tick more favorable.
+  Documented; acceptable for V1.
+- draughtPotency: party-wide, read from members.first(). All members receive same
+  value from memberInputsForBand() — this is correct per design ("one draught choice
+  per encounter, applied to all party members").
+- SHADOW_FLOOR/SHADOW_RATE: constants declared in engine but shadow drain tick not
+  implemented. Shadow encounters don't exist in V1 — deferred with TODO comment.
+
+**Anything that diverged from docs/design.md:**
+- Mithlost easy encounter is midges (not spiders as the earlier combat-model note
+  had stated). combat-model.md updated to reflect mithlost_midges / mithlost_wargs.
+
+**Coming up:**
+- Next session: Build in Android Studio, verify Room migration, play the loop on device.
+  Commit Room schema 6.json after first successful build.
+- Near term: Tune XP constants (xp_lab — still deferred). Per-member food provisioning.
+  Draught item system.
+- Future ideas logged: draught item system, per-member provisioning, MissionWorker
+  cleanup (once all V1 sessions have expired).
