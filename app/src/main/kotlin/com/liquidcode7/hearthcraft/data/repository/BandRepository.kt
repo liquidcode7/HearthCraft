@@ -2,6 +2,7 @@ package com.liquidcode7.hearthcraft.data.repository
 
 import com.liquidcode7.hearthcraft.data.db.BandMemberState
 import com.liquidcode7.hearthcraft.data.db.dao.BandMemberStateDao
+import com.liquidcode7.hearthcraft.engine.MemberInput
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -72,4 +73,29 @@ class BandRepository @Inject constructor(
             .mapNotNull { dao.get(it.id) }
             .filter { it.isAlive }
             .maxOfOrNull { it.vitality } ?: 0
+
+    suspend fun memberInputsForBand(
+        bandId: String,
+        draughtPotency: Float,
+        hpsList: List<Float>  // ordered: warden, hunter, keeper, captain
+    ): List<MemberInput> {
+        val roleOrder = listOf("warden", "hunter", "keeper", "captain")
+        return gameData.bandMembers
+            .filter { it.bandId == bandId }
+            .sortedBy { roleOrder.indexOf(it.role.lowercase()) }
+            .mapIndexed { i, member ->
+                val state = dao.get(member.id)
+                MemberInput(
+                    id             = member.id,
+                    role           = member.role.lowercase(),
+                    might          = (state?.might    ?: member.startingMight).toFloat(),
+                    agility        = (state?.agility  ?: member.startingAgility).toFloat(),
+                    vitality       = (state?.vitality ?: member.startingVitality).toFloat(),
+                    will           = (state?.will     ?: member.startingWill).toFloat(),
+                    fate           = (state?.fate     ?: member.startingFate).toFloat(),
+                    hps            = hpsList.getOrElse(i) { 5f },
+                    draughtPotency = draughtPotency
+                )
+            }
+    }
 }
