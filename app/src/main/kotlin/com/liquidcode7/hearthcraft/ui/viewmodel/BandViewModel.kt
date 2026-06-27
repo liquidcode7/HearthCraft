@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
 import com.liquidcode7.hearthcraft.data.db.EncounterSession
 import com.liquidcode7.hearthcraft.data.db.MissionSession
+import com.liquidcode7.hearthcraft.data.model.Band
 import com.liquidcode7.hearthcraft.data.repository.BandRepository
 import com.liquidcode7.hearthcraft.data.repository.EncounterRepository
 import com.liquidcode7.hearthcraft.data.repository.GameDataRepository
@@ -29,7 +30,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-private const val SECOND_BAND_UNLOCK_COOKING_LEVEL = 6
+private const val SECOND_BAND_UNLOCK_COOKING_LEVEL = 10
 
 @HiltViewModel
 class BandViewModel @Inject constructor(
@@ -67,6 +68,19 @@ class BandViewModel @Inject constructor(
 
     fun firstBandName(): String = gameData.bands.find { it.id == firstBandId.value }?.name ?: ""
     fun secondBandName(): String = gameData.bands.find { it.id == secondBandId.value }?.name ?: ""
+
+    val availableBandsForUnlock: StateFlow<List<Band>> = playerState.map { state ->
+        val chosenId = state?.chosenBandId.orEmpty()
+        val secondId = state?.secondBandId.orEmpty()
+        gameData.bands.filter { it.id != chosenId && it.id != secondId }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    fun unlockSecondBand(bandId: String) {
+        viewModelScope.launch {
+            player.setSecondBand(bandId)
+            band.initMembers(bandId)
+        }
+    }
 
     // The band ID currently being displayed
     private val activeBandId: StateFlow<String?> = combine(
@@ -180,16 +194,15 @@ class BandViewModel @Inject constructor(
     }
 
     fun sendOnEncounter() {
-        val food      = _selectedFood.value ?: return
         val encounter = _selectedEncounter.value ?: return
         val bandId    = activeBandId.value ?: return
         // safe on UI thread: EncounterRepository.get() is a pure in-memory list lookup (not a DB call)
         val enc       = encounterRepo.get(encounter.encounterId) ?: return
+        val food      = _selectedFood.value
         viewModelScope.launch {
             if (sessions.activeEncounter(bandId) != null) return@launch
-            // V1: all members get same HP/s from the food's buffStrength.
-            // Full per-member provisioning is a V2 polish task.
-            val hps = food.buffStrength.toFloat() / 10f  // scale: buffStrength 50 → 5.0 HP/s
+            // V1: all members get same HP/s from the food's buffStrength (0 if no food packed).
+            val hps     = food?.buffStrength?.toFloat()?.div(10f) ?: 0f
             val hpsList = listOf(hps, hps, hps, hps)
             val request = EncounterWorker.buildRequest(
                 encounterId    = encounter.encounterId,
@@ -209,7 +222,7 @@ class BandViewModel @Inject constructor(
                     workRequestId  = request.id.toString()
                 )
             )
-            inventory.removePreparedFood(food.recipeId)
+            food?.let { inventory.removePreparedFood(it.recipeId) }
             _selectedFood.value = null
             _selectedEncounter.value = null
         }

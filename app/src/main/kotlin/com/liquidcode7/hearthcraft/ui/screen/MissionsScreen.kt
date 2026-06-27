@@ -138,11 +138,18 @@ fun MissionsScreen(
         }
 
         // ── Send button ────────────────────────────────────────────────────
-        if (selectedEncounter != null && selectedFood != null) {
+        if (selectedEncounter != null) {
             Spacer(modifier = Modifier.height(16.dp))
+            if (selectedFood == null) {
+                Text(
+                    "No provisions selected — the band goes hungry.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+            }
             Button(
                 onClick = { bandViewModel.sendOnEncounter() },
-                enabled = true,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Send — ${selectedEncounter!!.name}")
@@ -150,11 +157,7 @@ fun MissionsScreen(
         } else if (unlockedEncounters.isNotEmpty()) {
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                when {
-                    selectedFood == null && selectedEncounter == null -> "Select food and an encounter to send."
-                    selectedFood == null -> "Select food to bring."
-                    else -> "Select an encounter."
-                },
+                "Select an encounter above to send.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )

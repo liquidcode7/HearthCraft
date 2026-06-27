@@ -44,6 +44,7 @@ fun GatheringScreen(viewModel: GatheringViewModel = hiltViewModel()) {
     val forageSession by viewModel.forageSession.collectAsState()
     val seeds by viewModel.seeds.collectAsState()
     val lastHarvest by viewModel.lastHarvest.collectAsState()
+    val gatheringLevel by viewModel.gatheringLevel.collectAsState()
 
     var pickingSlot by remember { mutableStateOf<String?>(null) }
 
@@ -78,15 +79,30 @@ fun GatheringScreen(viewModel: GatheringViewModel = hiltViewModel()) {
         Spacer(modifier = Modifier.height(20.dp))
         SectionHeader("Farm Plot")
         Spacer(modifier = Modifier.height(8.dp))
-        GrowingSlotCard(
-            slot = farmPlot,
-            label = "Farm plot",
-            onPlant = { if (farmPlot?.pendingResultJson == null) pickingSlot = "farm_0" },
-            onCollect = { viewModel.collectGrowingSlot("farm_0") }
-        )
+        if (gatheringLevel < 5) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+            ) {
+                Column(modifier = Modifier.padding(12.dp)) {
+                    Text(
+                        "Locked — reach Gathering level 5",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        } else {
+            GrowingSlotCard(
+                slot = farmPlot,
+                label = "Farm plot",
+                onPlant = { if (farmPlot?.pendingResultJson == null) pickingSlot = "farm_0" },
+                onCollect = { viewModel.collectGrowingSlot("farm_0") }
+            )
+        }
 
         Spacer(modifier = Modifier.height(20.dp))
-        SectionHeader("Garden (${gardenSlots.count { it != null }}/4 growing)")
+        SectionHeader("Garden (${gardenSlots.count { it != null }}/2 growing)")
         Spacer(modifier = Modifier.height(8.dp))
         gardenSlots.forEachIndexed { index, slot ->
             GrowingSlotCard(

@@ -30,14 +30,13 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.liquidcode7.hearthcraft.data.model.Band
 import com.liquidcode7.hearthcraft.ui.viewmodel.BandSelectionViewModel
 
-// page 0 = opening lore, page 1 = first band, page 2 = second band, page 3 = welcome
+// page 0 = opening lore, page 1 = band selection, page 2 = welcome
 @Composable
 fun BandSelectionScreen(
     onBandSelected: () -> Unit,
     viewModel: BandSelectionViewModel = hiltViewModel()
 ) {
     val firstBandId by viewModel.firstBandId.collectAsState()
-    val secondBandId by viewModel.secondBandId.collectAsState()
     var page by remember { mutableIntStateOf(0) }
 
     LaunchedEffect(Unit) {
@@ -49,25 +48,14 @@ fun BandSelectionScreen(
         1 -> SelectionPage(
             bands = viewModel.bands,
             selectedBandId = firstBandId,
-            excludedBandId = null,
-            title = "Choose Your First Company",
-            subtitle = "You will work with two companies. Choose the first.",
+            title = "Choose Your Company",
+            subtitle = "One company rides with you from the start. Others may join when your craft is ready.",
             onSelect = { viewModel.selectFirst(it) },
             onConfirm = { page = 2 }
         )
-        2 -> SelectionPage(
-            bands = viewModel.bands,
-            selectedBandId = secondBandId,
-            excludedBandId = firstBandId,
-            title = "Choose Your Second Company",
-            subtitle = "They will join you later, when your craft is ready for them.",
-            onSelect = { viewModel.selectSecond(it) },
-            onConfirm = { page = 3 }
-        )
-        3 -> WelcomePage(
+        2 -> WelcomePage(
             firstBandId = firstBandId ?: "",
             firstName = viewModel.bands.find { it.id == firstBandId }?.name ?: "",
-            secondName = viewModel.bands.find { it.id == secondBandId }?.name ?: "",
             onEnter = { viewModel.confirmSelection() }
         )
     }
@@ -92,23 +80,28 @@ private fun OpeningPage(onContinue: () -> Unit) {
         )
         Spacer(modifier = Modifier.height(32.dp))
         Text(
-            "The age is turning. Roads that carried trade a generation ago have gone quiet. " +
-            "Settlements that once lit the horizon are dark. The free peoples still move — " +
-            "still fight, still hold what they can — but in smaller companies now, by less-traveled " +
-            "paths, with more care about what they carry and who they trust.",
+            "The Third Age is running thin. In Eriador — the Bree-land, the Weather Hills, " +
+            "the long roads between Rivendell and the Shire — small companies move where armies " +
+            "cannot. They carry what they find, fight what they must, and hold on.",
             style = MaterialTheme.typography.bodyMedium
         )
         Spacer(modifier = Modifier.height(16.dp))
         Text(
-            "Something stirs in the east. Nothing named yet. Nothing that has shown its face. " +
-            "But those who have lived long enough know the difference between ordinary silence " +
-            "and the kind that falls before a storm.",
+            "Something gathers in the east. Nothing has shown its face yet. But those who " +
+            "have lived long enough know the difference between ordinary quiet and the kind " +
+            "that settles before a storm.",
             style = MaterialTheme.typography.bodyMedium
         )
         Spacer(modifier = Modifier.height(16.dp))
         Text(
-            "Three companies keep their own counsel in these days. Each holds a different corner " +
-            "of the free world. Each has its reasons for staying.",
+            "Three companies work these lands. Each has its reasons for staying. Each has a " +
+            "cost to keep — in blades, in patience, in food.",
+            style = MaterialTheme.typography.bodyMedium
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            "That last part falls to you. Without your fire, these fighters are ordinary. " +
+            "With it, they are something the dark has learned to dread.",
             style = MaterialTheme.typography.bodyMedium
         )
         Spacer(modifier = Modifier.height(48.dp))
@@ -122,7 +115,6 @@ private fun OpeningPage(onContinue: () -> Unit) {
 private fun SelectionPage(
     bands: List<Band>,
     selectedBandId: String?,
-    excludedBandId: String?,
     title: String,
     subtitle: String,
     onSelect: (String) -> Unit,
@@ -146,14 +138,12 @@ private fun SelectionPage(
         Spacer(modifier = Modifier.height(16.dp))
 
         bands.forEach { band ->
-            if (band.id != excludedBandId) {
-                BandCard(
-                    band = band,
-                    isSelected = band.id == selectedBandId,
-                    onClick = { onSelect(band.id) }
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-            }
+            BandCard(
+                band = band,
+                isSelected = band.id == selectedBandId,
+                onClick = { onSelect(band.id) }
+            )
+            Spacer(modifier = Modifier.height(8.dp))
         }
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -171,7 +161,6 @@ private fun SelectionPage(
 private fun WelcomePage(
     firstBandId: String,
     firstName: String,
-    secondName: String,
     onEnter: () -> Unit
 ) {
     val (quote, speaker) = welcomeFor(firstBandId)
@@ -188,7 +177,7 @@ private fun WelcomePage(
         Text(firstName, style = MaterialTheme.typography.headlineMedium)
         Spacer(modifier = Modifier.height(4.dp))
         Text(
-            "$secondName await.",
+            "The first watch begins.",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )

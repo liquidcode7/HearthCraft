@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+
 import javax.inject.Inject
 
 @HiltViewModel
@@ -30,24 +31,16 @@ class BandSelectionViewModel @Inject constructor(
     private val _firstBandId = MutableStateFlow<String?>(null)
     val firstBandId: StateFlow<String?> = _firstBandId.asStateFlow()
 
-    private val _secondBandId = MutableStateFlow<String?>(null)
-    val secondBandId: StateFlow<String?> = _secondBandId.asStateFlow()
-
     private val _navigateToMain = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
     val navigateToMain: SharedFlow<Unit> = _navigateToMain.asSharedFlow()
 
     fun selectFirst(id: String) { _firstBandId.value = id }
 
-    fun selectSecond(id: String) { _secondBandId.value = id }
-
     fun confirmSelection() {
         val first = _firstBandId.value ?: return
-        val second = _secondBandId.value ?: return
         viewModelScope.launch {
             player.init(first)
-            player.setSecondBand(second)
             band.initMembers(first)
-            band.initMembers(second)
             giveStarterSeeds()
             _navigateToMain.emit(Unit)
         }

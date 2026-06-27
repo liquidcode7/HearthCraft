@@ -43,9 +43,13 @@ class GatheringViewModel @Inject constructor(
     val farmPlot: StateFlow<GrowingSlot?> = growing.observeFarmPlot()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
+    val gatheringLevel: StateFlow<Int> = player.observe()
+        .map { it?.gatheringLevel ?: 1 }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 1)
+
     val gardenSlots: StateFlow<List<GrowingSlot?>> = growing.observeGardenSlots()
-        .map { planted -> (0..3).map { i -> planted.find { it.id == "garden_$i" } } }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), List(4) { null })
+        .map { planted -> (0..1).map { i -> planted.find { it.id == "garden_$i" } } }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), List(2) { null })
 
     val seeds: StateFlow<List<SeedDetail>> = inventory.observeSeeds()
         .map { stocks ->

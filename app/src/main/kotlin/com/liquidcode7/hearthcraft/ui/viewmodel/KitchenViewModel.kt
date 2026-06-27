@@ -129,8 +129,16 @@ class KitchenViewModel @Inject constructor(
         viewModelScope.launch {
             val state = player.get() ?: return@launch
             if (state.discoveredRecipeIds.isBlank()) {
-                val starters = gameData.recipes.filter { it.cookLevel <= 1 }.map { it.id }
-                player.discoverRecipes(starters)
+                val universals = setOf("hearthbread", "wanderers_supper", "contemplative_tea")
+                val bandStarter = when (state.chosenBandId) {
+                    "greycloaks" -> "ember_porridge"
+                    "mithlost"   -> "springwater_broth"
+                    "undermarch" -> "delvers_hash"
+                    else -> null
+                }
+                val toDiscover = (universals + listOfNotNull(bandStarter))
+                    .filter { id -> gameData.recipes.any { it.id == id } }
+                player.discoverRecipes(toDiscover)
             }
         }
     }

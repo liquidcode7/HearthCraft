@@ -16,6 +16,7 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
+import com.liquidcode7.hearthcraft.data.model.Band
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -49,6 +50,7 @@ fun BandScreen(
     val isSecondBandUnlocked by bandViewModel.isSecondBandUnlocked.collectAsState()
     val firstBandId by bandViewModel.firstBandId.collectAsState()
     val secondBandId by bandViewModel.secondBandId.collectAsState()
+    val availableBandsForUnlock by bandViewModel.availableBandsForUnlock.collectAsState()
 
     Column(
         modifier = Modifier
@@ -157,6 +159,53 @@ fun BandScreen(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
+
+        if (isSecondBandUnlocked && secondBandId == null && availableBandsForUnlock.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(20.dp))
+            SecondBandUnlockCard(
+                bands = availableBandsForUnlock,
+                onUnlock = { bandViewModel.unlockSecondBand(it) }
+            )
+        }
+    }
+}
+
+@Composable
+private fun SecondBandUnlockCard(bands: List<Band>, onUnlock: (String) -> Unit) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                "A second company is ready",
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.onSecondaryContainer
+            )
+            Text(
+                "Your cooking has grown strong enough to sustain another band. Choose one.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSecondaryContainer
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            bands.forEach { band ->
+                OutlinedButton(
+                    onClick = { onUnlock(band.id) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 2.dp)
+                ) {
+                    Column(modifier = Modifier.fillMaxWidth()) {
+                        Text(band.name, style = MaterialTheme.typography.bodySmall)
+                        Text(
+                            band.region,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -185,7 +234,7 @@ private fun BandSwitcher(
                     Text(secondName, style = MaterialTheme.typography.labelMedium)
                     if (!isSecondUnlocked) {
                         Text(
-                            "Unlock at cooking 6",
+                            "Unlock at cooking 10",
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )

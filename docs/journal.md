@@ -7,12 +7,12 @@
 
 ## Current Status — June 27, 2026
 
-**Phase:** Recipe discovery system complete (DB v7, engine, ViewModel, CookingWorker, KitchenScreen UI).
-**V1 progress:** Core loop playable. Nav restructured (6 tabs). Recipe discovery system fully wired — GW2-style experiment mode with proximity feedback, auto-discover on cook and level-up, food structure hints card.
-**What's working:** DB v7 (discoveredRecipeIds + hasSeenFoodStructureHints). RecipeDiscoveryEngine (pure Kotlin, 7 tests pass). KitchenScreen Recipes|Experiment tabs. FoodHintsCard at cookLevel ≥ 3. CookingWorker auto-discovers on cook and level-up (band-filtered). Starter recipes seeded for new players.
-**What's not wired yet:** Spreadsheet source-of-truth needs 3 back-port fixes (ember_porridge tier, rangers_fare cookLevel, willowherb row). Home screen as hub (tappable cards). Band backgrounds themed to faction. Seeds gated behind first wild find.
-**Next session:** Install on device, test the discovery system end-to-end. Then: update the spreadsheets, run generate_data.py, commit. Then: home screen hub design.
-**Open questions:** Spreadsheet sync (3 items — see tools/README.md). Home screen layout. Band-specific visual backgrounds.
+**Phase:** Polish pass on device-reported issues. Core loop now playable with correct starting state.
+**V1 progress:** Onboarding, gathering, kitchen, missions, and band all cleanly functional. Recipe discovery system wired.
+**What's working:** Single-band onboarding (pick one, unlock second at cooking level 10). Garden starts with 2 plots; farm locked until gathering level 5. Discover tab (renamed from Experiment). Send button appears when encounter is selected, food is optional. Starter recipes reduced to 3 universals + 1 band starter. Band second-company unlock card shows at cooking level 10. Improved Third Age / Eriador lore text in onboarding.
+**What's not wired yet:** Home screen hub (nav cards, active status, band thumbnail, flavor text, journal section). Band member stat detail cards. Onboarding text for individual bands could be deeper.
+**Next session:** Home screen redesign — nav cards + active status cards + band thumbnail + recent news/flavor text + journal sub-screen.
+**Open questions:** Home screen visual layout. Journal sub-screen contents (stats glossary, food reference, discovered recipes log).
 
 ---
 
@@ -1476,3 +1476,33 @@ Full implementation of the recipe discovery system: recipes are now hidden until
 - Near term: Band-specific visual backgrounds. Seeds gated behind first wild find. Mission difficulty prediction.
 - Future ideas logged: none this session.
 - Future: Wounds redesign, damage types, Wolves retune — all V2 sim work, deferred.
+
+---
+
+## Session 38 — June 27, 2026
+**Device testing polish: 7 fixes from reported issues**
+
+**What was built:**
+- `KitchenScreen.kt`: Renamed "Experiment" tab → "Discover"; updated tab empty-state hint and submit button text
+- `KitchenViewModel.kt`: Reduced starter recipe seed from 19 (all cookLevel ≤ 1) to 4 explicit starters — 3 universals (hearthbread, wanderers_supper, contemplative_tea) + 1 band-specific (ember_porridge/springwater_broth/delvers_hash)
+- `GatheringViewModel.kt`: Garden slots reduced from 4 → 2 (`(0..1)`); exposed `gatheringLevel: StateFlow<Int>`
+- `GatheringScreen.kt`: Farm section gated behind gathering level 5 (locked card shown below); garden counter updated to "/2"
+- `MissionsScreen.kt`: Send button now shows when encounter is selected regardless of food; "no provisions" warning shown when food is absent; hint text simplified
+- `BandViewModel.kt`: `sendOnEncounter()` made food-optional (0 HP/s if no food); `SECOND_BAND_UNLOCK_COOKING_LEVEL` raised to 10; added `availableBandsForUnlock` StateFlow and `unlockSecondBand()` function; Band import added
+- `BandSelectionViewModel.kt`: Removed `_secondBandId`, `selectSecond()`, and `player.setSecondBand()` from onboarding — player now picks one band only
+- `BandSelectionScreen.kt`: Removed page 2 (second band selection); flow is now 3 pages (lore → pick band → welcome); opening lore text rewritten to Third Age / Eriador setting; WelcomePage updated (no second-band mention, "The first watch begins.")
+- `BandScreen.kt`: Added `SecondBandUnlockCard` — shows at cooking level 10 when secondBandId is null; fixed label "Unlock at cooking 6" → "cooking 10"
+
+**Decisions made:**
+- Band selection: one band at start, second at cooking level 10 prompted in BandScreen (not an interrupt modal)
+- Farm gate: gathering level 5 — visible as a locked card so player knows it exists
+- Mission send: food is optional; going unfed is a valid (costly) choice, not a blocker
+- Starter recipes: 4 explicit IDs rather than "all cookLevel ≤ 1" — keeps recipe book sparse on day 1
+
+**Anything that diverged from docs/design.md:**
+- None — these were all UX corrections not previously documented
+
+**Coming up:**
+- Next session: Home screen redesign — nav cards + active status + band thumbnail + recent news/flavor text + journal sub-screen
+- Near term: Band member detail cards (clickable, stat bar readout). Onboarding lore can be further deepened per band.
+- Future ideas logged: none this session.

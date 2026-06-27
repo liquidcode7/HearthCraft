@@ -90,7 +90,7 @@ fun KitchenScreen(
                     Tab(
                         selected = experimentMode,
                         onClick = { if (!experimentMode) viewModel.toggleExperimentMode() },
-                        text = { Text("Experiment") }
+                        text = { Text("Discover") }
                     )
                 }
             }
@@ -166,7 +166,7 @@ fun KitchenScreen(
 
                 if (tieredRecipes.isEmpty()) {
                     Text(
-                        "No recipes discovered yet. Head to the Experiment tab to find them.",
+                        "No recipes discovered yet. Head to the Discover tab to find them.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -288,7 +288,7 @@ private fun ExperimentPanel(
         enabled = experimentIngredients.isNotEmpty(),
         modifier = Modifier.fillMaxWidth()
     ) {
-        Text("Experiment — ingredients consumed")
+        Text("Discover — ingredients will be used")
     }
 
     lastResult?.let { result ->
