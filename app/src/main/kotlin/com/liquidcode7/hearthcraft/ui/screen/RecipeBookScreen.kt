@@ -60,7 +60,7 @@ fun RecipeBookScreen(
                 .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
             recipes.forEach { recipe ->
-                RecipeEntry(recipe = recipe, cookingLevel = cookingLevel)
+                RecipeEntry(recipe = recipe, cookingLevel = cookingLevel, kitchenViewModel = kitchenViewModel)
                 Spacer(modifier = Modifier.height(8.dp))
             }
         }
@@ -68,8 +68,34 @@ fun RecipeBookScreen(
 }
 
 @Composable
-private fun RecipeEntry(recipe: Recipe, cookingLevel: Int) {
-    val buffStrength = (recipe.baseBuffStrength + (cookingLevel - 1) * recipe.buffStrengthPerLevel).toInt()
+private fun RecipeEntry(recipe: Recipe, cookingLevel: Int, kitchenViewModel: KitchenViewModel) {
+    val buffAtLevel = (recipe.baseBuffStrength + (cookingLevel - 1) * recipe.buffStrengthPerLevel).toInt()
+    val hps = buffAtLevel / 10f
+    val effectLine = when {
+        recipe.primaryStat != null -> {
+            val statName = when (recipe.primaryStat) {
+                "mig" -> "Might"
+                "agi" -> "Agility"
+                "vit" -> "Vitality"
+                "wil" -> "Will"
+                else  -> recipe.primaryStat
+            }
+            "$statName +$buffAtLevel · %.1f HP/s".format(hps)
+        }
+        recipe.hazardEffect != null -> {
+            val hazardLabel = when (recipe.hazardEffect) {
+                "warmth"   -> "Warmth (cold resist)"
+                "alert"    -> "Alert (fatigue resist)"
+                "hale"     -> "Hale (disease resist)"
+                "potency"  -> "Potency (armor pen)"
+                "radiance" -> "Radiance (shadow resist)"
+                else       -> recipe.hazardEffect ?: ""
+            }
+            "$hazardLabel · %.1f HP/s".format(hps)
+        }
+        else -> "Sustaining · %.1f HP/s".format(hps)
+    }
+
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(12.dp)) {
             Row {
@@ -87,14 +113,13 @@ private fun RecipeEntry(recipe: Recipe, cookingLevel: Int) {
             Spacer(modifier = Modifier.height(4.dp))
             Text(recipe.description, style = MaterialTheme.typography.bodySmall)
             Spacer(modifier = Modifier.height(6.dp))
-            Text(
-                "${recipe.buffType} +$buffStrength at Lv $cookingLevel",
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.primary
-            )
+            Text(effectLine, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
             Spacer(modifier = Modifier.height(4.dp))
             recipe.ingredients.forEach { ing ->
-                Text("• ${ing.id} ×${ing.qty}", style = MaterialTheme.typography.bodySmall)
+                Text(
+                    "• ${kitchenViewModel.ingredientName(ing.id)} ×${ing.qty}",
+                    style = MaterialTheme.typography.bodySmall
+                )
             }
         }
     }

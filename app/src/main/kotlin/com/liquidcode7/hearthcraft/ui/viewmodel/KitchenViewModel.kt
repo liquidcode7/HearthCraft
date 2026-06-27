@@ -101,6 +101,8 @@ class KitchenViewModel @Inject constructor(
         _selectedRecipe.value = recipe
     }
 
+    fun ingredientName(id: String): String = gameData.ingredients.find { it.id == id }?.name ?: id
+
     fun canCook(recipe: Recipe, items: List<InventoryItem>): Boolean {
         val qtyMap = items.associate { it.ingredientId to it.quantity }
         return recipe.ingredients.all { needed -> (qtyMap[needed.id] ?: 0) >= needed.qty }

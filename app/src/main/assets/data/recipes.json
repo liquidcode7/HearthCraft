@@ -318,7 +318,7 @@
     "band": "greycloaks",
     "class": "food",
     "method": "simmer",
-    "tier": 3,
+    "tier": 1,
     "cookLevel": 1,
     "hazardEffect": "warmth",
     "ingredients": [
@@ -340,7 +340,7 @@
     "class": "food",
     "method": "simmer",
     "tier": 4,
-    "cookLevel": 1,
+    "cookLevel": 10,
     "primaryStat": "mig",
     "secondaryStat": "vit",
     "ingredients": [

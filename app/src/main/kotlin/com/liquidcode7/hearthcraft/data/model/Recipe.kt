@@ -42,13 +42,13 @@ data class Recipe(
     val baseBuffStrength: Int get() = tier * 5
     val buffStrengthPerLevel: Double get() = tier * 0.5
 
-    // Cooking duration scales with tier.
+    // Cooking duration scales with tier. Tier 1 = 5 min; doubles roughly each tier up.
     val durationMs: Long get() = when (tier) {
-        1 -> 30L * 60_000
-        2 -> 45L * 60_000
-        3 -> 60L * 60_000
-        4 -> 90L * 60_000
-        else -> 120L * 60_000
+        1 ->  5L * 60_000
+        2 -> 10L * 60_000
+        3 -> 20L * 60_000
+        4 -> 30L * 60_000
+        else -> 45L * 60_000
     }
 
     // levelRequired maps to cookLevel for backwards compat with KitchenViewModel tier sorting.

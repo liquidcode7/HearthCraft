@@ -13,6 +13,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -47,77 +48,98 @@ fun KitchenScreen(
     val cookingLevel = playerState?.cookingLevel ?: 1
     val isCooking = session != null
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(16.dp)
-    ) {
-        Text("Kitchen", style = MaterialTheme.typography.headlineMedium)
-        Spacer(modifier = Modifier.height(16.dp))
+    // Two-section layout: fixed detail panel on top, scrollable recipe list below.
+    Column(modifier = Modifier.fillMaxSize()) {
 
-        if (session != null) {
-            val recipeName = viewModel.recipes.find { it.id == session!!.recipeId }?.name ?: session!!.recipeId
-            CookingActiveCard(
-                recipeName = recipeName,
-                startedAtMs = session!!.startedAtMs,
-                durationMs = session!!.durationMs
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-        }
+        // ── Fixed top section ──────────────────────────────────────────────
+        Column(modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 12.dp)) {
+            Text("Kitchen", style = MaterialTheme.typography.headlineMedium)
+            Spacer(modifier = Modifier.height(12.dp))
 
-        OutlinedButton(onClick = onViewRecipes, modifier = Modifier.fillMaxWidth()) {
-            Text("Recipe Book")
-        }
-        Spacer(modifier = Modifier.height(12.dp))
-        Text("Select a Recipe", style = MaterialTheme.typography.titleSmall)
-        Spacer(modifier = Modifier.height(8.dp))
-
-        tieredRecipes.forEach { tier ->
-            val isUnlocked = cookingLevel >= tier.minLevel
-            Spacer(modifier = Modifier.height(8.dp))
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                val rangeLabel = if (tier.minLevel <= 1) "Lv 1" else "Lv ${tier.minLevel}+"
-                Text(
-                    "${tier.label}  ·  $rangeLabel",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = if (isUnlocked) MaterialTheme.colorScheme.onSurface
-                            else MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.weight(1f)
+            if (isCooking) {
+                val recipeName = viewModel.recipes.find { it.id == session!!.recipeId }?.name
+                    ?: session!!.recipeId
+                CookingActiveCard(
+                    recipeName = recipeName,
+                    startedAtMs = session!!.startedAtMs,
+                    durationMs = session!!.durationMs
                 )
-                if (!isUnlocked) {
+            } else if (selectedRecipe != null) {
+                RecipeDetailPanel(
+                    recipe = selectedRecipe!!,
+                    inventoryItems = inventoryItems,
+                    cookingLevel = cookingLevel,
+                    viewModel = viewModel
+                )
+                Spacer(modifier = Modifier.height(10.dp))
+                Button(
+                    onClick = { viewModel.startCooking() },
+                    enabled = viewModel.canCook(selectedRecipe!!, inventoryItems),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Start Cooking")
+                }
+            } else {
+                Text(
+                    "Select a recipe below to see details.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+
+        HorizontalDivider()
+
+        // ── Scrollable recipe list ─────────────────────────────────────────
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 16.dp)
+        ) {
+            Spacer(modifier = Modifier.height(12.dp))
+            OutlinedButton(onClick = onViewRecipes, modifier = Modifier.fillMaxWidth()) {
+                Text("Recipe Book")
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+            Text("Select a Recipe", style = MaterialTheme.typography.titleSmall)
+            Spacer(modifier = Modifier.height(8.dp))
+
+            tieredRecipes.forEach { tier ->
+                val isUnlocked = cookingLevel >= tier.minLevel
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    val rangeLabel = if (tier.minLevel <= 1) "Lv 1" else "Lv ${tier.minLevel}+"
                     Text(
-                        "Reach Lv ${tier.minLevel}",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        "${tier.label}  ·  $rangeLabel",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = if (isUnlocked) MaterialTheme.colorScheme.onSurface
+                                else MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.weight(1f)
                     )
+                    if (!isUnlocked) {
+                        Text(
+                            "Reach Lv ${tier.minLevel}",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(6.dp))
+                tier.recipes.forEach { recipe ->
+                    val canCook = isUnlocked && !isCooking && viewModel.canCook(recipe, inventoryItems)
+                    RecipeRow(
+                        recipe = recipe,
+                        canCook = canCook,
+                        isSelected = !isCooking && recipe.id == selectedRecipe?.id,
+                        isLocked = !isUnlocked,
+                        onClick = { if (isUnlocked && !isCooking) viewModel.selectRecipe(recipe) }
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
                 }
             }
-            Spacer(modifier = Modifier.height(6.dp))
-            tier.recipes.forEach { recipe ->
-                val canCook = isUnlocked && !isCooking && viewModel.canCook(recipe, inventoryItems)
-                RecipeRow(
-                    recipe = recipe,
-                    canCook = canCook,
-                    isSelected = !isCooking && recipe.id == selectedRecipe?.id,
-                    isLocked = !isUnlocked,
-                    onClick = { if (isUnlocked && !isCooking) viewModel.selectRecipe(recipe) }
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-            }
-        }
 
-        if (!isCooking && selectedRecipe != null) {
-            Spacer(modifier = Modifier.height(12.dp))
-            RecipeDetailPanel(recipe = selectedRecipe!!, inventoryItems = inventoryItems)
-            Spacer(modifier = Modifier.height(12.dp))
-            Button(
-                onClick = { viewModel.startCooking() },
-                enabled = viewModel.canCook(selectedRecipe!!, inventoryItems),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Start Cooking")
-            }
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }
@@ -173,8 +195,38 @@ private fun RecipeRow(
 }
 
 @Composable
-private fun RecipeDetailPanel(recipe: Recipe, inventoryItems: List<InventoryItem>) {
+private fun RecipeDetailPanel(
+    recipe: Recipe,
+    inventoryItems: List<InventoryItem>,
+    cookingLevel: Int,
+    viewModel: KitchenViewModel
+) {
     val qtyMap = inventoryItems.associate { it.ingredientId to it.quantity }
+    val buffAtLevel = (recipe.baseBuffStrength + (cookingLevel - 1) * recipe.buffStrengthPerLevel).toInt()
+    val hps = buffAtLevel / 10f
+
+    val effectLine = when {
+        recipe.primaryStat != null -> {
+            val statName = when (recipe.primaryStat) {
+                "mig" -> "Might"
+                "agi" -> "Agility"
+                "vit" -> "Vitality"
+                "wil" -> "Will"
+                else  -> recipe.primaryStat
+            }
+            "$statName +$buffAtLevel"
+        }
+        recipe.hazardEffect != null -> when (recipe.hazardEffect) {
+            "warmth"   -> "Warmth (cold resist)"
+            "alert"    -> "Alert (fatigue resist)"
+            "hale"     -> "Hale (disease resist)"
+            "potency"  -> "Potency (armor penetration)"
+            "radiance" -> "Radiance (shadow resist)"
+            else       -> recipe.hazardEffect
+        }
+        else -> "Sustaining"
+    }
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
@@ -184,15 +236,22 @@ private fun RecipeDetailPanel(recipe: Recipe, inventoryItems: List<InventoryItem
             Text(recipe.description, style = MaterialTheme.typography.bodySmall)
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                "Buff: ${recipe.buffType} +${recipe.baseBuffStrength}",
-                style = MaterialTheme.typography.labelMedium
+                effectLine,
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.primary
+            )
+            Text(
+                "%.1f HP/s in combat".format(hps),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text("Ingredients:", style = MaterialTheme.typography.labelMedium)
             recipe.ingredients.forEach { ing ->
                 val have = qtyMap[ing.id] ?: 0
+                val name = viewModel.ingredientName(ing.id)
                 Text(
-                    "• ${ing.id}  $have/${ing.qty}",
+                    "• $name  $have/${ing.qty}",
                     style = MaterialTheme.typography.bodySmall,
                     color = if (have >= ing.qty) MaterialTheme.colorScheme.onSurface
                             else MaterialTheme.colorScheme.error
