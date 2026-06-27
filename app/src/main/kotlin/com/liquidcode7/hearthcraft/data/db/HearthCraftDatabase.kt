@@ -27,9 +27,12 @@ import com.liquidcode7.hearthcraft.data.db.dao.SeedStockDao
         SeedStock::class,
         GrowingSlot::class,
     ],
-    version = 6,
+    version = 7,
     exportSchema = true,
-    autoMigrations = [AutoMigration(from = 5, to = 6)]
+    autoMigrations = [
+        AutoMigration(from = 5, to = 6),
+        AutoMigration(from = 6, to = 7)
+    ]
 )
 abstract class HearthCraftDatabase : RoomDatabase() {
     abstract fun playerStateDao(): PlayerStateDao

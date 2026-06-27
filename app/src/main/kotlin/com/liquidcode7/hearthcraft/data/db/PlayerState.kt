@@ -1,5 +1,6 @@
 package com.liquidcode7.hearthcraft.data.db
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
@@ -12,5 +13,9 @@ data class PlayerState(
     val gatheringXp: Int = 0,
     val cookingLevel: Int = 1,
     val cookingXp: Int = 0,
-    val money: Int = 0
+    val money: Int = 0,
+    @ColumnInfo(defaultValue = "")
+    val discoveredRecipeIds: String = "",
+    @ColumnInfo(defaultValue = "0")
+    val hasSeenFoodStructureHints: Boolean = false
 )

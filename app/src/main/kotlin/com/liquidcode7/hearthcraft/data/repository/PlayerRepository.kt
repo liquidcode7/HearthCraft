@@ -3,6 +3,7 @@ package com.liquidcode7.hearthcraft.data.repository
 import com.liquidcode7.hearthcraft.data.db.PlayerState
 import com.liquidcode7.hearthcraft.data.db.dao.PlayerStateDao
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.math.pow
@@ -41,6 +42,40 @@ class PlayerRepository @Inject constructor(
     suspend fun spendMoney(amount: Int): Boolean {
         val rowsAffected = dao.spendMoney(amount)
         return rowsAffected > 0
+    }
+
+    fun observeDiscoveredIds(): Flow<Set<String>> = dao.observe().map { state ->
+        state?.discoveredRecipeIds
+            ?.split(",")
+            ?.filter { it.isNotBlank() }
+            ?.toSet()
+            ?: emptySet()
+    }
+
+    suspend fun discoverRecipe(recipeId: String) {
+        val state = dao.get() ?: return
+        val current = state.discoveredRecipeIds
+            .split(",").filter { it.isNotBlank() }.toMutableSet()
+        if (current.add(recipeId)) {
+            dao.upsert(state.copy(discoveredRecipeIds = current.joinToString(",")))
+        }
+    }
+
+    suspend fun discoverRecipes(recipeIds: Collection<String>) {
+        if (recipeIds.isEmpty()) return
+        val state = dao.get() ?: return
+        val current = state.discoveredRecipeIds
+            .split(",").filter { it.isNotBlank() }.toMutableSet()
+        if (current.addAll(recipeIds)) {
+            dao.upsert(state.copy(discoveredRecipeIds = current.joinToString(",")))
+        }
+    }
+
+    suspend fun markHintsSeen() {
+        val state = dao.get() ?: return
+        if (!state.hasSeenFoodStructureHints) {
+            dao.upsert(state.copy(hasSeenFoodStructureHints = true))
+        }
     }
 
     companion object {
