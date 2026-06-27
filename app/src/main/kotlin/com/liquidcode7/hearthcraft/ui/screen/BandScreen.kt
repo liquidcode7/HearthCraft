@@ -10,23 +10,28 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import com.liquidcode7.hearthcraft.data.model.Band
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.liquidcode7.hearthcraft.ui.viewmodel.BandMemberWithState
@@ -51,6 +56,12 @@ fun BandScreen(
     val firstBandId by bandViewModel.firstBandId.collectAsState()
     val secondBandId by bandViewModel.secondBandId.collectAsState()
     val availableBandsForUnlock by bandViewModel.availableBandsForUnlock.collectAsState()
+
+    var selectedMember by remember { mutableStateOf<BandMemberWithState?>(null) }
+
+    selectedMember?.let { member ->
+        MemberDetailDialog(member = member, onDismiss = { selectedMember = null })
+    }
 
     Column(
         modifier = Modifier
@@ -91,7 +102,7 @@ fun BandScreen(
         Text("Members", style = MaterialTheme.typography.titleSmall)
         Spacer(modifier = Modifier.height(8.dp))
         members.forEach { member ->
-            MemberRow(member = member)
+            MemberRow(member = member, onClick = { selectedMember = member })
             Spacer(modifier = Modifier.height(4.dp))
         }
 
@@ -171,6 +182,127 @@ fun BandScreen(
 }
 
 @Composable
+private fun MemberDetailDialog(member: BandMemberWithState, onDismiss: () -> Unit) {
+    val (statusLabel, statusColor) = when {
+        !member.isAlive -> "Fallen" to MaterialTheme.colorScheme.error
+        member.woundStatus == "grievously_wounded" -> "Grievous Wound" to MaterialTheme.colorScheme.error
+        member.woundStatus == "wounded" -> "Wounded" to Color(0xFFFF9800)
+        else -> "Active" to MaterialTheme.colorScheme.primary
+    }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Column {
+                Text(member.name, style = MaterialTheme.typography.titleMedium)
+                if (member.role.isNotEmpty()) {
+                    Text(
+                        member.role,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.tertiary
+                    )
+                }
+            }
+        },
+        text = {
+            Column {
+                Text(
+                    member.personality,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(statusLabel, style = MaterialTheme.typography.labelMedium, color = statusColor)
+                if (member.isAlive) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    StatBar(label = "VIT", value = member.vitality)
+                    Spacer(modifier = Modifier.height(6.dp))
+                    StatBar(label = "MGT", value = member.might)
+                    Spacer(modifier = Modifier.height(6.dp))
+                    StatBar(label = "AGI", value = member.agility)
+                    Spacer(modifier = Modifier.height(6.dp))
+                    StatBar(label = "WIL", value = member.will)
+                    Spacer(modifier = Modifier.height(6.dp))
+                    StatBar(label = "FAT", value = member.fate)
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) { Text("Close") }
+        }
+    )
+}
+
+@Composable
+private fun StatBar(label: String, value: Int, max: Int = 10) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Text(
+            label,
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.width(30.dp)
+        )
+        LinearProgressIndicator(
+            progress = { value.toFloat() / max.coerceAtLeast(value) },
+            modifier = Modifier
+                .weight(1f)
+                .height(8.dp)
+        )
+        Text(
+            " $value",
+            style = MaterialTheme.typography.labelSmall,
+            modifier = Modifier.width(28.dp)
+        )
+    }
+}
+
+@Composable
+private fun MemberRow(member: BandMemberWithState, onClick: () -> Unit) {
+    val (statusLabel, statusColor) = when {
+        !member.isAlive -> "Fallen" to MaterialTheme.colorScheme.error
+        member.woundStatus == "grievously_wounded" -> "Grievous Wound" to MaterialTheme.colorScheme.error
+        member.woundStatus == "wounded" -> "Wounded" to Color(0xFFFF9800)
+        else -> "Active" to MaterialTheme.colorScheme.primary
+    }
+    Card(
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+    ) {
+        Column(modifier = Modifier.padding(10.dp)) {
+            Row {
+                Column(modifier = Modifier.weight(1f)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(member.name, style = MaterialTheme.typography.bodyMedium)
+                        if (member.role.isNotEmpty()) {
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                member.role,
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.tertiary
+                            )
+                        }
+                    }
+                    Text(
+                        member.personality,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                Text(statusLabel, style = MaterialTheme.typography.labelSmall, color = statusColor)
+            }
+            if (member.isAlive) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    "VIT ${member.vitality}  MGT ${member.might}  AGI ${member.agility}  WIL ${member.will}  FAT ${member.fate}",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+    }
+}
+
+@Composable
 private fun SecondBandUnlockCard(bands: List<Band>, onUnlock: (String) -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -245,50 +377,6 @@ private fun BandSwitcher(
                 .weight(1f)
                 .alpha(if (isSecondUnlocked) 1f else 0.6f)
         )
-    }
-}
-
-@Composable
-private fun MemberRow(member: BandMemberWithState) {
-    val (statusLabel, statusColor) = when {
-        !member.isAlive -> "Fallen" to MaterialTheme.colorScheme.error
-        member.woundStatus == "grievously_wounded" -> "Grievous Wound" to MaterialTheme.colorScheme.error
-        member.woundStatus == "wounded" -> "Wounded" to androidx.compose.ui.graphics.Color(0xFFFF9800)
-        else -> "Active" to MaterialTheme.colorScheme.primary
-    }
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 2.dp)
-    ) {
-        Row {
-            Column(modifier = Modifier.weight(1f)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(member.name, style = MaterialTheme.typography.bodyMedium)
-                    if (member.role.isNotEmpty()) {
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            member.role,
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.tertiary
-                        )
-                    }
-                }
-                Text(
-                    member.personality,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-            Text(statusLabel, style = MaterialTheme.typography.labelSmall, color = statusColor)
-        }
-        if (member.isAlive) {
-            Text(
-                "VIT ${member.vitality}  MGT ${member.might}  AGI ${member.agility}  WIL ${member.will}  FAT ${member.fate}",
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
     }
 }
 
