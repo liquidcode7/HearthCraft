@@ -1237,13 +1237,17 @@ function renderResults(){
     $("ch_armormet").innerHTML='<div class="empty" style="padding:24px 14px;text-align:center">No armor in this fight — set Physical mit. % on Setup to see the breakdown.</div>';
   }
 
-  // Dread mitigation — Will + Hope counters
-  const anyDread=series.some(s=>s.willSaved>0||s.hopeSaved>0||s.dawnBoost>0);
-  if(anyDread){
+  // Dread mitigation — Layer A drag + Will/Hope counters + Layer B event counts
+  if(P.dread>0){
+    const avgLayerALoss=series.reduce((s,f)=>s+(f.raw||0)*(f.layerADrag||0),0)/series.length;
+    const stunEvts=events.filter(e=>e.kind==="dread-stun").length;
+    const breakEvts=events.filter(e=>e.kind==="morale-break").length;
     meterChart("ch_dreadmet",[
-      {name:"Saved by Captain Will + Red Dawn", color:"#b8843c", value:captainBoostTotal},
-      {name:"Saved by Hope",                   color:"#c9a84c", value:avgHopeSaved},
-    ],"dps","Total Dread countered");
+      {name:"Layer A drag (DPS lost to dread floor)",color:"#9a3526",value:avgLayerALoss},
+      {name:"Saved by Captain Will + Red Dawn",color:"#b8843c",value:captainBoostTotal},
+      {name:"Saved by Hope",color:"#c9a84c",value:avgHopeSaved},
+    ],"dps","Dread summary");
+    $("ch_dreadmet").innerHTML+=`<div class="meter-footer">Layer B events this fight: ${stunEvts} stun${stunEvts!==1?"s":""}, ${breakEvts} break${breakEvts!==1?"s":""}</div>`;
   } else {
     $("ch_dreadmet").innerHTML='<div class="empty" style="padding:24px 14px;text-align:center">No Dread in this fight — toggle Dread on the enemy to see how Will and Hope counter it.</div>';
   }
