@@ -1,194 +1,1005 @@
 [
   {
-    "id": "hearthbread",
-    "name": "Hearthbread",
-    "description": "Dense, slightly sweet bread baked low and slow. The kind of food that keeps a person upright through a hard day. Not exciting. Deeply reliable.",
-    "buffType": "endurance",
-    "flavorTag": "sweet",
-    "baseBuffStrength": 10,
-    "buffStrengthPerLevel": 0.4,
-    "durationMs": 1800000,
-    "levelRequired": 1,
+    "id": "ploughmans_plate",
+    "name": "Ploughman's Plate",
+    "band": "greycloaks",
+    "class": "food",
+    "method": "roast",
+    "tier": 1,
+    "cookLevel": 1,
+    "primaryStat": "mig",
+    "ingredients": [
+      {
+        "id": "goodmans_taters",
+        "qty": 2
+      },
+      {
+        "id": "hearthgrain",
+        "qty": 1
+      },
+      {
+        "id": "chetwood_browncap",
+        "qty": 1
+      }
+    ],
+    "description": "Dense roasted taters and browncap with hearthgrain flatbread. Hits like a working meal should."
+  },
+  {
+    "id": "hedgerow_hand_pie",
+    "name": "Hedgerow Hand-pie",
+    "band": "greycloaks",
+    "class": "food",
+    "method": "bake",
+    "tier": 1,
+    "cookLevel": 1,
+    "primaryStat": "agi",
+    "ingredients": [
+      {
+        "id": "hedgerow_berry",
+        "qty": 2
+      },
+      {
+        "id": "hearthgrain",
+        "qty": 1
+      },
+      {
+        "id": "brookcress",
+        "qty": 1
+      }
+    ],
+    "description": "Tart berry and cress stuffed into a short pastry. Light and fast."
+  },
+  {
+    "id": "goodmans_stew",
+    "name": "Goodman's Stew",
+    "band": "greycloaks",
+    "class": "food",
+    "method": "simmer",
+    "tier": 1,
+    "cookLevel": 1,
     "primaryStat": "vit",
-    "secondaryStat": "mig",
     "ingredients": [
-      { "id": "hearthgrain", "qty": 2 },
-      { "id": "forest_honey", "qty": 1 }
-    ]
+      {
+        "id": "goodmans_taters",
+        "qty": 2
+      },
+      {
+        "id": "pale_cap",
+        "qty": 1
+      },
+      {
+        "id": "hearthgrain",
+        "qty": 1
+      }
+    ],
+    "description": "The stew that keeps a household going. Plain, honest, deeply sustaining."
   },
   {
-    "id": "iron_stew",
-    "name": "Iron Stew",
-    "description": "A long-cooked stew that takes most of an afternoon and rewards the patience. The ironroot breaks down into something almost melting. It fills the body like ballast.",
-    "buffType": "endurance",
-    "flavorTag": "hearty",
-    "baseBuffStrength": 12,
-    "buffStrengthPerLevel": 0.65,
-    "durationMs": 5400000,
-    "levelRequired": 6,
+    "id": "brookcress_bannock",
+    "name": "Brookcress Bannock",
+    "band": "greycloaks",
+    "class": "food",
+    "method": "bake",
+    "tier": 1,
+    "cookLevel": 1,
+    "primaryStat": "wil",
     "ingredients": [
-      { "id": "ironroot", "qty": 2 },
-      { "id": "hearthgrain", "qty": 1 },
-      { "id": "pale_cap", "qty": 1 }
-    ]
+      {
+        "id": "brookcress",
+        "qty": 2
+      },
+      {
+        "id": "hearthgrain",
+        "qty": 1
+      },
+      {
+        "id": "field_honey",
+        "qty": 1
+      }
+    ],
+    "description": "Unleavened flatbread sharp with cress and sweetened with honey. Clears the head."
   },
   {
-    "id": "wanderers_supper",
-    "name": "Wanderer's Supper",
-    "description": "A light meal built for people who eat on the move. The figs and berries keep well, the whole thing comes together quickly, and it leaves no heaviness behind.",
-    "buffType": "agility",
-    "flavorTag": "light",
-    "baseBuffStrength": 10,
-    "buffStrengthPerLevel": 0.4,
-    "durationMs": 1800000,
-    "levelRequired": 1,
+    "id": "sloe_bitters",
+    "name": "Sloe Bitters",
+    "band": "greycloaks",
+    "class": "draught",
+    "method": "infuse",
+    "tier": 1,
+    "cookLevel": 1,
+    "hazardEffect": "potency",
+    "ingredients": [
+      {
+        "id": "sloe",
+        "qty": 2
+      },
+      {
+        "id": "brookcress",
+        "qty": 1
+      },
+      {
+        "id": "field_honey",
+        "qty": 1
+      }
+    ],
+    "description": "Bitter and sharp. Teaches the band to cut through what resists them."
+  },
+  {
+    "id": "hearth_and_hops",
+    "name": "Hearth and Hops",
+    "band": "greycloaks",
+    "class": "food",
+    "method": "simmer",
+    "tier": 2,
+    "cookLevel": 5,
+    "primaryStat": "mig",
+    "secondaryStat": "vit",
+    "ingredients": [
+      {
+        "id": "salted_pork",
+        "qty": 2
+      },
+      {
+        "id": "ironroot",
+        "qty": 1
+      },
+      {
+        "id": "barleycorn",
+        "qty": 1
+      },
+      {
+        "id": "onion",
+        "qty": 1
+      }
+    ],
+    "description": "Long-simmered pork and ironroot. The kind of meal you eat when the road gets hard."
+  },
+  {
+    "id": "chetwood_rabbit_roast",
+    "name": "Chetwood Rabbit Roast",
+    "band": "greycloaks",
+    "class": "food",
+    "method": "roast",
+    "tier": 2,
+    "cookLevel": 5,
     "primaryStat": "agi",
     "secondaryStat": "mig",
     "ingredients": [
-      { "id": "wanderer_fig", "qty": 2 },
-      { "id": "duskberry", "qty": 1 }
-    ]
+      {
+        "id": "rabbit",
+        "qty": 2
+      },
+      {
+        "id": "hedgerow_berry",
+        "qty": 1
+      },
+      {
+        "id": "common_thyme",
+        "qty": 1
+      }
+    ],
+    "description": "Roasted rabbit with hedgerow berries and thyme. Quick fire, good result."
   },
   {
-    "id": "stormcap_saute",
-    "name": "Stormcap Sauté",
-    "description": "Wild mushrooms cooked fast and hot with a handful of pale caps and a few heartflame peppers. Something about the combination produces a particular sharpness of movement.",
-    "buffType": "agility",
-    "flavorTag": "spicy",
-    "baseBuffStrength": 12,
-    "buffStrengthPerLevel": 0.65,
-    "durationMs": 5400000,
-    "levelRequired": 6,
+    "id": "field_and_fen_potage",
+    "name": "Field and Fen Potage",
+    "band": "greycloaks",
+    "class": "food",
+    "method": "simmer",
+    "tier": 2,
+    "cookLevel": 5,
+    "primaryStat": "vit",
+    "secondaryStat": "wil",
     "ingredients": [
-      { "id": "stormcap", "qty": 2 },
-      { "id": "pale_cap", "qty": 1 },
-      { "id": "heartflame_pepper", "qty": 1 }
-    ]
+      {
+        "id": "goodmans_taters",
+        "qty": 2
+      },
+      {
+        "id": "willowherb",
+        "qty": 1
+      },
+      {
+        "id": "leek",
+        "qty": 1
+      },
+      {
+        "id": "pale_cap",
+        "qty": 1
+      }
+    ],
+    "description": "A thicker stew with willowherb. Something calming about it besides the filling."
   },
   {
-    "id": "contemplative_tea",
-    "name": "Contemplative Tea",
-    "description": "A simple infusion brewed from sunpetal herb and a few moonpetal leaves. Pale gold in the cup. Clears the mind like opening a window.",
-    "buffType": "acuity",
-    "flavorTag": "herbal",
-    "baseBuffStrength": 10,
-    "buffStrengthPerLevel": 0.4,
-    "durationMs": 1800000,
-    "levelRequired": 1,
+    "id": "honey_oat_cake",
+    "name": "Honey Oat Cake",
+    "band": "greycloaks",
+    "class": "food",
+    "method": "bake",
+    "tier": 2,
+    "cookLevel": 6,
     "primaryStat": "wil",
     "secondaryStat": "agi",
     "ingredients": [
-      { "id": "sunpetal_herb", "qty": 2 },
-      { "id": "moonpetal", "qty": 1 }
-    ]
+      {
+        "id": "oat_sheaf",
+        "qty": 2
+      },
+      {
+        "id": "forest_honey",
+        "qty": 1
+      },
+      {
+        "id": "sorrel",
+        "qty": 1
+      }
+    ],
+    "description": "Dense oat cake cut with sorrel. Sweet-sour, clarifying."
   },
   {
-    "id": "moonpetal_tisane",
-    "name": "Moonpetal Tisane",
-    "description": "A stronger preparation — three full measures of moonpetal with ironbark resin to fix the effect. It requires patience to brew and smells like a forest at midnight. The acuity it produces is complete and unnerving.",
-    "buffType": "acuity",
-    "flavorTag": "herbal",
-    "baseBuffStrength": 12,
-    "buffStrengthPerLevel": 0.65,
-    "durationMs": 5400000,
-    "levelRequired": 6,
+    "id": "bilberry_tonic",
+    "name": "Bilberry Tonic",
+    "band": "greycloaks",
+    "class": "draught",
+    "method": "infuse",
+    "tier": 2,
+    "cookLevel": 3,
+    "hazardEffect": "alert",
     "ingredients": [
-      { "id": "moonpetal", "qty": 3 },
-      { "id": "ironbark_resin", "qty": 1 }
-    ]
+      {
+        "id": "bilberry",
+        "qty": 3
+      },
+      {
+        "id": "sunpetal_herb",
+        "qty": 1
+      }
+    ],
+    "description": "Tastes terrible. Works. Combats the fog that long dark roads put in the mind."
+  },
+  {
+    "id": "yarrow_draught",
+    "name": "Yarrow Draught",
+    "band": "greycloaks",
+    "class": "draught",
+    "method": "infuse",
+    "tier": 2,
+    "cookLevel": 4,
+    "hazardEffect": "hale",
+    "ingredients": [
+      {
+        "id": "yarrow",
+        "qty": 2
+      },
+      {
+        "id": "meadowsweet",
+        "qty": 1
+      },
+      {
+        "id": "rosehip",
+        "qty": 1
+      }
+    ],
+    "description": "Old cure for old trouble. Bitter and honest. Disease-counter."
+  },
+  {
+    "id": "trout_and_mushroom_pan",
+    "name": "Trout and Mushroom Pan",
+    "band": "greycloaks",
+    "class": "food",
+    "method": "roast",
+    "tier": 3,
+    "cookLevel": 10,
+    "primaryStat": "mig",
+    "secondaryStat": "agi",
+    "ingredients": [
+      {
+        "id": "smoked_river_trout",
+        "qty": 2
+      },
+      {
+        "id": "stormcap",
+        "qty": 1
+      },
+      {
+        "id": "butter",
+        "qty": 1
+      },
+      {
+        "id": "leek",
+        "qty": 1
+      }
+    ],
+    "description": "River trout with stormcap and butter. Fast, hot, excellent."
   },
   {
     "id": "ember_porridge",
     "name": "Ember Porridge",
-    "description": "Hearthgrain cooked long with a careful hand of heartflame peppers — enough to warm, not enough to burn. Sits in the belly like a coal. Good for cold mornings and cold work.",
-    "buffType": "warmth",
-    "flavorTag": "spicy",
-    "baseBuffStrength": 10,
-    "buffStrengthPerLevel": 0.4,
-    "durationMs": 1800000,
-    "levelRequired": 1,
+    "band": "greycloaks",
+    "class": "food",
+    "method": "simmer",
+    "tier": 3,
+    "cookLevel": 1,
+    "hazardEffect": "warmth",
     "ingredients": [
-      { "id": "hearthgrain", "qty": 2 },
-      { "id": "heartflame_pepper", "qty": 1 }
-    ]
-  },
-  {
-    "id": "heartflame_broth",
-    "name": "Heartflame Broth",
-    "description": "A deep, dark broth that takes skill to make without making it undrinkable. The ironroot provides body, the hearthgrain thickens it, and the peppers do what they always do. Keeps a person warm in conditions that have no business being survived.",
-    "buffType": "warmth",
-    "flavorTag": "spicy",
-    "baseBuffStrength": 12,
-    "buffStrengthPerLevel": 0.65,
-    "durationMs": 5400000,
-    "levelRequired": 6,
-    "ingredients": [
-      { "id": "heartflame_pepper", "qty": 2 },
-      { "id": "ironroot", "qty": 1 },
-      { "id": "hearthgrain", "qty": 1 }
-    ]
+      {
+        "id": "hearthgrain",
+        "qty": 2
+      },
+      {
+        "id": "heartflame_pepper",
+        "qty": 1
+      }
+    ],
+    "description": "★ Existing. Hot and sustaining. Counters the cold."
   },
   {
     "id": "rangers_fare",
     "name": "Ranger's Fare",
-    "description": "Cooked down over a small fire with the minimum of fuss. Ironroot for endurance, pale caps for what they add that no one quite explains. What rangers carry when they travel long and fight hard at the end of it. It does not taste like much. It works.",
-    "buffType": "endurance",
-    "flavorTag": "earthy",
-    "baseBuffStrength": 10,
-    "buffStrengthPerLevel": 0.4,
-    "durationMs": 1800000,
-    "levelRequired": 1,
+    "band": "greycloaks",
+    "class": "food",
+    "method": "simmer",
+    "tier": 4,
+    "cookLevel": 1,
     "primaryStat": "mig",
     "secondaryStat": "vit",
     "ingredients": [
-      { "id": "ironroot", "qty": 2 },
-      { "id": "pale_cap", "qty": 1 }
-    ]
+      {
+        "id": "ironroot",
+        "qty": 2
+      },
+      {
+        "id": "pale_cap",
+        "qty": 1
+      }
+    ],
+    "description": "★ Existing. What rangers carry when they travel long and fight hard at the end of it."
   },
   {
-    "id": "bilberry_tea",
-    "name": "Bilberry Tea",
-    "description": "Astringent, medicinal, and deeply unpleasant to drink. The bitterness is entirely the point. Something in bilberry cuts through fog and confusion and the particular weight that settles on a person who has been too long in unhealthy places. Tastes terrible. Works.",
-    "buffType": "acuity",
-    "flavorTag": "herbal",
-    "baseBuffStrength": 8,
-    "buffStrengthPerLevel": 0.5,
-    "durationMs": 2700000,
-    "levelRequired": 3,
+    "id": "heartflame_broth",
+    "name": "Heartflame Broth",
+    "band": "greycloaks",
+    "class": "draught",
+    "method": "simmer",
+    "tier": 4,
+    "cookLevel": 6,
+    "hazardEffect": "warmth",
     "ingredients": [
-      { "id": "bilberry", "qty": 3 },
-      { "id": "sunpetal_herb", "qty": 1 }
-    ]
+      {
+        "id": "heartflame_pepper",
+        "qty": 2
+      },
+      {
+        "id": "ironroot",
+        "qty": 1
+      },
+      {
+        "id": "hearthgrain",
+        "qty": 1
+      }
+    ],
+    "description": "★ Existing. Warming broth. Keeps a person warm in conditions that shouldn't be survived."
+  },
+  {
+    "id": "hale_loaf",
+    "name": "Hale Loaf",
+    "band": "mithlost",
+    "class": "food",
+    "method": "bake",
+    "tier": 1,
+    "cookLevel": 1,
+    "primaryStat": "mig",
+    "ingredients": [
+      {
+        "id": "pale_waybread_grain",
+        "qty": 2
+      },
+      {
+        "id": "white_nectar",
+        "qty": 1
+      },
+      {
+        "id": "shorewrack_greens",
+        "qty": 1
+      }
+    ],
+    "description": "Dense coastal bread. The Mithlost don't waste a meal on ceremony."
+  },
+  {
+    "id": "leafwater_salad",
+    "name": "Leafwater Salad",
+    "band": "mithlost",
+    "class": "food",
+    "method": "infuse",
+    "tier": 1,
+    "cookLevel": 1,
+    "primaryStat": "agi",
+    "ingredients": [
+      {
+        "id": "shorewrack_greens",
+        "qty": 2
+      },
+      {
+        "id": "sunpetal_herb",
+        "qty": 1
+      },
+      {
+        "id": "white_nectar",
+        "qty": 1
+      }
+    ],
+    "description": "Fresh sea-greens with sunpetal. Light and quick. Elvish field food."
+  },
+  {
+    "id": "springwater_broth",
+    "name": "Springwater Broth",
+    "band": "mithlost",
+    "class": "food",
+    "method": "simmer",
+    "tier": 1,
+    "cookLevel": 1,
+    "primaryStat": "vit",
+    "ingredients": [
+      {
+        "id": "springwater_lhun",
+        "qty": 2
+      },
+      {
+        "id": "shorewrack_greens",
+        "qty": 1
+      },
+      {
+        "id": "sunpetal_herb",
+        "qty": 1
+      }
+    ],
+    "description": "A clean broth. Deceptively sustaining."
+  },
+  {
+    "id": "starflower_wafer",
+    "name": "Starflower Wafer",
+    "band": "mithlost",
+    "class": "food",
+    "method": "bake",
+    "tier": 1,
+    "cookLevel": 1,
+    "primaryStat": "wil",
+    "ingredients": [
+      {
+        "id": "sunpetal_herb",
+        "qty": 2
+      },
+      {
+        "id": "moonpetal",
+        "qty": 1
+      },
+      {
+        "id": "pale_waybread_grain",
+        "qty": 1
+      }
+    ],
+    "description": "Thin, precise, clarifying. A Mithlost clarity dish — solid, not a tea."
+  },
+  {
+    "id": "keenwater_tincture",
+    "name": "Keenwater Tincture",
+    "band": "mithlost",
+    "class": "draught",
+    "method": "infuse",
+    "tier": 1,
+    "cookLevel": 1,
+    "hazardEffect": "potency",
+    "ingredients": [
+      {
+        "id": "springwater_lhun",
+        "qty": 2
+      },
+      {
+        "id": "moonpetal",
+        "qty": 1
+      },
+      {
+        "id": "sunpetal_herb",
+        "qty": 1
+      }
+    ],
+    "description": "Precise and cold. Teaches armor-cutting through purity of preparation."
+  },
+  {
+    "id": "saltfish_and_kelp",
+    "name": "Saltfish and Kelp",
+    "band": "mithlost",
+    "class": "food",
+    "method": "simmer",
+    "tier": 2,
+    "cookLevel": 5,
+    "primaryStat": "mig",
+    "secondaryStat": "vit",
+    "ingredients": [
+      {
+        "id": "lhun_saltfish",
+        "qty": 2
+      },
+      {
+        "id": "tidal_kelp",
+        "qty": 1
+      },
+      {
+        "id": "lhun_sage",
+        "qty": 1
+      }
+    ],
+    "description": "Preserved fish and kelp in a clean broth. The real Mithlost sustaining meal."
+  },
+  {
+    "id": "silver_leek_omelette",
+    "name": "Silver Leek Omelette",
+    "band": "mithlost",
+    "class": "food",
+    "method": "roast",
+    "tier": 2,
+    "cookLevel": 5,
+    "primaryStat": "agi",
+    "secondaryStat": "wil",
+    "ingredients": [
+      {
+        "id": "seabird_egg",
+        "qty": 2
+      },
+      {
+        "id": "silver_leek",
+        "qty": 1
+      },
+      {
+        "id": "tidal_cress",
+        "qty": 1
+      }
+    ],
+    "description": "Eggs cooked fast with leek and cress. Elvish precision in a pan."
+  },
+  {
+    "id": "fennel_and_cheese_bake",
+    "name": "Fennel and Cheese Bake",
+    "band": "mithlost",
+    "class": "food",
+    "method": "bake",
+    "tier": 2,
+    "cookLevel": 6,
+    "primaryStat": "vit",
+    "secondaryStat": "wil",
+    "ingredients": [
+      {
+        "id": "fennel_bulb",
+        "qty": 2
+      },
+      {
+        "id": "pressed_herb_cheese",
+        "qty": 1
+      },
+      {
+        "id": "pale_waybread_grain",
+        "qty": 1
+      }
+    ],
+    "description": "Baked fennel with cheese on waybread. Substantial and refined."
+  },
+  {
+    "id": "moonpetal_tisane",
+    "name": "Moonpetal Tisane",
+    "band": "mithlost",
+    "class": "draught",
+    "method": "infuse",
+    "tier": 2,
+    "cookLevel": 6,
+    "hazardEffect": "radiance",
+    "ingredients": [
+      {
+        "id": "moonpetal",
+        "qty": 3
+      },
+      {
+        "id": "ironbark_resin",
+        "qty": 1
+      }
+    ],
+    "description": "★ Existing. Smells like a forest at midnight. Shadow-counter tendency."
+  },
+  {
+    "id": "silvern_wake_draught",
+    "name": "Silvern Wake Draught",
+    "band": "mithlost",
+    "class": "draught",
+    "method": "infuse",
+    "tier": 2,
+    "cookLevel": 4,
+    "hazardEffect": "alert",
+    "ingredients": [
+      {
+        "id": "silvern_mint",
+        "qty": 2
+      },
+      {
+        "id": "sunpetal_herb",
+        "qty": 1
+      },
+      {
+        "id": "white_nectar",
+        "qty": 1
+      }
+    ],
+    "description": "Elvish anti-torpor preparation. Precise, cold, effective."
+  },
+  {
+    "id": "delvers_hash",
+    "name": "Delver's Hash",
+    "band": "undermarch",
+    "class": "food",
+    "method": "roast",
+    "tier": 1,
+    "cookLevel": 1,
+    "primaryStat": "mig",
+    "ingredients": [
+      {
+        "id": "deepcap",
+        "qty": 2
+      },
+      {
+        "id": "stone_root",
+        "qty": 1
+      },
+      {
+        "id": "smoked_goat",
+        "qty": 1
+      }
+    ],
+    "description": "Chopped and roasted in a flat pan over hall-fire. Dense, earthy, strong."
+  },
+  {
+    "id": "quickfoot_skewer",
+    "name": "Quickfoot Skewer",
+    "band": "undermarch",
+    "class": "food",
+    "method": "roast",
+    "tier": 1,
+    "cookLevel": 1,
+    "primaryStat": "agi",
+    "ingredients": [
+      {
+        "id": "smoked_goat",
+        "qty": 2
+      },
+      {
+        "id": "rockmoss",
+        "qty": 1
+      },
+      {
+        "id": "deepcap",
+        "qty": 1
+      }
+    ],
+    "description": "Goat and mushroom on a skewer. Dwarf fast-food. Surprisingly good."
+  },
+  {
+    "id": "stoneroot_stew",
+    "name": "Stoneroot Stew",
+    "band": "undermarch",
+    "class": "food",
+    "method": "simmer",
+    "tier": 1,
+    "cookLevel": 1,
+    "primaryStat": "vit",
+    "ingredients": [
+      {
+        "id": "stone_root",
+        "qty": 2
+      },
+      {
+        "id": "deepcap",
+        "qty": 1
+      },
+      {
+        "id": "mountain_malt",
+        "qty": 1
+      }
+    ],
+    "description": "The stew that every Undermarch member grew up eating. Plain, strong, keeps all day."
+  },
+  {
+    "id": "rockmoss_crispbread",
+    "name": "Rockmoss Crispbread",
+    "band": "undermarch",
+    "class": "food",
+    "method": "bake",
+    "tier": 1,
+    "cookLevel": 1,
+    "primaryStat": "wil",
+    "ingredients": [
+      {
+        "id": "rockmoss",
+        "qty": 2
+      },
+      {
+        "id": "mountain_malt",
+        "qty": 1
+      },
+      {
+        "id": "deepcap",
+        "qty": 1
+      }
+    ],
+    "description": "Hard flatbread with rockmoss. Bitter. Clarifying in the dwarf manner."
+  },
+  {
+    "id": "ironbite_stout",
+    "name": "Ironbite Stout",
+    "band": "undermarch",
+    "class": "draught",
+    "method": "brew",
+    "tier": 1,
+    "cookLevel": 1,
+    "hazardEffect": "potency",
+    "ingredients": [
+      {
+        "id": "mountain_malt",
+        "qty": 2
+      },
+      {
+        "id": "hallspring_water",
+        "qty": 1
+      },
+      {
+        "id": "deepcap",
+        "qty": 1
+      }
+    ],
+    "description": "A flat stout brewed for penetration, not pleasure. The best one."
+  },
+  {
+    "id": "marrow_and_malt_broth",
+    "name": "Marrow and Malt Broth",
+    "band": "undermarch",
+    "class": "food",
+    "method": "simmer",
+    "tier": 2,
+    "cookLevel": 5,
+    "primaryStat": "mig",
+    "secondaryStat": "vit",
+    "ingredients": [
+      {
+        "id": "dried_marrow_bone",
+        "qty": 2
+      },
+      {
+        "id": "mountain_malt",
+        "qty": 1
+      },
+      {
+        "id": "cave_onion",
+        "qty": 1
+      },
+      {
+        "id": "stone_root",
+        "qty": 1
+      }
+    ],
+    "description": "Long-simmered marrow broth. Rich to the point of guilt."
+  },
+  {
+    "id": "goat_and_ironfoot",
+    "name": "Goat and Ironfoot",
+    "band": "undermarch",
+    "class": "food",
+    "method": "roast",
+    "tier": 2,
+    "cookLevel": 5,
+    "primaryStat": "agi",
+    "secondaryStat": "mig",
+    "ingredients": [
+      {
+        "id": "smoked_goat",
+        "qty": 2
+      },
+      {
+        "id": "ironfoot_shroom",
+        "qty": 1
+      },
+      {
+        "id": "deep_sage",
+        "qty": 1
+      }
+    ],
+    "description": "Roasted goat with ironfoot mushroom. The deep sage makes it."
+  },
+  {
+    "id": "deepcap_and_malt_loaf",
+    "name": "Deepcap and Malt Loaf",
+    "band": "undermarch",
+    "class": "food",
+    "method": "bake",
+    "tier": 2,
+    "cookLevel": 6,
+    "primaryStat": "vit",
+    "secondaryStat": "mig",
+    "ingredients": [
+      {
+        "id": "deepcap",
+        "qty": 2
+      },
+      {
+        "id": "mountain_malt",
+        "qty": 1
+      },
+      {
+        "id": "cave_onion",
+        "qty": 1
+      },
+      {
+        "id": "malt_syrup",
+        "qty": 1
+      }
+    ],
+    "description": "Dense mushroom bread. The stone_honey version is better but costs more."
+  },
+  {
+    "id": "stonewort_cure",
+    "name": "Stonewort Cure",
+    "band": "undermarch",
+    "class": "draught",
+    "method": "infuse",
+    "tier": 2,
+    "cookLevel": 4,
+    "hazardEffect": "hale",
+    "ingredients": [
+      {
+        "id": "stonewort",
+        "qty": 2
+      },
+      {
+        "id": "bitter_bulb",
+        "qty": 1
+      },
+      {
+        "id": "hallspring_water",
+        "qty": 1
+      }
+    ],
+    "description": "The traditional Undermarch disease-counter. Terrible taste. Works."
+  },
+  {
+    "id": "coldwort_warming_ale",
+    "name": "Coldwort Warming Ale",
+    "band": "undermarch",
+    "class": "draught",
+    "method": "brew",
+    "tier": 2,
+    "cookLevel": 5,
+    "hazardEffect": "warmth",
+    "ingredients": [
+      {
+        "id": "coldwort",
+        "qty": 2
+      },
+      {
+        "id": "mountain_thyme",
+        "qty": 1
+      },
+      {
+        "id": "mountain_ale_flat",
+        "qty": 1
+      }
+    ],
+    "description": "Brewed to survive the passes. Warmth-counter. A necessity, not a pleasure."
+  },
+  {
+    "id": "hearthbread",
+    "name": "Hearthbread",
+    "band": "all",
+    "class": "food",
+    "method": "bake",
+    "tier": 1,
+    "cookLevel": 1,
+    "primaryStat": "vit",
+    "secondaryStat": "mig",
+    "ingredients": [
+      {
+        "id": "hearthgrain",
+        "qty": 2
+      },
+      {
+        "id": "forest_honey",
+        "qty": 1
+      }
+    ],
+    "description": "★ Existing. Dense sweet bread. Not exciting. Deeply reliable."
+  },
+  {
+    "id": "wanderers_supper",
+    "name": "Wanderer's Supper",
+    "band": "all",
+    "class": "food",
+    "method": "simmer",
+    "tier": 1,
+    "cookLevel": 1,
+    "primaryStat": "agi",
+    "secondaryStat": "mig",
+    "ingredients": [
+      {
+        "id": "wanderer_fig",
+        "qty": 2
+      },
+      {
+        "id": "duskberry",
+        "qty": 1
+      }
+    ],
+    "description": "★ Existing. Light fare for people who eat on the move."
+  },
+  {
+    "id": "contemplative_tea",
+    "name": "Contemplative Tea",
+    "band": "all",
+    "class": "draught",
+    "method": "infuse",
+    "tier": 1,
+    "cookLevel": 1,
+    "primaryStat": "wil",
+    "secondaryStat": "agi",
+    "ingredients": [
+      {
+        "id": "sunpetal_herb",
+        "qty": 2
+      },
+      {
+        "id": "moonpetal",
+        "qty": 1
+      }
+    ],
+    "description": "★ Existing. NOTE: Reclassify from stat-food to draught or convert to solid per food rework."
   },
   {
     "id": "restorative_broth",
     "name": "Restorative Broth",
-    "description": "A plain broth, long-simmered. Ironroot for body, sunpetal herb for something the healers call 'knitting.' Not remarkable to eat. Remarkable for what it does afterward — tissue repairs faster, ache recedes, the body decides to continue.",
-    "buffType": "healing",
-    "flavorTag": "hearty",
-    "baseBuffStrength": 0,
-    "buffStrengthPerLevel": 0.0,
-    "durationMs": 3600000,
-    "levelRequired": 8,
+    "band": "all",
+    "class": "draught",
+    "method": "simmer",
+    "tier": 3,
+    "cookLevel": 8,
+    "hazardEffect": "hale",
     "ingredients": [
-      { "id": "ironroot", "qty": 1 },
-      { "id": "sunpetal_herb", "qty": 2 }
-    ]
+      {
+        "id": "ironroot",
+        "qty": 1
+      },
+      {
+        "id": "sunpetal_herb",
+        "qty": 2
+      }
+    ],
+    "description": "★ Existing. Long-simmered. Tissue repairs; ache recedes."
   },
   {
     "id": "athelas_infusion",
     "name": "Athelas Infusion",
-    "description": "A preparation of moonpetal steeped with ironbark resin and something rarer still. Raw athelas is a weed. In the right hands, prepared the right way, it becomes something else entirely — the last line between a grievous wound and what comes after. It does not always work. When it does, it is extraordinary.",
-    "buffType": "healing_deep",
-    "flavorTag": "herbal",
-    "baseBuffStrength": 0,
-    "buffStrengthPerLevel": 0.0,
-    "durationMs": 7200000,
-    "levelRequired": 12,
+    "band": "all",
+    "class": "draught",
+    "method": "infuse",
+    "tier": 5,
+    "cookLevel": 12,
+    "hazardEffect": "hale",
     "ingredients": [
-      { "id": "athelas", "qty": 2 },
-      { "id": "moonpetal", "qty": 1 },
-      { "id": "ironbark_resin", "qty": 1 }
-    ]
+      {
+        "id": "athelas",
+        "qty": 2
+      },
+      {
+        "id": "moonpetal",
+        "qty": 1
+      },
+      {
+        "id": "ironbark_resin",
+        "qty": 1
+      }
+    ],
+    "description": "★ Existing. The last line between a grievous wound and what comes after."
   }
 ]
