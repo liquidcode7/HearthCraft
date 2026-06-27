@@ -35,17 +35,30 @@ class CookingWorker @AssistedInject constructor(
         val recipeId = inputData.getString(KEY_RECIPE_ID) ?: return Result.failure()
         val recipe = gameData.recipes.find { it.id == recipeId } ?: return Result.failure()
 
+        val oldLevel = player.get()?.cookingLevel ?: 1
+
         val isFirstCook = inventory.preparedFoodQty(recipeId) == 0
         inventory.addPreparedFood(recipeId)
         val cookingXp = if (isFirstCook) PlayerRepository.XP_COOK_FIRST else PlayerRepository.XP_COOK_REPEAT
         player.addCookingXp(cookingXp)
+
+        // Always discover the recipe you just cooked
+        player.discoverRecipe(recipeId)
+
+        // If cooking XP caused a level-up, auto-discover all recipes now accessible
+        val newLevel = player.get()?.cookingLevel ?: 1
+        if (newLevel > oldLevel) {
+            val currentDiscovered = player.get()?.discoveredRecipeIds
+                ?.split(",")?.filter { it.isNotBlank() }?.toSet() ?: emptySet()
+            val toDiscover = gameData.recipes
+                .filter { it.cookLevel <= newLevel && it.id !in currentDiscovered }
+                .map { it.id }
+            player.discoverRecipes(toDiscover)
+        }
+
         sessions.clearCooking()
 
-        notify(
-            "Cooking Complete",
-            "${recipe.name} is ready.",
-            NOTIFICATION_ID
-        )
+        notify("Cooking Complete", "${recipe.name} is ready.", NOTIFICATION_ID)
 
         return Result.success()
     }
