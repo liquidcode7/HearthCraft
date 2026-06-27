@@ -228,6 +228,15 @@ function runFight(cfg, verbose) {
     t++;
     if (windows.dawn > 0) windows.dawn--;
     if (windows.horn > 0) { windows.horn--; }
+    // stun countdown
+    if (cfg.dread > 0) {
+      ORDER.forEach(k => {
+        if (M[k].stunned) {
+          M[k].stunTicks--;
+          if (M[k].stunTicks <= 0) { M[k].stunned = false; M[k].stunTicks = 0; lg(`${M[k].tpl.name} shakes free`); }
+        }
+      });
+    }
 
     const act = active();
     const live = standing();
@@ -235,7 +244,7 @@ function runFight(cfg, verbose) {
     // Keeper action
     let rescue = null;
     M.keeper._action = "damage";
-    if (!M.keeper.grievous && M.keeper.hp > 0 && rescuesUsed < RESCUE_CAP) {
+    if (!M.keeper.grievous && M.keeper.hp > 0 && !M.keeper.stunned && rescuesUsed < RESCUE_CAP) {
       for (const k of ORDER) {
         if (k==="keeper" || M[k].grievous) continue;
         if (M[k].hp <= 0) { rescue = k; break; }
@@ -308,7 +317,7 @@ function runFight(cfg, verbose) {
 
     // food healing (active members with hp > 0)
     act.forEach(k => {
-      if (M[k].hp <= 0) return;
+      if (M[k].hp <= 0 || M[k].stunned) return;
       const hornBlock = windows.horn > 0 && k === "warden"; // Warden gets no food heal during Horn window
       if (cfg.sink) {
         // Sink mode: no throttle; overflow above max banks into a finite reserve that absorbs spikes
@@ -357,6 +366,33 @@ function runFight(cfg, verbose) {
       let extra=0; haz.forEach(([hz,an])=>{ const str=cfg[hz]||0; if(str>0) extra+=(str*0.08)*(1-Math.min(1,(cfg[an]||0)/100)); });
       if(extra>0) act.forEach(k=>{ M[k].hp -= extra/act.length; }); }
 
+    // Layer B: dread action denial — checked every BREAK_CHECK_INTERVAL ticks
+    if (cfg.dread > 0 && t % BREAK_CHECK_INTERVAL === 0) {
+      const capWil = (!M.captain.grievous && !M.captain.stunned) ? M.captain.wil : 0;
+      const wCut = Math.min(1, capWil/100), hCut = Math.min(1, cfg.hope/100);
+      const neg = wCut + hCut;
+      const dreadPool = captW => {
+        const pool = [];
+        ORDER.forEach(k => { if (!M[k].grievous && !M[k].broken && !M[k].stunned && M[k].hp > 0) pool.push({k, w: k==="captain" ? captW : 1}); });
+        return pool;
+      };
+      const dreadPick = pool => {
+        const tot = pool.reduce((s,p) => s+p.w, 0);
+        if (!tot) return null;
+        let r = Math.random() * tot;
+        for (const p of pool) { r -= p.w; if (r <= 0) return p.k; }
+        return pool[pool.length-1]?.k || null;
+      };
+      if (neg < T_TEMP) {
+        const tgt = dreadPick(dreadPool(CAPTAIN_STUN_WEIGHT));
+        if (tgt) { M[tgt].stunned = true; M[tgt].stunTicks = STUN_TICKS; lg(`${M[tgt].tpl.name} seized by dread — ${STUN_TICKS}s lost`); events.push({t, kind:"dread-stun", who:M[tgt].tpl.name}); }
+      }
+      if (neg < T_PERM) {
+        const tgt = dreadPick(dreadPool(CAPTAIN_BREAK_WEIGHT));
+        if (tgt) { M[tgt].broken = true; lg(`${M[tgt].tpl.name} breaks — gone`); events.push({t, kind:"morale-break", who:M[tgt].tpl.name}); }
+      }
+    }
+
     // wound / grievous checks
     ORDER.forEach(k => {
       if (M[k].grievous) return;
@@ -364,7 +400,7 @@ function runFight(cfg, verbose) {
         M[k].atZero = true; M[k].wounds++;
         lg(`${M[k].tpl.name} hits zero — wound ${M[k].wounds}/${GRIEVOUS}`);
         if (M[k].wounds >= GRIEVOUS) {
-          if (!M.keeper.grievous && M.keeper.hp>0 && inspRoll(Math.min(0.25, cfg.graceBase + M.keeper.fat*cfg.fateInspCoef), inspBoost)) {
+          if (!M.keeper.grievous && !M.keeper.stunned && M.keeper.hp>0 && inspRoll(Math.min(0.25, cfg.graceBase + M.keeper.fat*cfg.fateInspCoef), inspBoost)) {
             M[k].wounds=0; M[k].hp=Math.round(M[k].max*0.4); M[k].atZero=false;
             events.push({t, kind:"Laurelin's Grace", who:M[k].tpl.name});
             lg(`★ LAURELIN'S GRACE — ${M[k].tpl.name} pulled back`);
@@ -382,14 +418,14 @@ function runFight(cfg, verbose) {
     if (inspBoost > 0) inspBoost = Math.max(0, inspBoost - 0.005);
     const nowTrouble = inTrouble();
     const crisisEdge = nowTrouble >= 2 && prevTrouble < 2; // just crossed the threshold
-    if (!fired.horn && crisisEdge && !M.warden.grievous && M.warden.hp>0 && inspRoll(Math.min(0.25, cfg.hornBase + M.warden.fat*cfg.fateInspCoef), inspBoost)) {
+    if (!fired.horn && crisisEdge && !M.warden.grievous && !M.warden.stunned && !M.warden.broken && M.warden.hp>0 && inspRoll(Math.min(0.25, cfg.hornBase + M.warden.fat*cfg.fateInspCoef), inspBoost)) {
       fired.horn=true; windows.horn=8;
       events.push({t, kind:"The Horn of Gondor", who:M.warden.tpl.name});
       lg(`★ HORN OF GONDOR — ${M.warden.tpl.name}`);
     }
 
     // Inspiration: Wrath, Ruin, and the Red Dawn (Captain) — same rising-edge gate
-    if (!fired.dawn && crisisEdge && !M.captain.grievous && M.captain.hp>0 && inspRoll(Math.min(0.25, cfg.dawnBase + M.captain.fat*cfg.fateInspCoef), 0)) {
+    if (!fired.dawn && crisisEdge && !M.captain.grievous && !M.captain.stunned && !M.captain.broken && M.captain.hp>0 && inspRoll(Math.min(0.25, cfg.dawnBase + M.captain.fat*cfg.fateInspCoef), 0)) {
       fired.dawn=true; windows.dawn=10;
       act.forEach(k => { M[k].hp = Math.min(M[k].max, M[k].hp + M[k].max*0.15); });
       inspBoost = 0.15;
@@ -403,7 +439,7 @@ function runFight(cfg, verbose) {
     if (!cfg.survival) boss = Math.max(0, boss - bd.eff * (1 + (Math.random()*2-1)*cfg.jitter));
 
     // Inspiration: Black Arrow (Hunter)
-    if (!baFired && !M.hunter.grievous && M.hunter.hp>0) {
+    if (!baFired && !M.hunter.grievous && !M.hunter.stunned && !M.hunter.broken && M.hunter.hp>0) {
       const elapsed = t/maxT;
       const ttk = bd.eff>0 ? boss/bd.eff : 1e9;
       const trem = maxT-t;
@@ -420,7 +456,7 @@ function runFight(cfg, verbose) {
 
     // termination
     if (!cfg.survival && boss <= 0) return _result("VICTORY", t, M, events, rescuesUsed, wardsUsed, logs, 0, cfg.boss);
-    if (!ORDER.some(k => !M[k].grievous && M[k].hp>0)) return _result("DEFEAT", t, M, events, rescuesUsed, wardsUsed, logs, boss, cfg.boss);
+    if (!ORDER.some(k => !M[k].grievous && !M[k].broken && M[k].hp>0)) return _result("DEFEAT", t, M, events, rescuesUsed, wardsUsed, logs, boss, cfg.boss);
     if (t >= maxT) return _result(cfg.survival?"REPELLED":"STALEMATE", t, M, events, rescuesUsed, wardsUsed, logs, boss, cfg.boss);
   }
 }
@@ -430,8 +466,10 @@ function _result(outcome, t, M, events, rescuesUsed, wardsUsed, logs, bossRemain
   const totalWounds = ORDER.reduce((s,k)=>s+M[k].wounds+(M[k].grievous?GRIEVOUS:0),0);
   const insps = events.filter(e=>/Grace|Horn|Red Dawn|Black Arrow/.test(e.kind));
   const closeness = bossMax > 0 ? bossRemaining / bossMax : 0; // 0 = kill, 1 = never scratched
+  const stunCount  = events.filter(e => e.kind === "dread-stun").length;
+  const breakCount = events.filter(e => e.kind === "morale-break").length;
   return { outcome, t, grievous, totalWounds, rescuesUsed, wardsUsed, events, insps, logs,
-    bossRemaining, closeness,
+    bossRemaining, closeness, stunCount, breakCount,
     wounds: Object.fromEntries(ORDER.map(k=>[k, M[k].wounds+(M[k].grievous?GRIEVOUS:0)])) };
 }
 
@@ -439,7 +477,7 @@ function _result(outcome, t, M, events, rescuesUsed, wardsUsed, logs, bossRemain
 function runMany(cfg, n, verbose) {
   const counts   = { VICTORY:0, DEFEAT:0, STALEMATE:0, REPELLED:0 };
   const inspFired = { "Laurelin's Grace":0, "The Horn of Gondor":0, "Wrath, Ruin, and the Red Dawn":0, "Black Arrow":0, "Black Arrow (flaming)":0 };
-  let totalWounds=0, totalRescues=0, totalWardsUsed=0, totalTime=0;
+  let totalWounds=0, totalRescues=0, totalWardsUsed=0, totalTime=0, totalStuns=0, totalBreaks=0;
   const woundsByRole = Object.fromEntries(ORDER.map(k=>[k,0]));
   // close-call tracking: defeats where enemy was < 25% resolve remaining
   let closeDefeats=0, totalBossRemaining=0, defeatCount=0;
@@ -451,6 +489,8 @@ function runMany(cfg, n, verbose) {
     totalWounds  += r.totalWounds;
     totalRescues += r.rescuesUsed;
     totalWardsUsed += r.wardsUsed;
+    totalStuns   += r.stunCount || 0;
+    totalBreaks  += r.breakCount || 0;
     totalTime    += r.t;
     ORDER.forEach(k => woundsByRole[k] += r.wounds[k]);
     r.insps.forEach(e => { if (inspFired[e.kind]!==undefined) inspFired[e.kind]++; });
@@ -463,7 +503,8 @@ function runMany(cfg, n, verbose) {
   }
 
   return { counts, inspFired, totalWounds, totalRescues, totalWardsUsed, totalTime,
-           woundsByRole, n, sample, closeDefeats, totalBossRemaining, defeatCount };
+           woundsByRole, n, sample, closeDefeats, totalBossRemaining, defeatCount,
+           totalStuns, totalBreaks };
 }
 
 // ── reporting ──────────────────────────────────────────────────────────────
@@ -478,6 +519,7 @@ function report(cfg, res) {
   console.log(`Modes: ${modes}`);
   console.log(`Boss ${cfg.boss} resolve  |  Drain ${cfg.drain}/s  |  Spike ${cfg.spike} every ${cfg.spikeiv}s`);
   if (cfg.phys>0) console.log(`Armor ${Math.round(cfg.phys*100)}% | Draught potency ${cfg.potency} / ${PEN_SCALE}`);
+  if (cfg.dread>0) console.log(`Dread ${cfg.dread} | Hope ${cfg.hope} | Avg stuns/fight: ${(res.totalStuns/n).toFixed(2)} | Avg breaks/fight: ${(res.totalBreaks/n).toFixed(2)}`);
   // food line
   const anyMemberRecipe = cfg.memberRecipes && Object.values(cfg.memberRecipes).find(r => r !== null);
   if (anyMemberRecipe && cfg.flArg !== null) {
