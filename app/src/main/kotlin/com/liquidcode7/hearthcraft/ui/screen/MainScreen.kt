@@ -2,10 +2,10 @@ package com.liquidcode7.hearthcraft.ui.screen
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Flag
 import androidx.compose.material.icons.filled.Forest
 import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Inventory
 import androidx.compose.material.icons.filled.LocalDining
 import androidx.compose.material.icons.filled.Storefront
 import androidx.compose.material3.Icon
@@ -25,12 +25,12 @@ import androidx.navigation.compose.rememberNavController
 private data class Tab(val route: String, val label: String, val icon: ImageVector)
 
 private val tabs = listOf(
-    Tab("home", "Home", Icons.Filled.Home),
-    Tab("gather", "Gather", Icons.Filled.Forest),
-    Tab("kitchen", "Kitchen", Icons.Filled.LocalDining),
-    Tab("band", "Band", Icons.Filled.Groups),
-    Tab("pantry", "Pantry", Icons.Filled.Inventory),
-    Tab("market", "Market", Icons.Filled.Storefront),
+    Tab("home",     "Home",     Icons.Filled.Home),
+    Tab("gather",   "Gather",   Icons.Filled.Forest),
+    Tab("kitchen",  "Kitchen",  Icons.Filled.LocalDining),
+    Tab("band",     "Band",     Icons.Filled.Groups),
+    Tab("missions", "Missions", Icons.Filled.Flag),
+    Tab("market",   "Market",   Icons.Filled.Storefront),
 )
 
 private val tabRoutes = tabs.map { it.route }.toSet()
@@ -68,22 +68,23 @@ fun MainScreen() {
             startDestination = "home",
             modifier = Modifier.padding(innerPadding)
         ) {
-            composable("home") { HomeScreen() }
-            composable("gather") { GatheringScreen() }
-            composable("kitchen") {
-                KitchenScreen(onViewRecipes = { navController.navigate("recipe_book") })
+            composable("home")     { HomeScreen() }
+            composable("gather")   { GatheringScreen() }
+            composable("kitchen")  {
+                KitchenScreen(
+                    onViewRecipes = { navController.navigate("recipe_book") },
+                    onViewPantry  = { navController.navigate("pantry") }
+                )
             }
             composable("recipe_book") {
                 RecipeBookScreen(onBack = { navController.popBackStack() })
             }
-            composable("band") {
-                BandScreen(onMissionBoard = { navController.navigate("mission_board") })
+            composable("pantry") {
+                PantryScreen(onBack = { navController.popBackStack() })
             }
-            composable("mission_board") {
-                MissionBoardScreen(onBack = { navController.popBackStack() })
-            }
-            composable("pantry") { PantryScreen() }
-            composable("market") { MarketScreen() }
+            composable("band")     { BandScreen() }
+            composable("missions") { MissionsScreen() }
+            composable("market")   { MarketScreen() }
         }
     }
 }

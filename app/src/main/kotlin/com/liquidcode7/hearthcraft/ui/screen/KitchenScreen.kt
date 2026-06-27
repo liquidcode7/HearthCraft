@@ -1,6 +1,7 @@
 package com.liquidcode7.hearthcraft.ui.screen
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -38,6 +39,7 @@ import kotlinx.coroutines.delay
 @Composable
 fun KitchenScreen(
     onViewRecipes: () -> Unit,
+    onViewPantry: () -> Unit = {},
     viewModel: KitchenViewModel = hiltViewModel()
 ) {
     val session by viewModel.session.collectAsState()
@@ -98,8 +100,13 @@ fun KitchenScreen(
                 .padding(horizontal = 16.dp)
         ) {
             Spacer(modifier = Modifier.height(12.dp))
-            OutlinedButton(onClick = onViewRecipes, modifier = Modifier.fillMaxWidth()) {
-                Text("Recipe Book")
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedButton(onClick = onViewRecipes, modifier = Modifier.weight(1f)) {
+                    Text("Recipe Book")
+                }
+                OutlinedButton(onClick = onViewPantry, modifier = Modifier.weight(1f)) {
+                    Text("Pantry")
+                }
             }
             Spacer(modifier = Modifier.height(12.dp))
             Text("Select a Recipe", style = MaterialTheme.typography.titleSmall)

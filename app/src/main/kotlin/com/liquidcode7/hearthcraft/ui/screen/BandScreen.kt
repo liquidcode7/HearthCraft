@@ -1,6 +1,5 @@
 package com.liquidcode7.hearthcraft.ui.screen
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -11,7 +10,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilterChip
@@ -38,7 +36,6 @@ import kotlinx.coroutines.delay
 
 @Composable
 fun BandScreen(
-    onMissionBoard: () -> Unit,
     bandViewModel: BandViewModel = hiltViewModel(),
     inventoryViewModel: InventoryViewModel = hiltViewModel()
 ) {
@@ -47,8 +44,6 @@ fun BandScreen(
     val members by bandViewModel.members.collectAsState()
     val hasAliveMembers by bandViewModel.hasAliveMembers.collectAsState()
     val encounters by bandViewModel.encounters.collectAsState()
-    val selectedFood by bandViewModel.selectedFood.collectAsState()
-    val selectedEncounter by bandViewModel.selectedEncounter.collectAsState()
     val preparedFood by inventoryViewModel.preparedFood.collectAsState()
     val viewingSecond by bandViewModel.viewingSecond.collectAsState()
     val isSecondBandUnlocked by bandViewModel.isSecondBandUnlocked.collectAsState()
@@ -155,42 +150,12 @@ fun BandScreen(
                 }
             }
         } else if (activeMission == null && activeEncounterSession == null) {
-            Spacer(modifier = Modifier.height(16.dp))
-            OutlinedButton(onClick = onMissionBoard, modifier = Modifier.fillMaxWidth()) {
-                Text("Mission Board")
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-            Text("Provision & Send", style = MaterialTheme.typography.titleSmall)
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text("Select Food:", style = MaterialTheme.typography.labelMedium)
-            Spacer(modifier = Modifier.height(4.dp))
-            if (preparedFood.isEmpty()) {
-                Text(
-                    "No prepared food in pantry.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            } else {
-                preparedFood.forEach { food ->
-                    FoodRow(
-                        food = food,
-                        isSelected = food.recipeId == selectedFood?.recipeId,
-                        onClick = { bandViewModel.selectFood(food) }
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                }
-            }
-
             Spacer(modifier = Modifier.height(12.dp))
-            Button(
-                onClick = { bandViewModel.sendOnEncounter() },
-                enabled = selectedFood != null && selectedEncounter?.isUnlocked == true,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Send on Mission")
-            }
+            Text(
+                "Ready. Go to Missions to provision and send.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }
@@ -274,27 +239,6 @@ private fun MemberRow(member: BandMemberWithState) {
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-        }
-    }
-}
-
-@Composable
-private fun FoodRow(food: PreparedFoodDetail, isSelected: Boolean, onClick: () -> Unit) {
-    Card(
-        onClick = onClick,
-        border = if (isSelected) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null,
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Row(modifier = Modifier.padding(10.dp)) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(food.name, style = MaterialTheme.typography.bodySmall)
-                Text(
-                    "${food.buffType} +${food.buffStrength}",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-            Text("×${food.quantity}", style = MaterialTheme.typography.bodySmall)
         }
     }
 }
