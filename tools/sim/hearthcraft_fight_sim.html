@@ -874,11 +874,13 @@ const inspRoll=(base,boost)=>Math.random()<(base+boost);
 function stepOnce(){
   t++;let tickHeal=0;
   if(windows.dawn>0)windows.dawn--;
+  // stun countdown — decrement before this tick's action to let them act on the tick they recover
+  if(P.dread>0){ORDER.forEach(k=>{if(M[k].stunned){M[k].stunTicks--;if(M[k].stunTicks<=0){M[k].stunned=false;M[k].stunTicks=0;log(`${M[k].tpl.name} shakes free — action restored`,"g");}}});}
   if(windows.horn>0){windows.horn--;if(windows.horn===0&&M.warden)M.warden.horn=false;}
   const act=active();
   let rescue=null;
   // Keeper rescues someone at zero — but only if charges remain (capped per fight)
-  if(!M.keeper.grievous && M.keeper.hp>0 && rescuesUsed<RESCUE_CAP){for(const k of ORDER){if(k==="keeper"||M[k].grievous)continue;if(M[k].hp<=0){rescue=k;break;}}M.keeper.action=rescue?"burst":"damage";}
+  if(!M.keeper.grievous && M.keeper.hp>0 && !M.keeper.stunned && rescuesUsed<RESCUE_CAP){for(const k of ORDER){if(k==="keeper"||M[k].grievous)continue;if(M[k].hp<=0){rescue=k;break;}}M.keeper.action=rescue?"burst":"damage";}
   else if(!M.keeper.grievous){M.keeper.action="damage";}
   // STEADY DRAIN: independent — each active member soaks drain/4, regardless of who else is standing
   {act.filter(k=>M[k].hp>0).forEach(k=>{M[k].hp-=P.drain/4;});}
@@ -909,7 +911,7 @@ function stepOnce(){
     });
   }
   // food healing (steady, LIVING ONLY) — overflow above max morale banks into the reserve pool (cap RMAX)
-  act.forEach(k=>{if(M[k].hp<=0)return;const heal=foodOf(k);
+  act.forEach(k=>{if(M[k].hp<=0||M[k].stunned)return;const heal=foodOf(k);
     const next=M[k].hp+heal;
     if(next>M[k].max){M[k].reserve=Math.min(RMAX,M[k].reserve+(next-M[k].max));}
     if(!(windows.horn>0&&k==="warden"))M[k].hp=Math.min(M[k].max,next);});
@@ -930,9 +932,19 @@ function stepOnce(){
   {const haz=[["disease","hale"],["cold","warmth"],["heat","heatease"],["wake","alert"]];
    let extra=0; haz.forEach(([hz,an])=>{const str=P[hz]||0; if(str>0){extra+=(str*0.08)*(1-Math.min(1,(P[an]||0)/100));}});
    if(extra>0)act.forEach(k=>{M[k].hp-=extra/act.length;});}
+  // --- DREAD Layer B: action denial — checked every BREAK_CHECK_INTERVAL ticks ---
+  if(P.dread>0&&t%BREAK_CHECK_INTERVAL===0){
+    const capWil=(!M.captain.grievous&&!M.captain.stunned)?M.captain.wil:0;
+    const wCut=Math.min(1,capWil/100),hCut=Math.min(1,P.hope/100);
+    const neg=wCut+hCut;
+    function dreadPool(captW){const pool=[];ORDER.forEach(k=>{if(!M[k].grievous&&!M[k].broken&&!M[k].stunned&&M[k].hp>0)pool.push({k,w:k==="captain"?captW:1});});return pool;}
+    function dreadPick(pool){const tot=pool.reduce((s,p)=>s+p.w,0);if(!tot)return null;let r=Math.random()*tot;for(const p of pool){r-=p.w;if(r<=0)return p.k;}return pool[pool.length-1]?.k||null;}
+    if(neg<T_TEMP){const tgt=dreadPick(dreadPool(CAPTAIN_STUN_WEIGHT));if(tgt){M[tgt].stunned=true;M[tgt].stunTicks=STUN_TICKS;log(`${M[tgt].tpl.name} is seized by dread — action lost for ${STUN_TICKS} seconds`,"t");events.push({t,kind:"dread-stun",who:M[tgt].tpl.name});}}
+    if(neg<T_PERM){const tgt=dreadPick(dreadPool(CAPTAIN_BREAK_WEIGHT));if(tgt){M[tgt].broken=true;log(`${M[tgt].tpl.name}'s courage fails — they are gone`,"t");events.push({t,kind:"morale-break",who:M[tgt].tpl.name});}}
+  }
   ORDER.forEach(k=>{if(M[k].grievous)return;
     if(M[k].hp<=0&&!M[k].atZero){M[k].atZero=true;M[k].wounds++;log(`${M[k].tpl.name} hits zero — a wound (${M[k].wounds}/${GRIEVOUS})`,"t");
-      if(M[k].wounds>=GRIEVOUS){if(!M.keeper.grievous&&M.keeper.hp>0&&inspRoll(Math.min(0.25,P.graceBase+M.keeper.fat*0.003),inspBoost)){M[k].wounds=0;M[k].hp=Math.round(M[k].max*0.4);M[k].atZero=false;
+      if(M[k].wounds>=GRIEVOUS){if(!M.keeper.grievous&&!M.keeper.stunned&&M.keeper.hp>0&&inspRoll(Math.min(0.25,P.graceBase+M.keeper.fat*0.003),inspBoost)){M[k].wounds=0;M[k].hp=Math.round(M[k].max*0.4);M[k].atZero=false;
           log(`&#10022; LAURELIN'S GRACE — Cael calls upon Laurelin's Grace, and the shadow loosens its hold on ${M[k].tpl.name}`,"insp");events.push({t,kind:"Laurelin's Grace",who:M[k].tpl.name});}
         else{M[k].grievous=true;log(`${M[k].tpl.name} takes a GRIEVOUS wound — out of the fight`,"t");events.push({t,kind:"grievous",who:M[k].tpl.name});}}}
     if(M[k].hp>5)M[k].atZero=false;});
@@ -956,14 +968,14 @@ function stepOnce(){
   }
   if(inspBoost>0)inspBoost=Math.max(0,inspBoost-0.005);
   const nowTrouble=inTrouble(), crisisEdge=nowTrouble>=2&&prevTrouble<2;
-  if(crisisEdge&&!fired.horn&&!M.warden.grievous&&M.warden.hp>0&&inspRoll(Math.min(0.25,P.hornBase+M.warden.fat*0.003),inspBoost)){fired.horn=true;windows.horn=8;M.warden.horn=true;
+  if(crisisEdge&&!fired.horn&&!M.warden.grievous&&!M.warden.stunned&&!M.warden.broken&&M.warden.hp>0&&inspRoll(Math.min(0.25,P.hornBase+M.warden.fat*0.003),inspBoost)){fired.horn=true;windows.horn=8;M.warden.horn=true;
     log(`&#10022; THE HORN OF GONDOR — ${M.warden.tpl.name} blows the Horn of Gondor and refuses to fall`,"insp");events.push({t,kind:"The Horn of Gondor",who:M.warden.tpl.name});}
-  if(crisisEdge&&!fired.dawn&&!M.captain.grievous&&M.captain.hp>0&&inspRoll(Math.min(0.25,P.dawnBase+M.captain.fat*0.003),0)){fired.dawn=true;windows.dawn=10;act.forEach(k=>{M[k].hp=Math.min(M[k].max,M[k].hp+M[k].max*0.15);});
+  if(crisisEdge&&!fired.dawn&&!M.captain.grievous&&!M.captain.stunned&&!M.captain.broken&&M.captain.hp>0&&inspRoll(Math.min(0.25,P.dawnBase+M.captain.fat*0.003),0)){fired.dawn=true;windows.dawn=10;act.forEach(k=>{M[k].hp=Math.min(M[k].max,M[k].hp+M[k].max*0.15);});
     inspBoost=0.15;
     log(`&#10022; WRATH, RUIN, AND THE RED DAWN — ${M.captain.tpl.name} cries: 'Now for wrath, now for ruin, and the red dawn!' (all Inspirations boosted)`,"insp");events.push({t,kind:"Wrath, Ruin, and the Red Dawn",who:M.captain.tpl.name});}
   prevTrouble=nowTrouble;
   const bd=dpsBreakdown();let boss=window._boss;const _jit=(+($("jitter")||{value:10}).value)/100;if(!P.unkill)boss=Math.max(0,boss-bd.eff*(1+(Math.random()*2-1)*_jit));window._boss=boss;
-  if(!baFired&&!M.hunter.grievous&&M.hunter.hp>0){const elapsed=t/maxT;const ttk=bd.eff>0?boss/bd.eff:1e9;const trem=maxT-t;
+  if(!baFired&&!M.hunter.grievous&&!M.hunter.stunned&&!M.hunter.broken&&M.hunter.hp>0){const elapsed=t/maxT;const ttk=bd.eff>0?boss/bd.eff:1e9;const trem=maxT-t;
     const losing=P.unkill?(elapsed>0.5):(ttk>trem&&elapsed>0.4);
     if(losing){const rise=Math.min(P.blackArrowCap,(elapsed-0.4)*P.blackArrowCap*2.5);
       if(inspRoll(rise+M.hunter.fat*0.003,inspBoost)){baFired=true;
@@ -983,7 +995,7 @@ function stepOnce(){
   // VICTORY needs only the kill landed by whoever is still standing — grievous casualties are survivable, the band just needs healing time after.
   if(!P.unkill&&boss<=0){finish("VICTORY","v-victory");return true;}
   // DEFEAT only if NO ONE is left standing (all downed or grievous) — then there's no damage and no rescuer.
-  if(!ORDER.some(k=>!M[k].grievous&&M[k].hp>0)){finish("DEFEAT","v-defeat");return true;}
+  if(!ORDER.some(k=>!M[k].grievous&&!M[k].broken&&M[k].hp>0)){finish("DEFEAT","v-defeat");return true;}
   if(t>=maxT){finish(P.unkill?"REPELLED":"STALEMATE",P.unkill?"v-repelled":"v-stalemate");return true;}
   return false;}
 
@@ -1021,7 +1033,8 @@ function buildSummary(verdict){
   else saga+="No grace was needed — or none came. ";
   let after=`<div class="after">`;
   ORDER.forEach(k=>{const m=M[k];let cls,txt;
-    if(m.grievous){cls="ag";txt="grievous — Houses of Healing";}else if(m.wounds>=3){cls="aw";txt=`${m.wounds} wounds — significant rest`;}
+    if(m.broken){cls="ag";txt="fled the field — morale shattered";}
+    else if(m.grievous){cls="ag";txt="grievous — Houses of Healing";}else if(m.wounds>=3){cls="aw";txt=`${m.wounds} wounds — significant rest`;}
     else if(m.wounds>0){cls="aw";txt=`${m.wounds} wound${m.wounds>1?'s':''} — short rest`;}else{cls="ah";txt="unhurt";}
     after+=`<div class="m-card"><b>${m.tpl.name}</b> <span class="${cls}">${txt}</span></div>`;});
   after+=`</div>`;
