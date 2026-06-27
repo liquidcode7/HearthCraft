@@ -801,9 +801,9 @@ function updEffects(){const drainPer=+$("drain").value/4;
 // returns full breakdown incl penetration + Dread(Will+Hope) + Shadow effects
 function dpsBreakdown(){
   const ZERO={warden:0,hunter:0,keeper:0,captain:0};
-  if(P.unkill)return {raw:0,physAfter:0,dreadAfter:0,eff:0,penSaved:0,willSaved:0,hopeSaved:0,potency:0,effBy:{warden:0,hunter:0,keeper:0,captain:0,captain_phys:0,captain_magic:0},physMitTotal:0,magicDmg:0,dawnBoost:0};
+  if(P.unkill)return {raw:0,physAfter:0,layerADrag:0,eff:0,penSaved:0,willSaved:0,hopeSaved:0,potency:0,effBy:{warden:0,hunter:0,keeper:0,captain:0,captain_phys:0,captain_magic:0},physMitTotal:0,magicDmg:0,dawnBoost:0};
   const rawBy={warden:0,hunter:0,keeper:0,captain:0};
-  let raw=0;ORDER.forEach(k=>{if(M[k].grievous||M[k].hp<=0)return;
+  let raw=0;ORDER.forEach(k=>{if(M[k].grievous||M[k].hp<=0||M[k].stunned||M[k].broken)return;
     let r=0;
     if(k==="keeper"){if(M[k].action!=="burst")r=M[k].wil*0.9;}
     else if(k==="hunter")r=M[k].agi+M[k].mig*0.4;else if(k==="warden")r=M[k].mig*0.5;
@@ -814,40 +814,44 @@ function dpsBreakdown(){
   const potency=draughtPotency();
   const physRaw=P.phys;
   const physAfter=Math.max(0,physRaw*(1-Math.min(1,potency/PEN_SCALE)));
-  // DREAD: Will (stat, current = possibly shadow-drained) + Hope (flat %, additive then cap)
-  const capWill=(!M.captain.grievous)?M.captain.wil:0;
+  // DREAD: Layer A two-term formula — variable drag (suppressed by counters) + floor (always present)
+  const capWill=(!M.captain.grievous&&!M.captain.stunned)?M.captain.wil:0;
   const dreadRaw=P.dread;
   const willCut=Math.min(1,capWill/100), hopeCut=Math.min(1,P.hope/100);
-  const dreadAfter=Math.max(0,dreadRaw*(1-Math.min(1,willCut+hopeCut)));
-  const eff=raw*(1-physAfter)*(1-dreadAfter);
+  const negation=willCut+hopeCut;
+  const effectiveDread=dreadRaw*(1-Math.min(1,negation));
+  const layerADrag=Math.min(1,effectiveDread*DREAD_VAR_COEF+dreadRaw*DREAD_FLOOR_COEF);
+  const eff=raw*(1-physAfter)*(1-layerADrag);
   // preserved-by-counter decomposition
-  const effNoPen=raw*(1-physRaw)*(1-dreadAfter);
-  const dreadNoWill=Math.max(0,dreadRaw*(1-hopeCut));
-  const dreadNoHope=Math.max(0,dreadRaw*(1-willCut));
-  const effNoWill=raw*(1-physAfter)*(1-dreadNoWill);
-  const effNoHope=raw*(1-physAfter)*(1-dreadNoHope);
+  const effNoPen=raw*(1-physRaw)*(1-layerADrag);
+  const dreadNoWill=dreadRaw*(1-Math.min(1,hopeCut));
+  const layerANoWill=Math.min(1,dreadNoWill*DREAD_VAR_COEF+dreadRaw*DREAD_FLOOR_COEF);
+  const dreadNoHope=dreadRaw*(1-Math.min(1,willCut));
+  const layerANoHope=Math.min(1,dreadNoHope*DREAD_VAR_COEF+dreadRaw*DREAD_FLOOR_COEF);
+  const effNoWill=raw*(1-physAfter)*(1-layerANoWill);
+  const effNoHope=raw*(1-physAfter)*(1-layerANoHope);
   // per-member effective DPS: Keeper is magic-only; Hunter/Warden are physical; Captain is 50/50 hybrid.
   const effBy={};
   ORDER.forEach(k=>{
     if(k==="captain"){
-      const captPhysRaw=M.captain.grievous?0:M.captain.mig*0.3*(windows.dawn>0?1.5:1);
-      const captMagicRaw=M.captain.grievous?0:M.captain.wil*0.2*(windows.dawn>0?1.5:1);
-      effBy.captain_phys=captPhysRaw*(1-physAfter)*(1-dreadAfter);
-      effBy.captain_magic=captMagicRaw*(1-dreadAfter);
+      const captPhysRaw=(M.captain.grievous||M.captain.stunned||M.captain.broken)?0:M.captain.mig*0.3*(windows.dawn>0?1.5:1);
+      const captMagicRaw=(M.captain.grievous||M.captain.stunned||M.captain.broken)?0:M.captain.wil*0.2*(windows.dawn>0?1.5:1);
+      effBy.captain_phys=captPhysRaw*(1-physAfter)*(1-layerADrag);
+      effBy.captain_magic=captMagicRaw*(1-layerADrag);
       effBy.captain=effBy.captain_phys+effBy.captain_magic;
     } else {
       const isPhys=k!=="keeper";
-      effBy[k]=rawBy[k]*(isPhys?(1-physAfter)*(1-dreadAfter):(1-dreadAfter));
+      effBy[k]=rawBy[k]*(isPhys?(1-physAfter)*(1-layerADrag):(1-layerADrag));
     }
   });
   // damage mitigated — Captain's Mig-driven half counts toward armor absorption, Will-driven half bypasses
-  const captPhysRawGlobal=M.captain.grievous?0:M.captain.mig*0.3*(windows.dawn>0?1.5:1);
-  const captMagicRawGlobal=M.captain.grievous?0:M.captain.wil*0.2*(windows.dawn>0?1.5:1);
-  const physMitTotal=(rawBy.warden+rawBy.hunter+captPhysRawGlobal)*physAfter*(1-dreadAfter);
-  const magicDmg=rawBy.keeper*(1-dreadAfter)+captMagicRawGlobal*(1-dreadAfter);
+  const captPhysRawGlobal=(M.captain.grievous||M.captain.stunned||M.captain.broken)?0:M.captain.mig*0.3*(windows.dawn>0?1.5:1);
+  const captMagicRawGlobal=(M.captain.grievous||M.captain.stunned||M.captain.broken)?0:M.captain.wil*0.2*(windows.dawn>0?1.5:1);
+  const physMitTotal=(rawBy.warden+rawBy.hunter+captPhysRawGlobal)*physAfter*(1-layerADrag);
+  const magicDmg=rawBy.keeper*(1-layerADrag)+captMagicRawGlobal*(1-layerADrag);
   // Red Dawn boost this tick: when active, raw was already multiplied by 1.5; delta = raw/1.5 * 0.5
   const dawnBoost=windows.dawn>0 ? (raw/1.5)*0.5 : 0;
-  return {raw,physRaw,physAfter,dreadRaw,dreadAfter,eff:Math.max(0,eff),
+  return {raw,physRaw,physAfter,dreadRaw,layerADrag,eff:Math.max(0,eff),
     penSaved:Math.max(0,eff-effNoPen), willSaved:Math.max(0,eff-effNoWill), hopeSaved:Math.max(0,eff-effNoHope),
     potency, effBy, physMitTotal:Math.max(0,physMitTotal), magicDmg:Math.max(0,magicDmg), dawnBoost};
 }
@@ -967,7 +971,7 @@ function stepOnce(){
         else{boss=Math.max(0,boss-P.boss*0.35);window._boss=boss;log(`&#10022; BLACK ARROW — ${M.hunter.tpl.name} draws the Black Arrow — go now, and speed well!`,"insp");events.push({t,kind:"Black Arrow",who:M.hunter.tpl.name});}}}}
   // record time-series frame
   const incoming=P.drain+P.spike/P.spikeiv;
-  series.push({t,boss:boss,dps:bd.eff,raw:bd.raw,penSaved:bd.penSaved,willSaved:bd.willSaved,hopeSaved:bd.hopeSaved,sustain:sustain(),incoming,
+  series.push({t,boss:boss,dps:bd.eff,raw:bd.raw,penSaved:bd.penSaved,willSaved:bd.willSaved,hopeSaved:bd.hopeSaved,layerADrag:bd.layerADrag||0,sustain:sustain(),incoming,
     effBy:{warden:bd.effBy.warden,hunter:bd.effBy.hunter,keeper:bd.effBy.keeper,captain:bd.effBy.captain,captain_phys:bd.effBy.captain_phys||0,captain_magic:bd.effBy.captain_magic||0},
     physMitTotal:bd.physMitTotal||0, magicDmg:bd.magicDmg||0, dawnBoost:bd.dawnBoost||0, healBy:{keeper:tickHeal},
     spirit:{wil:ORDER.reduce((a,k)=>a+(M[k].grievous?0:M[k].wil),0),fat:ORDER.reduce((a,k)=>a+(M[k].grievous?0:M[k].fat),0)},
@@ -997,10 +1001,10 @@ function updLive(bd,boss,incoming){
   $("g_shadowrow").style.display=showShadow?"":"none";
   if(showPhys){$("g_phys").textContent="\u2212"+Math.round(bd.physAfter*100)+"%";$("g_pensave").textContent="+"+Math.round(bd.penSaved)+" dps";
     $("g_pendetail").innerHTML=`&nbsp;&nbsp;Draught potency ${Math.round(bd.potency||0)} / ${PEN_SCALE} &#8594; strips ${Math.round(Math.min(1,(bd.potency||0)/PEN_SCALE)*100)}% of armor`;}
-  if(showDread){$("g_dreadval").textContent="\u2212"+Math.round(bd.dreadAfter*100)+"%";$("g_willsave").textContent="+"+Math.round(bd.willSaved)+" dps";$("g_hopesave").textContent="+"+Math.round(bd.hopeSaved)+" dps";}
+  if(showDread){$("g_dreadval").textContent="\u2212"+Math.round((bd.layerADrag||0)*100)+"%";$("g_willsave").textContent="+"+Math.round(bd.willSaved)+" dps";$("g_hopesave").textContent="+"+Math.round(bd.hopeSaved)+" dps";}
   if(showShadow){const lost=ORDER.reduce((a,k)=>a+(M[k].grievous?0:M[k].shDrain),0);$("g_shadowval").textContent="\u2212"+Math.round(lost)+" spirit";}
   $("g_dps").innerHTML="<b>"+Math.round(bd.eff)+"</b>";
-  if(bd.effBy){ORDER.forEach(k=>{const el=$("g_dps_"+k);if(el)el.innerHTML=M[k].grievous?'<span class="no">grievous</span>':(M[k].hp<=0?'<span class="no">down</span>':(k==="keeper"&&M[k].action==="burst"?'<span style="color:var(--keeper)">rescuing</span>':"<b>"+Math.round(bd.effBy[k])+"</b>"));});}
+  if(bd.effBy){ORDER.forEach(k=>{const el=$("g_dps_"+k);if(el)el.innerHTML=M[k].grievous?'<span class="no">grievous</span>':M[k].broken?'<span class="no">fled</span>':M[k].stunned?'<span style="color:#9a3526">frozen</span>':(M[k].hp<=0?'<span class="no">down</span>':(k==="keeper"&&M[k].action==="burst"?'<span style="color:var(--keeper)">rescuing</span>':"<b>"+Math.round(bd.effBy[k])+"</b>"));});}
   $("g_keep").innerHTML=M.keeper.grievous?'<span class="no">grievous</span>':(M.keeper.action==="burst"?'<span class="no">rescuing</span>':'<span class="ok">attacking</span>')+` <span style="color:#8a7355">(${RESCUE_CAP-rescuesUsed}/${RESCUE_CAP} rescues left)</span>`;
   $("g_ttk").textContent=P.unkill?fmtT(Math.max(0,maxT-t)):(bd.eff>0?Math.ceil(boss/bd.eff)+"s":"\u221e");
   $("clock").textContent=fmtT(t);$("speed").textContent=P.unkill?"surviving":`${Math.round(bd.eff)} dps`;
