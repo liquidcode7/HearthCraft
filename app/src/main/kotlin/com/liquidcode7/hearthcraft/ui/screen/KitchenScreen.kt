@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -25,7 +24,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -35,7 +33,6 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -229,7 +226,10 @@ private fun ExperimentPanel(
     val methods = listOf("simmer", "cook", "bake", "roast", "infuse", "brew")
 
     if (cookingLevel >= 3) {
-        FoodHintsCard(expanded = !hintsSeen, onToggle = { viewModel.markHintsSeen() })
+        FoodHintsCard(
+            initiallyExpanded = !hintsSeen,
+            onCollapse = { viewModel.markHintsSeen() }
+        )
         Spacer(modifier = Modifier.height(12.dp))
     }
 
@@ -364,7 +364,8 @@ private fun ExperimentResultCard(result: ExperimentResult, onDismiss: () -> Unit
 }
 
 @Composable
-private fun FoodHintsCard(expanded: Boolean, onToggle: () -> Unit) {
+private fun FoodHintsCard(initiallyExpanded: Boolean, onCollapse: () -> Unit) {
+    var expanded by remember { mutableStateOf(initiallyExpanded) }
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
@@ -376,7 +377,10 @@ private fun FoodHintsCard(expanded: Boolean, onToggle: () -> Unit) {
                     style = MaterialTheme.typography.labelMedium,
                     modifier = Modifier.weight(1f)
                 )
-                IconButton(onClick = onToggle) {
+                IconButton(onClick = {
+                    if (expanded) onCollapse()
+                    expanded = !expanded
+                }) {
                     Icon(
                         if (expanded) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
                         contentDescription = if (expanded) "Collapse" else "Expand"
