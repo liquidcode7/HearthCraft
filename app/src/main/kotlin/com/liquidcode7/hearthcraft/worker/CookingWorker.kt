@@ -48,11 +48,15 @@ class CookingWorker @AssistedInject constructor(
         // If cooking XP caused a level-up, auto-discover all recipes now accessible
         val newLevel = player.get()?.cookingLevel ?: 1
         if (newLevel > oldLevel) {
-            val currentDiscovered = player.get()?.discoveredRecipeIds
+            val snapshot = player.get()
+            val bandId = snapshot?.chosenBandId.orEmpty()
+            val currentDiscovered = snapshot?.discoveredRecipeIds
                 ?.split(",")?.filter { it.isNotBlank() }?.toSet() ?: emptySet()
-            val toDiscover = gameData.recipes
-                .filter { it.cookLevel <= newLevel && it.id !in currentDiscovered }
-                .map { it.id }
+            val toDiscover = gameData.recipes.filter { recipe ->
+                recipe.cookLevel <= newLevel
+                    && recipe.id !in currentDiscovered
+                    && (recipe.band == bandId || recipe.band == "all")
+            }.map { it.id }
             player.discoverRecipes(toDiscover)
         }
 
