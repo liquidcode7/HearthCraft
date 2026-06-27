@@ -7,7 +7,7 @@
     "method": "roast",
     "tier": 1,
     "cookLevel": 1,
-    "primaryStat": "mig",
+    "description": "Dense roasted taters and browncap with hearthgrain flatbread. Hits like a working meal should.",
     "ingredients": [
       {
         "id": "goodmans_taters",
@@ -22,7 +22,7 @@
         "qty": 1
       }
     ],
-    "description": "Dense roasted taters and browncap with hearthgrain flatbread. Hits like a working meal should."
+    "primaryStat": "mig"
   },
   {
     "id": "hedgerow_hand_pie",
@@ -32,7 +32,7 @@
     "method": "bake",
     "tier": 1,
     "cookLevel": 1,
-    "primaryStat": "agi",
+    "description": "Tart berry and cress stuffed into a short pastry. Light and fast.",
     "ingredients": [
       {
         "id": "hedgerow_berry",
@@ -47,7 +47,7 @@
         "qty": 1
       }
     ],
-    "description": "Tart berry and cress stuffed into a short pastry. Light and fast."
+    "primaryStat": "agi"
   },
   {
     "id": "goodmans_stew",
@@ -57,7 +57,7 @@
     "method": "simmer",
     "tier": 1,
     "cookLevel": 1,
-    "primaryStat": "vit",
+    "description": "The stew that keeps a household going. Plain, honest, deeply sustaining.",
     "ingredients": [
       {
         "id": "goodmans_taters",
@@ -72,7 +72,7 @@
         "qty": 1
       }
     ],
-    "description": "The stew that keeps a household going. Plain, honest, deeply sustaining."
+    "primaryStat": "vit"
   },
   {
     "id": "brookcress_bannock",
@@ -82,7 +82,7 @@
     "method": "bake",
     "tier": 1,
     "cookLevel": 1,
-    "primaryStat": "wil",
+    "description": "Unleavened flatbread sharp with cress and sweetened with honey. Clears the head.",
     "ingredients": [
       {
         "id": "brookcress",
@@ -97,7 +97,7 @@
         "qty": 1
       }
     ],
-    "description": "Unleavened flatbread sharp with cress and sweetened with honey. Clears the head."
+    "primaryStat": "wil"
   },
   {
     "id": "sloe_bitters",
@@ -107,7 +107,7 @@
     "method": "infuse",
     "tier": 1,
     "cookLevel": 1,
-    "hazardEffect": "potency",
+    "description": "Bitter and sharp. Teaches the band to cut through what resists them.",
     "ingredients": [
       {
         "id": "sloe",
@@ -122,7 +122,7 @@
         "qty": 1
       }
     ],
-    "description": "Bitter and sharp. Teaches the band to cut through what resists them."
+    "hazardEffect": "potency"
   },
   {
     "id": "hearth_and_hops",
@@ -132,8 +132,7 @@
     "method": "simmer",
     "tier": 2,
     "cookLevel": 5,
-    "primaryStat": "mig",
-    "secondaryStat": "vit",
+    "description": "Long-simmered pork and ironroot. The kind of meal you eat when the road gets hard.",
     "ingredients": [
       {
         "id": "salted_pork",
@@ -152,7 +151,8 @@
         "qty": 1
       }
     ],
-    "description": "Long-simmered pork and ironroot. The kind of meal you eat when the road gets hard."
+    "primaryStat": "mig",
+    "secondaryStat": "vit"
   },
   {
     "id": "chetwood_rabbit_roast",
@@ -162,8 +162,7 @@
     "method": "roast",
     "tier": 2,
     "cookLevel": 5,
-    "primaryStat": "agi",
-    "secondaryStat": "mig",
+    "description": "Roasted rabbit with hedgerow berries and thyme. Quick fire, good result.",
     "ingredients": [
       {
         "id": "rabbit",
@@ -178,7 +177,8 @@
         "qty": 1
       }
     ],
-    "description": "Roasted rabbit with hedgerow berries and thyme. Quick fire, good result."
+    "primaryStat": "agi",
+    "secondaryStat": "mig"
   },
   {
     "id": "field_and_fen_potage",
@@ -188,8 +188,7 @@
     "method": "simmer",
     "tier": 2,
     "cookLevel": 5,
-    "primaryStat": "vit",
-    "secondaryStat": "wil",
+    "description": "A thicker stew with willowherb. Something calming about it besides the filling.",
     "ingredients": [
       {
         "id": "goodmans_taters",
@@ -208,7 +207,8 @@
         "qty": 1
       }
     ],
-    "description": "A thicker stew with willowherb. Something calming about it besides the filling."
+    "primaryStat": "vit",
+    "secondaryStat": "wil"
   },
   {
     "id": "honey_oat_cake",
@@ -218,8 +218,7 @@
     "method": "bake",
     "tier": 2,
     "cookLevel": 6,
-    "primaryStat": "wil",
-    "secondaryStat": "agi",
+    "description": "Dense oat cake cut with sorrel. Sweet-sour, clarifying.",
     "ingredients": [
       {
         "id": "oat_sheaf",
@@ -234,7 +233,8 @@
         "qty": 1
       }
     ],
-    "description": "Dense oat cake cut with sorrel. Sweet-sour, clarifying."
+    "primaryStat": "wil",
+    "secondaryStat": "agi"
   },
   {
     "id": "bilberry_tonic",
@@ -244,7 +244,7 @@
     "method": "infuse",
     "tier": 2,
     "cookLevel": 3,
-    "hazardEffect": "alert",
+    "description": "Tastes terrible. Works. Combats the fog that long dark roads put in the mind.",
     "ingredients": [
       {
         "id": "bilberry",
@@ -255,7 +255,7 @@
         "qty": 1
       }
     ],
-    "description": "Tastes terrible. Works. Combats the fog that long dark roads put in the mind."
+    "hazardEffect": "alert"
   },
   {
     "id": "yarrow_draught",
@@ -265,7 +265,7 @@
     "method": "infuse",
     "tier": 2,
     "cookLevel": 4,
-    "hazardEffect": "hale",
+    "description": "Old cure for old trouble. Bitter and honest. Disease-counter.",
     "ingredients": [
       {
         "id": "yarrow",
@@ -280,7 +280,7 @@
         "qty": 1
       }
     ],
-    "description": "Old cure for old trouble. Bitter and honest. Disease-counter."
+    "hazardEffect": "hale"
   },
   {
     "id": "trout_and_mushroom_pan",
@@ -290,8 +290,7 @@
     "method": "roast",
     "tier": 3,
     "cookLevel": 10,
-    "primaryStat": "mig",
-    "secondaryStat": "agi",
+    "description": "River trout with stormcap and butter. Fast, hot, excellent.",
     "ingredients": [
       {
         "id": "smoked_river_trout",
@@ -310,7 +309,8 @@
         "qty": 1
       }
     ],
-    "description": "River trout with stormcap and butter. Fast, hot, excellent."
+    "primaryStat": "mig",
+    "secondaryStat": "agi"
   },
   {
     "id": "ember_porridge",
@@ -320,7 +320,7 @@
     "method": "simmer",
     "tier": 1,
     "cookLevel": 1,
-    "hazardEffect": "warmth",
+    "description": "★ Existing. Hot and sustaining. Counters the cold.",
     "ingredients": [
       {
         "id": "hearthgrain",
@@ -331,7 +331,7 @@
         "qty": 1
       }
     ],
-    "description": "★ Existing. Hot and sustaining. Counters the cold."
+    "hazardEffect": "warmth"
   },
   {
     "id": "rangers_fare",
@@ -341,8 +341,7 @@
     "method": "simmer",
     "tier": 4,
     "cookLevel": 10,
-    "primaryStat": "mig",
-    "secondaryStat": "vit",
+    "description": "★ Existing. What rangers carry when they travel long and fight hard at the end of it.",
     "ingredients": [
       {
         "id": "ironroot",
@@ -353,7 +352,8 @@
         "qty": 1
       }
     ],
-    "description": "★ Existing. What rangers carry when they travel long and fight hard at the end of it."
+    "primaryStat": "mig",
+    "secondaryStat": "vit"
   },
   {
     "id": "heartflame_broth",
@@ -363,7 +363,7 @@
     "method": "simmer",
     "tier": 4,
     "cookLevel": 6,
-    "hazardEffect": "warmth",
+    "description": "★ Existing. Warming broth. Keeps a person warm in conditions that shouldn't be survived.",
     "ingredients": [
       {
         "id": "heartflame_pepper",
@@ -378,7 +378,7 @@
         "qty": 1
       }
     ],
-    "description": "★ Existing. Warming broth. Keeps a person warm in conditions that shouldn't be survived."
+    "hazardEffect": "warmth"
   },
   {
     "id": "hale_loaf",
@@ -388,7 +388,7 @@
     "method": "bake",
     "tier": 1,
     "cookLevel": 1,
-    "primaryStat": "mig",
+    "description": "Dense coastal bread. The Mithlost don't waste a meal on ceremony.",
     "ingredients": [
       {
         "id": "pale_waybread_grain",
@@ -403,7 +403,7 @@
         "qty": 1
       }
     ],
-    "description": "Dense coastal bread. The Mithlost don't waste a meal on ceremony."
+    "primaryStat": "mig"
   },
   {
     "id": "leafwater_salad",
@@ -413,7 +413,7 @@
     "method": "infuse",
     "tier": 1,
     "cookLevel": 1,
-    "primaryStat": "agi",
+    "description": "Fresh sea-greens with sunpetal. Light and quick. Elvish field food.",
     "ingredients": [
       {
         "id": "shorewrack_greens",
@@ -428,7 +428,7 @@
         "qty": 1
       }
     ],
-    "description": "Fresh sea-greens with sunpetal. Light and quick. Elvish field food."
+    "primaryStat": "agi"
   },
   {
     "id": "springwater_broth",
@@ -438,7 +438,7 @@
     "method": "simmer",
     "tier": 1,
     "cookLevel": 1,
-    "primaryStat": "vit",
+    "description": "A clean broth. Deceptively sustaining.",
     "ingredients": [
       {
         "id": "springwater_lhun",
@@ -453,7 +453,7 @@
         "qty": 1
       }
     ],
-    "description": "A clean broth. Deceptively sustaining."
+    "primaryStat": "vit"
   },
   {
     "id": "starflower_wafer",
@@ -463,7 +463,7 @@
     "method": "bake",
     "tier": 1,
     "cookLevel": 1,
-    "primaryStat": "wil",
+    "description": "Thin, precise, clarifying. A Mithlost clarity dish — solid, not a tea.",
     "ingredients": [
       {
         "id": "sunpetal_herb",
@@ -478,7 +478,7 @@
         "qty": 1
       }
     ],
-    "description": "Thin, precise, clarifying. A Mithlost clarity dish — solid, not a tea."
+    "primaryStat": "wil"
   },
   {
     "id": "keenwater_tincture",
@@ -488,7 +488,7 @@
     "method": "infuse",
     "tier": 1,
     "cookLevel": 1,
-    "hazardEffect": "potency",
+    "description": "Precise and cold. Teaches armor-cutting through purity of preparation.",
     "ingredients": [
       {
         "id": "springwater_lhun",
@@ -503,7 +503,7 @@
         "qty": 1
       }
     ],
-    "description": "Precise and cold. Teaches armor-cutting through purity of preparation."
+    "hazardEffect": "potency"
   },
   {
     "id": "saltfish_and_kelp",
@@ -513,8 +513,7 @@
     "method": "simmer",
     "tier": 2,
     "cookLevel": 5,
-    "primaryStat": "mig",
-    "secondaryStat": "vit",
+    "description": "Preserved fish and kelp in a clean broth. The real Mithlost sustaining meal.",
     "ingredients": [
       {
         "id": "lhun_saltfish",
@@ -529,7 +528,8 @@
         "qty": 1
       }
     ],
-    "description": "Preserved fish and kelp in a clean broth. The real Mithlost sustaining meal."
+    "primaryStat": "mig",
+    "secondaryStat": "vit"
   },
   {
     "id": "silver_leek_omelette",
@@ -539,8 +539,7 @@
     "method": "roast",
     "tier": 2,
     "cookLevel": 5,
-    "primaryStat": "agi",
-    "secondaryStat": "wil",
+    "description": "Eggs cooked fast with leek and cress. Elvish precision in a pan.",
     "ingredients": [
       {
         "id": "seabird_egg",
@@ -555,7 +554,8 @@
         "qty": 1
       }
     ],
-    "description": "Eggs cooked fast with leek and cress. Elvish precision in a pan."
+    "primaryStat": "agi",
+    "secondaryStat": "wil"
   },
   {
     "id": "fennel_and_cheese_bake",
@@ -565,8 +565,7 @@
     "method": "bake",
     "tier": 2,
     "cookLevel": 6,
-    "primaryStat": "vit",
-    "secondaryStat": "wil",
+    "description": "Baked fennel with cheese on waybread. Substantial and refined.",
     "ingredients": [
       {
         "id": "fennel_bulb",
@@ -581,7 +580,8 @@
         "qty": 1
       }
     ],
-    "description": "Baked fennel with cheese on waybread. Substantial and refined."
+    "primaryStat": "vit",
+    "secondaryStat": "wil"
   },
   {
     "id": "moonpetal_tisane",
@@ -591,7 +591,7 @@
     "method": "infuse",
     "tier": 2,
     "cookLevel": 6,
-    "hazardEffect": "radiance",
+    "description": "★ Existing. Smells like a forest at midnight. Shadow-counter tendency.",
     "ingredients": [
       {
         "id": "moonpetal",
@@ -602,7 +602,7 @@
         "qty": 1
       }
     ],
-    "description": "★ Existing. Smells like a forest at midnight. Shadow-counter tendency."
+    "hazardEffect": "radiance"
   },
   {
     "id": "silvern_wake_draught",
@@ -612,7 +612,7 @@
     "method": "infuse",
     "tier": 2,
     "cookLevel": 4,
-    "hazardEffect": "alert",
+    "description": "Elvish anti-torpor preparation. Precise, cold, effective.",
     "ingredients": [
       {
         "id": "silvern_mint",
@@ -627,7 +627,7 @@
         "qty": 1
       }
     ],
-    "description": "Elvish anti-torpor preparation. Precise, cold, effective."
+    "hazardEffect": "alert"
   },
   {
     "id": "delvers_hash",
@@ -637,7 +637,7 @@
     "method": "roast",
     "tier": 1,
     "cookLevel": 1,
-    "primaryStat": "mig",
+    "description": "Chopped and roasted in a flat pan over hall-fire. Dense, earthy, strong.",
     "ingredients": [
       {
         "id": "deepcap",
@@ -652,7 +652,7 @@
         "qty": 1
       }
     ],
-    "description": "Chopped and roasted in a flat pan over hall-fire. Dense, earthy, strong."
+    "primaryStat": "mig"
   },
   {
     "id": "quickfoot_skewer",
@@ -662,7 +662,7 @@
     "method": "roast",
     "tier": 1,
     "cookLevel": 1,
-    "primaryStat": "agi",
+    "description": "Goat and mushroom on a skewer. Dwarf fast-food. Surprisingly good.",
     "ingredients": [
       {
         "id": "smoked_goat",
@@ -677,7 +677,7 @@
         "qty": 1
       }
     ],
-    "description": "Goat and mushroom on a skewer. Dwarf fast-food. Surprisingly good."
+    "primaryStat": "agi"
   },
   {
     "id": "stoneroot_stew",
@@ -687,7 +687,7 @@
     "method": "simmer",
     "tier": 1,
     "cookLevel": 1,
-    "primaryStat": "vit",
+    "description": "The stew that every Undermarch member grew up eating. Plain, strong, keeps all day.",
     "ingredients": [
       {
         "id": "stone_root",
@@ -702,7 +702,7 @@
         "qty": 1
       }
     ],
-    "description": "The stew that every Undermarch member grew up eating. Plain, strong, keeps all day."
+    "primaryStat": "vit"
   },
   {
     "id": "rockmoss_crispbread",
@@ -712,7 +712,7 @@
     "method": "bake",
     "tier": 1,
     "cookLevel": 1,
-    "primaryStat": "wil",
+    "description": "Hard flatbread with rockmoss. Bitter. Clarifying in the dwarf manner.",
     "ingredients": [
       {
         "id": "rockmoss",
@@ -727,7 +727,7 @@
         "qty": 1
       }
     ],
-    "description": "Hard flatbread with rockmoss. Bitter. Clarifying in the dwarf manner."
+    "primaryStat": "wil"
   },
   {
     "id": "ironbite_stout",
@@ -737,7 +737,7 @@
     "method": "brew",
     "tier": 1,
     "cookLevel": 1,
-    "hazardEffect": "potency",
+    "description": "A flat stout brewed for penetration, not pleasure. The best one.",
     "ingredients": [
       {
         "id": "mountain_malt",
@@ -752,7 +752,7 @@
         "qty": 1
       }
     ],
-    "description": "A flat stout brewed for penetration, not pleasure. The best one."
+    "hazardEffect": "potency"
   },
   {
     "id": "marrow_and_malt_broth",
@@ -762,8 +762,7 @@
     "method": "simmer",
     "tier": 2,
     "cookLevel": 5,
-    "primaryStat": "mig",
-    "secondaryStat": "vit",
+    "description": "Long-simmered marrow broth. Rich to the point of guilt.",
     "ingredients": [
       {
         "id": "dried_marrow_bone",
@@ -782,7 +781,8 @@
         "qty": 1
       }
     ],
-    "description": "Long-simmered marrow broth. Rich to the point of guilt."
+    "primaryStat": "mig",
+    "secondaryStat": "vit"
   },
   {
     "id": "goat_and_ironfoot",
@@ -792,8 +792,7 @@
     "method": "roast",
     "tier": 2,
     "cookLevel": 5,
-    "primaryStat": "agi",
-    "secondaryStat": "mig",
+    "description": "Roasted goat with ironfoot mushroom. The deep sage makes it.",
     "ingredients": [
       {
         "id": "smoked_goat",
@@ -808,7 +807,8 @@
         "qty": 1
       }
     ],
-    "description": "Roasted goat with ironfoot mushroom. The deep sage makes it."
+    "primaryStat": "agi",
+    "secondaryStat": "mig"
   },
   {
     "id": "deepcap_and_malt_loaf",
@@ -818,8 +818,7 @@
     "method": "bake",
     "tier": 2,
     "cookLevel": 6,
-    "primaryStat": "vit",
-    "secondaryStat": "mig",
+    "description": "Dense mushroom bread. The stone_honey version is better but costs more.",
     "ingredients": [
       {
         "id": "deepcap",
@@ -838,7 +837,8 @@
         "qty": 1
       }
     ],
-    "description": "Dense mushroom bread. The stone_honey version is better but costs more."
+    "primaryStat": "vit",
+    "secondaryStat": "mig"
   },
   {
     "id": "stonewort_cure",
@@ -848,7 +848,7 @@
     "method": "infuse",
     "tier": 2,
     "cookLevel": 4,
-    "hazardEffect": "hale",
+    "description": "The traditional Undermarch disease-counter. Terrible taste. Works.",
     "ingredients": [
       {
         "id": "stonewort",
@@ -863,7 +863,7 @@
         "qty": 1
       }
     ],
-    "description": "The traditional Undermarch disease-counter. Terrible taste. Works."
+    "hazardEffect": "hale"
   },
   {
     "id": "coldwort_warming_ale",
@@ -873,7 +873,7 @@
     "method": "brew",
     "tier": 2,
     "cookLevel": 5,
-    "hazardEffect": "warmth",
+    "description": "Brewed to survive the passes. Warmth-counter. A necessity, not a pleasure.",
     "ingredients": [
       {
         "id": "coldwort",
@@ -888,7 +888,7 @@
         "qty": 1
       }
     ],
-    "description": "Brewed to survive the passes. Warmth-counter. A necessity, not a pleasure."
+    "hazardEffect": "warmth"
   },
   {
     "id": "hearthbread",
@@ -898,8 +898,7 @@
     "method": "bake",
     "tier": 1,
     "cookLevel": 1,
-    "primaryStat": "vit",
-    "secondaryStat": "mig",
+    "description": "★ Existing. Dense sweet bread. Not exciting. Deeply reliable.",
     "ingredients": [
       {
         "id": "hearthgrain",
@@ -910,7 +909,8 @@
         "qty": 1
       }
     ],
-    "description": "★ Existing. Dense sweet bread. Not exciting. Deeply reliable."
+    "primaryStat": "vit",
+    "secondaryStat": "mig"
   },
   {
     "id": "wanderers_supper",
@@ -920,8 +920,7 @@
     "method": "simmer",
     "tier": 1,
     "cookLevel": 1,
-    "primaryStat": "agi",
-    "secondaryStat": "mig",
+    "description": "★ Existing. Light fare for people who eat on the move.",
     "ingredients": [
       {
         "id": "wanderer_fig",
@@ -932,7 +931,8 @@
         "qty": 1
       }
     ],
-    "description": "★ Existing. Light fare for people who eat on the move."
+    "primaryStat": "agi",
+    "secondaryStat": "mig"
   },
   {
     "id": "contemplative_tea",
@@ -942,8 +942,7 @@
     "method": "infuse",
     "tier": 1,
     "cookLevel": 1,
-    "primaryStat": "wil",
-    "secondaryStat": "agi",
+    "description": "★ Existing. NOTE: Reclassify from stat-food to draught or convert to solid per food rework.",
     "ingredients": [
       {
         "id": "sunpetal_herb",
@@ -954,7 +953,8 @@
         "qty": 1
       }
     ],
-    "description": "★ Existing. NOTE: Reclassify from stat-food to draught or convert to solid per food rework."
+    "primaryStat": "wil",
+    "secondaryStat": "agi"
   },
   {
     "id": "restorative_broth",
@@ -964,7 +964,7 @@
     "method": "simmer",
     "tier": 3,
     "cookLevel": 8,
-    "hazardEffect": "hale",
+    "description": "★ Existing. Long-simmered. Tissue repairs; ache recedes.",
     "ingredients": [
       {
         "id": "ironroot",
@@ -975,7 +975,7 @@
         "qty": 2
       }
     ],
-    "description": "★ Existing. Long-simmered. Tissue repairs; ache recedes."
+    "hazardEffect": "hale"
   },
   {
     "id": "athelas_infusion",
@@ -985,7 +985,7 @@
     "method": "infuse",
     "tier": 5,
     "cookLevel": 12,
-    "hazardEffect": "hale",
+    "description": "★ Existing. The last line between a grievous wound and what comes after.",
     "ingredients": [
       {
         "id": "athelas",
@@ -1000,6 +1000,6 @@
         "qty": 1
       }
     ],
-    "description": "★ Existing. The last line between a grievous wound and what comes after."
+    "hazardEffect": "hale"
   }
 ]

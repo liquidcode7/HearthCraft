@@ -174,15 +174,10 @@ def main():
     print(f"  → {len(recipes)} recipes → {RECIPES_JSON}")
 
     print("\nDone. Build the app to pick up the new data.")
-    print("\nRequired spreadsheet updates before next run:")
-    print("  hearthcraft_food_master.xlsx  →  JSON - Recipes sheet:")
-    print("    ember_porridge : tier = 1        (was 3)")
-    print("    rangers_fare   : cookLevel = 10  (was 1)")
-    print()
-    print("  hearthcraft_ingredients.xlsx  →  JSON Schema sheet:")
-    print("    Add a 'category' column for the recipe discovery system")
-    print("    Valid values: grain  liquid  protein  vegetable  mushroom")
-    print("                  herb  spice  fat  sweetener  binder  forage  special")
+    if not has_category:
+        print("\nTodo: add a 'category' column to hearthcraft_ingredients.xlsx → JSON Schema sheet")
+        print("  Valid values: grain  liquid  protein  vegetable  mushroom")
+        print("                herb  spice  fat  sweetener  binder  forage  special")
 
 
 if __name__ == "__main__":
