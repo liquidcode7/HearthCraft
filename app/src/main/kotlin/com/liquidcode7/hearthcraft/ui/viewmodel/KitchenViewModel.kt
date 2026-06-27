@@ -12,6 +12,9 @@ import com.liquidcode7.hearthcraft.data.repository.GameDataRepository
 import com.liquidcode7.hearthcraft.data.repository.InventoryRepository
 import com.liquidcode7.hearthcraft.data.repository.PlayerRepository
 import com.liquidcode7.hearthcraft.data.repository.SessionRepository
+import com.liquidcode7.hearthcraft.engine.ExperimentAttempt
+import com.liquidcode7.hearthcraft.engine.ExperimentResult
+import com.liquidcode7.hearthcraft.engine.RecipeDiscoveryEngine
 import com.liquidcode7.hearthcraft.worker.CookingWorker
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -36,7 +39,6 @@ class KitchenViewModel @Inject constructor(
     private val player: PlayerRepository
 ) : ViewModel() {
 
-    // All recipes — used for ID lookup only (e.g. displaying the active cooking session name).
     val recipes: List<Recipe> = gameData.recipes
 
     val inventoryItems: StateFlow<List<InventoryItem>> = inventory.observeIngredients()
@@ -48,13 +50,20 @@ class KitchenViewModel @Inject constructor(
     val playerState: StateFlow<PlayerState?> = player.observe()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
-    // Recipes filtered to the player's chosen band (plus universals). Used by RecipeBookScreen.
-    val bandRecipes: StateFlow<List<Recipe>> = player.observe()
-        .map { state ->
-            val bandId = state?.chosenBandId.orEmpty()
-            gameData.recipes.filter { it.band == bandId || it.band == "all" }
-        }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+    val discoveredIds: StateFlow<Set<String>> = player.observeDiscoveredIds()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptySet())
+
+    val hintsSeen: StateFlow<Boolean> = player.observe()
+        .map { it?.hasSeenFoodStructureHints ?: false }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+
+    val bandRecipes: StateFlow<List<Recipe>> = combine(
+        player.observe(),
+        player.observeDiscoveredIds()
+    ) { state, discovered ->
+        val bandId = state?.chosenBandId.orEmpty()
+        gameData.recipes.filter { (it.band == bandId || it.band == "all") && it.id in discovered }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     private val tierNames = mapOf(
         1 to "Hearthkeeper", 2 to "Initiate", 3 to "Apprentice", 4 to "Journeyman", 5 to "Adept"
@@ -62,12 +71,14 @@ class KitchenViewModel @Inject constructor(
 
     val tieredRecipes: StateFlow<List<RecipeTier>> = combine(
         inventory.observeIngredients(),
-        player.observe()
-    ) { items, state ->
+        player.observe(),
+        player.observeDiscoveredIds()
+    ) { items, state, discovered ->
         val bandId = state?.chosenBandId.orEmpty()
         val qtyMap = items.associate { it.ingredientId to it.quantity }
         gameData.recipes
             .filter { (it.band == bandId || it.band == "all") && bandId.isNotEmpty() }
+            .filter { it.id in discovered }
             .groupBy { it.tier }
             .entries.sortedBy { it.key }
             .map { (tier, recipes) ->
@@ -79,6 +90,7 @@ class KitchenViewModel @Inject constructor(
                 )
                 RecipeTier(tierNames[tier] ?: "Tier $tier", minLevel, sorted)
             }
+            .filter { it.recipes.isNotEmpty() }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val sortedRecipes: StateFlow<List<Recipe>> = combine(
@@ -97,9 +109,35 @@ class KitchenViewModel @Inject constructor(
     private val _selectedRecipe = MutableStateFlow<Recipe?>(null)
     val selectedRecipe: StateFlow<Recipe?> = _selectedRecipe.asStateFlow()
 
-    fun selectRecipe(recipe: Recipe) {
-        _selectedRecipe.value = recipe
+    // ── Experiment state ──────────────────────────────────────────────────────
+
+    private val _experimentMode = MutableStateFlow(false)
+    val experimentMode: StateFlow<Boolean> = _experimentMode.asStateFlow()
+
+    private val _experimentIngredients = MutableStateFlow<Map<String, Int>>(emptyMap())
+    val experimentIngredients: StateFlow<Map<String, Int>> = _experimentIngredients.asStateFlow()
+
+    private val _experimentMethod = MutableStateFlow("simmer")
+    val experimentMethod: StateFlow<String> = _experimentMethod.asStateFlow()
+
+    private val _lastExperimentResult = MutableStateFlow<ExperimentResult?>(null)
+    val lastExperimentResult: StateFlow<ExperimentResult?> = _lastExperimentResult.asStateFlow()
+
+    // ── Init: seed starter recipes for a brand-new player ────────────────────
+
+    init {
+        viewModelScope.launch {
+            val state = player.get() ?: return@launch
+            if (state.discoveredRecipeIds.isBlank()) {
+                val starters = gameData.recipes.filter { it.cookLevel <= 1 }.map { it.id }
+                player.discoverRecipes(starters)
+            }
+        }
     }
+
+    // ── Existing recipe functions ─────────────────────────────────────────────
+
+    fun selectRecipe(recipe: Recipe) { _selectedRecipe.value = recipe }
 
     fun ingredientName(id: String): String = gameData.ingredients.find { it.id == id }?.name ?: id
 
@@ -124,5 +162,54 @@ class KitchenViewModel @Inject constructor(
                 )
             )
         }
+    }
+
+    // ── Experiment functions ──────────────────────────────────────────────────
+
+    fun toggleExperimentMode() {
+        _experimentMode.value = !_experimentMode.value
+        _lastExperimentResult.value = null
+    }
+
+    fun addExperimentIngredient(id: String) {
+        if (id !in _experimentIngredients.value && _experimentIngredients.value.size < 4) {
+            _experimentIngredients.value = _experimentIngredients.value + (id to 1)
+        }
+    }
+
+    fun removeExperimentIngredient(id: String) {
+        _experimentIngredients.value = _experimentIngredients.value - id
+    }
+
+    fun updateExperimentQty(id: String, qty: Int) {
+        if (qty <= 0) removeExperimentIngredient(id)
+        else _experimentIngredients.value = _experimentIngredients.value + (id to qty.coerceAtMost(5))
+    }
+
+    fun setExperimentMethod(method: String) { _experimentMethod.value = method }
+
+    fun clearExperimentResult() { _lastExperimentResult.value = null }
+
+    fun submitExperiment() {
+        val ingredients = _experimentIngredients.value
+        if (ingredients.isEmpty()) return
+        viewModelScope.launch {
+            val attempt = ExperimentAttempt(
+                ingredientIds = ingredients.keys.toList(),
+                quantities = ingredients,
+                method = _experimentMethod.value
+            )
+            ingredients.forEach { (id, qty) -> inventory.removeIngredient(id, qty) }
+            val result = RecipeDiscoveryEngine.evaluate(attempt, gameData.recipes, discoveredIds.value)
+            if (result is ExperimentResult.Discovered) {
+                player.discoverRecipe(result.recipe.id)
+            }
+            _lastExperimentResult.value = result
+            _experimentIngredients.value = emptyMap()
+        }
+    }
+
+    fun markHintsSeen() {
+        viewModelScope.launch { player.markHintsSeen() }
     }
 }
