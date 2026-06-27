@@ -42,6 +42,14 @@ const SHADOW_RATE  = 0.0011;
 const RESCUE_CAP   = 5;
 const WARD_CAP     = 3;
 const GRIEVOUS     = 5;
+const DREAD_VAR_COEF       = 0.008;
+const DREAD_FLOOR_COEF     = 0.003;
+const T_TEMP               = 0.65;
+const T_PERM               = 0.35;
+const STUN_TICKS           = 5;
+const BREAK_CHECK_INTERVAL = 30;
+const CAPTAIN_STUN_WEIGHT  = 0.3;
+const CAPTAIN_BREAK_WEIGHT = 0.15;
 
 const statAt  = (tpl, k, lvl) => tpl.start[k] + tpl.grow[k] * (lvl - 1);
 const moraleOf= (tpl, lvl)    => Math.round(30 + statAt(tpl,"vit",lvl) * 16);
@@ -174,11 +182,12 @@ function runFight(cfg, verbose) {
       key:k, tpl, max, hp:max, wounds:0, grievous:false, atZero:false,
       mig:baseMig, agi:baseAgi, vit:baseVit, wil:baseWil, fat:baseFat,
       wilBase:baseWil, fatBase:baseFat, shDrain:0,
+      stunned:false, stunTicks:0, broken:false,
       reserve:0,  // sink-mode overflow buffer; absorbs spike damage before morale
     };
   });
 
-  const active    = () => ORDER.filter(k => !M[k].grievous);
+  const active    = () => ORDER.filter(k => !M[k].grievous && !M[k].broken);
   const standing  = () => active().filter(k => M[k].hp > 0);
   const inTrouble = () => active().filter(k => M[k].hp / M[k].max < 0.35).length;
   const inspRoll  = (base, boost) => Math.random() < (base + boost);

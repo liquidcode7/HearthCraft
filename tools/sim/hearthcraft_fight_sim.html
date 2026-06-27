@@ -603,6 +603,14 @@ const RESCUE_CAP=5;
 const WARD_CAP=3; // Keeper zero-rescues per fight (Laurelin's Grace is separate, uncapped)
 const GRIEVOUS=5;
 const RMAX=50; // reserve pool cap per member (sink mode) — absorbs spike damage before morale
+const DREAD_VAR_COEF       = 0.008;   // Layer A variable term coefficient (placeholder — tune in sim)
+const DREAD_FLOOR_COEF     = 0.003;   // Layer A floor term coefficient (placeholder — tune in sim)
+const T_TEMP               = 0.65;    // negation threshold below which Gate 1 stuns fire
+const T_PERM               = 0.35;    // negation threshold below which Gate 2 breaks fire
+const STUN_TICKS           = 5;       // duration of temporary incapacitation in ticks
+const BREAK_CHECK_INTERVAL = 30;      // ticks between Layer B gate checks
+const CAPTAIN_STUN_WEIGHT  = 0.3;     // Captain's relative targeting weight in stun pool
+const CAPTAIN_BREAK_WEIGHT = 0.15;    // Captain's relative targeting weight in break pool
 const $=id=>document.getElementById(id);
 const stat=(t,k,l)=>t.start[k]+t.grow[k]*(l-1);
 const moraleOf=(t,l)=>Math.round(30+stat(t,"vit",l)*16);
@@ -752,7 +760,7 @@ function buildParty(){const lvl=+$("lvl").value,R=roster();M={};
     const sb=memberFoodBonuses(k);
     const bvit=sb.vit||0;
     const max=Math.round(30+(stat(tpl,"vit",lvl)+bvit)*16);
-    M[k]={key:k,tpl,role:tpl.role,cls:tpl.cls,soak:tpl.soak,color:tpl.color,max,hp:max,reserve:0,wounds:0,grievous:false,atZero:false,action:"",horn:false,
+    M[k]={key:k,tpl,role:tpl.role,cls:tpl.cls,soak:tpl.soak,color:tpl.color,max,hp:max,reserve:0,wounds:0,grievous:false,atZero:false,stunned:false,stunTicks:0,broken:false,action:"",horn:false,
       mig:stat(tpl,"mig",lvl)+(sb.mig||0),agi:stat(tpl,"agi",lvl)+(sb.agi||0),vit:stat(tpl,"vit",lvl)+bvit,wil:stat(tpl,"wil",lvl)+(sb.wil||0),fat:stat(tpl,"fat",lvl)+(sb.fat||0),
       wilBase:stat(tpl,"wil",lvl)+(sb.wil||0),fatBase:stat(tpl,"fat",lvl)+(sb.fat||0),shDrain:0,fatEvades:0,spikesTargeted:0};});
   renderParty();}
@@ -855,7 +863,7 @@ function setChip(id,w){const el=$(id);el.textContent=w;el.className="chip "+(w==
 function log(msg,cls){const l=$("log"),d=document.createElement("div");
   d.innerHTML=`<span style="color:#a8956d">${fmtT(t).padStart(5," ")}</span> ${cls?`<span class="${cls}">`:""}${msg}${cls?"</span>":""}`;
   l.appendChild(d);l.scrollTop=l.scrollHeight;}
-function active(){return ORDER.filter(k=>!M[k].grievous);}
+function active(){return ORDER.filter(k=>!M[k].grievous&&!M[k].broken);}
 function inTrouble(){return active().filter(k=>M[k].hp/M[k].max<0.35).length;}
 const inspRoll=(base,boost)=>Math.random()<(base+boost);
 
