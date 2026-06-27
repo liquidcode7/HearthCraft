@@ -12,13 +12,17 @@
     "durationMs": 3600000,
     "rewardMoneyMin": 15,
     "rewardMoneyMax": 25,
-    "rewardTable": ["moonpetal", "wanderer_fig", "stormcap"]
+    "rewardTable": [
+      "moonpetal",
+      "wanderer_fig",
+      "stormcap"
+    ]
   },
   {
     "id": "druid_drive_back_blight",
     "bandId": "druid_circle",
     "name": "Drive Back the Blight",
-    "description": "A section of the old growth has gone dark. The work is slow and demands absolute clarity of purpose — the blight responds to hesitation. They will need to be sharp for this.",
+    "description": "A section of the old growth has gone dark. The work is slow and demands absolute clarity of purpose \u2014 the blight responds to hesitation. They will need to be sharp for this.",
     "difficulty": "medium",
     "flavorLine": "The blight is patient. A poorly-provisioned group will not be.",
     "vitalityRequired": 3,
@@ -27,7 +31,12 @@
     "durationMs": 14400000,
     "rewardMoneyMin": 40,
     "rewardMoneyMax": 60,
-    "rewardTable": ["ironbark_resin", "moonpetal", "stormcap", "cave_truffle"]
+    "rewardTable": [
+      "ironbark_resin",
+      "moonpetal",
+      "stormcap",
+      "cave_truffle"
+    ]
   },
   {
     "id": "druid_old_deep_roads",
@@ -42,13 +51,18 @@
     "durationMs": 28800000,
     "rewardMoneyMin": 100,
     "rewardMoneyMax": 150,
-    "rewardTable": ["cave_truffle", "ironbark_resin", "moonpetal", "stormcap"]
+    "rewardTable": [
+      "cave_truffle",
+      "ironbark_resin",
+      "moonpetal",
+      "stormcap"
+    ]
   },
   {
     "id": "dwarf_low_tunnels",
     "bandId": "dwarven_company",
     "name": "Clear the Low Tunnels",
-    "description": "The lower access tunnels have been blocked again. Cave-ins or something worse — hard to tell until you're in it. A straightforward job for a well-fed crew.",
+    "description": "The lower access tunnels have been blocked again. Cave-ins or something worse \u2014 hard to tell until you're in it. A straightforward job for a well-fed crew.",
     "difficulty": "easy",
     "flavorLine": "Tight, dark, and damp. Nothing they haven't handled before.",
     "vitalityRequired": 0,
@@ -57,7 +71,11 @@
     "durationMs": 3600000,
     "rewardMoneyMin": 15,
     "rewardMoneyMax": 25,
-    "rewardTable": ["pale_cap", "cave_truffle", "stormcap"]
+    "rewardTable": [
+      "pale_cap",
+      "cave_truffle",
+      "stormcap"
+    ]
   },
   {
     "id": "dwarf_mountain_pass",
@@ -72,7 +90,12 @@
     "durationMs": 14400000,
     "rewardMoneyMin": 40,
     "rewardMoneyMax": 60,
-    "rewardTable": ["cave_truffle", "stormcap", "pale_cap", "ironbark_resin"]
+    "rewardTable": [
+      "cave_truffle",
+      "stormcap",
+      "pale_cap",
+      "ironbark_resin"
+    ]
   },
   {
     "id": "dwarf_deep_forge",
@@ -87,52 +110,12 @@
     "durationMs": 28800000,
     "rewardMoneyMin": 100,
     "rewardMoneyMax": 150,
-    "rewardTable": ["cave_truffle", "ironbark_resin", "pale_cap", "stormcap"]
-  },
-  {
-    "id": "corsair_harbor_watch",
-    "bandId": "corsair_fleet",
-    "name": "Outrun the Harbor Watch",
-    "description": "A simple extraction job. Get in, get the cargo, get out before the harbor watch finishes their circuit. Easy money if everyone is fast.",
-    "difficulty": "easy",
-    "flavorLine": "Quick in, quick out. Easy money if they keep their heads.",
-    "vitalityRequired": 0,
-    "requiredBuffStrength": 10,
-    "rewardMultiplier": 1,
-    "durationMs": 3600000,
-    "rewardMoneyMin": 15,
-    "rewardMoneyMax": 25,
-    "rewardTable": ["wanderer_fig", "heartflame_pepper", "duskberry"]
-  },
-  {
-    "id": "corsair_merchant_convoy",
-    "bandId": "corsair_fleet",
-    "name": "Raid the Merchant Convoy",
-    "description": "A merchant convoy with better-than-expected security. The take is worth it, but the window is narrow and the margin for error is smaller than they would like. Speed is the only answer.",
-    "difficulty": "medium",
-    "flavorLine": "Better security than expected. The margin is tight. Mistakes will cost.",
-    "vitalityRequired": 3,
-    "requiredBuffStrength": 20,
-    "rewardMultiplier": 2,
-    "durationMs": 14400000,
-    "rewardMoneyMin": 40,
-    "rewardMoneyMax": 60,
-    "rewardTable": ["duskberry", "heartflame_pepper", "cave_truffle", "wanderer_fig"]
-  },
-  {
-    "id": "corsair_ironport_siege",
-    "bandId": "corsair_fleet",
-    "name": "Break the Siege at Ironport",
-    "description": "The port has been blockaded for three weeks. Speed gets them through the harbor mouth. What follows is a grinding fight that goes through the night and into the next day — the kind that breaks people who haven't eaten right.",
-    "difficulty": "hard",
-    "flavorLine": "A grinding fight through the night. Not everyone walks away from those.",
-    "vitalityRequired": 6,
-    "requiredBuffStrength": 25,
-    "rewardMultiplier": 4,
-    "durationMs": 28800000,
-    "rewardMoneyMin": 100,
-    "rewardMoneyMax": 150,
-    "rewardTable": ["cave_truffle", "stormcap", "ironbark_resin", "heartflame_pepper"]
+    "rewardTable": [
+      "cave_truffle",
+      "ironbark_resin",
+      "pale_cap",
+      "stormcap"
+    ]
   },
   {
     "id": "ranger_border_crossing",
@@ -147,7 +130,11 @@
     "durationMs": 3600000,
     "rewardMoneyMin": 15,
     "rewardMoneyMax": 25,
-    "rewardTable": ["moonpetal", "duskberry", "stormcap"]
+    "rewardTable": [
+      "moonpetal",
+      "duskberry",
+      "stormcap"
+    ]
   },
   {
     "id": "ranger_waystone_marks",
@@ -162,13 +149,18 @@
     "durationMs": 14400000,
     "rewardMoneyMin": 40,
     "rewardMoneyMax": 60,
-    "rewardTable": ["ironbark_resin", "moonpetal", "cave_truffle", "duskberry"]
+    "rewardTable": [
+      "ironbark_resin",
+      "moonpetal",
+      "cave_truffle",
+      "duskberry"
+    ]
   },
   {
     "id": "ranger_lost_garrison",
     "bandId": "greycloaks",
     "name": "Find the Lost Garrison",
-    "description": "A garrison of twelve went into the deep borderlands two months ago and has not been heard from since. Finding them — or what remains — means reading a landscape that has been deliberately obscured.",
+    "description": "A garrison of twelve went into the deep borderlands two months ago and has not been heard from since. Finding them \u2014 or what remains \u2014 means reading a landscape that has been deliberately obscured.",
     "difficulty": "hard",
     "flavorLine": "Twelve went in two months ago. None returned. Send them ready, or do not send them at all.",
     "vitalityRequired": 6,
@@ -177,6 +169,11 @@
     "durationMs": 28800000,
     "rewardMoneyMin": 100,
     "rewardMoneyMax": 150,
-    "rewardTable": ["cave_truffle", "ironbark_resin", "moonpetal", "stormcap"]
+    "rewardTable": [
+      "cave_truffle",
+      "ironbark_resin",
+      "moonpetal",
+      "stormcap"
+    ]
   }
 ]

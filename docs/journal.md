@@ -7,12 +7,12 @@
 
 ## Current Status — June 27, 2026
 
-**Phase:** V1 sim toolchain — dread redesign complete.
-**V1 progress:** Two-layer dread model fully implemented in both browser sim and headless runner. All dread constants are placeholders awaiting sim validation.
-**What's working:** Layer A floor drag always present (even at 100% negation). Layer B stun gate fires at negation < 0.65; break gate fires at negation < 0.35. Both verified with Monte Carlo runs. Browser DPS display shows "frozen"/"fled" states. Results tab dread card shows Layer A drag + Layer B event counts.
-**What's not wired yet:** Dread constants not yet validated (VAR_COEF=0.008, FLOOR_COEF=0.003 are placeholders — tuning sweep needed). Wolves/Goblin-town Gate not re-validated post-dread redesign.
-**Next session:** Tune dread constants via Monte Carlo sweep (see spec validation protocol in docs/superpowers/specs/2026-06-27-dread-redesign.md). Then address user's incoming design changes and attachments.
-**Open questions:** Final values for all dread constants. Flavor text for morale-break log line. Stun visual state in browser sim member card (currently "frozen" text only). Damage types (Westernesse) — deferred from this session.
+**Phase:** V1 app — data files complete, build passing, ready for device test.
+**V1 progress:** All game data JSON files are clean and aligned. 134 ingredients, 40 recipes, 3 bands, 9 missions. Mission resolution is purely numeric (buffStrength vs requiredBuffStrength threshold) — no buffType check was ever in the code. Build passes clean.
+**What's working:** Full data pipeline: gather ingredients → cook recipes → provision band → send on mission → worker resolves. All JSON schemas and Kotlin models are consistent. Kingswake removed everywhere (bands.json + missions.json).
+**What's not wired yet:** Gathering session doesn't yet produce the new ingredient IDs (old gather logic still runs). KitchenViewModel recipe tier grouping uses old levelRequired ranges instead of the tier field. These are polish items; the core loop should run on device now.
+**Next session:** Install APK on device and walk through the full loop. Fix gather session to produce new ingredient IDs. Update KitchenViewModel tier grouping to use recipe.tier.
+**Open questions:** Damage types spec (V2 design — defer). Wounds redesign (V2 design — defer). Wolves retune (V2 sim — defer). Whether to add a `recommendedStat` informational field to missions.json for future stat-matching UI.
 
 ---
 
@@ -1239,3 +1239,30 @@ FL1/FL2 food = wipe at every band level. FL4 is the real entry point (80% at ban
 - Next session: Tune dread constants via Monte Carlo sweep. Address user's incoming design changes and attachments.
 - Near term: Damage types (Westernesse) — deferred from this session. Encounter 3 design and validation.
 - Future ideas logged: Morale-break flavor text (Tolkien-appropriate flight vocabulary, separate from death language).
+
+---
+
+## Session 22 — June 27, 2026
+**App data rebuild: Excel workbooks → JSON, model updates, build verified**
+
+**What was built:**
+- `app/src/main/assets/data/ingredients.json`: Replaced entirely from hearthcraft_ingredients.xlsx (134 ingredients across 6 regions, full stat affinity data).
+- `app/src/main/assets/data/recipes.json`: Replaced entirely from hearthcraft_food_master.xlsx (40 band-specific recipes: 15 Greycloaks, 10 Mithlost, 10 Undermarch, 5 universal).
+- `app/src/main/assets/data/bands.json`: Kingswake (corsair_fleet) removed — band is dead.
+- `data/model/Ingredient.kt`: Updated to new schema (added region, source, primaryStat, secondaryStat, hazardTendency, notes; removed old type/flavor fields not referenced by any code).
+- `data/model/Recipe.kt`: Updated to new band-specific schema (added band, recipeClass, method, tier, cookLevel, primaryStat, secondaryStat, tertiaryStat, hazardEffect; old fields buffType/durationMs/levelRequired/etc. now computed as derived properties from new fields so no UI code broke).
+- `tools/sim/` + spec/plan files: Dread two-layer redesign from Session 21 (completed earlier this session).
+
+**Decisions made:**
+- **Recipe.buffType** is derived from primaryStat (mig→might, agi→agility, vit→vitality, wil→will). Draughts use their recipeClass.
+- **Recipe.durationMs** derived from tier: tier 1=30min, 2=45min, 3=60min, 4=90min, 5+=120min.
+- **Recipe.baseBuffStrength** = tier × 5; **buffStrengthPerLevel** = tier × 0.5. Formula is placeholder; mission thresholds will need calibration when missions.json is updated.
+- **willowherb** added to ingredients.json manually — present in food master Ingredients tab but missing from the JSON Schema tab.
+
+**Anything that diverged from docs/design.md:**
+- Kingswake removal confirmed. V1 has three bands: Mithlost, Undermarch, Greycloaks.
+
+**Coming up:**
+- Next session: Update missions.json to stat-based requirements. Verify full loop on device.
+- Near term: KitchenViewModel tier grouping (currently uses old levelRequired ranges, should be tier-based). Gathering session needs to surface new ingredient stat fields.
+- Future: Wounds redesign, damage types, Wolves retune — all V2 sim work received as design specs this session, logged for later.
