@@ -68,7 +68,21 @@ fun MainScreen() {
             startDestination = "home",
             modifier = Modifier.padding(innerPadding)
         ) {
-            composable("home")     { HomeScreen() }
+            composable("home") {
+                HomeScreen(
+                    onNavigate = { route ->
+                        navController.navigate(route) {
+                            popUpTo("home") { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    },
+                    onOpenJournal = { navController.navigate("journal") }
+                )
+            }
+            composable("journal") {
+                JournalScreen(onBack = { navController.popBackStack() })
+            }
             composable("gather")   { GatheringScreen() }
             composable("kitchen")  {
                 KitchenScreen(

@@ -7,12 +7,12 @@
 
 ## Current Status — June 27, 2026
 
-**Phase:** Polish pass on device-reported issues. Core loop now playable with correct starting state.
-**V1 progress:** Onboarding, gathering, kitchen, missions, and band all cleanly functional. Recipe discovery system wired.
-**What's working:** Single-band onboarding (pick one, unlock second at cooking level 10). Garden starts with 2 plots; farm locked until gathering level 5. Discover tab (renamed from Experiment). Send button appears when encounter is selected, food is optional. Starter recipes reduced to 3 universals + 1 band starter. Band second-company unlock card shows at cooking level 10. Improved Third Age / Eriador lore text in onboarding.
-**What's not wired yet:** Home screen hub (nav cards, active status, band thumbnail, flavor text, journal section). Band member stat detail cards. Onboarding text for individual bands could be deeper.
-**Next session:** Home screen redesign — nav cards + active status cards + band thumbnail + recent news/flavor text + journal sub-screen.
-**Open questions:** Home screen visual layout. Journal sub-screen contents (stats glossary, food reference, discovered recipes log).
+**Phase:** Home screen hub complete. Core loop playable with proper orientation and discovery feedback.
+**V1 progress:** All six tabs functional. Home is now a real hub. Journal sub-screen accessible from Home.
+**What's working:** Home screen with flavor text, live active timers (cooking/foraging/mission), band thumbnail (name + member status), 2×2 nav cards (Gather/Kitchen/Band/Missions), skill XP bars, Journal button. Journal sub-screen: stats glossary (VIT/MGT/AGI/WIL/FAT), food effects reference (11 effects), discovered recipes list grouped by tier. HomeViewModel wired with band name, member counts, encounter session, cooking recipe name, discovered count.
+**What's not wired yet:** Band member stat detail cards (clickable → bar graph readout). Market screen implementation. Wound system is placeholder.
+**Next session:** Band member detail cards — make each row in BandScreen tappable, show a card/modal with stat bar graphs for VIT/MGT/AGI/WIL/FAT.
+**Open questions:** None blocking. Future: deeper per-band onboarding lore, seeds gated behind first forage, market implementation.
 
 ---
 
@@ -1505,4 +1505,30 @@ Full implementation of the recipe discovery system: recipes are now hidden until
 **Coming up:**
 - Next session: Home screen redesign — nav cards + active status + band thumbnail + recent news/flavor text + journal sub-screen
 - Near term: Band member detail cards (clickable, stat bar readout). Onboarding lore can be further deepened per band.
+- Future ideas logged: none this session.
+
+---
+
+## Session 39 — June 27, 2026
+**Home screen hub redesign + Journal sub-screen**
+
+**What was built:**
+- `HomeViewModel.kt`: Added injections for `GameDataRepository` and `BandRepository`; new flows: `cookingRecipeName`, `encounterSession`, `encounterName`, `activeBandName`, `aliveMemberCount`, `woundedMemberCount`, `discoveredCount`
+- `HomeScreen.kt`: Full rewrite — flavor text (state-driven), active session timers (cooking/foraging/mission with countdown), band thumbnail card (name + member status), 2×2 navigation cards (Gather/Kitchen/Band/Missions with tappable nav), skills XP bars, Journal button, version label
+- `JournalViewModel.kt` (new): Exposes `discoveredRecipes` filtered to active band, sorted by tier/level
+- `JournalScreen.kt` (new): Three sections — Stats glossary (VIT/MGT/AGI/WIL/FAT explained), Food effects reference (11 effects), Discovered recipes list grouped by tier
+- `MainScreen.kt`: Wired `onNavigate` and `onOpenJournal` callbacks into `HomeScreen`; added `composable("journal")` route
+
+**Decisions made:**
+- Active timers show countdown live on home screen; nav cards show just "active" or "ready" (not timers — detail belongs in each screen)
+- Flavor text is state-driven: mission → "The band is away", cooking → "Something on the fire", foraging → "Out gathering", else → "The hearth is quiet"
+- Journal is a pop-to sub-screen (no bottom nav), reachable via Journal button on Home
+- Discovered recipes in journal filtered to active band (same filter as kitchen)
+
+**Anything that diverged from docs/design.md:**
+- None
+
+**Coming up:**
+- Next session: Band member detail cards — clickable rows in BandScreen → stat bar graph readout
+- Near term: Market screen implementation
 - Future ideas logged: none this session.
