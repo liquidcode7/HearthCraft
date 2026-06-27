@@ -5,14 +5,14 @@
 
 ---
 
-## Current Status — June 23, 2026
+## Current Status — June 27, 2026
 
-**Phase:** V1 core loop complete. All docs and sims fully reflect the independent member model and new food tier design.
-**V1 progress:** Full food model, headless sim, and browser sim consistent. Four food tiers per encounter locked. All design docs updated. Browser sim has built-in encounter presets.
-**What's working:** Browser sim uses independent drain (drain/4), per-member independent spikes, and sink/reserve healing. Encounter dropdown preloaded with Neekerbreekers/Wolves/Goblin-town Gate. Food model gives 5.0/5.2/5.4/5.6 HP/s for CL1–4.
-**What's not wired yet:** Full combat system (V2+). Wolves in the Chetwood not re-validated post food tier redesign. Initiate+ tier HP/s steps too wide for the transition band (needs tuning when higher encounters are designed).
-**Next session:** Validate Wolves in the Chetwood with new HP/s values. Re-run Goblin-town Gate. Design encounter 3 and tune its four tiers.
-**Open questions:** Initiate+ tier recalibration. 5th role design. Ingredient scarcity model.
+**Phase:** V1 sim toolchain — dread redesign complete.
+**V1 progress:** Two-layer dread model fully implemented in both browser sim and headless runner. All dread constants are placeholders awaiting sim validation.
+**What's working:** Layer A floor drag always present (even at 100% negation). Layer B stun gate fires at negation < 0.65; break gate fires at negation < 0.35. Both verified with Monte Carlo runs. Browser DPS display shows "frozen"/"fled" states. Results tab dread card shows Layer A drag + Layer B event counts.
+**What's not wired yet:** Dread constants not yet validated (VAR_COEF=0.008, FLOOR_COEF=0.003 are placeholders — tuning sweep needed). Wolves/Goblin-town Gate not re-validated post-dread redesign.
+**Next session:** Tune dread constants via Monte Carlo sweep (see spec validation protocol in docs/superpowers/specs/2026-06-27-dread-redesign.md). Then address user's incoming design changes and attachments.
+**Open questions:** Final values for all dread constants. Flavor text for morale-break log line. Stun visual state in browser sim member card (currently "frozen" text only). Damage types (Westernesse) — deferred from this session.
 
 ---
 
@@ -1212,3 +1212,30 @@ FL1/FL2 food = wipe at every band level. FL4 is the real entry point (80% at ban
 - Next session: Design encounter 3 (first real difficulty ramp). Validate Wolves in the Chetwood post-stat-bonuses. Ingredient scarcity model.
 - Near term: 5th role design. Encounter 3 unlock mechanic.
 - Future ideas logged: Ingredient scarcity tiers (common/uncommon/rare) as the primary gate against food optimization abuse — noted in session, not yet logged to wishlist.
+
+---
+
+## Session 21 — June 27, 2026
+**Dread redesign: two-layer model implemented in both sims**
+
+**What was built:**
+- `tools/sim/hearthcraft_fight_sim.html`: Layer A floor drag formula replaces old single multiplier. Layer B stun/break gates fire at BREAK_CHECK_INTERVAL. stunned/broken member state added. active() excludes broken members. Defeat check includes broken. buildSummary shows "fled the field." Per-member DPS display shows "frozen"/"fled" states. Series push includes layerADrag. Results tab dread card updated with Layer A drag bar + Layer B event count footer.
+- `tools/sim/run_sim.js`: Mirror of all browser changes. report() prints dread line with avg stuns/breaks per fight. _result() returns stunCount/breakCount. runMany() accumulates and surfaces totals.
+- `docs/combat-model.md`: Dread section replaced with two-layer model. Key Constants table extended with all dread constants.
+- `docs/superpowers/specs/2026-06-27-dread-redesign.md`: Full approved spec (committed previous session).
+- `docs/superpowers/plans/2026-06-27-dread-redesign.md`: Seven-task implementation plan committed.
+
+**Decisions made:**
+- **Layer A formula**: `layerADrag = min(1, effectiveDread × 0.008 + rawDread × 0.003)` — placeholder values, tuning sweep required.
+- **Layer B thresholds**: T_TEMP=0.65, T_PERM=0.35 — placeholder, same caveat.
+- **Broken members excluded from active()** — same code path as grievous for DPS, healing, Inspirations, and defeat check.
+- **Stunned members excluded from food healing and Keeper rescue** — they still take drain/spikes.
+- **Captain stunned → willCut = 0 that tick** — prevents the Captain providing cover while incapacitated.
+
+**Anything that diverged from docs/design.md:**
+- None. Dread redesign was spec-first; design.md not affected.
+
+**Coming up:**
+- Next session: Tune dread constants via Monte Carlo sweep. Address user's incoming design changes and attachments.
+- Near term: Damage types (Westernesse) — deferred from this session. Encounter 3 design and validation.
+- Future ideas logged: Morale-break flavor text (Tolkien-appropriate flight vocabulary, separate from death language).
