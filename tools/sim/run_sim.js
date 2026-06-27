@@ -194,24 +194,23 @@ function runFight(cfg, verbose) {
   const sustain   = () => ORDER.filter(k=>!M[k].grievous).reduce((s,k)=>s+cfg.food[k],0);
 
   function dpsBreakdown() {
-    if (cfg.survival) return { raw:0, eff:0, penSaved:0, willSaved:0, hopeSaved:0, pen:{total:0,parts:[]} };
+    if (cfg.survival) return { raw:0, eff:0, physAfter:0, layerADrag:0, potency:0 };
     let raw = 0;
     ORDER.forEach(k => {
-      if (M[k].grievous || M[k].hp <= 0) return;
+      if (M[k].grievous || M[k].hp <= 0 || M[k].stunned || M[k].broken) return;
       if (k==="keeper")  { if (M[k]._action !== "burst") raw += M[k].wil * 0.9; }
       else if (k==="hunter")  raw += M[k].agi + M[k].mig * 0.4;
       else if (k==="warden")  raw += M[k].mig * 0.5;
       else if (k==="captain") raw += M[k].mig * 0.3 + M[k].wil * 0.2;
     });
     if (windows.dawn > 0) raw *= 1.5;
-    // penetration via draught potency
     const physAfter = Math.max(0, cfg.phys * (1 - Math.min(1, cfg.potency/PEN_SCALE)));
-    // dread
-    const capWil = !M.captain.grievous ? M.captain.wil : 0;
+    const capWil = (!M.captain.grievous && !M.captain.stunned) ? M.captain.wil : 0;
     const willCut = Math.min(1, capWil/100), hopeCut = Math.min(1, cfg.hope/100);
-    const dreadAfter = Math.max(0, cfg.dread * (1 - Math.min(1, willCut+hopeCut)));
-    const eff = Math.max(0, raw * (1-physAfter) * (1-dreadAfter));
-    return { raw, eff, physAfter, dreadAfter, potency: cfg.potency };
+    const effectiveDread = cfg.dread * (1 - Math.min(1, willCut + hopeCut));
+    const layerADrag = Math.min(1, effectiveDread * DREAD_VAR_COEF + cfg.dread * DREAD_FLOOR_COEF);
+    const eff = Math.max(0, raw * (1-physAfter) * (1-layerADrag));
+    return { raw, eff, physAfter, layerADrag, potency: cfg.potency };
   }
 
   let t=0, boss=cfg.boss, maxT=cfg.duration;
