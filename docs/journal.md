@@ -7,12 +7,12 @@
 
 ## Current Status — June 27, 2026
 
-**Phase:** V2 Encounter Engine wired; food data rebuilt from Excel; sim dread redesign complete.
-**V1 progress:** Core loop fully wired with real combat math. EncounterEngine replaces old buff-strength check. Food data (134 ingredients, 40 recipes) rebuilt from Excel workbooks with band-specific schema. Kotlin models updated to match. Dread two-layer model implemented in both sims.
-**What's working:** EncounterEngine (headless combat resolver, port of run_sim.js). Nine encounters across three bands. DB v6. EncounterWorker resolves fights. ingredients.json and recipes.json match new Excel-driven schema. Ingredient.kt and Recipe.kt updated. Build green.
-**What's not wired yet:** Room schema 6.json not yet committed (appears after first Studio build). Per-member food provisioning deferred. KitchenViewModel tier grouping still uses old levelRequired ranges. Dread constants are placeholders (tuning sweep pending).
-**Next session:** Build in Android Studio, commit Room schema 6.json, install on device and play the loop. Then tune XP constants (xp_lab deferred) and dread constants (Monte Carlo sweep).
-**Open questions:** XP constant calibration deferred. Per-member food provisioning design. Draught item system (hardcoded potency 0/45/65). 5th role design. Dread constant tuning. Damage types / wounds redesign (V2 sim, defer).
+**Phase:** Recipe discovery system complete (DB v7, engine, ViewModel, CookingWorker, KitchenScreen UI).
+**V1 progress:** Core loop playable. Nav restructured (6 tabs). Recipe discovery system fully wired — GW2-style experiment mode with proximity feedback, auto-discover on cook and level-up, food structure hints card.
+**What's working:** DB v7 (discoveredRecipeIds + hasSeenFoodStructureHints). RecipeDiscoveryEngine (pure Kotlin, 7 tests pass). KitchenScreen Recipes|Experiment tabs. FoodHintsCard at cookLevel ≥ 3. CookingWorker auto-discovers on cook and level-up (band-filtered). Starter recipes seeded for new players.
+**What's not wired yet:** Spreadsheet source-of-truth needs 3 back-port fixes (ember_porridge tier, rangers_fare cookLevel, willowherb row). Home screen as hub (tappable cards). Band backgrounds themed to faction. Seeds gated behind first wild find.
+**Next session:** Install on device, test the discovery system end-to-end. Then: update the spreadsheets, run generate_data.py, commit. Then: home screen hub design.
+**Open questions:** Spreadsheet sync (3 items — see tools/README.md). Home screen layout. Band-specific visual backgrounds.
 
 ---
 
@@ -1438,4 +1438,41 @@ Phase 3 — Wiring:
 **Coming up:**
 - Next session: Build in Android Studio, commit Room schema 6.json, install on device and walk the full loop.
 - Near term: KitchenViewModel tier grouping (uses old levelRequired ranges — should use recipe.tier). Dread constant tuning sweep.
+
+---
+
+## Session 27 — June 27, 2026
+**Recipe discovery system — GW2-style experiment mode with proximity feedback**
+
+Full implementation of the recipe discovery system: recipes are now hidden until discovered through experimentation or levelling up. Built across two sub-sessions (design + implementation).
+
+**What was built:**
+- `docs/superpowers/specs/2026-06-27-recipe-discovery-design.md`: Full design spec committed.
+- `docs/superpowers/plans/2026-06-27-recipe-discovery.md`: 5-task implementation plan.
+- `tools/generate_data.py` + `tools/README.md` + `tools/data/*.xlsx`: Spreadsheet data pipeline committed.
+- `app/src/main/kotlin/com/liquidcode7/hearthcraft/data/db/PlayerState.kt`: Added `discoveredRecipeIds: String` and `hasSeenFoodStructureHints: Boolean`.
+- `app/src/main/kotlin/com/liquidcode7/hearthcraft/data/db/HearthCraftDatabase.kt`: DB version bumped to 7 with AutoMigration(6→7).
+- `app/src/main/kotlin/com/liquidcode7/hearthcraft/data/repository/PlayerRepository.kt`: Added `observeDiscoveredIds()`, `discoverRecipe()`, `discoverRecipes()`, `markHintsSeen()`.
+- `app/src/main/kotlin/com/liquidcode7/hearthcraft/engine/RecipeDiscoveryEngine.kt`: Pure Kotlin engine — exact-match + 4-tier proximity feedback (NONE/SOME/CLOSE/NEAR_MISS).
+- `app/src/test/kotlin/com/liquidcode7/hearthcraft/engine/RecipeDiscoveryEngineTest.kt`: 7 JUnit tests, all passing.
+- `app/src/main/kotlin/com/liquidcode7/hearthcraft/ui/viewmodel/KitchenViewModel.kt`: `tieredRecipes` and `bandRecipes` now filtered to discovered-only; full experiment state; starter-recipe seed on init.
+- `app/src/main/kotlin/com/liquidcode7/hearthcraft/worker/CookingWorker.kt`: Discovers the just-cooked recipe; auto-discovers all band-accessible recipes on level-up.
+- `app/src/main/kotlin/com/liquidcode7/hearthcraft/ui/screen/KitchenScreen.kt`: Recipes|Experiment tab toggle; ExperimentPanel (method chips, ingredient picker, submit, result card); FoodHintsCard (collapsible, shown at cookLevel ≥ 3).
+
+**Decisions made:**
+- Ingredients are consumed on experiment failure (real stakes, like GW2).
+- Discovery is exact-match only (ingredient set + quantities + method must all be right).
+- Proximity feedback is 4-tier — guides without spoiling.
+- Ingredient categories (grain/liquid/herb/etc.) are hidden from the player; only food structure hints are shown.
+- Starter recipes (cookLevel ≤ 1) are auto-seeded when `discoveredRecipeIds` is blank (new player handling).
+- Auto-discover on level-up only discovers recipes belonging to the player's current band (or universal).
+- FoodHintsCard uses local `expanded` state so it can be freely toggled after first collapse; `markHintsSeen()` fires only once on the first collapse.
+
+**Anything that diverged from docs/design.md:**
+- None. Discovery system was a new addition, not a redesign.
+
+**Coming up:**
+- Next session: Install on device, test discovery loop end-to-end. Then: update spreadsheets (3 back-ports), run generate_data.py, commit clean JSON. Then: home screen as hub (tappable navigation cards).
+- Near term: Band-specific visual backgrounds. Seeds gated behind first wild find. Mission difficulty prediction.
+- Future ideas logged: none this session.
 - Future: Wounds redesign, damage types, Wolves retune — all V2 sim work, deferred.
