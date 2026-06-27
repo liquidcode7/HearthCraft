@@ -170,11 +170,42 @@ antidote. The clue system telegraphs which hazard a region carries.
 | Dread | **Hope** | suppresses party DPS; countered by Hope (flat %) + Captain Will (multiplicative) |
 | Shadow | **Radiance** | drains Will + Fate over time toward a floor; Radiance raises the floor (Model C) |
 
-### Dread mechanics
+### Dread mechanics — Two-Layer Model
 
-Dread suppresses party DPS. Counter: `effective dread = dread × (1 - min(1, willCut + hopeCut))`
-where `willCut = min(1, captainWil / 100)` and `hopeCut = min(1, hopeAntidote / 100)`.
-Will and Hope stack additively before capping. Captain will be grievous → no Will cut.
+Dread operates on two separate layers. The old single-multiplier model is replaced.
+
+**Effective dread and negation:**
+```
+effectiveDread = rawDread × (1 - min(1, willCut + hopeCut))
+willCut  = min(1, captainWil / 100)   // 0 if Captain is grievous OR stunned
+hopeCut  = min(1, hopeAntidote / 100)
+```
+
+**Layer A — Floor Drag (always present):**
+```
+layerADrag = min(1, effectiveDread × DREAD_VAR_COEF + rawDread × DREAD_FLOOR_COEF)
+eff = raw × (1 - physAfter) × (1 - layerADrag)
+```
+The floor term (`rawDread × DREAD_FLOOR_COEF`) cannot be removed by any counter. Even a fully-prepped band fighting a high-dread encounter carries a faint drag. Armor and dread are separate multipliers — distinct code paths.
+
+**Layer B — Action Denial (fires when negation is insufficient):**
+
+Checked every `BREAK_CHECK_INTERVAL` ticks. Two severity gates:
+
+| Gate | Condition | Effect |
+|---|---|---|
+| Stun | `willCut + hopeCut < T_TEMP` | Random standing member incapacitated for `STUN_TICKS`. Returns at their current HP. No wounds. |
+| Break | `willCut + hopeCut < T_PERM` | Random standing member's will breaks — they flee. Gone for the fight. |
+
+Targeting: random from standing, non-grievous, non-stunned, non-broken members. Captain has reduced targeting weight (`CAPTAIN_STUN_WEIGHT` for stuns, `CAPTAIN_BREAK_WEIGHT` for breaks). A stunned Captain's willCut = 0 that tick.
+
+**Three zones:**
+
+| Zone | Condition | Experience |
+|---|---|---|
+| Safe | negation ≥ T_TEMP | Layer A floor only. Faint drag. No action denial. |
+| Danger | T_PERM ≤ negation < T_TEMP | Layer A full drag + stuns possible. Visible pressure. |
+| Critical | negation < T_PERM | Layer A full drag + stuns + permanent breaks. Fight in serious danger. |
 
 ### Shadow mechanics (Model C)
 
@@ -296,6 +327,15 @@ Fate insp coef    = 0.003  // per Fate point added to Inspiration base rate (cap
 Fate evade coef   = 0.004  // per Fate point chance to slip a spike entirely
 JITTER            = 0.10   // per-tick DPS variance ±10%; U(−J, +J) multiplied onto effective DPS
 tick              = 1 second
+// Dread two-layer model (all placeholder — validate in sim)
+DREAD_VAR_COEF       = 0.008  // Layer A variable term coefficient
+DREAD_FLOOR_COEF     = 0.003  // Layer A floor term coefficient (tied to rawDread — cannot be countered)
+T_TEMP               = 0.65   // negation threshold below which Gate 1 stuns fire
+T_PERM               = 0.35   // negation threshold below which Gate 2 breaks fire
+STUN_TICKS           = 5      // duration of temporary incapacitation
+BREAK_CHECK_INTERVAL = 30     // ticks between Layer B gate checks
+CAPTAIN_STUN_WEIGHT  = 0.3×   // Captain's relative targeting weight in stun pool
+CAPTAIN_BREAK_WEIGHT = 0.15×  // Captain's relative targeting weight in break pool
 ```
 
 ---
