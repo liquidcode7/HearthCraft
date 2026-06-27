@@ -44,3 +44,17 @@ data class IngredientStock(
     val name: String,
     val quantity: Int
 )
+
+data class EncounterDetail(
+    val encounterId: String,
+    val name: String,
+    val difficulty: String,
+    val recLevel: Int,
+    val requiredCookingLevel: Int,
+    val flavorLine: String,
+    val rewardMoneyMin: Int,
+    val rewardMoneyMax: Int,
+    val rewardMultiplier: Int,
+    val physMitPct: Float,  // from stage[0] — used to show "brings a draught" hint
+    val isUnlocked: Boolean // recLevel <= band's max vitality AND cookingLevel >= requiredCookingLevel
+)

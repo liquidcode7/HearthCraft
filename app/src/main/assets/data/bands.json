@@ -1,23 +1,23 @@
 [
   {
-    "id": "druid_circle",
+    "id": "mithlost",
     "name": "The Mithlost",
-    "region": "Forest",
-    "description": "Ancient keepers of the old growth. Patient, unhurried, connected to living things in ways outsiders never quite understand. They do not conquer land — they tend it. Their missions feel like stewardship: protecting what exists, restoring what was lost.",
-    "flavorNote": "They call you the Hearthkeeper. Your fire is the only fire they trust."
+    "region": "Celondim, western Ered Luin",
+    "description": "Ancient, grey, lingering. The ones who stayed to fight a long defeat when others sailed West. Sorrowful, faithful, deadlier than their gentleness suggests. Their missions feel like stewardship and a rearguard action against encroaching shadow.",
+    "flavorNote": "They do not give you a title. What they give you is their trust."
   },
   {
-    "id": "dwarven_company",
+    "id": "undermarch",
     "name": "The Undermarch",
-    "region": "Mountain",
-    "description": "A tight unit of mountain dwarves who have worked together long enough that words are mostly unnecessary. Gruff, loyal, direct. They will not complain about a hard march or a bad night, but they will notice — and remember — who kept them fed.",
-    "flavorNote": "They call you the Provender. Among dwarves, that is high praise."
+    "region": "Thorin's Halls, Blue Mountains",
+    "description": "Grim, loyal, stone-deep. Words mostly unnecessary. They will not complain about a hard march, but they notice — and remember — who kept them fed. Their missions feel like deep delves and the defense of ancient holds.",
+    "flavorNote": "Among dwarves, feeding someone well is how you say you trust them."
   },
   {
     "id": "greycloaks",
     "name": "The Greycloaks",
-    "region": "Eriador",
-    "description": "The Dúnedain of the North — the remnant of the line of Isildur, heirs to a kingdom that fell and was never rebuilt. They walk the wild lands of Eriador not as wanderers but as guardians bound by an oath older than the Shire. They have no home because their home is gone. They wait for a king who has not yet come, and in the meantime they hold the darkness back with their own hands. They are not what they once were. They are more than the world knows.",
+    "region": "Bree-land",
+    "description": "The Dúnedain of the North — heirs to a kingdom that fell and was never rebuilt. They walk the wild lands of Eriador not as wanderers but as guardians bound by an oath older than the Shire. They have no home because their home is gone. They wait for a king who has not yet come.",
     "flavorNote": "They do not give you a title. What they give you is their trust — and among the Dúnedain, that is rarer and worth more."
   }
 ]

@@ -7,12 +7,12 @@
 
 ## Current Status — June 27, 2026
 
-**Phase:** V1 app — data files complete, build passing, ready for device test.
-**V1 progress:** All game data JSON files are clean and aligned. 134 ingredients, 40 recipes, 3 bands, 9 missions. Mission resolution is purely numeric (buffStrength vs requiredBuffStrength threshold) — no buffType check was ever in the code. Build passes clean.
-**What's working:** Full data pipeline: gather ingredients → cook recipes → provision band → send on mission → worker resolves. All JSON schemas and Kotlin models are consistent. Kingswake removed everywhere (bands.json + missions.json).
-**What's not wired yet:** Gathering session doesn't yet produce the new ingredient IDs (old gather logic still runs). KitchenViewModel recipe tier grouping uses old levelRequired ranges instead of the tier field. These are polish items; the core loop should run on device now.
-**Next session:** Install APK on device and walk through the full loop. Fix gather session to produce new ingredient IDs. Update KitchenViewModel tier grouping to use recipe.tier.
-**Open questions:** Damage types spec (V2 design — defer). Wounds redesign (V2 design — defer). Wolves retune (V2 sim — defer). Whether to add a `recommendedStat` informational field to missions.json for future stat-matching UI.
+**Phase:** V2 Encounter Engine wired; food data rebuilt from Excel; sim dread redesign complete.
+**V1 progress:** Core loop fully wired with real combat math. EncounterEngine replaces old buff-strength check. Food data (134 ingredients, 40 recipes) rebuilt from Excel workbooks with band-specific schema. Kotlin models updated to match. Dread two-layer model implemented in both sims.
+**What's working:** EncounterEngine (headless combat resolver, port of run_sim.js). Nine encounters across three bands. DB v6. EncounterWorker resolves fights. ingredients.json and recipes.json match new Excel-driven schema. Ingredient.kt and Recipe.kt updated. Build green.
+**What's not wired yet:** Room schema 6.json not yet committed (appears after first Studio build). Per-member food provisioning deferred. KitchenViewModel tier grouping still uses old levelRequired ranges. Dread constants are placeholders (tuning sweep pending).
+**Next session:** Build in Android Studio, commit Room schema 6.json, install on device and play the loop. Then tune XP constants (xp_lab deferred) and dread constants (Monte Carlo sweep).
+**Open questions:** XP constant calibration deferred. Per-member food provisioning design. Draught item system (hardcoded potency 0/45/65). 5th role design. Dread constant tuning. Damage types / wounds redesign (V2 sim, defer).
 
 ---
 
@@ -1215,7 +1215,180 @@ FL1/FL2 food = wipe at every band level. FL4 is the real entry point (80% at ban
 
 ---
 
-## Session 21 — June 27, 2026
+## Session 22 — June 25, 2026
+**XP & Leveling Simulator — xp_lab.js**
+
+**What was built:**
+- `tools/sim/xp_lab.js`: Node simulator answering pacing, grind-ratio, and curve-shape questions for both the Cooking and Gathering level tracks (1–50). Single-file, all weights in one CONFIG block at the top, mirrors curve_lab.js style. `require('./food_model')` for TIER_TABLE — no duplication.
+- Supports four level-curve shapes: `linear`, `power`, `exponential`, `tierWall` (power + multiplier at tier-boundary levels). Gathering uses its own constants but same machinery.
+- Soft diminishing returns (`softDR`) flattens to a floor rather than zeroing — grind stays rewarding.
+- Grade sampler: gathering level raises mean quality floor; region ceiling (world-stage gated) hard-caps the top.
+- Four player profiles: Explorer (intended play), Grinder, Completionist, Idle-only.
+- Idle/active asymmetry modeled: gathering XP from 48 background forage cycles/day (wall-clock); cooking XP gated by active engagement.
+- Five output sections: milestone table, XP source breakdown (grind-ratio readout), ASCII level-over-days bar chart, Explorer-vs-Grinder comparison, sensitivity sweeps (DISC_XP, curve exponent P, curve shape).
+
+**Decisions made:**
+- `require('./food_model')` used for TIER_TABLE and tier mapping — single source of truth, as specified.
+- Seeded PRNG (mulberry32) used so results are reproducible and sweeps are comparable.
+- All CONFIG constants commented as PLACEHOLDERS. The sim's job is to find good values, not assume them.
+- Grade distribution: sampled by soft weighting around a mean that rises with gathering level, hard-capped by region ceiling. This respects the structural rule: level = floor/consistency, region = ceiling.
+- World-stage gating models cook-level thresholds for region access, capping available recipes, ingredients, and grade ceiling. Keeps XP from scaling unboundedly before the world opens.
+
+**Baseline run findings (placeholders are broken in expected ways — that's the point):**
+- Level curve is too steep: Explorer reaches Cook Tier 3 at day 171, everything else `>200d`. curveA/P need reduction.
+- WIN_XP dominates Explorer cooking: 72% of total cook XP. Target is steady ≈ 55–70%. Cut WIN_XP or raise REPEAT_XP substantially.
+- Gathering outpaces cooking: Explorer Gather Lv25 vs Cook Lv10 at day 200 — asymmetry is working mechanically but ratio may be too extreme once cook XP is rebalanced.
+- Gathering grind ratio is too flat (94.5% steady): FIRSTSOURCE_XP barely registers because ingredient discovery rate is slow. Raise FIRSTSOURCE_XP or discovery probability.
+- Grinder vs Explorer comparison is degenerate (both stuck before Tier 5) until the curve is fixed.
+
+**Anything that diverged from docs/design.md:**
+- Nothing — sim is a tuning instrument, not a design decision.
+
+**Coming up:**
+- Next session: Tune xp_lab CONFIG — cut WIN_XP, raise REPEAT_XP, flatten the curve — until the grind-ratio target (steady 55–70%, spikes 30–45%) is hit and Explorer visibly leads Grinder to Tier 5.
+- Near term: Validate Wolves in the Chetwood. Design encounter 3.
+- Future ideas logged: None this session.
+
+---
+
+## Session 20 — June 25, 2026
+**Design filing: parked topics integrated into docs**
+
+No code written. Wes handed over a large block of parked design material. Settled
+design-ready content was integrated into the authoritative docs; unresolved topics
+were filed into `future/`.
+
+**What was built:**
+- `docs/design.md`: Band starting regions added to each band header (Mithlost →
+  Celondim/Duillond; Undermarch → Thorin's Halls; Greycloaks → Bree-land;
+  Kingswake → placeholder pending narrative frame). Three-era narrative structure
+  and the "adjacent to the Fellowship" frame added as a new subsection inside
+  "Shape of the Whole Game." Encounter placement open thread noted (Goblin-town
+  placement is era-geography wrong). Burglar archetype added as a full subsection
+  under The Band (cohesion-exposure mechanic, loot-on-win rule, hire→recruit arc,
+  the running hobbit gag, open questions listed).
+- `docs/combat-model.md`: Black Arrow resolve chunk corrected 35% → 18% with
+  rationale. Bullroarer's Five-Iron added as the Might-Hunter inspiration.
+  Inspiration flavor text subsection added with seed lines for all five
+  inspirations and the stat-agnostic vs. named-member open choice.
+- `docs/voice-tone.md` (new): full voice and tone guide. Core rule, rules of the
+  register, race/culture voice table, vocabulary discipline, burglar-gag worked
+  example, tone fork open question.
+- `future/design/galadriel-mirrors.md` (new): full design capture for the
+  Galadriel's Mirrors system — lore framing, outlast-fight mechanic, knowledge-
+  only rewards, post-Moria gating, return-loop, campaign-gated secrets.
+- `future/wishlist.md`: new sections appended — Racial Affinities (all explored/
+  rejected directions captured so they aren't re-pitched), Burglar open design
+  questions, Inspiration stat-scaling optional knob, Encounter Ladder Placement
+  vs. eastward journey geography, Narrative Tone Fork, Kingswake home region
+  placeholder.
+
+**Decisions made:**
+- Black Arrow chunk: 35% → 18%. 35% rescued badly-provisioned fights (outcome
+  randomness overriding preparation failure — design-philosophy violation). 18%
+  pulls a close loss back to winnable without rescuing a bad one.
+- Bullroarer's Five-Iron: locked as the Might-Hunter inspiration. Same mechanical
+  role as Black Arrow. Named for Bandobras Took knocking Golfimbul's head off —
+  lore-native deep-cut gag.
+- Three-era structure: Era 1 (Eriador, free), Rivendell hinge (Elrond's charge),
+  Era 2 (east of mountains, war's wake). Palette merge (bands converge) is early
+  at the Lone-Lands; era hinge is later at Rivendell. Two separate transitions.
+- Goblin-town at recLevel 5 is geographically wrong (era 1 placement, but
+  Goblin-town is post-hinge territory). Flagged as an open thread; encounter
+  ladder placement must be reconciled with three-era geography before campaign
+  layer is locked.
+- Voice & tone guide is now authoritative for all player-facing writing.
+
+**Anything that diverged from docs/design.md:**
+- Nothing diverged — this session only added material.
+
+**Coming up:**
+- Next session: Tune xp_lab CONFIG (the deferred XP-calibration task from last
+  session — this session was design filing only).
+- Near term: Reconcile encounter ladder placement with three-era geography.
+  Goblin-town needs to move; the Rung 1 armored-enemy teacher foe for era 1
+  needs a replacement.
+- Future ideas logged: Galadriel's Mirrors, racial affinities, burglar open
+  questions, Kingswake home region, encounter placement — all in future/.
+
+---
+
+## Session 21 — June 25, 2026
+**V2 Encounter Engine: full combat resolver wired into Android**
+
+Replaced the placeholder buff-strength mission model with a real headless combat
+engine. Twelve tasks, three phases. Executed via subagent-driven development.
+
+**What was built:**
+
+Phase 1 — Data:
+- `app/src/main/assets/data/bands.json`: rewritten with canonical IDs
+  (mithlost/undermarch/greycloaks), canonical regions, Kingswake removed, deprecated player titles removed
+- `app/src/main/assets/data/band_members.json`: bandIds updated to match
+- `app/src/main/kotlin/.../ui/screen/BandSelectionScreen.kt`: corsair_fleet branch removed, IDs fixed
+- `app/src/main/assets/data/encounters.json` (new): nine encounters across three bands.
+  Easy (Rung 0a swarm), medium (Rung 0b spike-heavy), hard (Rung 1 armored goblin incursion).
+  All parameters match validated combat-model.md values.
+
+Phase 2 — Model/engine:
+- `data/model/Encounter.kt` (new): Encounter and Stage data classes, all fields
+  matching encounters.json schema
+- `engine/EncounterEngine.kt` (new): headless combat resolver, direct Kotlin port of
+  tools/sim/run_sim.js. Constants match exactly: PEN_SCALE=80, RESCUE_CAP=5,
+  WARD_CAP=3, GRIEVOUS=5, RMAX=50, JITTER=0.10. All DPS formulas match.
+- `engine/EncounterEngineTest.kt` (new): three probabilistic unit tests
+- `data/repository/EncounterRepository.kt` (new): forBand(), get()
+- `data/repository/GameDataRepository.kt`: added encounters lazy load
+- `data/db/EncounterSession.kt` (new): Room entity for active encounter sessions
+- `data/db/dao/EncounterSessionDao.kt` (new): upsert, observe, get, clear
+- `data/db/HearthCraftDatabase.kt`: version bumped 5→6, AutoMigration, EncounterSession added
+- `di/DatabaseModule.kt`: provideEncounterSessionDao added
+- `data/repository/SessionRepository.kt`: observeEncounter, activeEncounter, startEncounter, clearEncounter added
+
+Phase 3 — Wiring:
+- `worker/EncounterWorker.kt` (new): WorkManager worker, loads encounter, builds
+  MemberInput from live stats, calls EncounterEngine.resolve(), applies wounds/rewards
+- `data/repository/BandRepository.kt`: memberInputsForBand() (suspend) added
+- `ui/viewmodel/UiModels.kt`: EncounterDetail data class added
+- `ui/viewmodel/BandViewModel.kt`: missions replaced by encounters StateFlow,
+  sendOnMission replaced by sendOnEncounter, draughtPotency + draught selector added,
+  activeEncounterSession StateFlow added
+- `ui/screen/MissionBoardScreen.kt`: rewritten to encounter API, draught selector,
+  locked/unlocked state display
+- `ui/screen/BandScreen.kt`: migrated to encounter API, active session display fixed
+- `app/src/main/assets/data/missions.json`: deleted
+- `app/src/main/assets/data/encounters/` subfolder: all old per-band sim stubs deleted
+
+**Decisions made:**
+- Kingswake / corsair_fleet: removed entirely. Three bands only.
+- Per-member food provisioning: deferred. All members currently receive the same
+  HP/s from the selected food item. Full "cook the right dish for the right member"
+  puzzle is V2 polish.
+- MissionWorker kept: active MissionSessions from pre-upgrade must complete cleanly.
+- Tick order: EncounterEngine runs food→DPS→drain→spike (slight 1-tick difference
+  from JS sim which runs drain→spike→food). Party is ~1 tick more favorable.
+  Documented; acceptable for V1.
+- draughtPotency: party-wide, read from members.first(). All members receive same
+  value from memberInputsForBand() — this is correct per design ("one draught choice
+  per encounter, applied to all party members").
+- SHADOW_FLOOR/SHADOW_RATE: constants declared in engine but shadow drain tick not
+  implemented. Shadow encounters don't exist in V1 — deferred with TODO comment.
+
+**Anything that diverged from docs/design.md:**
+- Mithlost easy encounter is midges (not spiders as the earlier combat-model note
+  had stated). combat-model.md updated to reflect mithlost_midges / mithlost_wargs.
+
+**Coming up:**
+- Next session: Build in Android Studio, verify Room migration, play the loop on device.
+  Commit Room schema 6.json after first successful build.
+- Near term: Tune XP constants (xp_lab — still deferred). Per-member food provisioning.
+  Draught item system.
+- Future ideas logged: draught item system, per-member provisioning, MissionWorker
+  cleanup (once all V1 sessions have expired).
+
+---
+
+## Session 23 — June 27, 2026
 **Dread redesign: two-layer model implemented in both sims**
 
 **What was built:**
@@ -1242,8 +1415,8 @@ FL1/FL2 food = wipe at every band level. FL4 is the real entry point (80% at ban
 
 ---
 
-## Session 22 — June 27, 2026
-**App data rebuild: Excel workbooks → JSON, model updates, build verified**
+## Session 24 — June 27, 2026
+**App data rebuild: Excel workbooks → JSON, Kotlin models updated, build verified**
 
 **What was built:**
 - `app/src/main/assets/data/ingredients.json`: Replaced entirely from hearthcraft_ingredients.xlsx (134 ingredients across 6 regions, full stat affinity data).
@@ -1251,18 +1424,18 @@ FL1/FL2 food = wipe at every band level. FL4 is the real entry point (80% at ban
 - `app/src/main/assets/data/bands.json`: Kingswake (corsair_fleet) removed — band is dead.
 - `data/model/Ingredient.kt`: Updated to new schema (added region, source, primaryStat, secondaryStat, hazardTendency, notes; removed old type/flavor fields not referenced by any code).
 - `data/model/Recipe.kt`: Updated to new band-specific schema (added band, recipeClass, method, tier, cookLevel, primaryStat, secondaryStat, tertiaryStat, hazardEffect; old fields buffType/durationMs/levelRequired/etc. now computed as derived properties from new fields so no UI code broke).
-- `tools/sim/` + spec/plan files: Dread two-layer redesign from Session 21 (completed earlier this session).
+- `app/src/main/assets/data/missions.json`: Removed 3 dead Kingswake missions. (This file was later fully replaced by encounters.json.)
 
 **Decisions made:**
 - **Recipe.buffType** is derived from primaryStat (mig→might, agi→agility, vit→vitality, wil→will). Draughts use their recipeClass.
 - **Recipe.durationMs** derived from tier: tier 1=30min, 2=45min, 3=60min, 4=90min, 5+=120min.
-- **Recipe.baseBuffStrength** = tier × 5; **buffStrengthPerLevel** = tier × 0.5. Formula is placeholder; mission thresholds will need calibration when missions.json is updated.
+- **Recipe.baseBuffStrength** = tier × 5; **buffStrengthPerLevel** = tier × 0.5.
 - **willowherb** added to ingredients.json manually — present in food master Ingredients tab but missing from the JSON Schema tab.
 
 **Anything that diverged from docs/design.md:**
 - Kingswake removal confirmed. V1 has three bands: Mithlost, Undermarch, Greycloaks.
 
 **Coming up:**
-- Next session: Update missions.json to stat-based requirements. Verify full loop on device.
-- Near term: KitchenViewModel tier grouping (currently uses old levelRequired ranges, should be tier-based). Gathering session needs to surface new ingredient stat fields.
-- Future: Wounds redesign, damage types, Wolves retune — all V2 sim work received as design specs this session, logged for later.
+- Next session: Build in Android Studio, commit Room schema 6.json, install on device and walk the full loop.
+- Near term: KitchenViewModel tier grouping (uses old levelRequired ranges — should use recipe.tier). Dread constant tuning sweep.
+- Future: Wounds redesign, damage types, Wolves retune — all V2 sim work, deferred.

@@ -44,11 +44,12 @@ class GardenWorker @AssistedInject constructor(
         val items = listOf(HarvestItem(ingredientId, ingredient.name, qty, ingredient.rarity))
         val json = Json.encodeToString(items)
 
-        player.addGatheringXp(XP_GARDEN)
+        player.addGatheringXp(PlayerRepository.XP_GATHER_SESSION)
         growing.setPendingResult(slotId, json)
 
-        val slotNum = slotId.last().digitToInt() + 1
-        val notifId = NOTIFICATION_ID_BASE + slotId.last().digitToInt()
+        val slotDigit = slotId.lastOrNull()?.digitToIntOrNull() ?: 0
+        val slotNum = slotDigit + 1
+        val notifId = NOTIFICATION_ID_BASE + slotDigit
         notify("Garden ready — tap to harvest", "Bed $slotNum: ${ingredient.name} is ready to collect.", notifId)
         return Result.success()
     }
@@ -79,7 +80,6 @@ class GardenWorker @AssistedInject constructor(
         const val KEY_LEVEL = "level"
         const val NOTIFICATION_ID_BASE = 20
         private const val BASE_YIELD = 3
-        private const val XP_GARDEN = 25
 
         fun buildRequest(slotId: String, ingredientId: String, level: Int, durationMs: Long): OneTimeWorkRequest =
             OneTimeWorkRequestBuilder<GardenWorker>()

@@ -35,8 +35,10 @@ class CookingWorker @AssistedInject constructor(
         val recipeId = inputData.getString(KEY_RECIPE_ID) ?: return Result.failure()
         val recipe = gameData.recipes.find { it.id == recipeId } ?: return Result.failure()
 
+        val isFirstCook = inventory.preparedFoodQty(recipeId) == 0
         inventory.addPreparedFood(recipeId)
-        player.addCookingXp(XP_COOKING)
+        val cookingXp = if (isFirstCook) PlayerRepository.XP_COOK_FIRST else PlayerRepository.XP_COOK_REPEAT
+        player.addCookingXp(cookingXp)
         sessions.clearCooking()
 
         notify(
@@ -73,7 +75,6 @@ class CookingWorker @AssistedInject constructor(
     companion object {
         const val KEY_RECIPE_ID = "recipeId"
         const val NOTIFICATION_ID = 2
-        private const val XP_COOKING = 50
 
         fun buildRequest(recipeId: String, durationMs: Long): OneTimeWorkRequest =
             OneTimeWorkRequestBuilder<CookingWorker>()

@@ -274,9 +274,20 @@ Tune these separately from core balance; do not let them carry the fight.
   (wounds reset to 0). Separate from the 5 rescues; uncapped but rare.
 - **Warden — "The Horn of Gondor":** Warden pulls ALL spikes for a window;
   fires when 2+ members are in trouble.
-- **Hunter — "Black Arrow":** killable = large resolve chunk; un-killable =
+- **Hunter — "Black Arrow":** killable = resolve chunk **18%**; un-killable =
   burns time off the survival clock. Rising capped chance as a fight trends to
   time-loss. **IP review before public ship** — direct Tolkien coinage.
+  *(Previously 35%; reduced because Black Arrow fires in fights the player is
+  already losing — a 35% chunk rescued fights that were decided by provisioning
+  failure, which the design rejects. 18% pulls a close loss back to winnable
+  without rescuing a bad one.)*
+- **Might Hunter — "Bullroarer's Five-Iron":** same mechanical role as Black
+  Arrow (rare, fight-deciding burst against a kill target) but Might-driven, for
+  a Might-build captain/fighter rather than an Agility/Fate hunter. Fires a
+  resolve chunk of **18%** against a killable target, or burns survival-clock
+  time on an unkillable. Named for Bandobras "Bullroarer" Took knocking
+  Golfimbul's head into a rabbit hole — lore-native deep-cut gag that stays in
+  Tolkien register. **IP review before public ship.**
 - **Captain — "Wrath, Ruin, and the Red Dawn":** party-wide HP burst (can
   revive downed members). Epic / Aragorn at the Black Gate feel.
 
@@ -307,9 +318,37 @@ Shadow drains Fate, reducing this protection over time. The design intention: hi
 Fate characters (Keeper, Captain) are naturally luckier; provisioning Fate-boosting
 food amplifies this further.
 
----
+### Inspiration Flavor Text
 
-## Key Constants
+When an Inspiration fires, the player sees a short line describing what happened.
+Register: plain, slightly archaic, understated, past tense, *observational* —
+describes what happened in the world, not "you unleash…". Keep the Tolkien
+narrator voice. **Multiple variants per Inspiration should be written** and
+rotated so the hundredth proc doesn't read like the first.
+
+Seed lines (expand when the full content pass is done):
+
+- **Black Arrow** (Agility/Fate — decisive shot):
+  > *One arrow remained, black-fletched and true. She drew it to her ear, and loosed.*
+
+- **Bullroarer's Five-Iron** (Might — decisive blow):
+  > *He swung with all the weight of the old Took in his arms — and somewhere, a head went flying clean off its shoulders.*
+
+- **The Horn of Gondor** (Warden — rally / spike-soak window):
+  > *A horn rang out, clear and high, and weary hearts remembered they were not yet beaten.*
+
+- **Wrath, Ruin, and the Red Dawn** (Captain — turning of the tide):
+  > *Light broke red over the rim of the world, and with it came hope unlooked-for.*
+
+- **Laurelin's Grace** (Keeper — uncapped grievous-rescue):
+  > *A warmth like the first spring of the world settled over them, and the wounded breathed easier.*
+
+**Open choice:** keep wording stat-agnostic (reads cleanly whoever triggered it)
+vs. name the member/role (more personal, needs a variant per role). Current
+drafts lean slightly personal but stay flexible. Resolve during the narrative
+content pass, not during combat-system build.
+
+---
 
 ```
 morale            = round(30 + Vit × 16)
@@ -407,30 +446,51 @@ Cull fight (kill-to-win). **Unwinnable with no food** — the band bleeds out in
 |---|---|---|---|
 | CL1 | 5.0 | ~24% | T1 — risky |
 | CL2 | 5.2 | ~48% | T2 — coin flip |
-| CL3 | 5.4 | ~70% | T3 — solid |
-| CL4 | 5.6 | ~86% | T4 — strong |
+| CL3 | 5.4 | ~80% | FL3 — solid |
+| CL4 | 5.6 | ~91% | FL4 — strong |
 
-Mastery food (6.0 HP/s, Initiate entry) gives ~97%.
+First Initiate food (6.0 HP/s, CL5) gives ~99%.
+
+> **Note:** these win rates are pre-stat-bonus baselines (HP/s only, no role-matched
+> stat bonuses applied). With role-matched food at FL1 (Hearthbread/Wanderer's Supper/
+> Contemplative Tea/Ranger's Fare), Neekerbreekers FL1 ≈ 47%, FL2 ≈ 79%, FL3 ≈ 99%.
+> The higher rates in `future/wishlist.md` (Fate Balance section) are the post-bonus
+> validated values — both are correct, just measured differently.
 
 **Model:** Independent health bars. Each member takes drain/4 with no redistribution on member loss. Each member rolls their own spikes independently. Reserve pool (RMAX=50) absorbs spike damage before morale takes it.
 
 ### Wolves in the Chetwood — recLevel 3
 `resolve 60000 · drain 18 · spike 75 · spikeInterval 9 (mean, ±50% jitter) · physMit 0 · no statuses · durationCap 1500`
 
-Adds the second question: sustain AND whether the Warden can hold the line for
-the Keeper. Validated at band Lv3 (unlock floor), 5000 runs: FL3=6%, FL4=81%,
-FL5=93%, FL6=97%, FL7=99%, FL8=~100%. Completely unwinnable at FL1/FL2.
-Needs max Hearthkeeper food (FL4) for a real chance; first Initiate level (FL5) is
-the comfort threshold.
+Demands you push into the Initiate tier — Hearthkeeper food cannot win. Validated
+post-tier-table-fix at band Lv3 (unlock floor), 1000 runs: FL4(5.6 HP/s)=0%,
+FL5(6.0)=7%, FL6(6.8)=57%, FL7(7.5)=91%, FL8(8.3)=99%. FL5 is the entry gate;
+FL6 is the real threshold; FL7+ is comfortable.
 
-### Goblin-town Gate — recLevel 5
-`resolve 115000 · drain 20 · spike 60 · spikeInterval 14 · physMit 22% · no statuses · durationCap 1500`
+### Goblin Incursion — recLevel 5 (teaches potency / Rung 1)
+`resolve 68000 · drain 20 · spike 60 · spikeInterval 14 · physMit 35% · no statuses · durationCap 1500 (25 min)`
 
-First armored encounter. Rung 1 — teaches potency. Drain is moderate; the party
-survives without difficulty. The failure mode is **timeout**: without a potency
-draught the resolve pool does not die in time (boss near-dead at clock expiry).
-Validated at band Lv5, 5000 runs, FL4 role-matched food:
-no potency: 0%, entry potency draught (45): 97.7%.
+First armored encounter. Rung 1 — teaches potency. Two distinct failure modes:
+
+1. **Bad food (Hearthkeeper, FL1–4) → death.** Drain overwhelms below Initiate — the band bleeds out before the clock runs. FL1: 100% defeat. FL4: 76% defeat, 24% stalemate (lucky spike runs survive).
+2. **Good food (Initiate FL5+), no draught → stalemate.** The band survives but the armor wall stops the kill — 95% stalemate. Black Arrow fires in 98% of these fights as the last desperate push. Resolve sits at ~11% remaining when the clock expires.
+3. **Initiate FL5 + entry potency draught (45) → T3 win (~74%).** The draught cuts effective armor enough to kill in time. 21% stalemates remain (tight fights where the clock runs out regardless). FL6+p45: ~100%.
+
+Validated at band Lv5, 5000 runs, role-matched food (Warden: Hearthbread, Hunter: Wanderer's Supper, Keeper: Contemplative Tea, Captain: Ranger's Fare):
+
+| FL | Potency | Win | Defeat | Stalemate |
+|---|---|---|---|---|
+| FL1 | 0 | 0% | 100% | 0% — die |
+| FL4 | 0 | 0% | 76% | 24% — mostly die |
+| FL5 | 0 | 0% | 5% | 95% — armor wall |
+| FL5 | 45 | 74% | 5% | 21% — T3 solid |
+| FL6 | 45 | ~100% | 0% | ~0% — comfortable |
+
+**Per-band flavor (same numbers, different skin):**
+- **Greycloaks:** goblin warband working the East Road east of Weathertop; intercepted at dusk. Region: Lone-lands.
+- **Mithlost:** goblins probing down from the mountain passes above Celondim, three nights at the tree-line. Region: Ered Luin western woodland edge.
+- **Undermarch:** mountain goblins hitting the outer approach to Thorin's Halls before dawn — a test of the defenses, not a raid. Region: Blue Mountains, Thorin's Halls approach.
+- **Kingswake:** placeholder (home region not yet locked).
 
 ---
 
@@ -442,8 +502,8 @@ in early content by construction.
 
 | Rung | New question | Teacher foes | Region | Provisioning answer |
 |---|---|---|---|---|
-| 0 | Survive + win at all? | Wolves, lone goblins | Bree-land, Chetwood | HP/s food + damage |
-| 1 | Pierce armor? | Mailed orcs, stone-trolls | Trollshaws, Goblin-town | Agi/Mig food (penetration) |
+| 0 | Survive + win at all? | Midges, wolves, spiders, cave bats | Bree-land/Chetwood (Greycloaks); Ered Luin woodland (Mithlost); Blue Mountain tunnels (Undermarch) | HP/s food + damage |
+| 1 | Pierce armor? | Mailed goblin incursion | Lone-lands (Greycloaks); Ered Luin passes (Mithlost); Thorin's Halls approach (Undermarch) | Potency draught |
 | 2 | Weather the dice? | Warg packs, barghests | Misty Mtn passes | Feed fragile members; respect Keeper's 5 rescues |
 | 3 | Have the region's antidote? | Huorns, midge-marsh, cold passes | Old Forest, Midgewater, Caradhras | The one hazard food (Alert / Hale / Warmth) |
 | 4 | Endure when you can't win? | Old Man Willow, blizzard | Old Forest, high passes | All-sustain; the survival mindset |
@@ -457,6 +517,25 @@ journeys and gauntlets appear first at Rung 7.
 Early encounter variety before Dread/Shadow comes from **foe shape** (swarm,
 tank, endure) crossed with the four "safe" environmental hazards. Five-plus
 region-bands of variety before a player ever meets fear.
+
+### Per-band Rung 0 encounter roster
+
+Each band has its own Rung 0 pair matched to their home region. Same mechanical
+role as Neekerbreekers (swarm/attrition) and Wolves (spike-heavy), different skin.
+Numbers are **not yet tuned** — use Neekerbreekers and Wolves as the tuning target
+for feel; validate per-band encounters before V2 combat ships.
+
+| Band | Rung 0a (swarm/drain — Neekerbreekers slot) | Rung 0b (spike-heavy — Wolves slot) |
+|---|---|---|
+| **Greycloaks** | Neekerbreekers at the Marsh's Edge *(validated)* | Wolves in the Chetwood *(validated)* |
+| **Mithlost** | Midges at the forest margin (Celondim woodland edge, Ered Luin) — `mithlost_midges` | Wargs on the mountain slopes above Celondim — `mithlost_wargs` |
+| **Undermarch** | Cave bats in the lower halls (Blue Mountain tunnels — swarming, claustrophobic, deep-dark) | Mountain wolves on the outer passes above Thorin's Halls |
+| **Kingswake** | TBD — home region not yet locked | TBD |
+
+**Design note:** the Undermarch bats are creatures, not enemies with intent — tonally
+distinct from the goblin raid that follows. The first fight is deep underground and
+passive; the second is an armed assault at the gates. Same progression shape, very
+different feel.
 
 ---
 

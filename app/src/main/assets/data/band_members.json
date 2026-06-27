@@ -1,7 +1,7 @@
 [
   {
     "id": "aelindra",
-    "bandId": "druid_circle",
+    "bandId": "mithlost",
     "name": "Aelindra",
     "role": "Captain",
     "personality": "Ancient and precise. She speaks in careful sentences, as though each word costs something. She has outlived three kingdoms and carries every one of them. Elves grieve what is lost and do not stop grieving — she simply does it without making it anyone else's burden.",
@@ -15,7 +15,7 @@
   },
   {
     "id": "thalindel",
-    "bandId": "druid_circle",
+    "bandId": "mithlost",
     "name": "Thalindel",
     "role": "Hunter",
     "personality": "Young by elven reckoning, which means he is merely old by human standards. He finds the world genuinely beautiful and has not yet lost that — the older ones look at him with something that might be envy. Asks too many questions. Remembers every answer. Has not yet learned that silence is also an answer, but he will carry that lesson long after the one who teaches it to him is gone.",
@@ -29,7 +29,7 @@
   },
   {
     "id": "galadorn",
-    "bandId": "druid_circle",
+    "bandId": "mithlost",
     "name": "Galadorn",
     "role": "Keeper",
     "personality": "Speaks rarely. When he does, people listen. He has watched over this forest longer than most kingdoms have stood, and he carries that weight without complaint.",
@@ -43,7 +43,7 @@
   },
   {
     "id": "caranthir",
-    "bandId": "druid_circle",
+    "bandId": "mithlost",
     "name": "Caranthir",
     "role": "Warden",
     "personality": "Stands where he is told and does not move. Has held passes alone. Speaks in single words when words are needed at all.",
@@ -57,7 +57,7 @@
   },
   {
     "id": "borin_ironmantle",
-    "bandId": "dwarven_company",
+    "bandId": "undermarch",
     "name": "Borin Ironmantle",
     "role": "Warden",
     "personality": "Has never complained once in forty years of hard service. Reliable as bedrock. If you ask how he is, he will say fine, and mean it, and be back at work before you have finished asking.",
@@ -71,7 +71,7 @@
   },
   {
     "id": "dagra_copperhelm",
-    "bandId": "dwarven_company",
+    "bandId": "undermarch",
     "name": "Dagra Copperhelm",
     "role": "Hunter",
     "personality": "Laughs at everything. Danger, hardship, bad odds — all equally funny to her. The band finds this either inspiring or alarming depending on the day.",
@@ -85,7 +85,7 @@
   },
   {
     "id": "keldra",
-    "bandId": "dwarven_company",
+    "bandId": "undermarch",
     "name": "Keldra",
     "role": "Captain",
     "personality": "Youngest in the company, and she will be the first to tell you exactly how far she's come since she joined. Keeps a mental ledger of every mission, every win, every close call — not out of pride but out of genuine competitive hunger. She wants to be the best, she tracks the evidence, and she is, on her better days, not far off. The others find this exhausting and quietly excellent.",
@@ -99,7 +99,7 @@
   },
   {
     "id": "thrain_deepvein",
-    "bandId": "dwarven_company",
+    "bandId": "undermarch",
     "name": "Thrain Deepvein",
     "role": "Keeper",
     "personality": "A stonesinger and bonesetter both; among dwarves the same steady hands that read the rock can set a break. Calm in a crisis, dry as dust otherwise. Does not wear rings. Has not explained why — though those who know him well suspect it is simply because he loses things, and leave it at that.",
@@ -110,62 +110,6 @@
     "startingVitality": 3,
     "startingWill": 5,
     "startingFate": 4
-  },
-  {
-    "id": "reva_tidecaller",
-    "bandId": "corsair_fleet",
-    "name": "Reva Tidecaller",
-    "role": "Captain",
-    "personality": "Charismatic and completely unpredictable. Makes decisions in three seconds flat and is right often enough that no one argues anymore. The fleet follows her because she is usually worth following — and sometimes because there is something in her voice when she gives a command that sounds older than she is, older than the ship, older than any corsair has a right to sound. She doesn't notice it. They do.",
-    "foodPreference": "light",
-    "quirkNote": "Hates anything heavy before a job. Light and fast — matches how she thinks.",
-    "startingMight": 3,
-    "startingAgility": 5,
-    "startingVitality": 3,
-    "startingWill": 4,
-    "startingFate": 4
-  },
-  {
-    "id": "silas_thorn",
-    "bandId": "corsair_fleet",
-    "name": "Silas Thorn",
-    "role": "Hunter",
-    "personality": "Quiet. Watchful. Knows things he has not explained and will not. The fleet uses him as a compass — he always knows when something is wrong before it becomes wrong. He also knows the old stars by names the charts don't carry anymore, reads weather in ways no sailor taught him, and occasionally says things in a cadence that doesn't quite belong to this age. He doesn't seem to notice. The fleet has learned to trust it.",
-    "foodPreference": "herbal",
-    "quirkNote": "Clears the head. He wants something brewed and quiet, like he is.",
-    "startingMight": 2,
-    "startingAgility": 4,
-    "startingVitality": 3,
-    "startingWill": 5,
-    "startingFate": 3
-  },
-  {
-    "id": "marta_wavebreaker",
-    "bandId": "corsair_fleet",
-    "name": "Marta Wavebreaker",
-    "role": "Warden",
-    "personality": "Loud, boastful, and terrifyingly capable. The stories she tells about herself are exaggerated — the actual events were worse. What she doesn't talk about: the oath she keeps about who she will and won't take coin to fight. A code she never named, handed down from someone who handed it down before that. She doesn't think of it as noble. It is simply the line she doesn't cross, and she has never explained why.",
-    "foodPreference": "hearty",
-    "quirkNote": "Built for excess in every direction. Hearty food, plenty of it.",
-    "startingMight": 5,
-    "startingAgility": 3,
-    "startingVitality": 5,
-    "startingWill": 2,
-    "startingFate": 3
-  },
-  {
-    "id": "old_cassia",
-    "bandId": "corsair_fleet",
-    "name": "Old Cassia",
-    "role": "Keeper",
-    "personality": "Sailed longer than anyone living should have. Mends rope, bone, and morale with the same unbothered hands. Has buried more crew than she'll say — and sung over them in a tongue none of them recognized, old words she learned from her grandmother, who learned them from hers, all the way back to water and ruin and a shore they will not see again. She does not call it grief. She calls it what you do.",
-    "foodPreference": "hearty",
-    "quirkNote": "A full bowl, no fuss. She's kept people alive on worse.",
-    "startingMight": 1,
-    "startingAgility": 2,
-    "startingVitality": 3,
-    "startingWill": 5,
-    "startingFate": 5
   },
   {
     "id": "aldric",

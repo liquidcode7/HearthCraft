@@ -30,7 +30,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.liquidcode7.hearthcraft.data.model.Mission
 import com.liquidcode7.hearthcraft.ui.viewmodel.BandMemberWithState
 import com.liquidcode7.hearthcraft.ui.viewmodel.BandViewModel
 import com.liquidcode7.hearthcraft.ui.viewmodel.InventoryViewModel
@@ -44,13 +43,13 @@ fun BandScreen(
     inventoryViewModel: InventoryViewModel = hiltViewModel()
 ) {
     val activeMission by bandViewModel.activeMission.collectAsState()
+    val activeEncounterSession by bandViewModel.activeEncounterSession.collectAsState()
     val members by bandViewModel.members.collectAsState()
     val hasAliveMembers by bandViewModel.hasAliveMembers.collectAsState()
-    val missions by bandViewModel.missions.collectAsState()
+    val encounters by bandViewModel.encounters.collectAsState()
     val selectedFood by bandViewModel.selectedFood.collectAsState()
-    val selectedMission by bandViewModel.selectedMission.collectAsState()
+    val selectedEncounter by bandViewModel.selectedEncounter.collectAsState()
     val preparedFood by inventoryViewModel.preparedFood.collectAsState()
-    val maxVitality by bandViewModel.maxVitality.collectAsState()
     val viewingSecond by bandViewModel.viewingSecond.collectAsState()
     val isSecondBandUnlocked by bandViewModel.isSecondBandUnlocked.collectAsState()
     val firstBandId by bandViewModel.firstBandId.collectAsState()
@@ -76,13 +75,18 @@ fun BandScreen(
             Spacer(modifier = Modifier.height(12.dp))
         }
 
-        if (activeMission != null) {
-            val missionName = missions.find { it.id == activeMission!!.missionId }?.name
-                ?: activeMission!!.missionId
+        if (activeMission != null || activeEncounterSession != null) {
+            val encounterName = activeEncounterSession?.let { es ->
+                encounters.find { it.encounterId == es.encounterId }?.name ?: es.encounterId
+            } ?: activeMission?.let { ms ->
+                encounters.find { it.encounterId == ms.missionId }?.name ?: ms.missionId
+            } ?: ""
+            val startedAtMs = activeEncounterSession?.startedAtMs ?: activeMission!!.startedAtMs
+            val durationMs  = activeEncounterSession?.durationMs  ?: activeMission!!.durationMs
             MissionActiveCard(
-                missionName = missionName,
-                startedAtMs = activeMission!!.startedAtMs,
-                durationMs = activeMission!!.durationMs
+                missionName = encounterName,
+                startedAtMs = startedAtMs,
+                durationMs = durationMs
             )
             Spacer(modifier = Modifier.height(16.dp))
         }
@@ -150,7 +154,7 @@ fun BandScreen(
                     )
                 }
             }
-        } else if (activeMission == null) {
+        } else if (activeMission == null && activeEncounterSession == null) {
             Spacer(modifier = Modifier.height(16.dp))
             OutlinedButton(onClick = onMissionBoard, modifier = Modifier.fillMaxWidth()) {
                 Text("Mission Board")
@@ -180,24 +184,9 @@ fun BandScreen(
             }
 
             Spacer(modifier = Modifier.height(12.dp))
-            Text("Select Mission:", style = MaterialTheme.typography.labelMedium)
-            Spacer(modifier = Modifier.height(4.dp))
-            missions.forEach { mission ->
-                val isLocked = maxVitality < mission.vitalityRequired
-                MissionRow(
-                    mission = mission,
-                    isSelected = mission.id == selectedMission?.id,
-                    isLocked = isLocked,
-                    onClick = { bandViewModel.selectMission(mission) }
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
             Button(
-                onClick = { bandViewModel.sendOnMission() },
-                enabled = selectedFood != null && selectedMission != null
-                        && maxVitality >= (selectedMission?.vitalityRequired ?: 0),
+                onClick = { bandViewModel.sendOnEncounter() },
+                enabled = selectedFood != null && selectedEncounter?.isUnlocked == true,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Send on Mission")
@@ -306,45 +295,6 @@ private fun FoodRow(food: PreparedFoodDetail, isSelected: Boolean, onClick: () -
                 )
             }
             Text("×${food.quantity}", style = MaterialTheme.typography.bodySmall)
-        }
-    }
-}
-
-@Composable
-private fun MissionRow(mission: Mission, isSelected: Boolean, isLocked: Boolean, onClick: () -> Unit) {
-    Card(
-        onClick = { if (!isLocked) onClick() },
-        border = if (isSelected) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null,
-        modifier = Modifier
-            .fillMaxWidth()
-            .alpha(if (isLocked) 0.5f else 1f)
-    ) {
-        Column(modifier = Modifier.padding(10.dp)) {
-            Row {
-                Text(
-                    mission.name,
-                    style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.weight(1f)
-                )
-                Text(
-                    mission.difficulty,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-            if (isLocked) {
-                Text(
-                    "Requires Vitality ${mission.vitalityRequired} — train your band",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.error
-                )
-            } else if (mission.vitalityRequired > 0) {
-                Text(
-                    "Vitality ${mission.vitalityRequired} met ✓",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
         }
     }
 }

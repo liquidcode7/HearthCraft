@@ -1,36 +1,19 @@
 package com.liquidcode7.hearthcraft.ui.screen
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.Card
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.liquidcode7.hearthcraft.data.model.Mission
 import com.liquidcode7.hearthcraft.ui.viewmodel.BandViewModel
+import com.liquidcode7.hearthcraft.ui.viewmodel.EncounterDetail
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -38,7 +21,10 @@ fun MissionBoardScreen(
     onBack: () -> Unit,
     bandViewModel: BandViewModel = hiltViewModel()
 ) {
-    val missions by bandViewModel.missions.collectAsState()
+    val encounters by bandViewModel.encounters.collectAsState()
+    val selectedEncounter by bandViewModel.selectedEncounter.collectAsState()
+    val selectedFood by bandViewModel.selectedFood.collectAsState()
+    val draughtPotency by bandViewModel.draughtPotency.collectAsState()
 
     Scaffold(
         topBar = {
@@ -59,16 +45,48 @@ fun MissionBoardScreen(
                 .padding(innerPadding)
                 .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
-            if (missions.isEmpty()) {
+            if (encounters.isEmpty()) {
                 Text(
-                    "No missions available.",
+                    "No encounters available.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             } else {
-                missions.forEach { mission ->
-                    MissionCard(mission = mission)
+                encounters.forEach { enc ->
+                    EncounterCard(
+                        encounter = enc,
+                        isSelected = enc.encounterId == selectedEncounter?.encounterId,
+                        onClick = { if (enc.isUnlocked) bandViewModel.selectEncounter(enc) }
+                    )
                     Spacer(modifier = Modifier.height(8.dp))
+                }
+            }
+
+            // Draught selector — only shown if an armored encounter is selected
+            if (selectedEncounter?.physMitPct ?: 0f > 0f) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text("Draught", style = MaterialTheme.typography.labelLarge)
+                Spacer(modifier = Modifier.height(4.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    listOf(0f to "None", 45f to "Entry (45)", 65f to "Mid (65)").forEach { (potency, label) ->
+                        FilterChip(
+                            selected = draughtPotency == potency,
+                            onClick = { bandViewModel.setDraught(potency) },
+                            label = { Text(label) }
+                        )
+                    }
+                }
+            }
+
+            // Send button
+            if (selectedEncounter != null && selectedFood != null) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(
+                    onClick = { bandViewModel.sendOnEncounter() },
+                    enabled = selectedEncounter?.isUnlocked == true,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Send — ${selectedEncounter?.name}")
                 }
             }
         }
@@ -76,60 +94,72 @@ fun MissionBoardScreen(
 }
 
 @Composable
-private fun MissionCard(mission: Mission) {
-    val (difficultyLabel, difficultyColor) = when (mission.difficulty) {
-        "easy" -> "Routine" to Color(0xFF4CAF50)
+private fun EncounterCard(
+    encounter: EncounterDetail,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    val (difficultyLabel, difficultyColor) = when (encounter.difficulty) {
+        "easy"   -> "Routine"     to Color(0xFF4CAF50)
         "medium" -> "Challenging" to Color(0xFFFF9800)
-        "hard" -> "Dangerous" to MaterialTheme.colorScheme.error
-        else -> mission.difficulty to MaterialTheme.colorScheme.onSurfaceVariant
+        "hard"   -> "Dangerous"   to MaterialTheme.colorScheme.error
+        else     -> encounter.difficulty to MaterialTheme.colorScheme.onSurfaceVariant
     }
+    val alpha = if (encounter.isUnlocked) 1f else 0.4f
 
-    Card(modifier = Modifier.fillMaxWidth()) {
+    Card(
+        onClick = onClick,
+        border = if (isSelected) androidx.compose.foundation.BorderStroke(
+            2.dp, MaterialTheme.colorScheme.primary
+        ) else null,
+        modifier = Modifier.fillMaxWidth()
+    ) {
         Column(modifier = Modifier.padding(12.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    mission.name,
+                    encounter.name,
                     style = MaterialTheme.typography.titleSmall,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = alpha)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                // Colored difficulty dot + label
                 androidx.compose.foundation.Canvas(modifier = Modifier.size(8.dp)) {
-                    drawCircle(color = difficultyColor)
+                    drawCircle(color = difficultyColor.copy(alpha = alpha))
                 }
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
                     difficultyLabel,
                     style = MaterialTheme.typography.labelSmall,
-                    color = difficultyColor
+                    color = difficultyColor.copy(alpha = alpha)
                 )
             }
             Spacer(modifier = Modifier.height(4.dp))
-            Text(mission.description, style = MaterialTheme.typography.bodySmall)
-            Spacer(modifier = Modifier.height(6.dp))
             Text(
-                mission.flavorLine,
-                style = MaterialTheme.typography.labelMedium,
-                color = difficultyColor
+                encounter.flavorLine,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = alpha)
             )
             Spacer(modifier = Modifier.height(4.dp))
-            if (mission.vitalityRequired > 0) {
+            if (!encounter.isUnlocked) {
                 Text(
-                    "Requires Vitality ${mission.vitalityRequired}",
+                    "Requires band level ${encounter.recLevel}, cooking level ${encounter.requiredCookingLevel}",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            } else {
+                if (encounter.physMitPct > 0f) {
+                    Text(
+                        "Armored foes — bring a potency draught",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+                Text(
+                    "Reward: ${encounter.rewardMoneyMin * encounter.rewardMultiplier}–${encounter.rewardMoneyMax * encounter.rewardMultiplier} gold",
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-            Text(
-                "Provision strength ${mission.requiredBuffStrength} for best odds",
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Text(
-                "Reward: ${mission.rewardMoneyMin * mission.rewardMultiplier}–${mission.rewardMoneyMax * mission.rewardMultiplier} gold",
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
         }
     }
 }

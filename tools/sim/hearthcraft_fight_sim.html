@@ -644,7 +644,7 @@ $("burstmul").addEventListener("input",e=>{$("v_burst").textContent=(+e.target.v
 const BUILTIN_ENCOUNTERS=[
   {id:"neekerbreekers_midgewater",name:"Neekerbreekers at the Marsh's Edge",recLevel:1,mode:"attrition",durationSec:1500,resolve:40000,drain:16,spike:75,spikeIntervalSec:13,physMitPct:0,dread:0,shadow:0,disease:0,cold:0,heat:0,wakefulness:0},
   {id:"wolves_chetwood",name:"Wolves in the Chetwood",recLevel:3,mode:"attrition",durationSec:1500,resolve:60000,drain:18,spike:75,spikeIntervalSec:9,physMitPct:0,dread:0,shadow:0,disease:0,cold:0,heat:0,wakefulness:0},
-  {id:"goblintown_gate",name:"Goblin-town Gate",recLevel:5,mode:"attrition",durationSec:1500,resolve:115000,drain:20,spike:60,spikeIntervalSec:14,physMitPct:22,dread:0,shadow:0,disease:0,cold:0,heat:0,wakefulness:0},
+  {id:"goblin_scouts",name:"Goblin Incursion (recL5)",recLevel:5,mode:"attrition",durationSec:1500,resolve:68000,drain:20,spike:60,spikeIntervalSec:14,physMitPct:35,dread:0,shadow:0,disease:0,cold:0,heat:0,wakefulness:0},
 ];
 let _encList=[...BUILTIN_ENCOUNTERS];
 function _setCtl(id,val){const el=document.getElementById(id);if(!el||val===''||val==null||isNaN(+val))return;
@@ -980,7 +980,7 @@ function stepOnce(){
     if(losing){const rise=Math.min(P.blackArrowCap,(elapsed-0.4)*P.blackArrowCap*2.5);
       if(inspRoll(rise+M.hunter.fat*0.003,inspBoost)){baFired=true;
         if(P.unkill){maxT-=Math.round(P.duration*0.15);log(`&#10022; BLACK ARROW — ${M.hunter.tpl.name} looses a flaming arrow — the terror recoils, the clock shortens`,"insp");events.push({t,kind:"Black Arrow (flaming)",who:M.hunter.tpl.name});}
-        else{boss=Math.max(0,boss-P.boss*0.35);window._boss=boss;log(`&#10022; BLACK ARROW — ${M.hunter.tpl.name} draws the Black Arrow — go now, and speed well!`,"insp");events.push({t,kind:"Black Arrow",who:M.hunter.tpl.name});}}}}
+        else{boss=Math.max(0,boss-P.boss*0.18);window._boss=boss;log(`&#10022; BLACK ARROW — ${M.hunter.tpl.name} draws the Black Arrow — go now, and speed well!`,"insp");events.push({t,kind:"Black Arrow",who:M.hunter.tpl.name});}}}}
   // record time-series frame
   const incoming=P.drain+P.spike/P.spikeiv;
   series.push({t,boss:boss,dps:bd.eff,raw:bd.raw,penSaved:bd.penSaved,willSaved:bd.willSaved,hopeSaved:bd.hopeSaved,layerADrag:bd.layerADrag||0,sustain:sustain(),incoming,

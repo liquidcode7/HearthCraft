@@ -62,7 +62,7 @@ class GatheringWorker @AssistedInject constructor(
             }
         }
 
-        player.addGatheringXp(XP_GATHERING_FORAGE)
+        player.addGatheringXp(PlayerRepository.XP_GATHER_SESSION)
 
         val json = Json.encodeToString(harvestItems.toList())
         sessions.setPendingForageResult(json)
@@ -96,7 +96,6 @@ class GatheringWorker @AssistedInject constructor(
         const val MODE_FORAGE = "forage"
         const val MODE_FARM = "farm"
         const val NOTIFICATION_ID = 1
-        private const val XP_GATHERING_FORAGE = 50
         private const val SEED_DROP_CHANCE = 0.25f
 
         fun buildRequest(level: Int, durationMs: Long): OneTimeWorkRequest =

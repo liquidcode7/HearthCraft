@@ -449,7 +449,7 @@ function runFight(cfg, verbose) {
         if (inspRoll(rise + M.hunter.fat*cfg.fateInspCoef, inspBoost)) {
           baFired=true;
           if (cfg.survival) { maxT -= Math.round(cfg.duration*0.15); events.push({t, kind:"Black Arrow (flaming)", who:M.hunter.tpl.name}); lg(`★ BLACK ARROW — clock cut`); }
-          else              { boss = Math.max(0, boss-cfg.boss*0.35); events.push({t, kind:"Black Arrow", who:M.hunter.tpl.name}); lg(`★ BLACK ARROW — 35% resolve chunk`); }
+          else              { boss = Math.max(0, boss-cfg.boss*0.18); events.push({t, kind:"Black Arrow", who:M.hunter.tpl.name}); lg(`★ BLACK ARROW — 18% resolve chunk`); }
         }
       }
     }
