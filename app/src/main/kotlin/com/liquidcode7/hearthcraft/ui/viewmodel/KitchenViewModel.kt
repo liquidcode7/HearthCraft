@@ -36,6 +36,7 @@ class KitchenViewModel @Inject constructor(
     private val player: PlayerRepository
 ) : ViewModel() {
 
+    // All recipes — used for ID lookup only (e.g. displaying the active cooking session name).
     val recipes: List<Recipe> = gameData.recipes
 
     val inventoryItems: StateFlow<List<InventoryItem>> = inventory.observeIngredients()
@@ -47,36 +48,51 @@ class KitchenViewModel @Inject constructor(
     val playerState: StateFlow<PlayerState?> = player.observe()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
+    // Recipes filtered to the player's chosen band (plus universals). Used by RecipeBookScreen.
+    val bandRecipes: StateFlow<List<Recipe>> = player.observe()
+        .map { state ->
+            val bandId = state?.chosenBandId.orEmpty()
+            gameData.recipes.filter { it.band == bandId || it.band == "all" }
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    private val tierNames = mapOf(
+        1 to "Hearthkeeper", 2 to "Initiate", 3 to "Apprentice", 4 to "Journeyman", 5 to "Adept"
+    )
+
     val tieredRecipes: StateFlow<List<RecipeTier>> = combine(
         inventory.observeIngredients(),
         player.observe()
-    ) { items, _ ->
+    ) { items, state ->
+        val bandId = state?.chosenBandId.orEmpty()
         val qtyMap = items.associate { it.ingredientId to it.quantity }
-        val tiers = listOf(
-            RecipeTier("Apprentice", 1, gameData.recipes.filter { it.levelRequired <= 5 }),
-            RecipeTier("Journeyman", 6, gameData.recipes.filter { it.levelRequired in 6..10 }),
-            RecipeTier("Craftsman", 11, gameData.recipes.filter { it.levelRequired >= 11 })
-        )
-        tiers.map { tier ->
-            val sorted = tier.recipes.sortedWith(
-                compareByDescending<Recipe> { recipe ->
-                    recipe.ingredients.all { needed -> (qtyMap[needed.id] ?: 0) >= needed.qty }
-                }.thenBy { it.levelRequired }
-            )
-            tier.copy(recipes = sorted)
-        }
+        gameData.recipes
+            .filter { (it.band == bandId || it.band == "all") && bandId.isNotEmpty() }
+            .groupBy { it.tier }
+            .entries.sortedBy { it.key }
+            .map { (tier, recipes) ->
+                val minLevel = recipes.minOf { it.cookLevel }
+                val sorted = recipes.sortedWith(
+                    compareByDescending<Recipe> {
+                        it.ingredients.all { needed -> (qtyMap[needed.id] ?: 0) >= needed.qty }
+                    }.thenBy { it.cookLevel }
+                )
+                RecipeTier(tierNames[tier] ?: "Tier $tier", minLevel, sorted)
+            }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    // Keep sortedRecipes for any callers that still reference it
-    val sortedRecipes: StateFlow<List<Recipe>> = inventory.observeIngredients()
-        .map { items ->
-            val qtyMap = items.associate { it.ingredientId to it.quantity }
-            val (can, cannot) = gameData.recipes.partition { recipe ->
-                recipe.ingredients.all { needed -> (qtyMap[needed.id] ?: 0) >= needed.qty }
-            }
-            can + cannot
+    val sortedRecipes: StateFlow<List<Recipe>> = combine(
+        inventory.observeIngredients(),
+        player.observe()
+    ) { items, state ->
+        val bandId = state?.chosenBandId.orEmpty()
+        val qtyMap = items.associate { it.ingredientId to it.quantity }
+        val filtered = gameData.recipes.filter { it.band == bandId || it.band == "all" }
+        val (can, cannot) = filtered.partition { recipe ->
+            recipe.ingredients.all { needed -> (qtyMap[needed.id] ?: 0) >= needed.qty }
         }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), gameData.recipes)
+        can + cannot
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     private val _selectedRecipe = MutableStateFlow<Recipe?>(null)
     val selectedRecipe: StateFlow<Recipe?> = _selectedRecipe.asStateFlow()

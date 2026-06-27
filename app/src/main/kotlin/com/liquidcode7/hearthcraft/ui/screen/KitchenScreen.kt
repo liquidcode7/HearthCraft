@@ -77,7 +77,7 @@ fun KitchenScreen(
             val isUnlocked = cookingLevel >= tier.minLevel
             Spacer(modifier = Modifier.height(8.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
-                val rangeLabel = if (tier.minLevel >= 11) "Lv ${tier.minLevel}+" else "Lv ${tier.minLevel}–${tier.minLevel + 4}"
+                val rangeLabel = if (tier.minLevel <= 1) "Lv 1" else "Lv ${tier.minLevel}+"
                 Text(
                     "${tier.label}  ·  $rangeLabel",
                     style = MaterialTheme.typography.labelMedium,

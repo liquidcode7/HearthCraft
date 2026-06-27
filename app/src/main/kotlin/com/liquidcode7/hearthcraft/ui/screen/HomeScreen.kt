@@ -41,7 +41,7 @@ fun HomeScreen(viewModel: HomeViewModel = hiltViewModel()) {
     ) {
         Text("HearthCraft", style = MaterialTheme.typography.headlineMedium)
         Text(
-            "Warlock-Culinarian",
+            "The Provisioner",
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )

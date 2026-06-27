@@ -38,6 +38,7 @@ fun RecipeBookScreen(
 ) {
     val playerState by playerViewModel.state.collectAsState()
     val cookingLevel = playerState?.cookingLevel ?: 1
+    val recipes by kitchenViewModel.bandRecipes.collectAsState()
 
     Scaffold(
         topBar = {
@@ -58,7 +59,7 @@ fun RecipeBookScreen(
                 .padding(innerPadding)
                 .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
-            kitchenViewModel.recipes.forEach { recipe ->
+            recipes.forEach { recipe ->
                 RecipeEntry(recipe = recipe, cookingLevel = cookingLevel)
                 Spacer(modifier = Modifier.height(8.dp))
             }

@@ -35,8 +35,13 @@ class GatheringWorker @AssistedInject constructor(
 
     override suspend fun doWork(): Result {
         val level = inputData.getInt(KEY_LEVEL, 1)
+        val bandId = player.get()?.chosenBandId.orEmpty()
+        val regions = foragableRegions(bandId)
 
-        val pool = gameData.ingredients.filter { it.gatheringMode == MODE_FORAGE }
+        val pool = gameData.ingredients.filter { ingredient ->
+            ingredient.gatheringMode == MODE_FORAGE &&
+            (regions.isEmpty() || regions.any { ingredient.region.contains(it) })
+        }
         val count = 2 + (level - 1) / 5
         val qty = 2 + (level - 1) / 10
 
@@ -50,7 +55,10 @@ class GatheringWorker @AssistedInject constructor(
         }.toMutableList()
 
         if (Random.nextFloat() < SEED_DROP_CHANCE) {
-            val plantable = gameData.ingredients.filter { it.gatheringMode == MODE_FARM }
+            val plantable = gameData.ingredients.filter { ingredient ->
+                ingredient.gatheringMode == MODE_FARM &&
+                (regions.isEmpty() || regions.any { ingredient.region.contains(it) })
+            }
             plantable.randomOrNull()?.let { ingredient ->
                 val seedCount = Random.nextInt(1, 3)
                 harvestItems.add(HarvestItem(
@@ -97,6 +105,16 @@ class GatheringWorker @AssistedInject constructor(
         const val MODE_FARM = "farm"
         const val NOTIFICATION_ID = 1
         private const val SEED_DROP_CHANCE = 0.25f
+
+        // Region keyword sets per band. Ingredients whose region contains any keyword are included.
+        // "Special" catches "Special / Craft-Branch" universals for all bands.
+        // Empty set (unknown band) falls back to unfiltered — safe default.
+        fun foragableRegions(bandId: String): Set<String> = when (bandId) {
+            "greycloaks" -> setOf("Bree", "North Downs", "Weather Hills", "Lone-Lands", "Special")
+            "mithlost"   -> setOf("Celondim", "Ered Luin", "Special")
+            "undermarch" -> setOf("Thorin", "Misty Mountains", "Special")
+            else         -> emptySet()
+        }
 
         fun buildRequest(level: Int, durationMs: Long): OneTimeWorkRequest =
             OneTimeWorkRequestBuilder<GatheringWorker>()
