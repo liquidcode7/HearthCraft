@@ -376,3 +376,17 @@ Full Battlegrounds design: `design/battlegrounds.md` and `design/battlegrounds-r
 
 - **Hive label rename** — current "Plant" button on the hive slot reads oddly
   (Plant a hive?). Rename to "Tend" or "Start" in a future polish pass.
+
+## Pantry access from more screens
+The Pantry button is now always visible in the Kitchen Recipes tab, but the player might want to check their pantry from other places (e.g. Missions screen when deciding what to cook, Band screen). Add a Pantry shortcut to at least one more logical access point in a future session.
+
+## Inspiration names for Undermarch and Mithlost
+Greycloaks inspiration names are settled (Session 48 design):
+- Keeper: **Hands of Healing**
+- Warden: **The Horn of Gondor**
+- Hunter: **Black Arrow**
+- Captain: **Wrath, Ruin, and the Red Dawn**
+
+Wes will name the Undermarch (dwarf) and Mithlost (elf) equivalents himself.
+The mechanics are identical per role regardless of band — only the displayed name and flavor text differ.
+Once named, add per-band entries to `design/combat-model.md` and update `BandScreen.roleAbility()` to return the correct name based on `bandId`.

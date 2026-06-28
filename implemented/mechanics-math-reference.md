@@ -272,7 +272,7 @@ Hitting 0 HP does not eliminate a member — it inflicts a wound:
 
 - Member at 0 HP → +1 wound
 - Member recovers above 5 HP → wound timer resets (they can take another wound next time they hit 0)
-- **5 wounds = grievous** — the member is eliminated unless Laurelin's Grace fires
+- **5 wounds = grievous** — the member is eliminated unless Hands of Healing fires
 
 GRIEVOUS cap: 5 wounds. Grievous members are out for the fight.
 
@@ -309,9 +309,9 @@ WARD_CAP = 3 guards per fight.
 
 ## Inspirations
 
-All four Inspirations fire at most once per fight (except Laurelin's Grace, which can fire once per member per wound threshold crossing). Each has a trigger condition and a probability roll.
+All four Inspirations fire at most once per fight (except Hands of Healing, which can fire once per member per wound threshold crossing). Each has a trigger condition and a probability roll.
 
-### Laurelin's Grace (Keeper)
+### Hands of Healing (Keeper)
 
 **Trigger:** A party member hits their 5th wound (about to go grievous).
 **Roll:**
@@ -388,7 +388,7 @@ Black Arrow does NOT fire in sustain-failing fights — only in fights where the
 | RMAX | 50 | Reserve pool cap per member (sink mode) |
 | fateEvadeCoef | 0.004 | Fate × this = spike evasion chance |
 | fateInspCoef | 0.003 | Fate × this = Inspiration rate bonus |
-| graceBase | 0.05 | Laurelin's Grace base trigger rate |
+| graceBase | 0.05 | Hands of Healing base trigger rate |
 | hornBase | 0.03 | Horn of Gondor base trigger rate |
 | dawnBase | 0.03 | Red Dawn base trigger rate |
 | blackArrowCap | 0.06 | Black Arrow max rise probability |

@@ -312,7 +312,7 @@ private fun roleAbility(role: String): Pair<String, String>? = when (role.lowerc
         "Can intercept a killing blow aimed at the Keeper, up to three times per engagement. The Warden steps between the blade and the one who cannot fall."
     "hunter" -> "Relentless Shot" to
         "Deals damage that scales with both Agility and Might, making the Hunter the party's primary offensive force. Armor reduces effectiveness — bring a potency draught if the enemy is mailed."
-    "keeper" -> "Keeper's Grace" to
+    "keeper" -> "Hands of Healing" to
         "When a companion is downed, the Keeper calls them back with a healing burst. Can be used up to five times per engagement. Without the Keeper, fallen members stay fallen."
     "captain" -> "Will of the Host" to
         "The Captain's resolve strengthens the entire company. Will and Might both feed into attack, and a portion of their damage bypasses enemy armor — the Captain always contributes, armored or not."

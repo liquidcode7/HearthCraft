@@ -270,7 +270,7 @@ an in-fight counter.
 All four are gated on the inspirer being **standing** (HP > 0, not grievous).
 Tune these separately from core balance; do not let them carry the fight.
 
-- **Keeper — "Laurelin's Grace":** revive a member from the grievous brink
+- **Keeper — "Hands of Healing":** revive a member from the grievous brink
   (wounds reset to 0). Separate from the 5 rescues; uncapped but rare.
 - **Warden — "The Horn of Gondor":** Warden pulls ALL spikes for a window;
   fires when 2+ members are in trouble.
@@ -340,7 +340,7 @@ Seed lines (expand when the full content pass is done):
 - **Wrath, Ruin, and the Red Dawn** (Captain — turning of the tide):
   > *Light broke red over the rim of the world, and with it came hope unlooked-for.*
 
-- **Laurelin's Grace** (Keeper — uncapped grievous-rescue):
+- **Hands of Healing** (Keeper — uncapped grievous-rescue):
   > *A warmth like the first spring of the world settled over them, and the wounded breathed easier.*
 
 **Open choice:** keep wording stat-agnostic (reads cleanly whoever triggered it)
