@@ -84,7 +84,7 @@ class GardenWorker @AssistedInject constructor(
         const val KEY_INGREDIENT_ID = "ingredientId"
         const val KEY_LEVEL = "level"
         const val NOTIFICATION_ID_BASE = 20
-        private const val BASE_YIELD = 3
+        private const val BASE_YIELD = 5
 
         fun buildRequest(slotId: String, ingredientId: String, level: Int, durationMs: Long): OneTimeWorkRequest =
             OneTimeWorkRequestBuilder<GardenWorker>()
