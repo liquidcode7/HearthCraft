@@ -138,7 +138,7 @@ fun MissionsScreen(
         }
 
         // ── Band ready panel ───────────────────────────────────────────────
-        if (unlockedEncounters.isNotEmpty() && members.isNotEmpty()) {
+        if (unlockedEncounters.isNotEmpty() && members.any { it.isAlive }) {
             Spacer(modifier = Modifier.height(16.dp))
             Text("Band Status", style = MaterialTheme.typography.titleSmall)
             Spacer(modifier = Modifier.height(6.dp))
@@ -299,7 +299,7 @@ private fun BandReadyPanel(
                     Column(modifier = Modifier.weight(1f)) {
                         Text(member.name, style = MaterialTheme.typography.bodySmall)
                         Text(
-                            member.role.replaceFirstChar { it.uppercase() },
+                            member.role.replaceFirstChar { it.titlecase() },
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
