@@ -184,7 +184,7 @@ class PlayerRepository @Inject constructor(
         const val XP_COOK_REPEAT       = 28   // base repeat-cook reward (before any DR)
         const val XP_COOK_FIRST        = 35   // first time cooking a given recipe
         const val XP_COOK_WIN          = 22   // provisioned a winning mission
-        const val XP_GATHER_SESSION    = 15   // one forage or farm session (≈ 30 harvest cycles × 3)
+        const val XP_GATHER_SESSION    = 15   // one forage or farm/garden session
         const val XP_GATHER_WIN        = 65   // your ingredient fed a winning mission
         const val XP_GATHER_DISCOVERY  = 20   // per newly discovered ingredient in a forage haul
 
