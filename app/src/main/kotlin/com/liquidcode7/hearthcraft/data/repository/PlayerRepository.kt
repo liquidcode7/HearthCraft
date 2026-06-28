@@ -101,6 +101,30 @@ class PlayerRepository @Inject constructor(
         }
     }
 
+    suspend fun markExperimentHintSeen() {
+        val state = dao.get() ?: return
+        if (!state.hasSeenExperimentHint) {
+            dao.upsert(state.copy(hasSeenExperimentHint = true))
+        }
+    }
+
+    suspend fun markPostForageNudgeSeen() {
+        val state = dao.get() ?: return
+        if (!state.hasSeenPostForageNudge) {
+            dao.upsert(state.copy(hasSeenPostForageNudge = true))
+        }
+    }
+
+    suspend fun markStarterPantryReceived() {
+        val state = dao.get() ?: return
+        if (!state.hasReceivedStarterPantry) {
+            dao.upsert(state.copy(hasReceivedStarterPantry = true))
+        }
+    }
+
+    fun observeHasReceivedStarterPantry(): Flow<Boolean> =
+        dao.observe().map { it?.hasReceivedStarterPantry ?: false }
+
     companion object {
 
         // Tier boundaries for cooking — these match TIER_TABLE in the sim/food_model.js
