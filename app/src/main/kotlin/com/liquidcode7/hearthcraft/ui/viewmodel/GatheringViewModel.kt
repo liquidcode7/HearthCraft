@@ -141,14 +141,16 @@ class GatheringViewModel @Inject constructor(
     fun startHive() {
         viewModelScope.launch {
             if (growing.getSlot(HiveWorker.SLOT_ID) != null) return@launch
+            val state = player.get() ?: return@launch
+            val (honeyId, _) = HiveWorker.honeyForBand(state.chosenBandId)
             val request = HiveWorker.buildRequest(DURATION_HIVE_MS)
             WorkManager.getInstance(context).enqueue(request)
             growing.plantSlot(
-                id           = HiveWorker.SLOT_ID,
-                type         = "hive",
-                ingredientId = "forest_honey",
-                plantedAtMs  = System.currentTimeMillis(),
-                durationMs   = DURATION_HIVE_MS,
+                id            = HiveWorker.SLOT_ID,
+                type          = "hive",
+                ingredientId  = honeyId,
+                plantedAtMs   = System.currentTimeMillis(),
+                durationMs    = DURATION_HIVE_MS,
                 workRequestId = request.id.toString()
             )
         }
