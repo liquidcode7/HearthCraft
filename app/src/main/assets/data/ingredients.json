@@ -289,8 +289,8 @@
     "name": "Forest Honey",
     "region": "Bree-land & The Shire",
     "rarity": "c",
-    "source": "farm",
-    "gatheringMode": "farm",
+    "source": "hive",
+    "gatheringMode": "hive",
     "primaryStat": "vit",
     "secondaryStat": "wil",
     "notes": "Dark honey from tended hives. Complex."
@@ -300,8 +300,8 @@
     "name": "Field Honey",
     "region": "Bree-land & The Shire",
     "rarity": "c",
-    "source": "farm",
-    "gatheringMode": "farm",
+    "source": "hive",
+    "gatheringMode": "hive",
     "primaryStat": "vit",
     "notes": "Lighter, simpler honey. Kitchen staple."
   },
