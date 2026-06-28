@@ -35,6 +35,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -72,6 +73,9 @@ fun KitchenScreen(
     val experimentMethod by viewModel.experimentMethod.collectAsState()
     val lastResult by viewModel.lastExperimentResult.collectAsState()
     val hintsSeen by viewModel.hintsSeen.collectAsState()
+    val liveResult by viewModel.liveResult.collectAsState()
+    val canCommit by viewModel.canCommit.collectAsState()
+    val experimentHintSeen by viewModel.experimentHintSeen.collectAsState()
     val cookingXp by viewModel.cookingXpProgress.collectAsState()
     val cookingLevel = playerState?.cookingLevel ?: 1
     val isCooking = session != null
@@ -128,7 +132,10 @@ fun KitchenScreen(
                     experimentMethod = experimentMethod,
                     lastResult = lastResult,
                     cookingLevel = cookingLevel,
-                    hintsSeen = hintsSeen
+                    hintsSeen = hintsSeen,
+                    liveResult = liveResult,
+                    canCommit = canCommit,
+                    experimentHintSeen = experimentHintSeen
                 )
             } else {
                 // Recipes mode
@@ -226,9 +233,28 @@ private fun ExperimentPanel(
     experimentMethod: String,
     lastResult: ExperimentResult?,
     cookingLevel: Int,
-    hintsSeen: Boolean
+    hintsSeen: Boolean,
+    liveResult: ExperimentResult?,
+    canCommit: Boolean,
+    experimentHintSeen: Boolean
 ) {
     val methods = listOf("simmer", "cook", "bake", "roast", "infuse", "brew")
+
+    if (!experimentHintSeen) {
+        Card(modifier = Modifier.fillMaxWidth()) {
+            Column(modifier = Modifier.padding(12.dp)) {
+                Text(
+                    "Combine ingredients with a method. Assembly is free — you only spend ingredients when you find something.",
+                    style = MaterialTheme.typography.bodySmall
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                TextButton(onClick = { viewModel.markExperimentHintSeen() }) {
+                    Text("Got it")
+                }
+            }
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+    }
 
     if (cookingLevel >= 3) {
         FoodHintsCard(
@@ -288,12 +314,34 @@ private fun ExperimentPanel(
     }
 
     Spacer(modifier = Modifier.height(16.dp))
+
+    // Live proximity feedback — shown as the player assembles ingredients
+    liveResult?.let { result ->
+        val feedbackText = when (result) {
+            is ExperimentResult.Discovered   -> "Something can be made here."
+            is ExperimentResult.AlreadyKnown -> "You already know this recipe."
+            is ExperimentResult.Failure -> when (result.proximity) {
+                ProximityTier.NEAR_MISS -> "Almost — just out of reach."
+                ProximityTier.CLOSE     -> "You're close to something real."
+                ProximityTier.SOME      -> "Something about this feels promising."
+                ProximityTier.NONE      -> "Nothing here."
+            }
+        }
+        Text(
+            feedbackText,
+            style = MaterialTheme.typography.bodySmall,
+            color = if (canCommit) MaterialTheme.colorScheme.primary
+                    else MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+    }
+
     Button(
-        onClick = { viewModel.submitExperiment() },
-        enabled = experimentIngredients.isNotEmpty(),
+        onClick = { viewModel.commitDiscovery() },
+        enabled = canCommit,
         modifier = Modifier.fillMaxWidth()
     ) {
-        Text("Discover — ingredients will be used")
+        Text("Cook it")
     }
 
     lastResult?.let { result ->
