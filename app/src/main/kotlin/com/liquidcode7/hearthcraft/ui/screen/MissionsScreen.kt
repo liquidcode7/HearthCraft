@@ -234,7 +234,7 @@ private fun EncounterCard(
             if (!provisioned) {
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
-                    "Band unprovision — actual difficulty higher",
+                    "Band unprovisioned — actual difficulty higher",
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.error
                 )
