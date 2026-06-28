@@ -300,8 +300,8 @@
     "name": "Field Honey",
     "region": "Bree-land & The Shire",
     "rarity": "c",
-    "source": "hive",
-    "gatheringMode": "hive",
+    "source": "farm",
+    "gatheringMode": "farm",
     "primaryStat": "vit",
     "notes": "Lighter, simpler honey. Kitchen staple."
   },
