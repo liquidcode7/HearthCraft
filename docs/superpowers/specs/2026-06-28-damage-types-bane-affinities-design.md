@@ -21,14 +21,20 @@ Two related concepts, at different levels of design maturity:
 
 Magic damage can be any of the following named types. These are not exhaustive — the list can grow with new content. The same taxonomy applies to both player-side magic and (eventually) enemy-side damage.
 
-| Type | Lore character |
-|---|---|
-| **Beleriand** | The ancient enmity — elvish and dwarven power forged in the First Age wars against Morgoth |
-| **Mormegil** | The doom of the Black Sword; Gurthang's willing stroke against dragon-kind |
-| **Light** | Grace of the Valar; the fire of Aman and Elbereth's starlight |
-| **Shadow** | The Unlight of Ungoliant; the darkness that unmakes light *(appears on enemy side; TBD on player side)* |
-| **Westernesse** | The strength of Númenorean heritage; ancient craftsmanship and the lineage of kings |
-| **Wraith** | *(design pending — appears on enemy side; TBD on player side)* |
+| Type | Lore character | Side |
+|---|---|---|
+| **Beleriand** | The ancient enmity — elvish and dwarven power forged in the First Age wars against Morgoth | Outgoing (weapon) |
+| **Mormegil** | The doom of the Black Sword; Gurthang's willing stroke against dragon-kind | Outgoing (weapon) |
+| **Light** | Grace of the Valar; the fire of Aman and Elbereth's starlight | Outgoing (magic, V1 Keeper default) |
+| **Westernesse** | The strength of Númenorean heritage; ancient craftsmanship and the lineage of kings | Outgoing (magic, V1 Captain default) |
+| **Shadow** | Sauron's corrupting will; the encroaching darkness of Mordor that breaks resolve | Incoming (enemy) |
+| **Unlight** | Ungoliant's devouring darkness — not mere absence of light but the active consumption of it | Incoming (enemy) |
+| **Cataclysm** | Dragonfire and dragon-wrath; the world-breaking devastation of the great serpents | Incoming (enemy) |
+| **Wraith** | *(design pending)* | Incoming (enemy, TBD) |
+
+**Shadow vs. Unlight** — lore-distinct but share the same player counter: **Radiance**. Sauron's Shadow corrupts the will; Ungoliant's Unlight devours light itself. Both are answered by bringing Radiance food. Whether they produce different mechanical effects on the party (Shadow draining Will/Fate, Unlight suppressing the Keeper's Light output?) is TBD in the incoming damage design session.
+
+**Cataclysm** — incoming damage from dragon-category enemies. Dragonfire is not shadow, not spiritual: it is overwhelming physical and magical force. Pairs naturally with Mormegil: the Mormegil bane is what you deal *to* dragons; Cataclysm is what dragons deal *back*. Mitigation model TBD.
 
 Physical damage is not in this list. Physical is the absence of a magic type — it is steel, strength, and skill, and it is what armor is built to stop.
 
