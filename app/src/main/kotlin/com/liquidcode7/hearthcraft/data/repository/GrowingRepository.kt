@@ -31,6 +31,19 @@ class GrowingRepository @Inject constructor(private val dao: GrowingSlotDao) {
 
     suspend fun setPendingResult(id: String, json: String) = dao.setPendingResult(id, json)
 
+    suspend fun addToPendingResult(id: String, newItems: List<HarvestItem>) {
+        val existing = dao.get(id)?.pendingResultJson
+        val merged = if (existing != null) {
+            val current = Json.decodeFromString<List<HarvestItem>>(existing)
+            (current + newItems)
+                .groupBy { it.ingredientId }
+                .map { (_, group) -> group.first().copy(quantity = group.sumOf { it.quantity }) }
+        } else {
+            newItems
+        }
+        dao.setPendingResult(id, Json.encodeToString(merged))
+    }
+
     suspend fun collectAndClearSlot(id: String): List<HarvestItem> {
         val slot = dao.get(id) ?: return emptyList()
         val json = slot.pendingResultJson ?: return emptyList()
