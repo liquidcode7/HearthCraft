@@ -84,14 +84,18 @@ effectiveStat = baseStat(level) + foodPrimaryBoost (if food.primaryStat == stat)
                                 + foodSecondaryBoost (if food.secondaryStat == stat)
 ```
 
-**Member contribution:**
+**Member contribution (from `run_sim.js` `dpsBreakdown()`):**
 
 | Role    | Formula |
 |---------|---------|
-| Warden  | `mig × 0.8 + vit × 0.2` |
-| Hunter  | `agi × 0.7 + mig × 0.3` |
-| Keeper  | `wil × 1.0` |
-| Captain | `mig × 0.3 + wil × 0.5 + vit × 0.2` |
+| Warden  | `mig × 0.5` |
+| Hunter  | `agi + mig × 0.4` |
+| Keeper  | `wil × 0.9` |
+| Captain | `mig × 0.3 + wil × 0.2` |
+
+These are the exact formulas from the sim. Do not adjust them here — if
+balance needs changing, change the sim first, then mirror to the Android
+build.
 
 **Party power:**
 ```
@@ -291,7 +295,7 @@ Gathering level 8.
 - One hive slot in V1
 - Player starts a hive session (no seed/planting required — the hive is
   always there once unlocked)
-- Timer: 20 minutes
+- Timer: 10 minutes (increases in V2 as hive quality and honey rarity improve)
 - On completion: 2–4 honey (common drop only — royal jelly deferred to V2)
 - Collected via the same `GrowingRepository` / slot pattern as Farm/Garden,
   using slot id `"hive_0"`
