@@ -343,6 +343,7 @@
     "gatheringMode": "farm",
     "gatherType": "process",
     "processType": "churn",
+    "processInputs": [{"id": "milk", "qty": 2}],
     "primaryStat": "vit",
     "secondaryStat": "mig",
     "notes": "Churned. Richness and body."
@@ -356,6 +357,7 @@
     "gatheringMode": "farm",
     "gatherType": "process",
     "processType": "render",
+    "processInputs": [{"id": "rabbit", "qty": 2}],
     "primaryStat": "mig",
     "secondaryStat": "vit",
     "notes": "Lard or dripping. Carries heat and sustains."
@@ -369,6 +371,7 @@
     "gatheringMode": "forage",
     "gatherType": "process",
     "processType": "smoke",
+    "processInputs": [{"id": "river_trout", "qty": 1}],
     "primaryStat": "mig",
     "secondaryStat": "agi",
     "notes": "Chetwood rivers. Smoked for keeping."
@@ -464,6 +467,7 @@
     "gatheringMode": "farm",
     "gatherType": "process",
     "processType": "mill",
+    "processInputs": [{"id": "barleycorn", "qty": 2}],
     "primaryStat": "vit",
     "notes": "Unleavened; keeps long. Dense field ration."
   },
@@ -701,6 +705,7 @@
     "gatheringMode": "farm",
     "gatherType": "process",
     "processType": "press",
+    "processInputs": [{"id": "lhun_plum", "qty": 3}],
     "primaryStat": "agi",
     "secondaryStat": "mig",
     "notes": "Cold-pressed coastal olives. Elvish kitchens staple."
@@ -714,6 +719,7 @@
     "gatheringMode": "forage",
     "gatherType": "process",
     "processType": "render",
+    "processInputs": [{"id": "seabird_egg", "qty": 2}],
     "primaryStat": "mig",
     "notes": "Rich and strong. Not elegant, but they're a field band."
   },
@@ -726,6 +732,7 @@
     "gatheringMode": "forage",
     "gatherType": "process",
     "processType": "cure",
+    "processInputs": [{"id": "river_trout", "qty": 1}],
     "primaryStat": "mig",
     "secondaryStat": "vit",
     "notes": "Preserved sea fish from the Gulf of Lhûn."
@@ -739,6 +746,7 @@
     "gatheringMode": "forage",
     "gatherType": "process",
     "processType": "smoke",
+    "processInputs": [{"id": "eel", "qty": 1}],
     "primaryStat": "mig",
     "secondaryStat": "agi",
     "notes": "River eel from the Lhûn estuary. Strong flavor."
@@ -764,6 +772,7 @@
     "gatheringMode": "forage",
     "gatherType": "process",
     "processType": "cure",
+    "processInputs": [{"id": "deer_haunch", "qty": 1}],
     "primaryStat": "mig",
     "secondaryStat": "vit",
     "notes": "Dried venison. Old-forest hunting. Field ration."
@@ -777,6 +786,7 @@
     "gatheringMode": "farm",
     "gatherType": "process",
     "processType": "press",
+    "processInputs": [{"id": "milk", "qty": 2}],
     "primaryStat": "vit",
     "secondaryStat": "wil",
     "notes": "Firm elvish cheese aged with herbs. Not fussy — good."
@@ -1166,6 +1176,7 @@
     "gatheringMode": "farm",
     "gatherType": "process",
     "processType": "brew",
+    "processInputs": [{"id": "barleycorn", "qty": 3}],
     "primaryStat": "vit",
     "notes": "Reduced mountain malt. Sweet, thick. Baking and brewing."
   },
@@ -1188,6 +1199,7 @@
     "gatheringMode": "farm",
     "gatherType": "process",
     "processType": "brew",
+    "processInputs": [{"id": "barleycorn", "qty": 2}],
     "primaryStat": "mig",
     "notes": "Fermented black barley. Used in stews and braising."
   },
@@ -1374,6 +1386,7 @@
     "gatheringMode": "forage",
     "gatherType": "process",
     "processType": "smoke",
+    "processInputs": [{"id": "grouse", "qty": 1}],
     "primaryStat": "mig",
     "secondaryStat": "vit",
     "notes": "Moorland bird. Peat-smoked for preservation."
@@ -1646,5 +1659,45 @@
     "gatherType": "husbandry",
     "primaryStat": "vit",
     "notes": "From the dairy. Whole and fresh. Base for butter, cheese, and cream preparations."
+  },
+  {
+    "id": "river_trout",
+    "name": "River Trout",
+    "region": "Bree-land / Celondim",
+    "rarity": "c",
+    "source": "forage",
+    "gatheringMode": "forage",
+    "gatherType": "hunt_fish",
+    "notes": ""
+  },
+  {
+    "id": "eel",
+    "name": "Eel",
+    "region": "Bree Wildlands / Lone-Lands",
+    "rarity": "c",
+    "source": "forage",
+    "gatheringMode": "forage",
+    "gatherType": "hunt_fish",
+    "notes": ""
+  },
+  {
+    "id": "deer_haunch",
+    "name": "Deer Haunch",
+    "region": "Bree Wildlands / Lone-Lands",
+    "rarity": "uc",
+    "source": "forage",
+    "gatheringMode": "forage",
+    "gatherType": "hunt_fish",
+    "notes": ""
+  },
+  {
+    "id": "grouse",
+    "name": "Grouse",
+    "region": "Misty Mountains",
+    "rarity": "c",
+    "source": "forage",
+    "gatheringMode": "forage",
+    "gatherType": "hunt_fish",
+    "notes": ""
   }
 ]
