@@ -49,11 +49,15 @@ class InventoryViewModel @Inject constructor(
             val recipe = gameData.recipes.find { it.id == pf.recipeId } ?: return@mapNotNull null
             val strength = (recipe.baseBuffStrength + (cookingLevel - 1) * recipe.buffStrengthPerLevel).toInt()
             PreparedFoodDetail(
-                recipeId = pf.recipeId,
-                name = recipe.name,
-                buffType = recipe.buffType,
-                buffStrength = strength,
-                quantity = pf.quantity
+                recipeId      = pf.recipeId,
+                name          = recipe.name,
+                buffType      = recipe.buffType,
+                buffStrength  = strength,
+                quantity      = pf.quantity,
+                primaryStat   = recipe.primaryStat,
+                primaryBoost  = recipe.primaryBoost,
+                secondaryStat = recipe.secondaryStat,
+                secondaryBoost = recipe.secondaryBoost
             )
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())

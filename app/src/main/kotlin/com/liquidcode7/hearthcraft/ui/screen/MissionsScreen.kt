@@ -48,7 +48,7 @@ fun MissionsScreen(
 ) {
     val encounters by bandViewModel.encounters.collectAsState()
     val selectedEncounter by bandViewModel.selectedEncounter.collectAsState()
-    val selectedFood by bandViewModel.selectedFood.collectAsState()
+    val memberFood by bandViewModel.memberFood.collectAsState()
     val draughtPotency by bandViewModel.draughtPotency.collectAsState()
     val preparedFood by inventoryViewModel.preparedFood.collectAsState()
     val activeEncounterSession by bandViewModel.activeEncounterSession.collectAsState()
@@ -102,8 +102,8 @@ fun MissionsScreen(
             preparedFood.forEach { food ->
                 FoodRow(
                     food = food,
-                    isSelected = food.recipeId == selectedFood?.recipeId,
-                    onClick = { bandViewModel.selectFood(food) }
+                    isSelected = memberFood.values.any { it?.recipeId == food.recipeId },
+                    onClick = { /* provisioning is done in Band screen — assign per member there */ }
                 )
                 Spacer(modifier = Modifier.height(4.dp))
             }
@@ -152,9 +152,9 @@ fun MissionsScreen(
         // ── Send button ────────────────────────────────────────────────────
         if (selectedEncounter != null) {
             Spacer(modifier = Modifier.height(16.dp))
-            if (selectedFood == null) {
+            if (memberFood.values.none { it != null }) {
                 Text(
-                    "No provisions selected — the band goes hungry.",
+                    "No provisions assigned — the band goes hungry.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.error
                 )

@@ -8,6 +8,7 @@ import com.liquidcode7.hearthcraft.data.db.CombatReport
 import com.liquidcode7.hearthcraft.data.db.EncounterSession
 import com.liquidcode7.hearthcraft.data.db.MissionSession
 import com.liquidcode7.hearthcraft.data.model.Band
+import com.liquidcode7.hearthcraft.data.model.Recipe
 import com.liquidcode7.hearthcraft.data.repository.BandRepository
 import com.liquidcode7.hearthcraft.data.repository.CombatRepository
 import com.liquidcode7.hearthcraft.data.repository.EncounterRepository
@@ -97,7 +98,7 @@ class BandViewModel @Inject constructor(
     fun switchBand() {
         if (!isSecondBandUnlocked.value) return
         _viewingSecond.value = !_viewingSecond.value
-        _selectedFood.value = null
+        clearMemberFood()
         _selectedEncounter.value = null
     }
 
@@ -188,8 +189,8 @@ class BandViewModel @Inject constructor(
         viewModelScope.launch { combatRepo.clear(bandId) }
     }
 
-    private val _selectedFood = MutableStateFlow<PreparedFoodDetail?>(null)
-    val selectedFood: StateFlow<PreparedFoodDetail?> = _selectedFood.asStateFlow()
+    private val _memberFood = MutableStateFlow<Map<String, PreparedFoodDetail?>>(emptyMap())
+    val memberFood: StateFlow<Map<String, PreparedFoodDetail?>> = _memberFood.asStateFlow()
 
     private val _selectedEncounter = MutableStateFlow<EncounterDetail?>(null)
     val selectedEncounter: StateFlow<EncounterDetail?> = _selectedEncounter.asStateFlow()
@@ -197,7 +198,10 @@ class BandViewModel @Inject constructor(
     private val _draughtPotency = MutableStateFlow(0f)
     val draughtPotency: StateFlow<Float> = _draughtPotency.asStateFlow()
 
-    fun selectFood(detail: PreparedFoodDetail) { _selectedFood.value = detail }
+    fun assignFoodToMember(memberId: String, food: PreparedFoodDetail?) {
+        _memberFood.value = _memberFood.value + (memberId to food)
+    }
+    fun clearMemberFood() { _memberFood.value = emptyMap() }
     fun selectEncounter(detail: EncounterDetail) { _selectedEncounter.value = detail }
     fun setDraught(potency: Float) { _draughtPotency.value = potency }
 
@@ -214,15 +218,25 @@ class BandViewModel @Inject constructor(
         val encounter = _selectedEncounter.value ?: return
         val bandId    = activeBandId.value ?: return
         val enc       = encounterRepo.get(encounter.encounterId) ?: return
-        val food      = _selectedFood.value
+        val foodMap   = _memberFood.value
         viewModelScope.launch {
             if (sessions.activeEncounter(bandId) != null) return@launch
-            val hps     = food?.buffStrength?.toFloat()?.div(10f) ?: 0f
-            val hpsList = listOf(hps, hps, hps, hps)
+            val cookLevel = playerState.value?.cookingLevel ?: 1
+
+            // Map memberId → Recipe (null = no food assigned to that member)
+            val memberRecipeMap: Map<String, Recipe?> =
+                foodMap.mapValues { (_, detail) ->
+                    if (detail != null) gameData.recipes.find { it.id == detail.recipeId } else null
+                }
 
             // Pre-compute fight to find actual end time — band may die early.
             val stage = enc.stages.firstOrNull() ?: return@launch
-            val members = band.memberInputsForBand(bandId, _draughtPotency.value, hpsList)
+            val members = band.memberInputsForBand(
+                bandId         = bandId,
+                draughtPotency = _draughtPotency.value,
+                memberRecipes  = memberRecipeMap,
+                cookLevel      = cookLevel
+            )
             if (members.isEmpty()) return@launch
             val result = EncounterEngine.resolve(stage, members)
 
@@ -232,19 +246,25 @@ class BandViewModel @Inject constructor(
 
             // Store combat report so EncounterWorker can apply results and UI can show them.
             combatRepo.save(CombatReport(
-                bandId                  = bandId,
-                encounterId             = enc.id,
-                encounterName           = enc.name,
-                outcome                 = result.outcome.name,
-                endedAtSec              = result.endedAtSec,
-                durationSec             = stage.durationSec,
-                woundsJson              = result.woundsByMember.entries.joinToString(",") { "${it.key}:${it.value}" },
-                rescuesUsed             = result.rescuesUsed,
-                wardGuardsUsed          = result.wardGuardsUsed,
-                resolveRemainingFraction= result.resolveRemainingFraction,
-                createdAtMs             = System.currentTimeMillis()
+                bandId                   = bandId,
+                encounterId              = enc.id,
+                encounterName            = enc.name,
+                outcome                  = result.outcome.name,
+                endedAtSec               = result.endedAtSec,
+                durationSec              = stage.durationSec,
+                woundsJson               = result.woundsByMember.entries.joinToString(",") { "${it.key}:${it.value}" },
+                rescuesUsed              = result.rescuesUsed,
+                wardGuardsUsed           = result.wardGuardsUsed,
+                resolveRemainingFraction = result.resolveRemainingFraction,
+                createdAtMs              = System.currentTimeMillis()
             ))
 
+            // Consume one food item per member that had food assigned.
+            foodMap.values.filterNotNull().groupBy { it.recipeId }.forEach { (recipeId, items) ->
+                repeat(items.size) { inventory.removePreparedFood(recipeId) }
+            }
+
+            val hpsList = members.map { it.hps }
             val request = EncounterWorker.buildRequest(
                 encounterId    = encounter.encounterId,
                 bandId         = bandId,
@@ -263,8 +283,7 @@ class BandViewModel @Inject constructor(
                     workRequestId  = request.id.toString()
                 )
             )
-            food?.let { inventory.removePreparedFood(it.recipeId) }
-            _selectedFood.value = null
+            clearMemberFood()
             _selectedEncounter.value = null
         }
     }

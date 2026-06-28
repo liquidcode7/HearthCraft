@@ -57,7 +57,7 @@ class EncounterWorker @AssistedInject constructor(
                 inputData.getFloat(KEY_HPS_CAPTAIN, 0f)
             )
             val stage = encounter.stages.firstOrNull() ?: return Result.failure()
-            val members = band.memberInputsForBand(bandId, draughtPotency, hps)
+            val members = band.memberInputsForBand(bandId, draughtPotency, emptyMap(), cookLevel = 1)
             if (members.isEmpty()) return Result.failure()
             val result = EncounterEngine.resolve(stage, members, Random.nextLong())
             applyOutcome(result.outcome.name, result.woundsByMember, encounter)

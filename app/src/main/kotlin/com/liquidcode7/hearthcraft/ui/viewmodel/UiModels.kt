@@ -13,7 +13,11 @@ data class PreparedFoodDetail(
     val name: String,
     val buffType: String,
     val buffStrength: Int,
-    val quantity: Int
+    val quantity: Int,
+    val primaryStat: String? = null,
+    val primaryBoost: Int = 0,
+    val secondaryStat: String? = null,
+    val secondaryBoost: Int = 0
 )
 
 data class BandMemberWithState(
