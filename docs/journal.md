@@ -7,11 +7,11 @@
 
 ## Current Status — June 28, 2026
 
-**Phase:** Kitchen improvements complete; producer worker bugs fixed. Plan C (Band/Nav/Missions) is next.
-**What's working:** Kitchen has Pantry/Recipe Book always visible, swipeable tabs (HorizontalPager), and two cooking slots side by side; Hive/Coop/Dairy producers self-reschedule correctly — no double workers, no dead producers after cap, XP removed from passive cycles (will come from upgrades).
-**What's not wired yet:** Band/Nav/Missions (Plan C) — Market removal, Band tab removal, difficulty meter fix, missions pre-deploy panel, Contemplative Tea band fix.
-**Next session:** Plan C — `docs/superpowers/plans/2026-06-28-band-nav-missions.md`.
-**Open questions:** Inspiration titles — what are they and where should they appear? (BLOCKED in Plan C Task 6, needs clarification from Wes).
+**Phase:** Plan C complete — nav cleanup, missions improvements, recipe data fix, inspiration names locked for Greycloaks.
+**What's working:** Bottom nav has 4 tabs (Home / Gather / Kitchen / Missions); Band accessible via Home NavCard; Missions screen shows per-member fed status and warns when band is unprovisioned; Contemplative Tea correctly assigned to Mithlost; Greycloaks inspiration names set (Hands of Healing / Horn of Gondor / Black Arrow / Wrath, Ruin, and the Red Dawn).
+**What's not wired yet:** Undermarch and Mithlost inspiration names (Wes will supply); producer upgrade system (where gathering XP for Hive/Coop/Dairy will live).
+**Next session:** TBD — candidate work: producer upgrade system, Band/Mission UI polish, or next audit pass.
+**Open questions:** Undermarch and Mithlost inspiration names (deferred to wishlist, Wes will name them).
 
 ---
 
@@ -1799,3 +1799,27 @@ Full implementation of the recipe discovery system: recipes are now hidden until
 - Next session: Plan C — Band/Nav/Missions (`docs/superpowers/plans/2026-06-28-band-nav-missions.md`)
 - Near term: producer upgrade system + XP awards
 - Blocked: Plan C Task 6 (inspiration titles) needs Wes to clarify what these are
+
+## Session 49 — June 28, 2026
+**Band / Nav / Missions Cleanup (Plan C from App Audit 28JUN2026 2.0) + Inspiration Names**
+
+**What was built:**
+- `ui/screen/MainScreen.kt`: Market and Band tabs removed from the bottom nav — 6 tabs down to 4 (Home, Gather, Kitchen, Missions). Both `composable("market")` and `composable("band")` routes remain in the NavHost for save-data compatibility. Band is now only reachable via the Home screen NavCard.
+- `ui/viewmodel/BandViewModel.kt`: `anyFoodAssigned: StateFlow<Boolean>` — true when at least one member has food assigned; resets to false on band switch.
+- `ui/screen/MissionsScreen.kt`: `EncounterCard` now accepts `provisioned: Boolean` and shows "Band unprovisioned — actual difficulty higher" in error color when false; `BandReadyPanel` composable added between encounter list and Send button — shows each alive member, their assigned food or "Unfed", and a summary header that turns green when all are fed or red otherwise; panel hidden when all members are dead.
+- `app/src/main/assets/data/recipes.json`: Contemplative Tea `"band"` changed from `"all"` to `"mithlost"` — its ingredients (`sunpetal_herb`, `moonpetal`) grow in Celondim/Ered Luin (Mithlost region). Greycloaks retain two local Will foods: Brookcress Bannock and Honey Oat Cake. Region audit script confirmed zero mismatches across all bands.
+- `ui/screen/BandScreen.kt` + `design/combat-model.md` + `implemented/mechanics-math-reference.md`: "Laurelin's Grace" renamed to "Hands of Healing" (Keeper inspiration, Greycloaks); Band screen now shows all four inspiration names — Hands of Healing / Horn of Gondor / Black Arrow / Wrath, Ruin, and the Red Dawn.
+
+**Decisions made:**
+- Market is hidden entirely (nav removed) rather than labeled "coming soon" — cleaner, no false promises
+- Band screen shows inspiration names as the role ability header (e.g. "Hands of Healing") rather than generic descriptors ("Keeper's Grace")
+- `anyFoodAssigned` warns on zero food assigned rather than partial — the `BandReadyPanel` directly below shows the full per-member truth, so the encounter-level warning is just a quick flag
+- Contemplative Tea's original band was `"all"` (not `"greycloaks"` as the plan stated) — fix to `"mithlost"` is correct either way
+
+**Anything that diverged from design/design.md:**
+- None
+
+**Coming up:**
+- Next session: TBD — producer upgrade system, Band/Mission polish, or next audit pass
+- Deferred: Undermarch and Mithlost inspiration names (Wes will supply; wishlist entry created)
+- Minor notes from final review: `anyFoodAssigned` warning clears after feeding one member (intentional — BandReadyPanel shows full truth); M3 color-token pairing in BandReadyPanel uses `primary`/`error` rather than `onPrimaryContainer`/`onErrorContainer` (fine for current theme; revisit if dynamic color is ever added)
