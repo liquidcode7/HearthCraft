@@ -7,11 +7,11 @@
 
 ## Current Status — June 28, 2026
 
-**Phase:** Gather screen overhaul complete. Honey/eggs/milk stockpile, sub-tabs, sticky header, swipe navigation, and home screen producer timers all live.
-**What's working:** Gathering screen has three swipeable sub-tabs (Growing / Wild / Producers) with badge counts and a sticky header showing XP bar and live status strip; Hive/Coop/Dairy accumulate across up to 3 cycles before capping; garden yields 5 items (up from 3), farm yields 8 (up from 6); gathering XP per session halved to 15; Home screen Active section shows producer timers and ready-to-collect labels.
-**What's not wired yet:** Kitchen improvements (Pantry fix, swipe tabs, 2-slot cooking); Band/Nav/Missions plan (Market removal, Band tab removal, difficulty meter fix, missions pre-deploy panel, Contemplative Tea band fix) — both plans written but not started.
-**Next session:** Kitchen improvements (Plan B) or Band/Nav/Missions (Plan C) — plans at `docs/superpowers/plans/2026-06-28-kitchen-improvements.md` and `docs/superpowers/plans/2026-06-28-band-nav-missions.md`.
-**Open questions:** Inspiration titles — what are they and where should they appear? (BLOCKED in Plan C, needs clarification from Wes).
+**Phase:** Kitchen improvements complete; producer worker bugs fixed. Plan C (Band/Nav/Missions) is next.
+**What's working:** Kitchen has Pantry/Recipe Book always visible, swipeable tabs (HorizontalPager), and two cooking slots side by side; Hive/Coop/Dairy producers self-reschedule correctly — no double workers, no dead producers after cap, XP removed from passive cycles (will come from upgrades).
+**What's not wired yet:** Band/Nav/Missions (Plan C) — Market removal, Band tab removal, difficulty meter fix, missions pre-deploy panel, Contemplative Tea band fix.
+**Next session:** Plan C — `docs/superpowers/plans/2026-06-28-band-nav-missions.md`.
+**Open questions:** Inspiration titles — what are they and where should they appear? (BLOCKED in Plan C Task 6, needs clarification from Wes).
 
 ---
 
@@ -1751,3 +1751,51 @@ Full implementation of the recipe discovery system: recipes are now hidden until
 - Next session: Kitchen improvements (Plan B) — Pantry fix, swipe tabs in Kitchen, 2-slot cooking
 - Near term: Band/Nav/Missions (Plan C) — remove Market and Band from bottom nav, difficulty meter fix, missions pre-deploy panel, Contemplative Tea band fix
 - Blocked: inspiration titles in Plan C need clarification from Wes
+
+## Session 47 — June 28, 2026
+**Kitchen Improvements (Plan B from App Audit 28JUN2026 2.0)**
+
+**What was built:**
+- `ui/screen/KitchenScreen.kt`: Pantry and Recipe Book buttons moved above the cooking-active check so they're always visible; outer layout replaced with `HorizontalPager` for swipe-to-switch between Recipes / Process tabs; two `CookingSlotCard` composables shown side by side — each shows slot label, recipe name (looked up from `viewModel.recipes`), and a live countdown
+- `data/db/dao/CookingSessionDao.kt`: three slot-aware queries — `observeSlot(slot)`, `getSlot(slot)`, `clearSlot(slot)` — using `cooking_session.id` as the slot key (slot 0 → id=0, slot 1 → id=1; no schema change or migration needed)
+- `data/repository/SessionRepository.kt`: `observeCookingSlot`, `activeCookingSlot`, `startCookingInSlot`, `clearCookingSlot` wrappers
+- `worker/CookingWorker.kt`: reads `KEY_SLOT` from inputData; clears `clearCookingSlot(slot)` on completion; uses `NOTIFICATION_ID + slot` for distinct notifications per slot
+- `ui/viewmodel/KitchenViewModel.kt`: `session0` and `session1` StateFlows; backward-compat `session` alias pointing at `session0`; `startCooking()` picks the first free slot (or returns if both busy)
+
+**Decisions made:**
+- `CookingSession.id` (existing `@PrimaryKey val id: Int = 0`) doubles as slot key — no new column or Room migration needed
+- Two slots are always available; no unlock gate planned (F-Droid release, one game)
+- `CookingActiveCard` is now dead code (unreferenced after Task 7 refactor); left in place as a minor cleanup deferred to a future pass
+
+**Anything that diverged from design/design.md:**
+- None
+
+**Coming up:**
+- Next session: Plan C — Band/Nav/Missions
+- Near term: producer upgrade system (where Hive/Coop/Dairy gathering XP will live)
+- Future: Pantry shortcut from more screens (wishlist)
+
+---
+
+## Session 48 — June 28, 2026
+**Bug fixes: producer worker double-scheduling, dead-producer-at-cap, cap check, XP removal**
+
+**What was built:**
+- `worker/HiveWorker.kt`: unconditional self-reschedule (moved outside `if (!atCap)`); cap check fixed from `firstOrNull()?.quantity` to `sumOf { it.quantity }`; XP call removed
+- `worker/CoopWorker.kt`: same fixes; `PlayerRepository` dependency removed entirely (no longer needed)
+- `worker/DairyWorker.kt`: same fixes; `PlayerRepository` dependency removed entirely
+- `data/repository/GrowingRepository.kt`: new `collectAndClearPendingOnly()` — returns items and clears `pendingResultJson` but keeps the slot row alive so the next worker cycle always has a valid row to write into
+- `ui/viewmodel/GatheringViewModel.kt`: `collectGrowingSlot` uses `collectAndClearPendingOnly` for producer slots and `collectAndClearSlot` for garden/farm; `when` restart block removed (workers are self-sustaining)
+
+**Decisions made:**
+- Gathering XP for Hive/Coop/Dairy removed from passive cycles; will be awarded when producers are upgraded (upgrade system not yet built)
+- "No XP at cap" is now moot — workers always reschedule so there's no cap-idle scenario to award XP for
+- Producer slots are never deleted on collect (only `pendingResultJson` is cleared), unlike garden/farm which delete their slot so the player can replant
+
+**Anything that diverged from design/design.md:**
+- Gathering XP source for producers changed: passive cycle → upgrade action. Will update `design/design.md` when the upgrade system is specced.
+
+**Coming up:**
+- Next session: Plan C — Band/Nav/Missions (`docs/superpowers/plans/2026-06-28-band-nav-missions.md`)
+- Near term: producer upgrade system + XP awards
+- Blocked: Plan C Task 6 (inspiration titles) needs Wes to clarify what these are
