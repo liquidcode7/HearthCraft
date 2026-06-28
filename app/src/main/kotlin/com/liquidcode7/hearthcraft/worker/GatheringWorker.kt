@@ -58,20 +58,18 @@ class GatheringWorker @AssistedInject constructor(
             }.toMutableList()
         }
 
-        if (Random.nextFloat() < SEED_DROP_CHANCE) {
-            val plantable = gameData.ingredients.filter { ingredient ->
-                ingredient.gatheringMode == MODE_FARM &&
-                (regions.isEmpty() || regions.any { ingredient.region.contains(it) })
-            }
-            plantable.randomOrNull()?.let { ingredient ->
-                val seedCount = Random.nextInt(1, 3)
-                harvestItems.add(HarvestItem(
-                    ingredientId = "${ingredient.id}_seed",
-                    name = "${ingredient.name} Seed",
-                    quantity = seedCount,
-                    rarity = "bonus"
-                ))
-            }
+        val plantable = gameData.ingredients.filter { ingredient ->
+            ingredient.gatheringMode == MODE_FARM &&
+            (regions.isEmpty() || regions.any { ingredient.region.contains(it) })
+        }
+        plantable.randomOrNull()?.let { ingredient ->
+            val seedCount = Random.nextInt(1, 3)
+            harvestItems.add(HarvestItem(
+                ingredientId = "${ingredient.id}_seed",
+                name = "${ingredient.name} Seed",
+                quantity = seedCount,
+                rarity = "bonus"
+            ))
         }
 
         player.addGatheringXp(PlayerRepository.XP_GATHER_SESSION)
@@ -109,7 +107,6 @@ class GatheringWorker @AssistedInject constructor(
         const val MODE_FORAGE = "forage"
         const val MODE_FARM = "farm"
         const val NOTIFICATION_ID = 1
-        private const val SEED_DROP_CHANCE = 0.25f
 
         // Region keyword sets per band. Ingredients whose region contains any keyword are included.
         // "Special" catches "Special / Craft-Branch" universals for all bands.
