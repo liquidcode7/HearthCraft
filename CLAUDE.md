@@ -29,9 +29,10 @@ or "the provisioner" in code comments and UI strings until the title is locked.
 This is not a cozy cooking sim. It is a specialist identity fantasy rooted in
 craft, deep knowledge, and a war that needs winning. The long-term destination
 is a full raid RPG fought across named battlegrounds from Middle-earth's history,
-with the cooking game as its indispensable foundation. V1 proves the foundation.
+with the cooking game as its indispensable foundation. Building toward a complete
+F-Droid release — no version gates, one game.
 
-Full design vision is in `docs/design.md`. Read it. Every decision you make
+Full design vision is in `design/design.md`. Read it. Every decision you make
 must be consistent with it.
 
 ---
@@ -71,8 +72,8 @@ No Google Play Services dependency. F-Droid compatible. Minimum SDK: API 26.
 
 ### Session Start — do these in order
 1. Read this file
-2. Read `docs/design.md`
-3. Read `docs/v1-plan.md`
+2. Read `design/design.md`
+3. Read `docs/roadmap.md`
 4. Read the **Current Status** section at the top of `docs/journal.md`
 5. Read the latest session entry in `docs/journal.md`
 6. State the current task and your plan before writing any code
@@ -82,7 +83,7 @@ No Google Play Services dependency. F-Droid compatible. Minimum SDK: API 26.
 2. List every touched file
 3. Update the **Current Status** section at the top of `docs/journal.md`
 4. Append a new session entry to `docs/journal.md` (see format below)
-5. Provide a commit message prefixed with `[v1]`, `[v2]`, etc.
+5. Provide a commit message prefixed with `[hc]`
 
 ### Journal Entry Format
 Append to `docs/journal.md` at the end of every session:
@@ -97,8 +98,8 @@ Append to `docs/journal.md` at the end of every session:
 **Decisions made:**
 - [decision]: [why]
 
-**Anything that diverged from docs/design.md:**
-- [what changed and why — then update docs/design.md to match]
+**Anything that diverged from design/design.md:**
+- [what changed and why — then update design/design.md to match]
 
 **Coming up:**
 - Next session: [immediate next task]
@@ -111,7 +112,6 @@ Also update the **Current Status** block at the top of `docs/journal.md`:
 ```
 ## Current Status — [Date]
 **Phase:** [current phase and completion state]
-**V1 progress:** [phases done / total]
 **What's working:** [one sentence]
 **What's not wired yet:** [one sentence on what's missing]
 **Next session:** [exactly what to tackle]
@@ -119,9 +119,9 @@ Also update the **Current Status** block at the top of `docs/journal.md`:
 ```
 
 ### Design Decisions
-If you make any design decision not already covered in `docs/design.md` —
+If you make any design decision not already covered in `design/design.md` —
 including renames, new mechanics, data structure changes, or behavior choices —
-you must update `docs/design.md` to reflect it before committing. The docs
+you must update `design/design.md` to reflect it before committing. The docs
 and the code must always agree.
 
 ### Before Editing Any File
@@ -155,19 +155,19 @@ don't re-explain from scratch, just name them.
 - One logical change per commit
 - Always run `./gradlew build` between commits
 - Never commit a broken build
-- Commit messages prefixed with `[v1]`, `[v2]`, etc.
+- Commit messages prefixed with `[hc]`
 
 ---
 
 ## Scope Discipline
 
-V1 scope is defined in `docs/v1-plan.md`. When Wes tries to add something
-outside it:
+The roadmap is in `docs/roadmap.md`. When Wes floats an idea that isn't in the
+current phase:
 
-> That's outside V1 scope. Should I add it to `future/wishlist.md` for later?
+> That's not in the current phase. Should I add it to `future/wishlist.md` for later?
 > Staying focused means we ship sooner.
 
-Do not bend on this. A shipped V1 teaches more than an unfinished V2.
+Do not bend on this.
 
 ---
 
@@ -185,19 +185,44 @@ If a feature implies any of these, flag it immediately.
 
 ## Reference Files
 
-### Current work
-- `docs/design.md` — authoritative game design, always current
-- `docs/v1-plan.md` — V1 task list and scope
-- `docs/redefinition.md` — full structural vision (Campaign + Ettenmoors)
-- `docs/journal.md` — current status at top, session log below
-- `docs/learning-notes.md` — Kotlin concepts with examples, append as needed
+### How the repo is organized
 
-### Full design (authoritative — not yet built, but the plan)
-- `docs/characters.md` — full 32-member roster (4 bands × 8 members × 4 roles)
-- `docs/battlegrounds.md` — lore roster of 14 named battlegrounds
-- `docs/battlegrounds-rpg.md` — campaign combat system design
-- `docs/bestiary.md` — enemy tier system (5 tiers, power + untouchability separate)
-- `docs/progression.md` — stat and progression design
+| Folder | What lives here |
+|--------|----------------|
+| `design/` | Finalized design — settled decisions, build toward these |
+| `implemented/` | Designs for systems already coded and working in the app |
+| `brainstorm/` | Explorations not yet committed to — do not implement without discussion |
+| `retired/` | Rejected design work — kept for context, never implement |
+| `docs/` | Process artifacts: journal, roadmap, session plans |
+| `future/` | Deferred ideas and wishlist items |
+
+### Process docs
+- `docs/journal.md` — current status at top, session log below
+- `docs/roadmap.md` — full phase plan
+
+### Authoritative design (build toward these)
+- `design/design.md` — master GDD, always current
+- `design/voice-tone.md` — all in-game writing answers to this
+- `design/characters.md` — full 32-member roster
+- `design/battlegrounds.md` — lore roster of 14 named battlegrounds
+- `design/battlegrounds-rpg.md` — campaign combat system
+- `design/bestiary.md` — enemy tier system
+- `design/progression.md` — stat and progression design
+- `design/combat-model.md` — full combat model
+
+### Implemented system docs
+- `implemented/mechanics-math-reference.md` — combat formulas derived from sim
+- `implemented/dps-meter-design.md`
+- `implemented/draughts-and-armor-pen-design.md`
+- `implemented/dread-redesign.md`
+- `implemented/recipe-discovery-design.md`
+- `implemented/audit-june-2026-design.md`
+
+### In-progress design (not committed)
+- `brainstorm/damage-types-bane-affinities-design.md` — partially specified; incoming damage types pending
+- `brainstorm/combat-curve-problem.md` — analysis, paths not yet chosen
+- `brainstorm/redefinition.md` — transitional doc, context only
+- `brainstorm/galadriel-mirrors.md` — future mechanic idea
 
 ### Deferred small ideas
 - `future/wishlist.md` — small ideas and deferred features, add freely
