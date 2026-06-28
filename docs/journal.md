@@ -7,11 +7,11 @@
 
 ## Current Status — June 28, 2026
 
-**Phase:** Ingredient sourcing data pass complete. Taxonomy, honey region-lock, and recipe fixes shipped.
-**What's working:** Full gatherType taxonomy on all 141 ingredients; honey types consolidated to hive (region-locked per band); HiveWorker and GatheringViewModel derive honey from player's band; three starter recipes fixed (Ferny's Treacle, Brookcress Bannock, Sloe Bitters); 7 new Draw water-source ingredients added for all 3 bands; Milk added as future dairy ingredient. Kingswake band scrubbed from all active design docs — three bands only.
-**What's not wired yet:** Process station (timed kitchen station for render/churn/cure/smoke/brew/mill/press — Plan B); Coop and Dairy producers; Draw station UI; Market screen; live combat screen.
-**Next session:** Write and execute Plan B — Process station + Coop + Dairy workers.
-**Open questions:** Process station cooking-level gates (all at lv1 for now, tune later). Raw ingredient IDs for processInputs (need to define when Process station ships).
+**Phase:** Process station, Coop, and Dairy complete. Full supply chain from raw ingredient to processed item now playable.
+**What's working:** Kitchen has 3 tabs (Recipes / Discover / Process); Process station is a timed operation that consumes raw inputs and produces processed ingredients; 13 process ingredients now have processInputs wired; 4 new raw forage ingredients (river_trout, eel, deer_haunch, grouse); Coop (eggs, 15 min) and Dairy (milk, 20 min) auto-start and auto-restart like the Hive; all 3 husbandry producers visible in Gathering screen. 145 total ingredients.
+**What's not wired yet:** Draw station UI; 5 farm-animal process items still missing inputs (salted_pork, smoked_goat, salt_mutton, rendered_tallow, dried_marrow_bone — need livestock producer); Market screen; live combat screen.
+**Next session:** Draw station UI (water sources already in data), or Market screen.
+**Open questions:** Livestock producer design (goat/sheep/pig — what system, what screen?). Process station cookLevel gates (all lv1 for now — tune when progression is tighter).
 
 ---
 
@@ -1689,3 +1689,35 @@ Full implementation of the recipe discovery system: recipes are now hidden until
 - Next session: Plan B — Process station (timed kitchen station), Coop, Dairy workers
 - Near term: Draw station UI; Market screen
 - Future ideas logged: None this session
+
+---
+
+## Session 45 — June 28, 2026
+**Process Station, Coop & Dairy (Plan B)**
+
+**What was built:**
+- `ingredients.json`: processInputs populated for 13 process ingredients; 4 new raw hunt_fish forage ingredients added (river_trout, eel, deer_haunch, grouse); total 145 ingredients
+- `worker/ProcessWorker.kt`: New @HiltWorker — timed process station, per-type durations (mill 3min → brew 10min), uses cooking XP, produces qty=1 into GrowingSlot pending result
+- `viewmodel/KitchenViewModel.kt`: Replaced `experimentMode` bool with `selectedTab: StateFlow<Int>` (0=Recipes, 1=Discover, 2=Process); added `GrowingRepository` injection; added `processSlot`, `processIngredients`, `canProcess()`, `startProcess()`, `collectProcess()`, `selectProcessIngredient()`
+- `screen/KitchenScreen.kt`: 3-tab Kitchen (Recipes / Discover / Process); tab row always visible; CookingActiveCard moved inside Recipes branch; `ProcessPanel`, `ProcessItemRow`, `ProcessTimer` composables added
+- `worker/CoopWorker.kt`: New @HiltWorker — produces hens_egg (2–3), 15-min timer, NOTIFICATION_ID=41, SLOT_ID="coop_0"
+- `worker/DairyWorker.kt`: New @HiltWorker — produces milk (2–3), 20-min timer, NOTIFICATION_ID=42, SLOT_ID="dairy_0"
+- `viewmodel/GatheringViewModel.kt`: coopSlot and dairySlot StateFlows; startCoop() and startDairy(); init auto-starts all three husbandry producers; collectGrowingSlot() uses `when(slotId)` for all three auto-restarts; DURATION_COOP_MS and DURATION_DAIRY_MS in companion object
+- `screen/GatheringScreen.kt`: Coop and Dairy sections (after Hive, before Forage); CoopCard and DairyCard composables following HiveCard 3-state pattern
+- `test/.../ProcessStationTest.kt`: 6 unit tests for canProcess logic including genuine multi-input case
+- `test/.../WorkerConstantsTest.kt`: 4 new tests for CoopWorker and DairyWorker constants (12 total)
+
+**Decisions made:**
+- processInputs for 5 farm-animal items (salted_pork, smoked_goat, salt_mutton, rendered_tallow, dried_marrow_bone) left null — no livestock producer yet; these process items won't show in Process tab until a future plan
+- `river_trout` region = "Bree-land / Celondim" — forageable by both greycloaks and mithlost (used for smoked_river_trout and lhun_saltfish)
+- `lhun_olive_oil` processInputs uses `lhun_plum ×3` — closest existing cultivate ingredient for Mithlost
+- Process station uses existing `growing_slots` table (type="process", slot="process_0") — no new Room table
+- Process station cookLevel gates all set to 1 for now
+
+**Anything that diverged from design/design.md:**
+- None
+
+**Coming up:**
+- Next session: Draw station UI (6 water-source ingredients already in data), or Market screen
+- Near term: Market screen; livestock producer design (goat/sheep/pig)
+- Future ideas logged: Livestock producer system (needed to unlock 5 remaining process items)
