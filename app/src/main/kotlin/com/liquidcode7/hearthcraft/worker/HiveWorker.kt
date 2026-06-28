@@ -31,18 +31,19 @@ class HiveWorker @AssistedInject constructor(
 ) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
+        val bandId = player.get()?.chosenBandId ?: "greycloaks"
+        val (honeyId, honeyName) = honeyForBand(bandId)
         val honeyQty = BASE_YIELD + Random.nextInt(3)   // 2–4 honey
-        val honeyId  = "forest_honey"
 
         val items = listOf(
-            HarvestItem(ingredientId = honeyId, name = "Forest Honey", quantity = honeyQty, rarity = "common")
+            HarvestItem(ingredientId = honeyId, name = honeyName, quantity = honeyQty, rarity = "common")
         )
         val json = Json.encodeToString(items)
 
         player.addGatheringXp(PlayerRepository.XP_GATHER_SESSION)
         growing.setPendingResult(SLOT_ID, json)
 
-        notify("Hive ready — tap to collect", "Honey is ready to harvest.")
+        notify("Hive ready — tap to collect", "$honeyName is ready to harvest.")
         return Result.success()
     }
 
@@ -70,6 +71,12 @@ class HiveWorker @AssistedInject constructor(
         const val SLOT_ID         = "hive_0"
         const val NOTIFICATION_ID = 30
         private const val BASE_YIELD = 2
+
+        fun honeyForBand(bandId: String): Pair<String, String> = when (bandId) {
+            "mithlost"   -> "white_nectar" to "White Nectar"
+            "undermarch" -> "stone_honey"  to "Stone Honey"
+            else         -> "forest_honey" to "Forest Honey"  // greycloaks default
+        }
 
         fun buildRequest(durationMs: Long): OneTimeWorkRequest =
             OneTimeWorkRequestBuilder<HiveWorker>()
