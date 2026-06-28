@@ -21,4 +21,13 @@ interface CookingSessionDao {
 
     @Query("DELETE FROM cooking_session WHERE id = 0")
     suspend fun clear()
+
+    @Query("SELECT * FROM cooking_session WHERE id = :slot LIMIT 1")
+    fun observeSlot(slot: Int): Flow<CookingSession?>
+
+    @Query("SELECT * FROM cooking_session WHERE id = :slot LIMIT 1")
+    suspend fun getSlot(slot: Int): CookingSession?
+
+    @Query("DELETE FROM cooking_session WHERE id = :slot")
+    suspend fun clearSlot(slot: Int)
 }
