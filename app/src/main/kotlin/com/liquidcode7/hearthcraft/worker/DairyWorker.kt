@@ -17,7 +17,8 @@ import com.liquidcode7.hearthcraft.data.repository.GrowingRepository
 import com.liquidcode7.hearthcraft.data.repository.PlayerRepository
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
-import kotlinx.serialization.encodeToString
+import androidx.work.WorkManager
+import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import java.util.concurrent.TimeUnit
 import kotlin.random.Random
@@ -35,10 +36,21 @@ class DairyWorker @AssistedInject constructor(
         val items = listOf(
             HarvestItem(ingredientId = "milk", name = "Milk", quantity = qty, rarity = "common")
         )
-        val json = Json.encodeToString(items)
-        player.addGatheringXp(PlayerRepository.XP_GATHER_SESSION)
-        growing.setPendingResult(SLOT_ID, json)
-        notify("Dairy ready — tap to collect", "Milk is ready.")
+
+        val slot = growing.getSlot(SLOT_ID)
+        val existingJson = slot?.pendingResultJson
+        val existingQty = if (existingJson != null) {
+            Json.decodeFromString<List<HarvestItem>>(existingJson).firstOrNull()?.quantity ?: 0
+        } else 0
+        val atCap = existingQty >= MAX_STOCKPILE_CYCLES * (BASE_YIELD + 1)
+
+        if (!atCap) {
+            player.addGatheringXp(PlayerRepository.XP_GATHER_SESSION)
+            growing.addToPendingResult(SLOT_ID, items)
+            notify("Dairy ready — tap to collect", "Milk is ready.")
+            val next = buildRequest(DURATION_DAIRY_MS)
+            WorkManager.getInstance(applicationContext).enqueue(next)
+        }
         return Result.success()
     }
 
@@ -65,7 +77,9 @@ class DairyWorker @AssistedInject constructor(
     companion object {
         const val SLOT_ID         = "dairy_0"
         const val NOTIFICATION_ID = 42
-        private const val BASE_YIELD = 2
+        private const val BASE_YIELD           = 2
+        private const val MAX_STOCKPILE_CYCLES = 3
+        private const val DURATION_DAIRY_MS    = 20 * 60 * 1000L
 
         fun buildRequest(durationMs: Long): OneTimeWorkRequest =
             OneTimeWorkRequestBuilder<DairyWorker>()

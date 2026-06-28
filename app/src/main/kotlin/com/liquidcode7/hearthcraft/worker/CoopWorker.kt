@@ -17,7 +17,8 @@ import com.liquidcode7.hearthcraft.data.repository.GrowingRepository
 import com.liquidcode7.hearthcraft.data.repository.PlayerRepository
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
-import kotlinx.serialization.encodeToString
+import androidx.work.WorkManager
+import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import java.util.concurrent.TimeUnit
 import kotlin.random.Random
@@ -35,10 +36,21 @@ class CoopWorker @AssistedInject constructor(
         val items = listOf(
             HarvestItem(ingredientId = "hens_egg", name = "Hen's Egg", quantity = qty, rarity = "common")
         )
-        val json = Json.encodeToString(items)
-        player.addGatheringXp(PlayerRepository.XP_GATHER_SESSION)
-        growing.setPendingResult(SLOT_ID, json)
-        notify("Coop ready — tap to collect", "Your hens have laid eggs.")
+
+        val slot = growing.getSlot(SLOT_ID)
+        val existingJson = slot?.pendingResultJson
+        val existingQty = if (existingJson != null) {
+            Json.decodeFromString<List<HarvestItem>>(existingJson).firstOrNull()?.quantity ?: 0
+        } else 0
+        val atCap = existingQty >= MAX_STOCKPILE_CYCLES * (BASE_YIELD + 1)
+
+        if (!atCap) {
+            player.addGatheringXp(PlayerRepository.XP_GATHER_SESSION)
+            growing.addToPendingResult(SLOT_ID, items)
+            notify("Coop ready — tap to collect", "Your hens have laid eggs.")
+            val next = buildRequest(DURATION_COOP_MS)
+            WorkManager.getInstance(applicationContext).enqueue(next)
+        }
         return Result.success()
     }
 
@@ -65,7 +77,9 @@ class CoopWorker @AssistedInject constructor(
     companion object {
         const val SLOT_ID         = "coop_0"
         const val NOTIFICATION_ID = 41
-        private const val BASE_YIELD = 2
+        private const val BASE_YIELD           = 2
+        private const val MAX_STOCKPILE_CYCLES = 3
+        private const val DURATION_COOP_MS     = 15 * 60 * 1000L
 
         fun buildRequest(durationMs: Long): OneTimeWorkRequest =
             OneTimeWorkRequestBuilder<CoopWorker>()

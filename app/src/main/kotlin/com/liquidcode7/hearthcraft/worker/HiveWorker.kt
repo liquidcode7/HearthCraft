@@ -17,7 +17,8 @@ import com.liquidcode7.hearthcraft.data.repository.GrowingRepository
 import com.liquidcode7.hearthcraft.data.repository.PlayerRepository
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
-import kotlinx.serialization.encodeToString
+import androidx.work.WorkManager
+import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import java.util.concurrent.TimeUnit
 import kotlin.random.Random
@@ -38,12 +39,26 @@ class HiveWorker @AssistedInject constructor(
         val items = listOf(
             HarvestItem(ingredientId = honeyId, name = honeyName, quantity = honeyQty, rarity = "common")
         )
-        val json = Json.encodeToString(items)
 
-        player.addGatheringXp(PlayerRepository.XP_GATHER_SESSION)
-        growing.setPendingResult(SLOT_ID, json)
+        // Accumulate — count existing cycles to enforce the cap
+        val slot = growing.getSlot(SLOT_ID)
+        val existingJson = slot?.pendingResultJson
+        val existingQty = if (existingJson != null) {
+            Json.decodeFromString<List<HarvestItem>>(existingJson).firstOrNull()?.quantity ?: 0
+        } else 0
 
-        notify("Hive ready — tap to collect", "$honeyName is ready to harvest.")
+        val atCap = existingQty >= MAX_STOCKPILE_CYCLES * (BASE_YIELD + 1)
+        if (!atCap) {
+            player.addGatheringXp(PlayerRepository.XP_GATHER_SESSION)
+            growing.addToPendingResult(SLOT_ID, items)
+            notify("Hive ready — tap to collect", "$honeyName is ready to harvest.")
+        }
+
+        // Self-reschedule so accumulation continues even without collection
+        if (!atCap) {
+            val next = buildRequest(DURATION_HIVE_MS)
+            WorkManager.getInstance(applicationContext).enqueue(next)
+        }
         return Result.success()
     }
 
@@ -70,7 +85,9 @@ class HiveWorker @AssistedInject constructor(
     companion object {
         const val SLOT_ID         = "hive_0"
         const val NOTIFICATION_ID = 30
-        private const val BASE_YIELD = 2
+        private const val BASE_YIELD           = 2
+        private const val MAX_STOCKPILE_CYCLES = 3
+        private const val DURATION_HIVE_MS     = 10 * 60 * 1000L
 
         fun honeyForBand(bandId: String): Pair<String, String> = when (bandId) {
             "mithlost"   -> "white_nectar" to "White Nectar"

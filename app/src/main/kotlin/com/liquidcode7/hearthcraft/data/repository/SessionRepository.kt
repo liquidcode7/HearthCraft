@@ -37,6 +37,11 @@ class SessionRepository @Inject constructor(
     suspend fun startCooking(session: CookingSession) = cookingDao.start(session)
     suspend fun clearCooking() = cookingDao.clear()
 
+    fun observeCookingSlot(slot: Int): Flow<CookingSession?> = cookingDao.observeSlot(slot)
+    suspend fun activeCookingSlot(slot: Int): CookingSession? = cookingDao.getSlot(slot)
+    suspend fun startCookingInSlot(session: CookingSession) = cookingDao.start(session)
+    suspend fun clearCookingSlot(slot: Int) = cookingDao.clearSlot(slot)
+
     suspend fun startMission(session: MissionSession) = missionDao.start(session)
     suspend fun clearMission(bandId: String) = missionDao.clear(bandId)
 
