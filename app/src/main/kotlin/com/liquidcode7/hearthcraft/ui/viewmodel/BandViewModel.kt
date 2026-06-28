@@ -202,7 +202,7 @@ class BandViewModel @Inject constructor(
         _memberFood.value = _memberFood.value + (memberId to food)
     }
     fun clearMemberFood() { _memberFood.value = emptyMap() }
-    fun selectEncounter(detail: EncounterDetail) { _selectedEncounter.value = detail }
+    fun selectEncounter(detail: EncounterDetail?) { _selectedEncounter.value = detail }
     fun setDraught(potency: Float) { _draughtPotency.value = potency }
 
     fun treatWound(memberId: String, food: PreparedFoodDetail) {

@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.liquidcode7.hearthcraft.ui.viewmodel.BandMemberWithState
 import com.liquidcode7.hearthcraft.ui.viewmodel.BandViewModel
+import com.liquidcode7.hearthcraft.ui.viewmodel.EncounterDetail
 import com.liquidcode7.hearthcraft.ui.viewmodel.InventoryViewModel
 import com.liquidcode7.hearthcraft.ui.viewmodel.PreparedFoodDetail
 import kotlinx.coroutines.delay
@@ -56,11 +57,32 @@ fun BandScreen(
     val firstBandId by bandViewModel.firstBandId.collectAsState()
     val secondBandId by bandViewModel.secondBandId.collectAsState()
     val availableBandsForUnlock by bandViewModel.availableBandsForUnlock.collectAsState()
+    val memberFood by bandViewModel.memberFood.collectAsState()
+    val selectedEncounter by bandViewModel.selectedEncounter.collectAsState()
 
     var selectedMember by remember { mutableStateOf<BandMemberWithState?>(null) }
+    var showProvisioningDialog by remember { mutableStateOf(false) }
 
     selectedMember?.let { member ->
         MemberDetailDialog(member = member, onDismiss = { selectedMember = null })
+    }
+
+    if (showProvisioningDialog && selectedEncounter != null) {
+        ProvisioningDialog(
+            members      = members,
+            memberFood   = memberFood,
+            preparedFood = preparedFood,
+            onAssign     = { memberId, food -> bandViewModel.assignFoodToMember(memberId, food) },
+            onConfirm    = {
+                showProvisioningDialog = false
+                bandViewModel.sendOnEncounter()
+            },
+            onDismiss    = {
+                showProvisioningDialog = false
+                bandViewModel.clearMemberFood()
+                bandViewModel.selectEncounter(null)
+            }
+        )
     }
 
     Column(
@@ -163,12 +185,29 @@ fun BandScreen(
                 }
             }
         } else if (activeMission == null && activeEncounterSession == null) {
-            Spacer(modifier = Modifier.height(12.dp))
-            Text(
-                "Ready. Go to Missions to provision and send.",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            val unlockedEncounters = encounters.filter { it.isUnlocked }
+            if (unlockedEncounters.isEmpty()) {
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    "No encounters available yet. Level up your band.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            } else {
+                Spacer(modifier = Modifier.height(16.dp))
+                Text("Send the Band", style = MaterialTheme.typography.titleSmall)
+                Spacer(modifier = Modifier.height(8.dp))
+                unlockedEncounters.forEach { enc ->
+                    EncounterSendRow(
+                        encounter = enc,
+                        onSend = {
+                            bandViewModel.selectEncounter(enc)
+                            showProvisioningDialog = true
+                        }
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
+                }
+            }
         }
 
         if (isSecondBandUnlocked && secondBandId == null && availableBandsForUnlock.isNotEmpty()) {
@@ -442,4 +481,157 @@ private fun formatMs(ms: Long): String {
     val m = total / 60
     val s = total % 60
     return "%d:%02d".format(m, s)
+}
+
+@Composable
+private fun EncounterSendRow(encounter: EncounterDetail, onSend: () -> Unit) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+    ) {
+        Row(
+            modifier = Modifier.padding(10.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(encounter.name, style = MaterialTheme.typography.bodyMedium)
+                Text(
+                    encounter.flavorLine,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Spacer(modifier = Modifier.width(8.dp))
+            OutlinedButton(onClick = onSend) {
+                Text("Send")
+            }
+        }
+    }
+}
+
+@Composable
+private fun ProvisioningDialog(
+    members: List<BandMemberWithState>,
+    memberFood: Map<String, PreparedFoodDetail?>,
+    preparedFood: List<PreparedFoodDetail>,
+    onAssign: (memberId: String, food: PreparedFoodDetail?) -> Unit,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    var pickingFor by remember { mutableStateOf<String?>(null) }
+
+    if (pickingFor != null) {
+        FoodPickerDialog(
+            options   = preparedFood,
+            onSelect  = { food -> onAssign(pickingFor!!, food); pickingFor = null },
+            onDismiss = { pickingFor = null }
+        )
+    }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Provision the band") },
+        text = {
+            Column {
+                members.filter { it.isAlive }.forEach { member ->
+                    val food = memberFood[member.memberId]
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(member.name, style = MaterialTheme.typography.bodyMedium)
+                            Text(
+                                member.role.replaceFirstChar { it.uppercase() },
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            if (food != null) {
+                                val statLine = buildString {
+                                    if (food.primaryStat != null) {
+                                        append("+${food.primaryBoost} ${food.primaryStat.uppercase()}")
+                                    }
+                                    if (food.secondaryStat != null) {
+                                        append("  +${food.secondaryBoost} ${food.secondaryStat.uppercase()}")
+                                    }
+                                }
+                                Text(
+                                    if (statLine.isNotEmpty()) "${food.name}  $statLine" else food.name,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        }
+                        TextButton(onClick = { pickingFor = member.memberId }) {
+                            Text(if (food != null) "Change" else "Assign")
+                        }
+                        if (food != null) {
+                            TextButton(onClick = { onAssign(member.memberId, null) }) {
+                                Text("Clear")
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onConfirm) { Text("Send") }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("Cancel") }
+        }
+    )
+}
+
+@Composable
+private fun FoodPickerDialog(
+    options: List<PreparedFoodDetail>,
+    onSelect: (PreparedFoodDetail) -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Choose food") },
+        text = {
+            Column {
+                if (options.isEmpty()) {
+                    Text(
+                        "No food prepared. Cook something in the Kitchen first.",
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                } else {
+                    options.forEach { food ->
+                        TextButton(
+                            onClick  = { onSelect(food) },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Row(modifier = Modifier.fillMaxWidth()) {
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(food.name)
+                                    if (food.primaryStat != null) {
+                                        val secondaryPart = if (food.secondaryStat != null)
+                                            "  +${food.secondaryBoost} ${food.secondaryStat.uppercase()}"
+                                        else ""
+                                        Text(
+                                            "+${food.primaryBoost} ${food.primaryStat.uppercase()}$secondaryPart",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = MaterialTheme.colorScheme.primary
+                                        )
+                                    }
+                                }
+                                Text(
+                                    "×${food.quantity}",
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {},
+        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } }
+    )
 }
