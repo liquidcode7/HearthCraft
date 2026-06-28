@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.liquidcode7.hearthcraft.data.db.CookingSession
 import com.liquidcode7.hearthcraft.data.db.EncounterSession
 import com.liquidcode7.hearthcraft.data.db.GatheringSession
+import com.liquidcode7.hearthcraft.data.db.GrowingSlot
 import com.liquidcode7.hearthcraft.data.db.MissionSession
 import com.liquidcode7.hearthcraft.data.db.PlayerState
 import com.liquidcode7.hearthcraft.data.repository.BandRepository
@@ -80,6 +81,15 @@ class HomeViewModel @Inject constructor(
         growing.observeGardenSlots()
     ) { farm, garden -> (if (farm != null) 1 else 0) + garden.size }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+
+    val hiveSlot: StateFlow<GrowingSlot?> = growing.observeSlot("hive_0")
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
+
+    val coopSlot: StateFlow<GrowingSlot?> = growing.observeSlot("coop_0")
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
+
+    val dairySlot: StateFlow<GrowingSlot?> = growing.observeSlot("dairy_0")
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
     val activeBandName: StateFlow<String> = player.observe()
         .map { state -> gameData.bands.find { it.id == state?.chosenBandId }?.name ?: "" }

@@ -37,6 +37,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.liquidcode7.hearthcraft.BuildConfig
 import com.liquidcode7.hearthcraft.ui.viewmodel.HomeViewModel
 import com.liquidcode7.hearthcraft.ui.viewmodel.XpProgress
+import com.liquidcode7.hearthcraft.worker.CoopWorker
+import com.liquidcode7.hearthcraft.worker.DairyWorker
+import com.liquidcode7.hearthcraft.worker.HiveWorker
 import kotlinx.coroutines.delay
 
 @Composable
@@ -58,6 +61,9 @@ fun HomeScreen(
     val aliveCount by viewModel.aliveMemberCount.collectAsState()
     val woundedCount by viewModel.woundedMemberCount.collectAsState()
     val discoveredCount by viewModel.discoveredCount.collectAsState()
+    val hiveSlot by viewModel.hiveSlot.collectAsState()
+    val coopSlot by viewModel.coopSlot.collectAsState()
+    val dairySlot by viewModel.dairySlot.collectAsState()
 
     val anyMissionActive = mSession != null || eSession != null
     val missionStartedAt = eSession?.startedAtMs ?: mSession?.startedAtMs ?: 0L
@@ -134,6 +140,27 @@ fun HomeScreen(
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+            }
+            // Producer timers — only show if running (not ready to collect)
+            listOf(
+                Triple(hiveSlot, "Hive", HiveWorker.SLOT_ID),
+                Triple(coopSlot, "Coop", CoopWorker.SLOT_ID),
+                Triple(dairySlot, "Dairy", DairyWorker.SLOT_ID)
+            ).forEach { (slot, name, _) ->
+                if (slot != null && slot.pendingResultJson == null) {
+                    ActiveTimerRow(
+                        label = name,
+                        startedAtMs = slot.plantedAtMs,
+                        durationMs = slot.durationMs
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                } else if (slot?.pendingResultJson != null) {
+                    Text(
+                        "$name: ready to collect",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
             }
         }
 
