@@ -7,11 +7,11 @@
 
 ## Current Status — June 28, 2026
 
-**Phase:** Process station, Coop, and Dairy complete. Full supply chain from raw ingredient to processed item now playable.
-**What's working:** Kitchen has 3 tabs (Recipes / Discover / Process); Process station is a timed operation that consumes raw inputs and produces processed ingredients; 13 process ingredients now have processInputs wired; 4 new raw forage ingredients (river_trout, eel, deer_haunch, grouse); Coop (eggs, 15 min) and Dairy (milk, 20 min) auto-start and auto-restart like the Hive; all 3 husbandry producers visible in Gathering screen. 145 total ingredients.
-**What's not wired yet:** Draw station UI; 5 farm-animal process items still missing inputs (salted_pork, smoked_goat, salt_mutton, rendered_tallow, dried_marrow_bone — need livestock producer); Market screen; live combat screen.
-**Next session:** Draw station UI (water sources already in data), or Market screen.
-**Open questions:** Livestock producer design (goat/sheep/pig — what system, what screen?). Process station cookLevel gates (all lv1 for now — tune when progression is tighter).
+**Phase:** Gather screen overhaul complete. Honey/eggs/milk stockpile, sub-tabs, sticky header, swipe navigation, and home screen producer timers all live.
+**What's working:** Gathering screen has three swipeable sub-tabs (Growing / Wild / Producers) with badge counts and a sticky header showing XP bar and live status strip; Hive/Coop/Dairy accumulate across up to 3 cycles before capping; garden yields 5 items (up from 3), farm yields 8 (up from 6); gathering XP per session halved to 15; Home screen Active section shows producer timers and ready-to-collect labels.
+**What's not wired yet:** Kitchen improvements (Pantry fix, swipe tabs, 2-slot cooking); Band/Nav/Missions plan (Market removal, Band tab removal, difficulty meter fix, missions pre-deploy panel, Contemplative Tea band fix) — both plans written but not started.
+**Next session:** Kitchen improvements (Plan B) or Band/Nav/Missions (Plan C) — plans at `docs/superpowers/plans/2026-06-28-kitchen-improvements.md` and `docs/superpowers/plans/2026-06-28-band-nav-missions.md`.
+**Open questions:** Inspiration titles — what are they and where should they appear? (BLOCKED in Plan C, needs clarification from Wes).
 
 ---
 
@@ -1721,3 +1721,33 @@ Full implementation of the recipe discovery system: recipes are now hidden until
 - Next session: Draw station UI (6 water-source ingredients already in data), or Market screen
 - Near term: Market screen; livestock producer design (goat/sheep/pig)
 - Future ideas logged: Livestock producer system (needed to unlock 5 remaining process items)
+
+---
+
+## Session 46 — June 28, 2026
+**Gather Screen Overhaul (Plan A from App Audit 28JUN2026 2.0)**
+
+**What was built:**
+- `data/repository/GrowingRepository.kt`: `addToPendingResult()` — merges `HarvestItem` lists by ingredientId (summing quantities) instead of overwriting; used by Hive/Coop/Dairy workers to accumulate across cycles
+- `test/.../GrowingRepositoryStockpileTest.kt`: 3 unit tests for merge, keep-separate, and empty-existing cases
+- `ui/viewmodel/GatheringViewModel.kt`: sub-tab state (`gatherSubTab`, `selectGatherSubTab`, 0=Growing/1=Wild/2=Producers) + badge count flows (`growingReadyCount`, `wildReady`, `producersReadyCount`); removed erroneous elapsed-cycle multiplier from `collectGrowingSlot` (workers handle accumulation themselves)
+- `ui/screen/GatheringScreen.kt`: full restructure — fixed sticky header (title + XpBar + `GatherStatusStrip` with live countdown strip), `TabRow` with `BadgedBox` on all three tabs, `HorizontalPager` for swipe navigation; content split into `GrowingTab`, `WildTab`, `ProducersTab` composables
+- `worker/GardenWorker.kt`: `BASE_YIELD` 3 → 5
+- `worker/FarmWorker.kt`: `BASE_YIELD` 6 → 8
+- `data/repository/PlayerRepository.kt`: `XP_GATHER_SESSION` 30 → 15; stale comment updated
+- `ui/viewmodel/HomeViewModel.kt`: `hiveSlot`, `coopSlot`, `dairySlot` StateFlows observing producer slots
+- `ui/screen/HomeScreen.kt`: Active section now shows Hive/Coop/Dairy running timers (via `ActiveTimerRow`) and "X: ready to collect" labels when `pendingResultJson != null`
+
+**Decisions made:**
+- Stockpile mechanic: workers self-reschedule and accumulate via `addToPendingResult` until cap (3 cycles × ~3 items); `collectGrowingSlot` just hands back whatever the workers accumulated — no additional multiplication
+- An intermediate Task 2 implementation added elapsed-cycle multiplication to `collectGrowingSlot` but this double-counted because workers were already accumulating; removed in the final review fix commit (365678f)
+- `GatherStatusStrip` uses a simple `Row` per spec; may overflow if all 7 slots are simultaneously active (future: `LazyRow` or `FlowRow`)
+- `rememberPagerState` cold-starts at page 0; could pass `initialPage` snapshot in a future polish pass
+
+**Anything that diverged from design/design.md:**
+- None
+
+**Coming up:**
+- Next session: Kitchen improvements (Plan B) — Pantry fix, swipe tabs in Kitchen, 2-slot cooking
+- Near term: Band/Nav/Missions (Plan C) — remove Market and Band from bottom nav, difficulty meter fix, missions pre-deploy panel, Contemplative Tea band fix
+- Blocked: inspiration titles in Plan C need clarification from Wes
