@@ -1,19 +1,19 @@
 # Damage Types & Bane Affinities — Design Spec
 
-> Design agreed with Wes. Mechanism specified.
-> Formalized from the design session notes for implementation in `tools/sim/run_sim.js` and `docs/combat-model.md`.
-> Scope: simulator + design doc only. Android code is not touched by this spec.
+> Design agreed with Wes. Partially specified — shadow incoming damage and bane
+> multiplier implementation deferred pending further design sessions.
 
 ---
 
 ## Summary
 
-Two complementary systems that reward reading your enemy:
+Two related concepts, at different levels of design maturity:
 
-1. **Damage Types** — split outgoing DPS into physical vs. affinity channels. Only physical is reduced by armor. Keeper and Captain's Will-driven output bypasses it entirely, under named affinity types.
-2. **Bane Affinities** — each role carries an innate bane that multiplies damage against the matching enemy category. Provisioning a role with its role-matched food activates the bane at full power; feeding a role food that boosts the wrong stat wastes it.
+1. **Damage Types** (ready) — outgoing DPS is split into physical vs. named affinity channels. The affinity types (Light, Westernesse) are inherent to the *nature of each role's magic damage*, not role-level bane unlocks. Armor only applies to physical.
 
-Neither system adds new numbers to learn. They explain why role composition matters and why you provision each member differently.
+2. **Bane Affinities** (V2 — weapon-gated) — when characters acquire named legendary weapons, those weapons carry bane affinities that multiply damage against matching enemy categories. No innate role banes exist. The encounter enemy-category tag system supports this eventually.
+
+3. **Incoming Shadow Damage** (design pending) — placeholder only. More design needed before specifying.
 
 ---
 
@@ -21,184 +21,103 @@ Neither system adds new numbers to learn. They explain why role composition matt
 
 ### The Rule
 
-| Source stat | Damage type | Armor? |
+Might and Agility are physical by nature. Will is non-physical — its character depends on whose Will it is:
+
+| Source | Damage type | Armor? |
 |---|---|---|
-| Might (Warden, Hunter) | Physical | Yes — `physMit` applies |
+| Might (Warden, Hunter, Captain) | Physical | Yes — `physMit` applies |
 | Agility (Hunter) | Physical | Yes |
-| Will (Keeper) | **Light** | No — bypasses armor entirely |
-| Will (Captain) | **Westernesse** | No — bypasses armor entirely |
-| Might (Captain) | Physical | Yes |
+| **Will (Keeper)** | **Light** | No — bypasses armor |
+| **Will (Captain)** | **Westernesse** | No — bypasses armor |
 
-Captain deals hybrid damage every tick: her Mig×0.3 is physical and sits behind the armor wall; her Wil×0.2 is Westernesse and bypasses it. Feeding a Captain food that boosts Might makes her hit harder — but the Might half is still blocked by armor. Boosting Will gives armor-bypassing output that compounds with her bane against wraiths.
+The Keeper and Captain's magic is named because it matters lore-specifically which kind of power it is — not because it grants a bonus on its own. Light is the grace of the Valar; Westernesse is the strength of Númenorean heritage. These are not mechanical boons yet. They become mechanically relevant when legendary weapons add bane affinities (V2).
 
-### Updated DPS formulas
-
-Unchanged from current — only the *labeling* of damage types is new:
+### DPS formulas (unchanged, relabeled)
 
 - **Warden:** `Mig × 0.5` — Physical
 - **Hunter (Agi build):** `Agi + Mig × 0.4` — Physical
 - **Hunter (Mig build):** `Mig + Agi × 0.4` — Physical
-- **Keeper:** `Wil × 0.9` — Light *(zero on any tick it spends a rescue)*
-- **Captain:** `Mig × 0.3` (Physical) + `Wil × 0.2` (Westernesse)
+- **Keeper:** `Wil × 0.9` — **Light** *(zero on any tick spent on a rescue)*
+- **Captain:** `Mig × 0.3` (Physical) + `Wil × 0.2` (**Westernesse**)
+
+Captain's Will is Westernesse because she is of that lineage — it is not a bane toggle. If she fights a wraith, the Westernesse damage type is present, but there is no multiplier attached to it until she carries a Westernesse weapon.
 
 ### Armor application (revised)
 
-Physical sub-totals across all living, non-stunned, non-broken members are summed first; armor (`physMit`, reduced by draught penetration) is then applied to that total. Affinity damage (Light + Westernesse) is summed separately and added after — no armor applies to the affinity total.
+Physical sub-totals from all active members are summed first; armor is applied to that total. Affinity damage (Light + Westernesse) is summed separately and added after:
 
 ```
-physDps    = Σ physical contributions from all active members
+physDps     = Σ physical contributions (Warden, Hunter, Captain Mig portion)
 affinityDps = Σ Light (Keeper) + Σ Westernesse (Captain Wil portion)
-effArmor   = physMit × (1 - min(1, draughtPotency / PEN_SCALE))
+effArmor    = physMit × (1 - min(1, draughtPotency / PEN_SCALE))
 effectiveDps = physDps × (1 - effArmor) + affinityDps
 ```
 
-This replaces the current single-`raw` calculation in `dpsBreakdown()`.
+This replaces the current single-`raw` path in `dpsBreakdown()`.
 
 ---
 
-## Bane Affinities
+## Bane Affinities (V2 — weapon-gated)
 
-### The Four Banes
+### Concept
 
-| Bane name | Enemy category tag | Lore anchor |
+Enemy encounters carry category tags (`orc`, `wraith`, `shadow`, `dragon`, etc.). Named legendary weapons carry bane affinities that match one or more of these categories. When a member carries a bane weapon that matches the enemy category, their DPS is multiplied.
+
+| Bane name | Enemy category | Lore anchor |
 |---|---|---|
-| **Beleriand** | `orc` | The ancient enmity — elvish steel and dwarven hammers forged in the First Age wars against Morgoth's armies |
-| **Westernesse** | `wraith` | Númenórean steel; the Barrow-blades and the weapons of the Dúnedain that can wound the undead |
-| **Light** | `shadow` | The grace of the Valar; Elbereth's light and the fire of Aman that shadow-creatures cannot endure |
-| **Mormegil** | `dragon` | The doom of the Black Sword; Gurthang's willing strike that killed Glaurung |
+| Beleriand | `orc` | Elvish/dwarven steel from the First Age wars against Morgoth |
+| Westernesse | `wraith` | Númenórean steel; Barrow-blades and Dúnedain weapons that wound the undead |
+| Light | `shadow` | Grace of the Valar; Elbereth's light that shadow-creatures cannot endure |
+| Mormegil | `dragon` | The doom of the Black Sword; Gurthang's killing blow against Glaurung |
 
-### Role assignments (innate in V1)
+### V2 scope
 
-Each role carries one bane. No items required — it is in their nature.
+Weapon bane system is entirely V2+. No innate role banes exist — the multiplier is always weapon-sourced. The damage *type* on magic output (Light, Westernesse) is what makes a weapon's bane affinity relevant for that role: a Westernesse weapon in the Captain's hands multiplies her Westernesse output against wraiths.
 
-| Role | Innate bane | Reasoning |
-|---|---|---|
-| Warden | **Beleriand** | The ancient warrior; dwarvish lineage, iron memory of the First Age wars; orcs are the fundamental enemy |
-| Hunter | **Mormegil** | The lone blade; Túrin's curse passed to all hunters who walk alone; dragon-kind is their doom and their glory |
-| Keeper | **Light** | The healer is the light-bearer; shadow flees from care and warmth; natural enemy of all shadow-creatures |
-| Captain | **Westernesse** | The Aragorn archetype; heir of Númenor, Strider's steel; wraiths are what Westernesse stands against |
+`BANE_MULTIPLIER = 1.15` (placeholder — validate in sim when bane weapons are designed)
 
-Legendary weapons in V2 may unlock additional banes or amplify the innate one. For now: one bane per role, innate, always active when targeting a matching enemy.
+### V1 note
 
-### Multiplier and application
-
-A bane multiplier applies when the target enemy has the matching category tag:
-
-```
-baneMultiplier = 1.15  (a 15% DPS boost vs. matching enemy category)
-```
-
-The multiplier applies to that role's entire DPS contribution (physical + affinity), not just one damage type. It fires after armor reduction:
-
-```
-memberEffDps = (physDps_member × (1 - effArmor)) + affinityDps_member
-if enemy.categoryTags includes memberBane:
-    memberEffDps *= BANE_MULTIPLIER
-```
-
-The bane multiplier is modest by design. It is not the difference between winning and losing — it is the reward for reading an encounter and bringing the right composition. A party with all four members bane-matched to the enemy category type gets a meaningful edge; a single bane match is a small bonus.
-
-**The enemy category is a property of the encounter, not of individual fight stages.** All stages of a multi-stage encounter share the same category (e.g., a goblin raid is `orc` from approach to boss).
-
-### Enemy category tags (current)
-
-| Tag | Foes | Notes |
-|---|---|---|
-| `orc` | Orcs, Uruk-hai, goblins, half-orcs | Most of Rung 0–2 content |
-| `wraith` | Ringwraiths, Barrow-wights, Dead Men, wights | Rung 5+ content; no V1 encounters |
-| `shadow` | Great spiders, Balrog, shadow-monsters | Rung 6+ content; no V1 encounters |
-| `dragon` | Glaurung, Smaug, cold-drakes | Late campaign; no V1 encounters |
-| `beast` | Wolves, wargs, spiders (small), bats | No bane assigned — natural creatures, no ancient enmity |
-| `huorn` | Huorns, Old Man Willow | No bane — requires a separate nature-affinity system (future) |
-
-V1 Rung 0 encounters (Neekerbreekers, Wolves, Midges, Cave Bats, Mountain Wolves) are all `beast`. No bane fires in V1. This is intentional: bane rewards come later, once the player has the composition to use them.
-
-The **Goblin Incursion** (Rung 1) is `orc` — the first fight where Beleriand fires. Warden becomes noticeably more effective.
+Encounter enemy-category tags can be authored now. V1 encounters may carry them for forward-compatibility. No bane fires in V1 (no weapons). When bane weapons land in V2, already-tagged encounters will work without reauthoring.
 
 ---
 
-## Incoming Shadow Damage (new channel)
+## Incoming Shadow Damage — DESIGN PENDING
 
-### Separate from the Shadow status effect
+> **Placeholder.** This section needs a dedicated design session before it is specified.
 
-Two distinct mechanics share the word "shadow":
+Open questions:
+- Is shadow damage a separate per-tick channel (like drain), or is it attached to spike events?
+- What is the mitigation model — individual Will, party-wide radiance, both?
+- How does it interact with the existing Shadow status effect (which drains Will + Fate over time)? Are they additive, or does the status effect gate the damage channel?
+- Which enemy categories deal shadow damage? Ringwraiths obviously — what else?
+- Is there a design reason to separate "the Black Breath" (undead-flavored shadow wound) from generic shadow damage?
 
-| System | What it does | When it fires |
-|---|---|---|
-| **Shadow status** (existing) | Drains Will + Fate over time toward a floor | Enemies with `shadow` severity > 0 |
-| **Shadow damage** (new) | A direct damage channel that hits member HP | Enemies with `shadowDmg` > 0 |
-
-Shadow status is a slow deterioration. Shadow damage is an immediate wound — it can down a member like a spike. They coexist and stack; fighting a Nazgûl means both.
-
-### Will as shadow mitigation
-
-Each member mitigates shadow damage individually based on their current Will:
-
-```
-shadowMitFraction = min(0.60, memberWil × 0.008)
-effectiveShadowHit = shadowDmgBase × (1 - shadowMitFraction)
-```
-
-Cap at 60% mitigation — no member can become fully immune. Will-boosting food (Contemplative Tea, Ranger's Fare) directly reduces the shadow damage those members take. The Keeper and Captain have the highest base Will and survive shadow encounters better unfed; Warden and Hunter are more exposed.
-
-### Encounter schema addition
-
-A new field `shadowDmg` joins `drain` and `spike` in the encounter/stage schema:
-
-| Field | Type | Description |
-|---|---|---|
-| `shadowDmg` | float | Per-tick shadow damage per member (0 = none); reduced by each member's Will individually |
-
-Shadow damage fires every tick (same as drain) but is mitigated individually rather than spread evenly. It does not benefit from the Warden's soak role — the Warden cannot absorb spiritual damage on behalf of the Keeper.
-
-All current V1 and Rung 0–1 encounters have `shadowDmg: 0`. The Neekerbreekers and Goblin Incursion are physical fights.
+Do not implement shadow incoming damage until these are answered. Keep the encounter schema field as a TBD stub.
 
 ---
 
-## Impact on provisioning puzzle
-
-This spec creates three new provisioning axes:
-
-1. **Stat alignment for bane activation** — you don't unlock banes with items; you activate them by giving each role food that feeds their primary stat. A Keeper with bad food still has the Light bane, but their Will is low, so their Light output is low, so the bane multiplier doesn't do much. The puzzle is the same puzzle — provision correctly for role — but the combat-model doc now explains *why* it matters structurally.
-
-2. **Anti-armor vs. Will trade-off for Captain** — in armored encounters, you want Captain's Might high (physical output, helped by penetration). In wraith/shadow encounters, you want Will high (Westernesse output, plus Westernesse bane + shadow mitigation). Ranger's Fare (Will-primary) is a different choice than Hearthmeat (Might-primary) and this spec makes that legible to the player.
-
-3. **Shadow damage → Will food becomes defensive** — provisioning the Keeper and Captain with Will food is already good for healer output and Dread resistance. Shadow damage adds a third reason: it's the damage type they mitigate best. Provisioning Will food in a shadow encounter is the correct defensive play even for Warden if he's going to get hit.
-
----
-
-## sim implementation scope
+## sim implementation scope (damage types only)
 
 Changes to `tools/sim/run_sim.js`:
 
-1. **`dpsBreakdown()`** — split into `physDps` and `affinityDps` sub-totals; apply armor only to `physDps`; sum after.
-2. **Bane multiplier** — add `cfg.enemyCategoryTags` (default `[]`); each member checks their bane against the tag list and multiplies their contribution.
-3. **Shadow damage channel** — add `cfg.shadowDmg` (default 0); per-tick per-member hit mitigated by `memberWil × 0.008`, capped at 60%.
-4. **CLI flag** — `--shadow-dmg N` for shadow damage; `--tags orc,wraith` for enemy category.
+1. **`dpsBreakdown()`** — split into `physDps` and `affinityDps`; apply armor only to `physDps`; sum after. Return both sub-totals for logging.
+2. **No bane multiplier in V1 sim** — enemy category tags can be parsed but nothing fires.
+3. **No shadow damage channel** — pending design.
 
 Changes to `docs/combat-model.md`:
 
 1. Update DPS formulas table with damage type labels (Physical / Light / Westernesse).
-2. Add "Bane Affinities" section with the four-bane table and BANE_MULTIPLIER constant.
-3. Add "Shadow Damage" section distinguishing it from Shadow status.
-4. Update the constant block with `BANE_MULTIPLIER = 1.15` and the Will shadow mitigation formula.
-5. Update enemy category tags in the Encounter JSON schema.
-
----
-
-## Constants
-
-```
-BANE_MULTIPLIER        = 1.15     // DPS multiplier vs. matching enemy category tag
-WILL_SHADOW_MIT_COEF   = 0.008    // per Will point of shadow mitigation (cap 0.60)
-WILL_SHADOW_MIT_CAP    = 0.60     // no member can mitigate more than 60% of shadow dmg
-```
+2. Add a "Damage Types" section with the armor-split formula.
+3. Add a "Bane Affinities" section — concept and V2 weapon-gating, four-bane table.
+4. Add a stub "Incoming Shadow Damage" section marked design-pending.
+5. Update the constants block with `BANE_MULTIPLIER = 1.15` (V2 placeholder).
 
 ---
 
 ## What this is NOT
 
-- No damage types on incoming physical drain/spikes — the existing model handles those.
-- No player-accessible damage type info screen in V1 — the player learns by reading enemy flavor and experimenting with food.
-- No bane items in V1 — banes are innate and always active. Legendary weapons that add or amplify banes are V2.
-- No `beast` or `huorn` bane — natural creatures have no ancient enmity to exploit.
+- No innate role banes — banes come from weapons, not from being a Keeper or a Warden.
+- No mechanical bonus from damage types alone in V1 — Light and Westernesse bypass armor, that is all.
+- No shadow damage channel yet — pending design session.
+- No player-facing damage type UI in V1 — the system is backend only for now.
