@@ -7,9 +7,9 @@
 
 ## Current Status — June 28, 2026
 
-**Phase:** Core loop solid — gather targeting, early mission termination, post-fight readout all working.
+**Phase:** Core loop solid — gather targeting with discovery gating, farm/garden seed drops, post-harvest XP readout, region data clean.
 **V1 progress:** All six tabs functional. Full loop playable end to end.
-**What's working:** Forage targeting — player can pin any ingredient from their band's region; guaranteed to appear in the next haul. Missions end at actual fight end time (not always 25 min). Post-fight CombatReportCard. XP bars on Gathering and Kitchen tabs. Role ability descriptions in member detail.
+**What's working:** Forage targeting gated behind ingredient discovery (discover first, then target); targeted forage takes 5 min vs 3 min random; post-harvest dialog shows base XP + discovery bonus + NEW badges; farm/garden harvests always drop 1–2 seeds of the harvested ingredient; all cross-region recipe violations fixed (6 recipes corrected); Ferny's Treacle added.
 **What's not wired yet:** Market screen. Live animated combat screen (deferred).
 **Next session:** Market screen — buy ingredients and seeds with gold earned from missions.
 **Open questions:** None blocking.
@@ -1534,7 +1534,36 @@ Full implementation of the recipe discovery system: recipes are now hidden until
 
 ---
 
-## Session 41 — June 28, 2026
+## Session 42 — June 28, 2026
+**Forage targeting: discovery gating + targeted duration; farm/garden seed drops; post-harvest XP readout; region/recipe audit; Ferny's Treacle**
+
+**What was built:**
+- `PlayerState.kt`: Added `discoveredIngredientIds: String = ""`
+- `HearthCraftDatabase.kt`: Bumped to v9 with AutoMigration from v8
+- `PlayerRepository.kt`: Added `observeDiscoveredIngredientIds()`, `getDiscoveredIngredientIds()`, `discoverIngredients()`, `XP_GATHER_DISCOVERY = 20`
+- `HarvestItem.kt`: Added `@Transient val isNew: Boolean = false` — set by ViewModel at collect time, not stored in DB
+- `UiModels.kt`: Added `HarvestReadout(items, baseXp, discoveryBonusXp)` data class
+- `GatheringViewModel.kt`: `foragableIngredients` now filtered to discovered ingredients only; `collectForage()` detects new discoveries, awards +20 XP per discovery, marks items with `isNew`; `collectGrowingSlot()` routes `rarity == "bonus"` items to seed stock; `startForage()` uses 5-min delay for targeted sessions vs 3-min random; `_lastHarvest` type changed from `List<HarvestItem>` to `HarvestReadout?`
+- `GatheringScreen.kt`: Harvest dialog now shows items with NEW badges + XP breakdown (base + discovery bonus); target section shows "Forage a few times to discover ingredients you can target" when no discoveries yet; target row shows "(+2 min)" cost hint; Start button shows "Forage for [Name] — 5 min" when targeted
+- `FarmWorker.kt`: Harvest result now includes 1–2 seeds of the grown ingredient (`rarity: "bonus"`)
+- `GardenWorker.kt`: Same seed drop as FarmWorker
+- `GatheringWorker.kt`: Added "Cardolan" and "Wildwood" to greycloaks region keywords (lore-correct: adjacent lands in their patrol zone)
+- `recipes.json`: Fixed 6 cross-region violations: `bilberry_tonic` sunpetal_herb→meadowsweet; `hearthbread`/`wanderers_supper` band all→greycloaks; `contemplative_tea` band all→mithlost; `restorative_broth` band all→greycloaks + sunpetal_herb→yarrow; `athelas_infusion` band all→greycloaks + moonpetal→meadowsweet + ironbark_resin→wolf_moss. Added `fernys_treacle` (greycloaks, lv1, deliberately useless, ethically dubious description)
+
+**Decisions made:**
+- Targeting gated behind discovery: forage first, then pin. Makes discovery meaningful.
+- Targeted forage costs +2 min (5 min total). Represents focused, deliberate searching.
+- Discovery bonus: +20 XP per newly found ingredient, on top of base +90 session XP
+- Farm/garden always drops 1–2 seeds. Lets player sustain themselves without constant foraging.
+- "band: all" recipes that were using region-specific ingredients were not truly universal — converted to the appropriate band rather than inventing fictional universal ingredients.
+- Ferny's Treacle: tier 1 vit food with minimum possible buff, rendered fat + nettleleaf, description does the work
+
+**Anything that diverged from docs/design.md:**
+- None
+
+**Coming up:**
+- Next session: Market screen
+- Near term: Band member detail stat cards
 **Forage targeting**
 
 **What was built:**

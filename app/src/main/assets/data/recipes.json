@@ -25,6 +25,27 @@
     "primaryStat": "mig"
   },
   {
+    "id": "fernys_treacle",
+    "name": "Ferny's Treacle",
+    "band": "greycloaks",
+    "class": "food",
+    "method": "simmer",
+    "tier": 1,
+    "cookLevel": 1,
+    "description": "An insult to the palate and most likely to the ethics of food sourcing. Thick, dark, and faintly sweet in a way that suggests the sweetness has something to apologize for. No one who can cook will make this willingly.",
+    "ingredients": [
+      {
+        "id": "rendered_fat",
+        "qty": 2
+      },
+      {
+        "id": "nettleleaf",
+        "qty": 1
+      }
+    ],
+    "primaryStat": "vit"
+  },
+  {
     "id": "hedgerow_hand_pie",
     "name": "Hedgerow Hand-pie",
     "band": "greycloaks",
@@ -251,7 +272,7 @@
         "qty": 3
       },
       {
-        "id": "sunpetal_herb",
+        "id": "meadowsweet",
         "qty": 1
       }
     ],
@@ -320,7 +341,7 @@
     "method": "simmer",
     "tier": 2,
     "cookLevel": 3,
-    "description": "★ Existing. Hot and sustaining. Counters the cold.",
+    "description": "\u2605 Existing. Hot and sustaining. Counters the cold.",
     "ingredients": [
       {
         "id": "hearthgrain",
@@ -341,7 +362,7 @@
     "method": "simmer",
     "tier": 4,
     "cookLevel": 10,
-    "description": "★ Existing. What rangers carry when they travel long and fight hard at the end of it.",
+    "description": "\u2605 Existing. What rangers carry when they travel long and fight hard at the end of it.",
     "ingredients": [
       {
         "id": "ironroot",
@@ -363,7 +384,7 @@
     "method": "simmer",
     "tier": 4,
     "cookLevel": 6,
-    "description": "★ Existing. Warming broth. Keeps a person warm in conditions that shouldn't be survived.",
+    "description": "\u2605 Existing. Warming broth. Keeps a person warm in conditions that shouldn't be survived.",
     "ingredients": [
       {
         "id": "heartflame_pepper",
@@ -463,7 +484,7 @@
     "method": "bake",
     "tier": 1,
     "cookLevel": 1,
-    "description": "Thin, precise, clarifying. A Mithlost clarity dish — solid, not a tea.",
+    "description": "Thin, precise, clarifying. A Mithlost clarity dish \u2014 solid, not a tea.",
     "ingredients": [
       {
         "id": "sunpetal_herb",
@@ -591,7 +612,7 @@
     "method": "infuse",
     "tier": 2,
     "cookLevel": 6,
-    "description": "★ Existing. Smells like a forest at midnight. Shadow-counter tendency.",
+    "description": "\u2605 Existing. Smells like a forest at midnight. Shadow-counter tendency.",
     "ingredients": [
       {
         "id": "moonpetal",
@@ -893,12 +914,12 @@
   {
     "id": "hearthbread",
     "name": "Hearthbread",
-    "band": "all",
+    "band": "greycloaks",
     "class": "food",
     "method": "bake",
     "tier": 1,
     "cookLevel": 1,
-    "description": "★ Existing. Dense sweet bread. Not exciting. Deeply reliable.",
+    "description": "\u2605 Existing. Dense sweet bread. Not exciting. Deeply reliable.",
     "ingredients": [
       {
         "id": "hearthgrain",
@@ -915,12 +936,12 @@
   {
     "id": "wanderers_supper",
     "name": "Wanderer's Supper",
-    "band": "all",
+    "band": "greycloaks",
     "class": "food",
     "method": "simmer",
     "tier": 1,
     "cookLevel": 1,
-    "description": "★ Existing. Light fare for people who eat on the move.",
+    "description": "\u2605 Existing. Light fare for people who eat on the move.",
     "ingredients": [
       {
         "id": "wanderer_fig",
@@ -937,12 +958,12 @@
   {
     "id": "contemplative_tea",
     "name": "Contemplative Tea",
-    "band": "all",
+    "band": "mithlost",
     "class": "draught",
     "method": "infuse",
     "tier": 1,
     "cookLevel": 1,
-    "description": "★ Existing. NOTE: Reclassify from stat-food to draught or convert to solid per food rework.",
+    "description": "\u2605 Existing. NOTE: Reclassify from stat-food to draught or convert to solid per food rework.",
     "ingredients": [
       {
         "id": "sunpetal_herb",
@@ -959,19 +980,19 @@
   {
     "id": "restorative_broth",
     "name": "Restorative Broth",
-    "band": "all",
+    "band": "greycloaks",
     "class": "draught",
     "method": "simmer",
     "tier": 3,
     "cookLevel": 8,
-    "description": "★ Existing. Long-simmered. Tissue repairs; ache recedes.",
+    "description": "\u2605 Existing. Long-simmered. Tissue repairs; ache recedes.",
     "ingredients": [
       {
         "id": "ironroot",
         "qty": 1
       },
       {
-        "id": "sunpetal_herb",
+        "id": "yarrow",
         "qty": 2
       }
     ],
@@ -980,23 +1001,23 @@
   {
     "id": "athelas_infusion",
     "name": "Athelas Infusion",
-    "band": "all",
+    "band": "greycloaks",
     "class": "draught",
     "method": "infuse",
     "tier": 5,
     "cookLevel": 12,
-    "description": "★ Existing. The last line between a grievous wound and what comes after.",
+    "description": "\u2605 Existing. The last line between a grievous wound and what comes after.",
     "ingredients": [
       {
         "id": "athelas",
         "qty": 2
       },
       {
-        "id": "moonpetal",
+        "id": "meadowsweet",
         "qty": 1
       },
       {
-        "id": "ironbark_resin",
+        "id": "wolf_moss",
         "qty": 1
       }
     ],

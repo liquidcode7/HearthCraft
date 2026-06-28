@@ -36,6 +36,7 @@ import com.liquidcode7.hearthcraft.data.db.GrowingSlot
 import com.liquidcode7.hearthcraft.data.model.HarvestItem
 import com.liquidcode7.hearthcraft.ui.viewmodel.ForageTargetDetail
 import com.liquidcode7.hearthcraft.ui.viewmodel.GatheringViewModel
+import com.liquidcode7.hearthcraft.ui.viewmodel.HarvestReadout
 import com.liquidcode7.hearthcraft.ui.viewmodel.SeedDetail
 import kotlinx.coroutines.delay
 
@@ -54,9 +55,9 @@ fun GatheringScreen(viewModel: GatheringViewModel = hiltViewModel()) {
     var pickingSlot by remember { mutableStateOf<String?>(null) }
     var pickingForageTarget by remember { mutableStateOf(false) }
 
-    if (lastHarvest.isNotEmpty()) {
+    if (lastHarvest != null) {
         HarvestResultDialog(
-            items = lastHarvest,
+            readout = lastHarvest!!,
             onDismiss = { viewModel.clearLastHarvest() }
         )
     }
@@ -145,23 +146,31 @@ fun GatheringScreen(viewModel: GatheringViewModel = hiltViewModel()) {
 
         // Target ingredient picker — only show when no session is active
         if (forageSession == null) {
-            val targetName = foragableIngredients.find { it.ingredientId == forageTargetId }?.name
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
-            ) {
+            if (foragableIngredients.isEmpty()) {
                 Text(
-                    if (targetName != null) "Target: $targetName" else "Target: none (random)",
+                    "Forage a few times to discover ingredients you can target.",
                     style = MaterialTheme.typography.bodySmall,
-                    color = if (targetName != null) MaterialTheme.colorScheme.primary
-                            else MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                Row {
-                    if (forageTargetId != null) {
-                        TextButton(onClick = { viewModel.setForageTarget(null) }) { Text("Clear") }
+            } else {
+                val targetName = foragableIngredients.find { it.ingredientId == forageTargetId }?.name
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                ) {
+                    Text(
+                        if (targetName != null) "Target: $targetName (+2 min)" else "Target: none (random)",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = if (targetName != null) MaterialTheme.colorScheme.primary
+                                else MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Row {
+                        if (forageTargetId != null) {
+                            TextButton(onClick = { viewModel.setForageTarget(null) }) { Text("Clear") }
+                        }
+                        TextButton(onClick = { pickingForageTarget = true }) { Text("Change") }
                     }
-                    TextButton(onClick = { pickingForageTarget = true }) { Text("Change") }
                 }
             }
             Spacer(modifier = Modifier.height(4.dp))
@@ -202,7 +211,7 @@ fun GatheringScreen(viewModel: GatheringViewModel = hiltViewModel()) {
                     onClick = { viewModel.startForage() },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text(if (targetName != null) "Forage for $targetName — 3 min" else "Start Foraging — 3 min")
+                    Text(if (targetName != null) "Forage for $targetName — 5 min" else "Start Foraging — 3 min")
                 }
             }
         }
@@ -261,35 +270,67 @@ private fun GrowingSlotCard(slot: GrowingSlot?, label: String, onPlant: () -> Un
 }
 
 @Composable
-private fun HarvestResultDialog(items: List<HarvestItem>, onDismiss: () -> Unit) {
+private fun HarvestResultDialog(readout: HarvestReadout, onDismiss: () -> Unit) {
+    val totalXp = readout.baseXp + readout.discoveryBonusXp
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("Harvest") },
         text = {
             Column {
-                items.forEach { item ->
+                readout.items.forEach { item ->
                     val rarityColor = when (item.rarity) {
                         "uncommon" -> MaterialTheme.colorScheme.tertiary
-                        "bonus" -> MaterialTheme.colorScheme.primary
-                        else -> MaterialTheme.colorScheme.onSurface
+                        "bonus"    -> MaterialTheme.colorScheme.primary
+                        else       -> MaterialTheme.colorScheme.onSurface
                     }
-                    Row(modifier = Modifier.padding(vertical = 2.dp)) {
+                    Row(
+                        modifier = Modifier.padding(vertical = 2.dp),
+                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                    ) {
                         Text(
                             item.name,
                             style = MaterialTheme.typography.bodyMedium,
                             modifier = Modifier.weight(1f)
                         )
+                        if (item.isNew) {
+                            Text(
+                                "NEW",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                        }
                         Text(
                             "×${item.quantity}",
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
                         Text(
                             item.rarity.replaceFirstChar { it.uppercase() },
                             style = MaterialTheme.typography.labelSmall,
                             color = rarityColor
                         )
+                    }
+                }
+                Spacer(modifier = Modifier.height(10.dp))
+                HorizontalDivider()
+                Spacer(modifier = Modifier.height(6.dp))
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text("Gathering XP", style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("+${readout.baseXp}", style = MaterialTheme.typography.labelSmall)
+                }
+                if (readout.discoveryBonusXp > 0) {
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Text("Discovery bonus", style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.primary)
+                        Text("+${readout.discoveryBonusXp}", style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.primary)
+                    }
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Text("Total", style = MaterialTheme.typography.labelSmall)
+                        Text("+$totalXp XP", style = MaterialTheme.typography.labelSmall)
                     }
                 }
             }

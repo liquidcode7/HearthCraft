@@ -73,6 +73,27 @@ class PlayerRepository @Inject constructor(
         }
     }
 
+    fun observeDiscoveredIngredientIds(): Flow<Set<String>> = dao.observe().map { state ->
+        state?.discoveredIngredientIds
+            ?.split(",")?.filter { it.isNotBlank() }?.toSet()
+            ?: emptySet()
+    }
+
+    suspend fun getDiscoveredIngredientIds(): Set<String> {
+        val state = dao.get() ?: return emptySet()
+        return state.discoveredIngredientIds.split(",").filter { it.isNotBlank() }.toSet()
+    }
+
+    suspend fun discoverIngredients(ids: Collection<String>) {
+        if (ids.isEmpty()) return
+        val state = dao.get() ?: return
+        val current = state.discoveredIngredientIds
+            .split(",").filter { it.isNotBlank() }.toMutableSet()
+        if (current.addAll(ids)) {
+            dao.upsert(state.copy(discoveredIngredientIds = current.joinToString(",")))
+        }
+    }
+
     suspend fun markHintsSeen() {
         val state = dao.get() ?: return
         if (!state.hasSeenFoodStructureHints) {
@@ -136,11 +157,12 @@ class PlayerRepository @Inject constructor(
         }
 
         // XP awarded per event — mirrors xp_lab.js CONFIG constants
-        const val XP_COOK_REPEAT     = 28   // base repeat-cook reward (before any DR)
-        const val XP_COOK_FIRST      = 35   // first time cooking a given recipe
-        const val XP_COOK_WIN        = 22   // provisioned a winning mission
-        const val XP_GATHER_SESSION  = 90   // one forage or farm session (≈ 30 harvest cycles × 3)
-        const val XP_GATHER_WIN      = 65   // your ingredient fed a winning mission
+        const val XP_COOK_REPEAT       = 28   // base repeat-cook reward (before any DR)
+        const val XP_COOK_FIRST        = 35   // first time cooking a given recipe
+        const val XP_COOK_WIN          = 22   // provisioned a winning mission
+        const val XP_GATHER_SESSION    = 90   // one forage or farm session (≈ 30 harvest cycles × 3)
+        const val XP_GATHER_WIN        = 65   // your ingredient fed a winning mission
+        const val XP_GATHER_DISCOVERY  = 20   // per newly discovered ingredient in a forage haul
 
         const val MAX_LEVEL = 50
 

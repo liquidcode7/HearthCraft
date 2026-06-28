@@ -45,6 +45,12 @@ data class ForageTargetDetail(
     val rarity: String
 )
 
+data class HarvestReadout(
+    val items: List<com.liquidcode7.hearthcraft.data.model.HarvestItem>,
+    val baseXp: Int,
+    val discoveryBonusXp: Int  // total bonus XP for all new discoveries this session
+)
+
 data class IngredientStock(
     val ingredientId: String,
     val name: String,

@@ -115,7 +115,7 @@ class GatheringWorker @AssistedInject constructor(
         // "Special" catches "Special / Craft-Branch" universals for all bands.
         // Empty set (unknown band) falls back to unfiltered — safe default.
         fun foragableRegions(bandId: String): Set<String> = when (bandId) {
-            "greycloaks" -> setOf("Bree", "North Downs", "Weather Hills", "Lone-Lands", "Special")
+            "greycloaks" -> setOf("Bree", "North Downs", "Weather Hills", "Lone-Lands", "Cardolan", "Wildwood", "Special")
             "mithlost"   -> setOf("Celondim", "Ered Luin", "Special")
             "undermarch" -> setOf("Thorin", "Misty Mountains", "Special")
             else         -> emptySet()

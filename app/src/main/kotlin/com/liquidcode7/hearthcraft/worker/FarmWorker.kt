@@ -22,6 +22,7 @@ import dagger.assisted.AssistedInject
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.util.concurrent.TimeUnit
+import kotlin.random.Random
 
 @HiltWorker
 class FarmWorker @AssistedInject constructor(
@@ -41,7 +42,11 @@ class FarmWorker @AssistedInject constructor(
             ?: return Result.failure()
         val qty = BASE_YIELD + (level - 1) / 3
 
-        val items = listOf(HarvestItem(ingredientId, ingredient.name, qty, ingredient.rarity))
+        val seedQty = 1 + Random.nextInt(2)
+        val items = listOf(
+            HarvestItem(ingredientId, ingredient.name, qty, ingredient.rarity),
+            HarvestItem("${ingredientId}_seed", "${ingredient.name} Seed", seedQty, "bonus")
+        )
         val json = Json.encodeToString(items)
 
         player.addGatheringXp(PlayerRepository.XP_GATHER_SESSION)

@@ -6,7 +6,6 @@ import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
 import com.liquidcode7.hearthcraft.data.db.GatheringSession
 import com.liquidcode7.hearthcraft.data.db.GrowingSlot
-import com.liquidcode7.hearthcraft.data.model.HarvestItem
 import com.liquidcode7.hearthcraft.data.repository.GameDataRepository
 import com.liquidcode7.hearthcraft.data.repository.GrowingRepository
 import com.liquidcode7.hearthcraft.data.repository.InventoryRepository
@@ -65,25 +64,28 @@ class GatheringViewModel @Inject constructor(
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    val foragableIngredients: StateFlow<List<ForageTargetDetail>> = player.observe()
-        .map { state ->
-            val bandId = state?.chosenBandId.orEmpty()
-            val regions = GatheringWorker.foragableRegions(bandId)
-            gameData.ingredients.filter { ingredient ->
-                ingredient.gatheringMode == GatheringWorker.MODE_FORAGE &&
-                (regions.isEmpty() || regions.any { ingredient.region.contains(it) })
-            }.map { ForageTargetDetail(it.id, it.name, it.rarity) }
-                .sortedBy { it.name }
-        }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+    // Only shows forageable ingredients the player has already discovered
+    val foragableIngredients: StateFlow<List<ForageTargetDetail>> = combine(
+        player.observe(),
+        player.observeDiscoveredIngredientIds()
+    ) { state, discoveredIds ->
+        val bandId = state?.chosenBandId.orEmpty()
+        val regions = GatheringWorker.foragableRegions(bandId)
+        gameData.ingredients.filter { ingredient ->
+            ingredient.gatheringMode == GatheringWorker.MODE_FORAGE &&
+            (regions.isEmpty() || regions.any { ingredient.region.contains(it) }) &&
+            discoveredIds.contains(ingredient.id)
+        }.map { ForageTargetDetail(it.id, it.name, it.rarity) }
+            .sortedBy { it.name }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     private val _forageTargetId = MutableStateFlow<String?>(null)
     val forageTargetId: StateFlow<String?> = _forageTargetId.asStateFlow()
 
     fun setForageTarget(ingredientId: String?) { _forageTargetId.value = ingredientId }
 
-    private val _lastHarvest = MutableStateFlow<List<HarvestItem>>(emptyList())
-    val lastHarvest: StateFlow<List<HarvestItem>> = _lastHarvest.asStateFlow()
+    private val _lastHarvest = MutableStateFlow<HarvestReadout?>(null)
+    val lastHarvest: StateFlow<HarvestReadout?> = _lastHarvest.asStateFlow()
 
     fun plantFarm(seedId: String) {
         viewModelScope.launch {
@@ -116,13 +118,15 @@ class GatheringViewModel @Inject constructor(
         viewModelScope.launch {
             if (sessions.activeGathering() != null) return@launch
             val state = player.get() ?: return@launch
-            val request = GatheringWorker.buildRequest(state.gatheringLevel, DURATION_FORAGE_MS, _forageTargetId.value)
+            val targetId = _forageTargetId.value
+            val duration = if (targetId != null) DURATION_FORAGE_TARGETED_MS else DURATION_FORAGE_MS
+            val request = GatheringWorker.buildRequest(state.gatheringLevel, duration, targetId)
             WorkManager.getInstance(context).enqueue(request)
             sessions.startGathering(
                 GatheringSession(
                     mode = GatheringWorker.MODE_FORAGE,
                     startedAtMs = System.currentTimeMillis(),
-                    durationMs = DURATION_FORAGE_MS,
+                    durationMs = duration,
                     workRequestId = request.id.toString()
                 )
             )
@@ -132,27 +136,45 @@ class GatheringViewModel @Inject constructor(
     fun collectForage() {
         viewModelScope.launch {
             val items = sessions.collectForage()
-            items.forEach { item ->
-                if (item.rarity == "bonus") {
-                    inventory.addSeed(item.ingredientId, item.quantity)
-                } else {
-                    inventory.addIngredient(item.ingredientId, item.quantity)
-                }
+            val discovered = player.getDiscoveredIngredientIds()
+            val newIds = items
+                .filter { it.rarity != "bonus" && !discovered.contains(it.ingredientId) }
+                .map { it.ingredientId }
+                .toSet()
+            if (newIds.isNotEmpty()) {
+                player.discoverIngredients(newIds)
+                player.addGatheringXp(PlayerRepository.XP_GATHER_DISCOVERY * newIds.size)
             }
-            _lastHarvest.value = items
+            val markedItems = items.map { it.copy(isNew = it.ingredientId in newIds) }
+            markedItems.forEach { item ->
+                if (item.rarity == "bonus") inventory.addSeed(item.ingredientId, item.quantity)
+                else inventory.addIngredient(item.ingredientId, item.quantity)
+            }
+            _lastHarvest.value = HarvestReadout(
+                items = markedItems,
+                baseXp = PlayerRepository.XP_GATHER_SESSION,
+                discoveryBonusXp = PlayerRepository.XP_GATHER_DISCOVERY * newIds.size
+            )
         }
     }
 
     fun collectGrowingSlot(slotId: String) {
         viewModelScope.launch {
             val items = growing.collectAndClearSlot(slotId)
-            items.forEach { item -> inventory.addIngredient(item.ingredientId, item.quantity) }
-            _lastHarvest.value = items
+            items.forEach { item ->
+                if (item.rarity == "bonus") inventory.addSeed(item.ingredientId, item.quantity)
+                else inventory.addIngredient(item.ingredientId, item.quantity)
+            }
+            _lastHarvest.value = HarvestReadout(
+                items = items,
+                baseXp = PlayerRepository.XP_GATHER_SESSION,
+                discoveryBonusXp = 0
+            )
         }
     }
 
     fun clearLastHarvest() {
-        _lastHarvest.value = emptyList()
+        _lastHarvest.value = null
     }
 
     private fun xpProgress(totalXp: Int): XpProgress {
@@ -170,5 +192,6 @@ class GatheringViewModel @Inject constructor(
         const val DURATION_FARM_MS = 8 * 60 * 1000L
         const val DURATION_GARDEN_MS = 4 * 60 * 1000L
         const val DURATION_FORAGE_MS = 3 * 60 * 1000L
+        const val DURATION_FORAGE_TARGETED_MS = 5 * 60 * 1000L
     }
 }

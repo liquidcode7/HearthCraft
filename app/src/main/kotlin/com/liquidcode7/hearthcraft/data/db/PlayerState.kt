@@ -17,5 +17,7 @@ data class PlayerState(
     @ColumnInfo(defaultValue = "")
     val discoveredRecipeIds: String = "",
     @ColumnInfo(defaultValue = "0")
-    val hasSeenFoodStructureHints: Boolean = false
+    val hasSeenFoodStructureHints: Boolean = false,
+    @ColumnInfo(defaultValue = "")
+    val discoveredIngredientIds: String = ""
 )
