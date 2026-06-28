@@ -14,6 +14,7 @@ import com.liquidcode7.hearthcraft.data.repository.SessionRepository
 import com.liquidcode7.hearthcraft.worker.FarmWorker
 import com.liquidcode7.hearthcraft.worker.GardenWorker
 import com.liquidcode7.hearthcraft.worker.GatheringWorker
+import com.liquidcode7.hearthcraft.worker.HiveWorker
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -63,6 +64,9 @@ class GatheringViewModel @Inject constructor(
     val gatheringXpProgress: StateFlow<XpProgress> = player.observe()
         .map { xpProgress(it?.gatheringXp ?: 0) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), XpProgress(1, 0, 100))
+
+    val hiveSlot: StateFlow<GrowingSlot?> = growing.observeSlot(HiveWorker.SLOT_ID)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
     val gardenSlots: StateFlow<List<GrowingSlot?>> = growing.observeGardenSlots()
         .map { planted -> (0..1).map { i -> planted.find { it.id == "garden_$i" } } }
@@ -125,6 +129,22 @@ class GatheringViewModel @Inject constructor(
             WorkManager.getInstance(context).enqueue(request)
             inventory.removeSeed(seedId, 1)
             growing.plantSlot(slotId, "garden", ingredientId, System.currentTimeMillis(), DURATION_GARDEN_MS, request.id.toString())
+        }
+    }
+
+    fun startHive() {
+        viewModelScope.launch {
+            if (growing.getSlot(HiveWorker.SLOT_ID) != null) return@launch
+            val request = HiveWorker.buildRequest(DURATION_HIVE_MS)
+            WorkManager.getInstance(context).enqueue(request)
+            growing.plantSlot(
+                id           = HiveWorker.SLOT_ID,
+                type         = "hive",
+                ingredientId = "forest_honey",
+                plantedAtMs  = System.currentTimeMillis(),
+                durationMs   = DURATION_HIVE_MS,
+                workRequestId = request.id.toString()
+            )
         }
     }
 
@@ -207,5 +227,6 @@ class GatheringViewModel @Inject constructor(
         const val DURATION_GARDEN_MS = 4 * 60 * 1000L
         const val DURATION_FORAGE_MS = 3 * 60 * 1000L
         const val DURATION_FORAGE_TARGETED_MS = 5 * 60 * 1000L
+        const val DURATION_HIVE_MS = 10 * 60 * 1000L
     }
 }

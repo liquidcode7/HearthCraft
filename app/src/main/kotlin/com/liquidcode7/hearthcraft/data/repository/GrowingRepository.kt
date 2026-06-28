@@ -13,6 +13,7 @@ class GrowingRepository @Inject constructor(private val dao: GrowingSlotDao) {
 
     fun observeFarmPlot(): Flow<GrowingSlot?> = dao.observe("farm_0")
     fun observeGardenSlots(): Flow<List<GrowingSlot>> = dao.observeByType("garden")
+    fun observeSlot(id: String): Flow<GrowingSlot?> = dao.observe(id)
 
     suspend fun plantSlot(
         id: String,

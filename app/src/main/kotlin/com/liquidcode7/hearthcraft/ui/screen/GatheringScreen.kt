@@ -38,12 +38,14 @@ import com.liquidcode7.hearthcraft.ui.viewmodel.ForageTargetDetail
 import com.liquidcode7.hearthcraft.ui.viewmodel.GatheringViewModel
 import com.liquidcode7.hearthcraft.ui.viewmodel.HarvestReadout
 import com.liquidcode7.hearthcraft.ui.viewmodel.SeedDetail
+import com.liquidcode7.hearthcraft.worker.HiveWorker
 import kotlinx.coroutines.delay
 
 @Composable
 fun GatheringScreen(viewModel: GatheringViewModel = hiltViewModel()) {
     val farmPlot by viewModel.farmPlot.collectAsState()
     val gardenSlots by viewModel.gardenSlots.collectAsState()
+    val hiveSlot by viewModel.hiveSlot.collectAsState()
     val forageSession by viewModel.forageSession.collectAsState()
     val seeds by viewModel.seeds.collectAsState()
     val lastHarvest by viewModel.lastHarvest.collectAsState()
@@ -131,6 +133,39 @@ fun GatheringScreen(viewModel: GatheringViewModel = hiltViewModel()) {
                 onCollect = { viewModel.collectGrowingSlot("garden_$index") }
             )
             Spacer(modifier = Modifier.height(6.dp))
+        }
+
+        Spacer(modifier = Modifier.height(20.dp))
+        HorizontalDivider()
+        Spacer(modifier = Modifier.height(20.dp))
+        SectionHeader("Hive")
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            "Tend your hive for a steady supply of honey.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        if (gatheringLevel < 8) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+            ) {
+                Column(modifier = Modifier.padding(12.dp)) {
+                    Text(
+                        "Locked — reach Gathering level 8",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        } else {
+            GrowingSlotCard(
+                slot      = hiveSlot,
+                label     = "Hive",
+                onPlant   = { if (hiveSlot?.pendingResultJson == null) viewModel.startHive() },
+                onCollect = { viewModel.collectGrowingSlot(HiveWorker.SLOT_ID) }
+            )
         }
 
         Spacer(modifier = Modifier.height(20.dp))
