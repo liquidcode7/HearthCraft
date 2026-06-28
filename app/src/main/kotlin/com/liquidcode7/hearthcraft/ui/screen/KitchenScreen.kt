@@ -52,6 +52,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.liquidcode7.hearthcraft.data.db.CookingSession
 import com.liquidcode7.hearthcraft.data.db.GrowingSlot
 import com.liquidcode7.hearthcraft.data.db.InventoryItem
 import com.liquidcode7.hearthcraft.data.model.Ingredient
@@ -69,7 +70,9 @@ fun KitchenScreen(
     onViewPantry: () -> Unit = {},
     viewModel: KitchenViewModel = hiltViewModel()
 ) {
-    val session by viewModel.session.collectAsState()
+    val session0 by viewModel.session0.collectAsState()
+    val session1 by viewModel.session1.collectAsState()
+    val bothBusy = session0 != null && session1 != null
     val selectedRecipe by viewModel.selectedRecipe.collectAsState()
     val inventoryItems by viewModel.inventoryItems.collectAsState()
     val tieredRecipes by viewModel.tieredRecipes.collectAsState()
@@ -80,7 +83,6 @@ fun KitchenScreen(
     val selectedProcessIngredient by viewModel.selectedProcessIngredient.collectAsState()
     val cookingXp by viewModel.cookingXpProgress.collectAsState()
     val cookingLevel = playerState?.cookingLevel ?: 1
-    val isCooking = session != null
 
     Column(modifier = Modifier.fillMaxSize()) {
 
@@ -124,15 +126,15 @@ fun KitchenScreen(
                         }
                         Spacer(modifier = Modifier.height(12.dp))
 
-                        if (isCooking) {
-                            val recipeName = viewModel.recipes.find { it.id == session!!.recipeId }?.name
-                                ?: session!!.recipeId
-                            CookingActiveCard(
-                                recipeName = recipeName,
-                                startedAtMs = session!!.startedAtMs,
-                                durationMs = session!!.durationMs
-                            )
-                        } else {
+                        // Two cooking slots — always visible
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            CookingSlotCard(slot = 0, session = session0, modifier = Modifier.weight(1f))
+                            CookingSlotCard(slot = 1, session = session1, modifier = Modifier.weight(1f))
+                        }
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        // Recipe selection — only shown when at least one slot is free
+                        if (!bothBusy) {
                             if (selectedRecipe != null) {
                                 RecipeDetailPanel(
                                     recipe = selectedRecipe!!,
@@ -141,8 +143,9 @@ fun KitchenScreen(
                                     viewModel = viewModel
                                 )
                                 Spacer(modifier = Modifier.height(10.dp))
+                                val freeSlot = if (session0 == null) 0 else 1
                                 Button(
-                                    onClick = { viewModel.startCooking() },
+                                    onClick = { viewModel.startCooking(freeSlot) },
                                     enabled = viewModel.canCook(selectedRecipe!!, inventoryItems),
                                     modifier = Modifier.fillMaxWidth()
                                 ) {
@@ -155,11 +158,9 @@ fun KitchenScreen(
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
-
                             Spacer(modifier = Modifier.height(12.dp))
                             Text("Select a Recipe", style = MaterialTheme.typography.titleSmall)
                             Spacer(modifier = Modifier.height(8.dp))
-
                             if (tieredRecipes.isEmpty()) {
                                 Text(
                                     "No recipes discovered yet. Head to the Discover tab to find them.",
@@ -586,6 +587,47 @@ private fun RecipeDetailPanel(
                     color = if (have >= ing.qty) MaterialTheme.colorScheme.onSurface
                             else MaterialTheme.colorScheme.error
                 )
+            }
+        }
+    }
+}
+
+@Composable
+private fun CookingSlotCard(
+    slot: Int,
+    session: CookingSession?,
+    modifier: Modifier = Modifier
+) {
+    val slotLabel = if (slot == 0) "Slot 1" else "Slot 2"
+    if (session != null) {
+        var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
+        LaunchedEffect(session.startedAtMs) {
+            while (true) { now = System.currentTimeMillis(); delay(1000L) }
+        }
+        val remaining = maxOf(0L, session.startedAtMs + session.durationMs - now)
+        val recipeName = session.recipeId
+        Card(
+            modifier = modifier,
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
+        ) {
+            Column(modifier = Modifier.padding(10.dp)) {
+                Text(slotLabel, style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(recipeName, style = MaterialTheme.typography.bodySmall, maxLines = 1)
+                Text(formatMs(remaining), style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.primary)
+            }
+        }
+    } else {
+        Card(
+            modifier = modifier,
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+        ) {
+            Column(modifier = Modifier.padding(10.dp)) {
+                Text(slotLabel, style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("Open", style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
     }
