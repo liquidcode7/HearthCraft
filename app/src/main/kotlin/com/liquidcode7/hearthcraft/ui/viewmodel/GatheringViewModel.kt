@@ -68,6 +68,12 @@ class GatheringViewModel @Inject constructor(
     val hiveSlot: StateFlow<GrowingSlot?> = growing.observeSlot(HiveWorker.SLOT_ID)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
+    init {
+        viewModelScope.launch {
+            if (growing.getSlot(HiveWorker.SLOT_ID) == null) startHive()
+        }
+    }
+
     val gardenSlots: StateFlow<List<GrowingSlot?>> = growing.observeGardenSlots()
         .map { planted -> (0..1).map { i -> planted.find { it.id == "garden_$i" } } }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), List(2) { null })
@@ -204,6 +210,7 @@ class GatheringViewModel @Inject constructor(
                 baseXp = PlayerRepository.XP_GATHER_SESSION,
                 discoveryBonusXp = 0
             )
+            if (slotId == HiveWorker.SLOT_ID) startHive()
         }
     }
 

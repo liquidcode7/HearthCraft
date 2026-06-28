@@ -29,6 +29,7 @@ import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -146,11 +147,9 @@ fun GatheringScreen(viewModel: GatheringViewModel = hiltViewModel()) {
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         Spacer(modifier = Modifier.height(8.dp))
-        GrowingSlotCard(
+        HiveCard(
             slot      = hiveSlot,
-            label     = "Hive",
-            onPlant   = { if (hiveSlot?.pendingResultJson == null) viewModel.startHive() },
-            onCollect = { viewModel.collectGrowingSlot(HiveWorker.SLOT_ID) }
+            onHarvest = { viewModel.collectGrowingSlot(HiveWorker.SLOT_ID) }
         )
 
         Spacer(modifier = Modifier.height(20.dp))
@@ -316,6 +315,54 @@ private fun GrowingSlotCard(slot: GrowingSlot?, label: String, onPlant: () -> Un
                         )
                     }
                     SlotTimer(startedAtMs = slot.plantedAtMs, durationMs = slot.durationMs)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun HiveCard(slot: GrowingSlot?, onHarvest: () -> Unit) {
+    Card(modifier = Modifier.fillMaxWidth()) {
+        when {
+            slot?.pendingResultJson != null -> {
+                Row(
+                    modifier = Modifier.padding(12.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("Hive", style = MaterialTheme.typography.bodyMedium)
+                        Text(
+                            "Honey is ready.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                    Button(onClick = onHarvest) { Text("Harvest") }
+                }
+            }
+            slot != null -> {
+                Column(modifier = Modifier.padding(12.dp)) {
+                    Text("Hive", style = MaterialTheme.typography.bodyMedium)
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            "Honey maturing — ",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        SlotTimer(startedAtMs = slot.plantedAtMs, durationMs = slot.durationMs)
+                    }
+                }
+            }
+            else -> {
+                Column(modifier = Modifier.padding(12.dp)) {
+                    Text("Hive", style = MaterialTheme.typography.bodyMedium)
+                    Text(
+                        "Starting…",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             }
         }
