@@ -199,6 +199,18 @@ fun GatheringScreen(viewModel: GatheringViewModel = hiltViewModel()) {
                     }
                 }
             }
+            forageSession != null && isForageTimerElapsed(forageSession!!) -> {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
+                ) {
+                    Column(modifier = Modifier.padding(12.dp)) {
+                        Text("Finishing up…", style = MaterialTheme.typography.titleSmall)
+                        Text("Just a moment.", style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
+            }
             forageSession != null -> {
                 ActiveTimerCard(
                     label = "Foraging in progress",
@@ -514,6 +526,9 @@ private fun ForageTargetDialog(
         }
     )
 }
+
+private fun isForageTimerElapsed(session: com.liquidcode7.hearthcraft.data.db.GatheringSession): Boolean =
+    System.currentTimeMillis() >= session.startedAtMs + session.durationMs
 
 private fun formatMs(ms: Long): String {
     val total = ms / 1000
