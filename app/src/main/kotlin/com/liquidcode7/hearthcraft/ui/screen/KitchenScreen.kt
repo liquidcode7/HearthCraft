@@ -93,12 +93,12 @@ fun KitchenScreen(
                 TabRow(selectedTabIndex = if (experimentMode) 1 else 0) {
                     Tab(
                         selected = !experimentMode,
-                        onClick = { if (experimentMode) viewModel.toggleExperimentMode() },
+                        onClick = { if (experimentMode) viewModel.selectTab(0) },
                         text = { Text("Recipes") }
                     )
                     Tab(
                         selected = experimentMode,
-                        onClick = { if (!experimentMode) viewModel.toggleExperimentMode() },
+                        onClick = { if (!experimentMode) viewModel.selectTab(1) },
                         text = { Text("Discover") }
                     )
                 }

@@ -5,13 +5,17 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
 import com.liquidcode7.hearthcraft.data.db.CookingSession
+import com.liquidcode7.hearthcraft.data.db.GrowingSlot
 import com.liquidcode7.hearthcraft.data.db.InventoryItem
 import com.liquidcode7.hearthcraft.data.db.PlayerState
+import com.liquidcode7.hearthcraft.data.model.Ingredient
 import com.liquidcode7.hearthcraft.data.model.Recipe
 import com.liquidcode7.hearthcraft.data.repository.GameDataRepository
+import com.liquidcode7.hearthcraft.data.repository.GrowingRepository
 import com.liquidcode7.hearthcraft.data.repository.InventoryRepository
 import com.liquidcode7.hearthcraft.data.repository.PlayerRepository
 import com.liquidcode7.hearthcraft.data.repository.SessionRepository
+import com.liquidcode7.hearthcraft.worker.ProcessWorker
 import com.liquidcode7.hearthcraft.engine.ExperimentAttempt
 import com.liquidcode7.hearthcraft.engine.ExperimentResult
 import com.liquidcode7.hearthcraft.engine.RecipeDiscoveryEngine
@@ -36,7 +40,8 @@ class KitchenViewModel @Inject constructor(
     private val gameData: GameDataRepository,
     private val inventory: InventoryRepository,
     private val sessions: SessionRepository,
-    private val player: PlayerRepository
+    private val player: PlayerRepository,
+    private val growing: GrowingRepository
 ) : ViewModel() {
 
     val recipes: List<Recipe> = gameData.recipes
@@ -113,10 +118,17 @@ class KitchenViewModel @Inject constructor(
     private val _selectedRecipe = MutableStateFlow<Recipe?>(null)
     val selectedRecipe: StateFlow<Recipe?> = _selectedRecipe.asStateFlow()
 
-    // ── Experiment state ──────────────────────────────────────────────────────
+    // ── Tab selection ─────────────────────────────────────────────────────────
 
-    private val _experimentMode = MutableStateFlow(false)
-    val experimentMode: StateFlow<Boolean> = _experimentMode.asStateFlow()
+    private val _selectedTab = MutableStateFlow(0)   // 0=Recipes 1=Discover 2=Process
+    val selectedTab: StateFlow<Int> = _selectedTab.asStateFlow()
+
+    // Backward-compat derived state for existing ExperimentPanel usage
+    val experimentMode: StateFlow<Boolean> = _selectedTab
+        .map { it == 1 }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+
+    // ── Experiment state ──────────────────────────────────────────────────────
 
     private val _experimentIngredients = MutableStateFlow<Map<String, Int>>(emptyMap())
     val experimentIngredients: StateFlow<Map<String, Int>> = _experimentIngredients.asStateFlow()
@@ -137,6 +149,22 @@ class KitchenViewModel @Inject constructor(
     val experimentHintSeen: StateFlow<Boolean> = player.observe()
         .map { it?.hasSeenExperimentHint ?: false }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+
+    // ── Process station state ─────────────────────────────────────────────────
+
+    val processSlot: StateFlow<GrowingSlot?> = growing.observeSlot(ProcessWorker.SLOT_ID)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
+
+    val processIngredients: List<Ingredient> = gameData.ingredients
+        .filter { it.gatherType == "process" && it.processInputs != null }
+        .sortedBy { it.name }
+
+    private val _selectedProcessIngredient = MutableStateFlow<Ingredient?>(null)
+    val selectedProcessIngredient: StateFlow<Ingredient?> = _selectedProcessIngredient.asStateFlow()
+
+    fun selectProcessIngredient(ingredient: Ingredient?) {
+        _selectedProcessIngredient.value = ingredient
+    }
 
     // ── Init: seed starter recipes and starter pantry for a brand-new player ──
 
@@ -196,12 +224,14 @@ class KitchenViewModel @Inject constructor(
         }
     }
 
-    // ── Experiment functions ──────────────────────────────────────────────────
+    // ── Tab and experiment functions ──────────────────────────────────────────
 
-    fun toggleExperimentMode() {
-        _experimentMode.value = !_experimentMode.value
-        _lastExperimentResult.value = null
-        _liveResult.value = null
+    fun selectTab(index: Int) {
+        _selectedTab.value = index
+        if (index != 1) {
+            _lastExperimentResult.value = null
+            _liveResult.value = null
+        }
     }
 
     fun addExperimentIngredient(id: String) {
@@ -259,6 +289,43 @@ class KitchenViewModel @Inject constructor(
 
     fun markHintsSeen() {
         viewModelScope.launch { player.markHintsSeen() }
+    }
+
+    // ── Process station functions ─────────────────────────────────────────────
+
+    fun canProcess(ingredient: Ingredient, items: List<InventoryItem>): Boolean {
+        val inputs = ingredient.processInputs ?: return false
+        val qtyMap = items.associate { it.ingredientId to it.quantity }
+        return inputs.all { (qtyMap[it.id] ?: 0) >= it.qty }
+    }
+
+    fun startProcess(ingredient: Ingredient) {
+        val inputs = ingredient.processInputs ?: return
+        val processType = ingredient.processType ?: return
+        viewModelScope.launch {
+            if (growing.getSlot(ProcessWorker.SLOT_ID) != null) return@launch
+            if (!canProcess(ingredient, inventoryItems.value)) return@launch
+            inputs.forEach { input -> inventory.removeIngredient(input.id, input.qty) }
+            val durationMs = ProcessWorker.durationForType(processType)
+            val request = ProcessWorker.buildRequest(ProcessWorker.SLOT_ID, ingredient.id, durationMs)
+            WorkManager.getInstance(context).enqueue(request)
+            growing.plantSlot(
+                id           = ProcessWorker.SLOT_ID,
+                type         = "process",
+                ingredientId = ingredient.id,
+                plantedAtMs  = System.currentTimeMillis(),
+                durationMs   = durationMs,
+                workRequestId = request.id.toString()
+            )
+            _selectedProcessIngredient.value = null
+        }
+    }
+
+    fun collectProcess() {
+        viewModelScope.launch {
+            val items = growing.collectAndClearSlot(ProcessWorker.SLOT_ID)
+            items.forEach { inventory.addIngredient(it.ingredientId, it.quantity) }
+        }
     }
 
     private fun xpProgress(totalXp: Int): XpProgress {
