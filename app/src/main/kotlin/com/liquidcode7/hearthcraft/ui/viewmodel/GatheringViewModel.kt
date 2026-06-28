@@ -39,6 +39,20 @@ class GatheringViewModel @Inject constructor(
     val forageSession: StateFlow<GatheringSession?> = sessions.observeGathering()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
+    // True once: after the first forage completes, until the player taps "Got it"
+    val showPostForageNudge: StateFlow<Boolean> = combine(
+        player.observe(),
+        sessions.observeGathering()
+    ) { state, session ->
+        val neverNudged = state?.hasSeenPostForageNudge == false
+        val forageComplete = session?.pendingResultJson != null
+        neverNudged && forageComplete
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+
+    fun dismissPostForageNudge() {
+        viewModelScope.launch { player.markPostForageNudgeSeen() }
+    }
+
     val farmPlot: StateFlow<GrowingSlot?> = growing.observeFarmPlot()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 

@@ -51,6 +51,7 @@ fun GatheringScreen(viewModel: GatheringViewModel = hiltViewModel()) {
     val gatheringXp by viewModel.gatheringXpProgress.collectAsState()
     val foragableIngredients by viewModel.foragableIngredients.collectAsState()
     val forageTargetId by viewModel.forageTargetId.collectAsState()
+    val showPostForageNudge by viewModel.showPostForageNudge.collectAsState()
 
     var pickingSlot by remember { mutableStateOf<String?>(null) }
     var pickingForageTarget by remember { mutableStateOf(false) }
@@ -212,6 +213,26 @@ fun GatheringScreen(viewModel: GatheringViewModel = hiltViewModel()) {
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(if (targetName != null) "Forage for $targetName — 5 min" else "Start Foraging — 3 min")
+                }
+            }
+        }
+
+        if (showPostForageNudge) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
+            ) {
+                Row(
+                    modifier = Modifier.padding(12.dp),
+                    verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                ) {
+                    Text(
+                        "You've gathered ingredients — head to the Kitchen and see what you can make.",
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.weight(1f)
+                    )
+                    TextButton(onClick = { viewModel.dismissPostForageNudge() }) { Text("Got it") }
                 }
             }
         }
