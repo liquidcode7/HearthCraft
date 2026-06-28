@@ -36,7 +36,7 @@
     "description": "An insult to the palate and most likely to the ethics of food sourcing. Thick, dark, and faintly sweet in a way that suggests the sweetness has something to apologize for. No one who can cook will make this willingly.",
     "ingredients": [
       {
-        "id": "rendered_fat",
+        "id": "hens_egg",
         "qty": 2
       },
       {
@@ -118,7 +118,7 @@
         "qty": 1
       },
       {
-        "id": "field_honey",
+        "id": "forest_honey",
         "qty": 1
       }
     ],
@@ -144,7 +144,7 @@
         "qty": 1
       },
       {
-        "id": "field_honey",
+        "id": "forest_honey",
         "qty": 1
       }
     ],
