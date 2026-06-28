@@ -108,6 +108,13 @@ fun KitchenScreen(
             when (selectedTab) {
                 0 -> {
                     // Recipes tab
+                    // Always-visible navigation buttons
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        OutlinedButton(onClick = onViewRecipes, modifier = Modifier.weight(1f)) { Text("Recipe Book") }
+                        OutlinedButton(onClick = onViewPantry, modifier = Modifier.weight(1f)) { Text("Pantry") }
+                    }
+                    Spacer(modifier = Modifier.height(12.dp))
+
                     if (isCooking) {
                         val recipeName = viewModel.recipes.find { it.id == session!!.recipeId }?.name
                             ?: session!!.recipeId
@@ -117,16 +124,6 @@ fun KitchenScreen(
                             durationMs = session!!.durationMs
                         )
                     } else {
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            OutlinedButton(onClick = onViewRecipes, modifier = Modifier.weight(1f)) {
-                                Text("Recipe Book")
-                            }
-                            OutlinedButton(onClick = onViewPantry, modifier = Modifier.weight(1f)) {
-                                Text("Pantry")
-                            }
-                        }
-                        Spacer(modifier = Modifier.height(12.dp))
-
                         if (selectedRecipe != null) {
                             RecipeDetailPanel(
                                 recipe = selectedRecipe!!,
