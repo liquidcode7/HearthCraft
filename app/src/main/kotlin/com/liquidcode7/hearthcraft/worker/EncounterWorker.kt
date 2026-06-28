@@ -50,12 +50,6 @@ class EncounterWorker @AssistedInject constructor(
         } else {
             // Fallback: re-run engine fresh (handles old WorkManager tasks in flight during update)
             val draughtPotency = inputData.getFloat(KEY_DRAUGHT_POTENCY, 0f)
-            val hps = listOf(
-                inputData.getFloat(KEY_HPS_WARDEN, 0f),
-                inputData.getFloat(KEY_HPS_HUNTER, 0f),
-                inputData.getFloat(KEY_HPS_KEEPER, 0f),
-                inputData.getFloat(KEY_HPS_CAPTAIN, 0f)
-            )
             val stage = encounter.stages.firstOrNull() ?: return Result.failure()
             val members = band.memberInputsForBand(bandId, draughtPotency, emptyMap(), cookLevel = 1)
             if (members.isEmpty()) return Result.failure()
