@@ -35,6 +35,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.liquidcode7.hearthcraft.data.db.CombatReport
+import com.liquidcode7.hearthcraft.ui.viewmodel.BandMemberWithState
 import com.liquidcode7.hearthcraft.ui.viewmodel.BandViewModel
 import com.liquidcode7.hearthcraft.ui.viewmodel.EncounterDetail
 import com.liquidcode7.hearthcraft.ui.viewmodel.InventoryViewModel
@@ -55,6 +56,7 @@ fun MissionsScreen(
     val activeMission by bandViewModel.activeMission.collectAsState()
     val combatReport by bandViewModel.combatReport.collectAsState()
     val anyFoodAssigned by bandViewModel.anyFoodAssigned.collectAsState()
+    val members by bandViewModel.members.collectAsState()
 
     // Only show encounters that are actually unlocked — hidden is better than locked/greyed.
     val unlockedEncounters = encounters.filter { it.isUnlocked }
@@ -133,6 +135,14 @@ fun MissionsScreen(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
             }
+        }
+
+        // ── Band ready panel ───────────────────────────────────────────────
+        if (unlockedEncounters.isNotEmpty() && members.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(16.dp))
+            Text("Band Status", style = MaterialTheme.typography.titleSmall)
+            Spacer(modifier = Modifier.height(6.dp))
+            BandReadyPanel(members = members, memberFood = memberFood)
         }
 
         // ── Draught selector (only if armored encounter selected) ──────────
@@ -254,6 +264,54 @@ private fun EncounterCard(
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
+        }
+    }
+}
+
+@Composable
+private fun BandReadyPanel(
+    members: List<BandMemberWithState>,
+    memberFood: Map<String, PreparedFoodDetail?>
+) {
+    val aliveMembersCount = members.count { it.isAlive }
+    val fedCount = members.count { it.isAlive && memberFood[it.memberId] != null }
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = if (fedCount == aliveMembersCount && aliveMembersCount > 0)
+                MaterialTheme.colorScheme.primaryContainer
+            else MaterialTheme.colorScheme.errorContainer
+        )
+    ) {
+        Column(modifier = Modifier.padding(12.dp)) {
+            Text(
+                "Band: $fedCount/$aliveMembersCount provisioned",
+                style = MaterialTheme.typography.titleSmall
+            )
+            Spacer(modifier = Modifier.height(6.dp))
+            members.filter { it.isAlive }.forEach { member ->
+                val food = memberFood[member.memberId]
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(member.name, style = MaterialTheme.typography.bodySmall)
+                        Text(
+                            member.role.replaceFirstChar { it.uppercase() },
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Text(
+                        food?.name ?: "Unfed",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = if (food != null) MaterialTheme.colorScheme.primary
+                                else MaterialTheme.colorScheme.error
+                    )
+                }
+            }
         }
     }
 }
