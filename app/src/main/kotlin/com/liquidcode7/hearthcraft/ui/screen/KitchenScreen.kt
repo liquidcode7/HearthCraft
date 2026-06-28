@@ -2,6 +2,7 @@ package com.liquidcode7.hearthcraft.ui.screen
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -13,6 +14,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -59,6 +62,7 @@ import com.liquidcode7.hearthcraft.ui.viewmodel.KitchenViewModel
 import com.liquidcode7.hearthcraft.ui.viewmodel.RecipeTier
 import kotlinx.coroutines.delay
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun KitchenScreen(
     onViewRecipes: () -> Unit,
@@ -96,139 +100,145 @@ fun KitchenScreen(
 
         HorizontalDivider()
 
-        // ── Scrollable content ─────────────────────────────────────────────
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp)
-        ) {
-            Spacer(modifier = Modifier.height(12.dp))
+        // ── Paged content (each page scrolls independently) ────────────────
+        val pagerState = rememberPagerState(pageCount = { 3 })
+        LaunchedEffect(selectedTab) { if (pagerState.currentPage != selectedTab) pagerState.animateScrollToPage(selectedTab) }
+        LaunchedEffect(pagerState.currentPage) { if (pagerState.currentPage != selectedTab) viewModel.selectTab(pagerState.currentPage) }
 
-            when (selectedTab) {
-                0 -> {
-                    // Recipes tab
-                    // Always-visible navigation buttons
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        OutlinedButton(onClick = onViewRecipes, modifier = Modifier.weight(1f)) { Text("Recipe Book") }
-                        OutlinedButton(onClick = onViewPantry, modifier = Modifier.weight(1f)) { Text("Pantry") }
-                    }
-                    Spacer(modifier = Modifier.height(12.dp))
+        HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize()) { page ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 16.dp)
+            ) {
+                Spacer(modifier = Modifier.height(12.dp))
 
-                    if (isCooking) {
-                        val recipeName = viewModel.recipes.find { it.id == session!!.recipeId }?.name
-                            ?: session!!.recipeId
-                        CookingActiveCard(
-                            recipeName = recipeName,
-                            startedAtMs = session!!.startedAtMs,
-                            durationMs = session!!.durationMs
-                        )
-                    } else {
-                        if (selectedRecipe != null) {
-                            RecipeDetailPanel(
-                                recipe = selectedRecipe!!,
-                                inventoryItems = inventoryItems,
-                                cookingLevel = cookingLevel,
-                                viewModel = viewModel
-                            )
-                            Spacer(modifier = Modifier.height(10.dp))
-                            Button(
-                                onClick = { viewModel.startCooking() },
-                                enabled = viewModel.canCook(selectedRecipe!!, inventoryItems),
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Text("Start Cooking")
-                            }
-                        } else {
-                            Text(
-                                "Select a recipe below to see details.",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                when (page) {
+                    0 -> {
+                        // Recipes tab
+                        // Always-visible navigation buttons
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            OutlinedButton(onClick = onViewRecipes, modifier = Modifier.weight(1f)) { Text("Recipe Book") }
+                            OutlinedButton(onClick = onViewPantry, modifier = Modifier.weight(1f)) { Text("Pantry") }
                         }
-
                         Spacer(modifier = Modifier.height(12.dp))
-                        Text("Select a Recipe", style = MaterialTheme.typography.titleSmall)
-                        Spacer(modifier = Modifier.height(8.dp))
 
-                        if (tieredRecipes.isEmpty()) {
-                            Text(
-                                "No recipes discovered yet. Head to the Discover tab to find them.",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                        if (isCooking) {
+                            val recipeName = viewModel.recipes.find { it.id == session!!.recipeId }?.name
+                                ?: session!!.recipeId
+                            CookingActiveCard(
+                                recipeName = recipeName,
+                                startedAtMs = session!!.startedAtMs,
+                                durationMs = session!!.durationMs
                             )
                         } else {
-                            tieredRecipes.forEach { tier ->
-                                val isUnlocked = cookingLevel >= tier.minLevel
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    val rangeLabel = if (tier.minLevel <= 1) "Lv 1" else "Lv ${tier.minLevel}+"
-                                    Text(
-                                        "${tier.label}  ·  $rangeLabel",
-                                        style = MaterialTheme.typography.labelMedium,
-                                        color = if (isUnlocked) MaterialTheme.colorScheme.onSurface
-                                                else MaterialTheme.colorScheme.onSurfaceVariant,
-                                        modifier = Modifier.weight(1f)
-                                    )
-                                    if (!isUnlocked) {
+                            if (selectedRecipe != null) {
+                                RecipeDetailPanel(
+                                    recipe = selectedRecipe!!,
+                                    inventoryItems = inventoryItems,
+                                    cookingLevel = cookingLevel,
+                                    viewModel = viewModel
+                                )
+                                Spacer(modifier = Modifier.height(10.dp))
+                                Button(
+                                    onClick = { viewModel.startCooking() },
+                                    enabled = viewModel.canCook(selectedRecipe!!, inventoryItems),
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Text("Start Cooking")
+                                }
+                            } else {
+                                Text(
+                                    "Select a recipe below to see details.",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Text("Select a Recipe", style = MaterialTheme.typography.titleSmall)
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            if (tieredRecipes.isEmpty()) {
+                                Text(
+                                    "No recipes discovered yet. Head to the Discover tab to find them.",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            } else {
+                                tieredRecipes.forEach { tier ->
+                                    val isUnlocked = cookingLevel >= tier.minLevel
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        val rangeLabel = if (tier.minLevel <= 1) "Lv 1" else "Lv ${tier.minLevel}+"
                                         Text(
-                                            "Reach Lv ${tier.minLevel}",
-                                            style = MaterialTheme.typography.labelSmall,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                            "${tier.label}  ·  $rangeLabel",
+                                            style = MaterialTheme.typography.labelMedium,
+                                            color = if (isUnlocked) MaterialTheme.colorScheme.onSurface
+                                                    else MaterialTheme.colorScheme.onSurfaceVariant,
+                                            modifier = Modifier.weight(1f)
                                         )
+                                        if (!isUnlocked) {
+                                            Text(
+                                                "Reach Lv ${tier.minLevel}",
+                                                style = MaterialTheme.typography.labelSmall,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                            )
+                                        }
+                                    }
+                                    Spacer(modifier = Modifier.height(6.dp))
+                                    tier.recipes.forEach { recipe ->
+                                        val canCook = isUnlocked && viewModel.canCook(recipe, inventoryItems)
+                                        RecipeRow(
+                                            recipe = recipe,
+                                            canCook = canCook,
+                                            isSelected = recipe.id == selectedRecipe?.id,
+                                            isLocked = !isUnlocked,
+                                            onClick = { if (isUnlocked) viewModel.selectRecipe(recipe) }
+                                        )
+                                        Spacer(modifier = Modifier.height(4.dp))
                                     }
                                 }
-                                Spacer(modifier = Modifier.height(6.dp))
-                                tier.recipes.forEach { recipe ->
-                                    val canCook = isUnlocked && viewModel.canCook(recipe, inventoryItems)
-                                    RecipeRow(
-                                        recipe = recipe,
-                                        canCook = canCook,
-                                        isSelected = recipe.id == selectedRecipe?.id,
-                                        isLocked = !isUnlocked,
-                                        onClick = { if (isUnlocked) viewModel.selectRecipe(recipe) }
-                                    )
-                                    Spacer(modifier = Modifier.height(4.dp))
-                                }
                             }
                         }
                     }
+                    1 -> {
+                        // Discover tab
+                        val experimentIngredients by viewModel.experimentIngredients.collectAsState()
+                        val experimentMethod by viewModel.experimentMethod.collectAsState()
+                        val lastResult by viewModel.lastExperimentResult.collectAsState()
+                        val hintsSeen by viewModel.hintsSeen.collectAsState()
+                        val liveResult by viewModel.liveResult.collectAsState()
+                        val canCommit by viewModel.canCommit.collectAsState()
+                        val experimentHintSeen by viewModel.experimentHintSeen.collectAsState()
+                        ExperimentPanel(
+                            viewModel = viewModel,
+                            inventoryItems = inventoryItems,
+                            experimentIngredients = experimentIngredients,
+                            experimentMethod = experimentMethod,
+                            lastResult = lastResult,
+                            cookingLevel = cookingLevel,
+                            hintsSeen = hintsSeen,
+                            liveResult = liveResult,
+                            canCommit = canCommit,
+                            experimentHintSeen = experimentHintSeen
+                        )
+                    }
+                    2 -> {
+                        // Process tab
+                        ProcessPanel(
+                            viewModel = viewModel,
+                            processSlot = processSlot,
+                            processIngredients = processIngredients,
+                            selectedProcessIngredient = selectedProcessIngredient,
+                            inventoryItems = inventoryItems
+                        )
+                    }
                 }
-                1 -> {
-                    // Discover tab
-                    val experimentIngredients by viewModel.experimentIngredients.collectAsState()
-                    val experimentMethod by viewModel.experimentMethod.collectAsState()
-                    val lastResult by viewModel.lastExperimentResult.collectAsState()
-                    val hintsSeen by viewModel.hintsSeen.collectAsState()
-                    val liveResult by viewModel.liveResult.collectAsState()
-                    val canCommit by viewModel.canCommit.collectAsState()
-                    val experimentHintSeen by viewModel.experimentHintSeen.collectAsState()
-                    ExperimentPanel(
-                        viewModel = viewModel,
-                        inventoryItems = inventoryItems,
-                        experimentIngredients = experimentIngredients,
-                        experimentMethod = experimentMethod,
-                        lastResult = lastResult,
-                        cookingLevel = cookingLevel,
-                        hintsSeen = hintsSeen,
-                        liveResult = liveResult,
-                        canCommit = canCommit,
-                        experimentHintSeen = experimentHintSeen
-                    )
-                }
-                2 -> {
-                    // Process tab
-                    ProcessPanel(
-                        viewModel = viewModel,
-                        processSlot = processSlot,
-                        processIngredients = processIngredients,
-                        selectedProcessIngredient = selectedProcessIngredient,
-                        inventoryItems = inventoryItems
-                    )
-                }
-            }
 
-            Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(16.dp))
+            }
         }
     }
 }
