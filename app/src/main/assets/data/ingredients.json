@@ -289,21 +289,21 @@
     "name": "Forest Honey",
     "region": "Bree-land & The Shire",
     "rarity": "c",
-    "source": "hive",
-    "gatheringMode": "hive",
+    "source": "forage",
+    "gatheringMode": "forage",
     "primaryStat": "vit",
     "secondaryStat": "wil",
-    "notes": "Dark honey from tended hives. Complex."
+    "notes": "Dark honey from wild hives in the forest. Also produced by tended hives."
   },
   {
     "id": "field_honey",
     "name": "Field Honey",
     "region": "Bree-land & The Shire",
     "rarity": "c",
-    "source": "farm",
-    "gatheringMode": "farm",
+    "source": "forage",
+    "gatheringMode": "forage",
     "primaryStat": "vit",
-    "notes": "Lighter, simpler honey. Kitchen staple."
+    "notes": "Lighter honey from clover-fed wild bees. Can be foraged or farmed from the right hive."
   },
   {
     "id": "butter",
