@@ -1574,5 +1574,77 @@
     "primaryStat": "vit",
     "secondaryStat": "wil",
     "notes": "Tall pink herb of riverbanks and clearings. Mild. Used in light preparations."
+  },
+  {
+    "id": "bree_well_water",
+    "name": "Bree Well-water",
+    "region": "Bree-land & The Shire",
+    "rarity": "c",
+    "source": "draw",
+    "gatheringMode": "draw",
+    "gatherType": "draw",
+    "notes": "Common well-water from Bree. Clean enough. Base for soups and draughts."
+  },
+  {
+    "id": "brandywine_water",
+    "name": "Brandywine Water",
+    "region": "Bree-land & The Shire",
+    "rarity": "c",
+    "source": "draw",
+    "gatheringMode": "draw",
+    "gatherType": "draw",
+    "notes": "River water drawn fresh. Mild, faintly earthy."
+  },
+  {
+    "id": "chetwood_spring",
+    "name": "Chetwood Spring Water",
+    "region": "Bree-land & The Shire",
+    "rarity": "u",
+    "source": "draw",
+    "gatheringMode": "draw",
+    "gatherType": "draw",
+    "notes": "Cold spring in the Chetwood. Cleaner than the well."
+  },
+  {
+    "id": "lhun_brine",
+    "name": "Lhûn Brine",
+    "region": "Celondim / Ered Luin",
+    "rarity": "c",
+    "source": "draw",
+    "gatheringMode": "draw",
+    "gatherType": "draw",
+    "notes": "Seawater from the Gulf of Lhûn. Salt and mineral. Used in curing and preserving."
+  },
+  {
+    "id": "deep_cistern_water",
+    "name": "Deep Cistern Water",
+    "region": "Thorin's Halls",
+    "rarity": "c",
+    "source": "draw",
+    "gatheringMode": "draw",
+    "gatherType": "draw",
+    "notes": "Stone-filtered water from the deep hall cisterns. Minerally. Reliable."
+  },
+  {
+    "id": "pass_snowmelt",
+    "name": "Pass Snowmelt",
+    "region": "Thorin's Halls",
+    "rarity": "u",
+    "source": "draw",
+    "gatheringMode": "draw",
+    "gatherType": "draw",
+    "hazardTendency": "warmth",
+    "notes": "Snowmelt from the Blue Mountain passes. Cold-counter draughts."
+  },
+  {
+    "id": "milk",
+    "name": "Milk",
+    "region": "All",
+    "rarity": "c",
+    "source": "husbandry",
+    "gatheringMode": "husbandry",
+    "gatherType": "husbandry",
+    "primaryStat": "vit",
+    "notes": "From the dairy. Whole and fresh. Base for butter, cheese, and cream preparations."
   }
 ]
