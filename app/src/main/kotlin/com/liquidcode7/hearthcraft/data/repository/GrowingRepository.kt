@@ -51,4 +51,14 @@ class GrowingRepository @Inject constructor(private val dao: GrowingSlotDao) {
         dao.delete(id)
         return items
     }
+
+    // For producer slots (hive/coop/dairy): clears the pending harvest but keeps
+    // the slot row alive so the self-rescheduling worker always has a valid slot to write into.
+    suspend fun collectAndClearPendingOnly(id: String): List<HarvestItem> {
+        val slot = dao.get(id) ?: return emptyList()
+        val json = slot.pendingResultJson ?: return emptyList()
+        val items = Json.decodeFromString<List<HarvestItem>>(json)
+        dao.clearPendingResult(id)
+        return items
+    }
 }

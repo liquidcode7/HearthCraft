@@ -44,21 +44,17 @@ class HiveWorker @AssistedInject constructor(
         val slot = growing.getSlot(SLOT_ID)
         val existingJson = slot?.pendingResultJson
         val existingQty = if (existingJson != null) {
-            Json.decodeFromString<List<HarvestItem>>(existingJson).firstOrNull()?.quantity ?: 0
+            Json.decodeFromString<List<HarvestItem>>(existingJson).sumOf { it.quantity }
         } else 0
 
         val atCap = existingQty >= MAX_STOCKPILE_CYCLES * (BASE_YIELD + 1)
         if (!atCap) {
-            player.addGatheringXp(PlayerRepository.XP_GATHER_SESSION)
             growing.addToPendingResult(SLOT_ID, items)
             notify("Hive ready — tap to collect", "$honeyName is ready to harvest.")
         }
 
-        // Self-reschedule so accumulation continues even without collection
-        if (!atCap) {
-            val next = buildRequest(DURATION_HIVE_MS)
-            WorkManager.getInstance(applicationContext).enqueue(next)
-        }
+        // Always reschedule — even at cap, so player collecting clears the way for the next cycle
+        WorkManager.getInstance(applicationContext).enqueue(buildRequest(DURATION_HIVE_MS))
         return Result.success()
     }
 

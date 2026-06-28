@@ -268,9 +268,15 @@ class GatheringViewModel @Inject constructor(
         }
     }
 
+    private val producerSlotIds = setOf(HiveWorker.SLOT_ID, CoopWorker.SLOT_ID, DairyWorker.SLOT_ID)
+
     fun collectGrowingSlot(slotId: String) {
         viewModelScope.launch {
-            val items = growing.collectAndClearSlot(slotId)
+            val items = if (slotId in producerSlotIds) {
+                growing.collectAndClearPendingOnly(slotId)
+            } else {
+                growing.collectAndClearSlot(slotId)
+            }
             items.forEach { item ->
                 if (item.rarity == "bonus") inventory.addSeed(item.ingredientId, item.quantity)
                 else inventory.addIngredient(item.ingredientId, item.quantity)
@@ -280,11 +286,6 @@ class GatheringViewModel @Inject constructor(
                 baseXp = PlayerRepository.XP_GATHER_SESSION,
                 discoveryBonusXp = 0
             )
-            when (slotId) {
-                HiveWorker.SLOT_ID  -> startHive()
-                CoopWorker.SLOT_ID  -> startCoop()
-                DairyWorker.SLOT_ID -> startDairy()
-            }
         }
     }
 

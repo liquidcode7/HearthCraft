@@ -14,7 +14,6 @@ import com.liquidcode7.hearthcraft.HearthCraftApp
 import com.liquidcode7.hearthcraft.MainActivity
 import com.liquidcode7.hearthcraft.data.model.HarvestItem
 import com.liquidcode7.hearthcraft.data.repository.GrowingRepository
-import com.liquidcode7.hearthcraft.data.repository.PlayerRepository
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import androidx.work.WorkManager
@@ -27,8 +26,7 @@ import kotlin.random.Random
 class DairyWorker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted params: WorkerParameters,
-    private val growing: GrowingRepository,
-    private val player: PlayerRepository
+    private val growing: GrowingRepository
 ) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
@@ -40,17 +38,15 @@ class DairyWorker @AssistedInject constructor(
         val slot = growing.getSlot(SLOT_ID)
         val existingJson = slot?.pendingResultJson
         val existingQty = if (existingJson != null) {
-            Json.decodeFromString<List<HarvestItem>>(existingJson).firstOrNull()?.quantity ?: 0
+            Json.decodeFromString<List<HarvestItem>>(existingJson).sumOf { it.quantity }
         } else 0
         val atCap = existingQty >= MAX_STOCKPILE_CYCLES * (BASE_YIELD + 1)
 
         if (!atCap) {
-            player.addGatheringXp(PlayerRepository.XP_GATHER_SESSION)
             growing.addToPendingResult(SLOT_ID, items)
             notify("Dairy ready — tap to collect", "Milk is ready.")
-            val next = buildRequest(DURATION_DAIRY_MS)
-            WorkManager.getInstance(applicationContext).enqueue(next)
         }
+        WorkManager.getInstance(applicationContext).enqueue(buildRequest(DURATION_DAIRY_MS))
         return Result.success()
     }
 
