@@ -11,11 +11,11 @@ import com.liquidcode7.hearthcraft.data.repository.GrowingRepository
 import com.liquidcode7.hearthcraft.data.repository.InventoryRepository
 import com.liquidcode7.hearthcraft.data.repository.PlayerRepository
 import com.liquidcode7.hearthcraft.data.repository.SessionRepository
+import com.liquidcode7.hearthcraft.worker.CoopWorker
+import com.liquidcode7.hearthcraft.worker.DairyWorker
 import com.liquidcode7.hearthcraft.worker.FarmWorker
 import com.liquidcode7.hearthcraft.worker.GardenWorker
 import com.liquidcode7.hearthcraft.worker.GatheringWorker
-import com.liquidcode7.hearthcraft.worker.CoopWorker
-import com.liquidcode7.hearthcraft.worker.DairyWorker
 import com.liquidcode7.hearthcraft.worker.HiveWorker
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext

@@ -715,7 +715,7 @@ private fun ProcessItemRow(
     viewModel: KitchenViewModel,
     onClick: () -> Unit
 ) {
-    val qtyMap = inventoryItems.associate { it.ingredientId to it.quantity }
+    val qtyMap = remember(inventoryItems) { inventoryItems.associate { it.ingredientId to it.quantity } }
     Card(
         onClick = onClick,
         border = if (isSelected) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null,

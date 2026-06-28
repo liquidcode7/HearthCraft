@@ -123,11 +123,6 @@ class KitchenViewModel @Inject constructor(
     private val _selectedTab = MutableStateFlow(0)   // 0=Recipes 1=Discover 2=Process
     val selectedTab: StateFlow<Int> = _selectedTab.asStateFlow()
 
-    // Backward-compat derived state for existing ExperimentPanel usage
-    val experimentMode: StateFlow<Boolean> = _selectedTab
-        .map { it == 1 }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
-
     // ── Experiment state ──────────────────────────────────────────────────────
 
     private val _experimentIngredients = MutableStateFlow<Map<String, Int>>(emptyMap())

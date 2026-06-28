@@ -1684,7 +1684,7 @@
     "id": "deer_haunch",
     "name": "Deer Haunch",
     "region": "Bree Wildlands / Lone-Lands",
-    "rarity": "uc",
+    "rarity": "u",
     "source": "forage",
     "gatheringMode": "forage",
     "gatherType": "hunt_fish",
