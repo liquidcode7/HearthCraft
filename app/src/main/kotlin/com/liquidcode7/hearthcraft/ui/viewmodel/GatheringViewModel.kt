@@ -12,7 +12,6 @@ import com.liquidcode7.hearthcraft.data.repository.GrowingRepository
 import com.liquidcode7.hearthcraft.data.repository.InventoryRepository
 import com.liquidcode7.hearthcraft.data.repository.PlayerRepository
 import com.liquidcode7.hearthcraft.data.repository.SessionRepository
-import com.liquidcode7.hearthcraft.ui.viewmodel.XpProgress
 import com.liquidcode7.hearthcraft.worker.FarmWorker
 import com.liquidcode7.hearthcraft.worker.GardenWorker
 import com.liquidcode7.hearthcraft.worker.GatheringWorker
@@ -66,6 +65,23 @@ class GatheringViewModel @Inject constructor(
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
+    val foragableIngredients: StateFlow<List<ForageTargetDetail>> = player.observe()
+        .map { state ->
+            val bandId = state?.chosenBandId.orEmpty()
+            val regions = GatheringWorker.foragableRegions(bandId)
+            gameData.ingredients.filter { ingredient ->
+                ingredient.gatheringMode == GatheringWorker.MODE_FORAGE &&
+                (regions.isEmpty() || regions.any { ingredient.region.contains(it) })
+            }.map { ForageTargetDetail(it.id, it.name, it.rarity) }
+                .sortedBy { it.name }
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    private val _forageTargetId = MutableStateFlow<String?>(null)
+    val forageTargetId: StateFlow<String?> = _forageTargetId.asStateFlow()
+
+    fun setForageTarget(ingredientId: String?) { _forageTargetId.value = ingredientId }
+
     private val _lastHarvest = MutableStateFlow<List<HarvestItem>>(emptyList())
     val lastHarvest: StateFlow<List<HarvestItem>> = _lastHarvest.asStateFlow()
 
@@ -100,7 +116,7 @@ class GatheringViewModel @Inject constructor(
         viewModelScope.launch {
             if (sessions.activeGathering() != null) return@launch
             val state = player.get() ?: return@launch
-            val request = GatheringWorker.buildRequest(state.gatheringLevel, DURATION_FORAGE_MS)
+            val request = GatheringWorker.buildRequest(state.gatheringLevel, DURATION_FORAGE_MS, _forageTargetId.value)
             WorkManager.getInstance(context).enqueue(request)
             sessions.startGathering(
                 GatheringSession(

@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.liquidcode7.hearthcraft.data.db.GrowingSlot
 import com.liquidcode7.hearthcraft.data.model.HarvestItem
+import com.liquidcode7.hearthcraft.ui.viewmodel.ForageTargetDetail
 import com.liquidcode7.hearthcraft.ui.viewmodel.GatheringViewModel
 import com.liquidcode7.hearthcraft.ui.viewmodel.SeedDetail
 import kotlinx.coroutines.delay
@@ -47,13 +48,25 @@ fun GatheringScreen(viewModel: GatheringViewModel = hiltViewModel()) {
     val lastHarvest by viewModel.lastHarvest.collectAsState()
     val gatheringLevel by viewModel.gatheringLevel.collectAsState()
     val gatheringXp by viewModel.gatheringXpProgress.collectAsState()
+    val foragableIngredients by viewModel.foragableIngredients.collectAsState()
+    val forageTargetId by viewModel.forageTargetId.collectAsState()
 
     var pickingSlot by remember { mutableStateOf<String?>(null) }
+    var pickingForageTarget by remember { mutableStateOf(false) }
 
     if (lastHarvest.isNotEmpty()) {
         HarvestResultDialog(
             items = lastHarvest,
             onDismiss = { viewModel.clearLastHarvest() }
+        )
+    }
+
+    if (pickingForageTarget) {
+        ForageTargetDialog(
+            ingredients = foragableIngredients,
+            currentTargetId = forageTargetId,
+            onSelect = { id -> viewModel.setForageTarget(id); pickingForageTarget = false },
+            onDismiss = { pickingForageTarget = false }
         )
     }
 
@@ -130,6 +143,30 @@ fun GatheringScreen(viewModel: GatheringViewModel = hiltViewModel()) {
         )
         Spacer(modifier = Modifier.height(8.dp))
 
+        // Target ingredient picker — only show when no session is active
+        if (forageSession == null) {
+            val targetName = foragableIngredients.find { it.ingredientId == forageTargetId }?.name
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+            ) {
+                Text(
+                    if (targetName != null) "Target: $targetName" else "Target: none (random)",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = if (targetName != null) MaterialTheme.colorScheme.primary
+                            else MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Row {
+                    if (forageTargetId != null) {
+                        TextButton(onClick = { viewModel.setForageTarget(null) }) { Text("Clear") }
+                    }
+                    TextButton(onClick = { pickingForageTarget = true }) { Text("Change") }
+                }
+            }
+            Spacer(modifier = Modifier.height(4.dp))
+        }
+
         when {
             forageSession?.pendingResultJson != null -> {
                 Card(
@@ -160,11 +197,12 @@ fun GatheringScreen(viewModel: GatheringViewModel = hiltViewModel()) {
                 )
             }
             else -> {
+                val targetName = foragableIngredients.find { it.ingredientId == forageTargetId }?.name
                 Button(
                     onClick = { viewModel.startForage() },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Start Foraging — 3 min")
+                    Text(if (targetName != null) "Forage for $targetName — 3 min" else "Start Foraging — 3 min")
                 }
             }
         }
@@ -349,6 +387,70 @@ private fun XpBar(label: String, level: Int, earned: Int, needed: Int) {
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
+}
+
+@Composable
+private fun ForageTargetDialog(
+    ingredients: List<ForageTargetDetail>,
+    currentTargetId: String?,
+    onSelect: (String?) -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Target ingredient") },
+        text = {
+            Column {
+                Text(
+                    "Targeting guarantees this ingredient appears in your forage haul.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                TextButton(
+                    onClick = { onSelect(null) },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        Text(
+                            "None (random)",
+                            modifier = Modifier.weight(1f),
+                            color = if (currentTargetId == null) MaterialTheme.colorScheme.primary
+                                    else MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                }
+                ingredients.forEach { ingredient ->
+                    TextButton(
+                        onClick = { onSelect(ingredient.ingredientId) },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(modifier = Modifier.fillMaxWidth()) {
+                            Text(
+                                ingredient.name,
+                                modifier = Modifier.weight(1f),
+                                color = if (ingredient.ingredientId == currentTargetId)
+                                    MaterialTheme.colorScheme.primary
+                                else MaterialTheme.colorScheme.onSurface
+                            )
+                            Text(
+                                ingredient.rarity.replaceFirstChar { it.uppercase() },
+                                style = MaterialTheme.typography.labelSmall,
+                                color = when (ingredient.rarity) {
+                                    "uncommon" -> MaterialTheme.colorScheme.tertiary
+                                    else -> MaterialTheme.colorScheme.onSurfaceVariant
+                                }
+                            )
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {},
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("Cancel") }
+        }
+    )
 }
 
 private fun formatMs(ms: Long): String {

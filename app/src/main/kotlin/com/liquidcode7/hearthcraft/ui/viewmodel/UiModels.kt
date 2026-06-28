@@ -39,6 +39,12 @@ data class SeedDetail(
     val quantity: Int
 )
 
+data class ForageTargetDetail(
+    val ingredientId: String,
+    val name: String,
+    val rarity: String
+)
+
 data class IngredientStock(
     val ingredientId: String,
     val name: String,

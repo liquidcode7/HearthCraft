@@ -38,6 +38,7 @@ class GatheringWorker @AssistedInject constructor(
         val bandId = player.get()?.chosenBandId.orEmpty()
         val regions = foragableRegions(bandId)
 
+        val targetId = inputData.getString(KEY_TARGET_ID)
         val pool = gameData.ingredients.filter { ingredient ->
             ingredient.gatheringMode == MODE_FORAGE &&
             (regions.isEmpty() || regions.any { ingredient.region.contains(it) })
@@ -45,14 +46,17 @@ class GatheringWorker @AssistedInject constructor(
         val count = 2 + (level - 1) / 5
         val qty = 2 + (level - 1) / 10
 
-        val harvestItems = pool.shuffled().take(count).map { ingredient ->
-            HarvestItem(
-                ingredientId = ingredient.id,
-                name = ingredient.name,
-                quantity = qty,
-                rarity = ingredient.rarity
-            )
-        }.toMutableList()
+        val targetIngredient = if (targetId != null) pool.find { it.id == targetId } else null
+        val harvestItems = if (targetIngredient != null) {
+            val rest = pool.filter { it.id != targetId }.shuffled().take((count - 1).coerceAtLeast(0))
+            (listOf(targetIngredient) + rest).map { ingredient ->
+                HarvestItem(ingredientId = ingredient.id, name = ingredient.name, quantity = qty, rarity = ingredient.rarity)
+            }.toMutableList()
+        } else {
+            pool.shuffled().take(count).map { ingredient ->
+                HarvestItem(ingredientId = ingredient.id, name = ingredient.name, quantity = qty, rarity = ingredient.rarity)
+            }.toMutableList()
+        }
 
         if (Random.nextFloat() < SEED_DROP_CHANCE) {
             val plantable = gameData.ingredients.filter { ingredient ->
@@ -101,6 +105,7 @@ class GatheringWorker @AssistedInject constructor(
 
     companion object {
         const val KEY_LEVEL = "gatheringLevel"
+        const val KEY_TARGET_ID = "targetId"
         const val MODE_FORAGE = "forage"
         const val MODE_FARM = "farm"
         const val NOTIFICATION_ID = 1
@@ -116,10 +121,15 @@ class GatheringWorker @AssistedInject constructor(
             else         -> emptySet()
         }
 
-        fun buildRequest(level: Int, durationMs: Long): OneTimeWorkRequest =
-            OneTimeWorkRequestBuilder<GatheringWorker>()
-                .setInputData(workDataOf(KEY_LEVEL to level))
+        fun buildRequest(level: Int, durationMs: Long, targetId: String? = null): OneTimeWorkRequest {
+            val data = if (targetId != null)
+                workDataOf(KEY_LEVEL to level, KEY_TARGET_ID to targetId)
+            else
+                workDataOf(KEY_LEVEL to level)
+            return OneTimeWorkRequestBuilder<GatheringWorker>()
+                .setInputData(data)
                 .setInitialDelay(durationMs, TimeUnit.MILLISECONDS)
                 .build()
+        }
     }
 }

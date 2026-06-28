@@ -7,11 +7,11 @@
 
 ## Current Status — June 28, 2026
 
-**Phase:** Combat now pre-computes outcomes at dispatch time; missions end early on band death.
-**V1 progress:** All six tabs functional. Post-fight readout wired. XP bars fixed. Role abilities visible.
-**What's working:** Missions end at the correct time (pre-computed via EncounterEngine at dispatch). Post-fight CombatReportCard shows Tolkienesque narrative, fight duration, rescues/shields used, dismiss button. XP bars at top of Gathering and Kitchen tabs. XP display no longer goes negative. Role ability description shown in member detail dialog. Greycloaks starter corrected to ploughmans_plate. Warmth/potency recipe level gates fixed.
-**What's not wired yet:** Forage targeting (no way to prioritize specific discovered ingredients yet). Market screen. Live animated combat screen.
-**Next session:** Forage targeting — allow the player to pin a discovered ingredient as a forage priority so it shows up more reliably.
+**Phase:** Core loop solid — gather targeting, early mission termination, post-fight readout all working.
+**V1 progress:** All six tabs functional. Full loop playable end to end.
+**What's working:** Forage targeting — player can pin any ingredient from their band's region; guaranteed to appear in the next haul. Missions end at actual fight end time (not always 25 min). Post-fight CombatReportCard. XP bars on Gathering and Kitchen tabs. Role ability descriptions in member detail.
+**What's not wired yet:** Market screen. Live animated combat screen (deferred).
+**Next session:** Market screen — buy ingredients and seeds with gold earned from missions.
 **Open questions:** None blocking.
 
 ---
@@ -1534,7 +1534,26 @@ Full implementation of the recipe discovery system: recipes are now hidden until
 
 ---
 
-## Session 40 — June 28, 2026
+## Session 41 — June 28, 2026
+**Forage targeting**
+
+**What was built:**
+- `UiModels.kt`: Added `ForageTargetDetail(ingredientId, name, rarity)` data class
+- `GatheringWorker.kt`: Added `KEY_TARGET_ID` constant; `buildRequest()` now accepts optional `targetId: String?`; `doWork()` guarantees the target ingredient fills the first slot if it's in the band's regional pool (rest of slots remain random)
+- `GatheringViewModel.kt`: Added `foragableIngredients: StateFlow<List<ForageTargetDetail>>` (all forageable ingredients for the player's band, sorted by name); `forageTargetId: StateFlow<String?>` and `setForageTarget()`; `startForage()` passes target to Worker
+- `GatheringScreen.kt`: Added target row under "Forage" header showing current target or "none (random)"; Change/Clear buttons; `ForageTargetDialog` composable lists all band-region ingredients with rarity labels; Start button label updates to "Forage for [Name] — 3 min" when target is set
+
+**Decisions made:**
+- Target list shows all forageable ingredients in the band's region, not just previously found ones — simpler, equally functional
+- Target is in-memory only (ViewModel StateFlow, not DB) — resets on app restart, which is fine since it's a per-session decision
+- Targeting guarantees the ingredient appears but doesn't eliminate other drops — still get remaining slots as random haul
+
+**Anything that diverged from docs/design.md:**
+- None
+
+**Coming up:**
+- Next session: Market screen — buy ingredients and seeds with gold
+- Near term: Deeper onboarding for each band
 **Early mission termination + post-fight readout + XP bars + role abilities + recipe gates**
 
 **What was built:**
