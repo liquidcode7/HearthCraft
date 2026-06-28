@@ -14,6 +14,8 @@ import com.liquidcode7.hearthcraft.data.repository.SessionRepository
 import com.liquidcode7.hearthcraft.worker.FarmWorker
 import com.liquidcode7.hearthcraft.worker.GardenWorker
 import com.liquidcode7.hearthcraft.worker.GatheringWorker
+import com.liquidcode7.hearthcraft.worker.CoopWorker
+import com.liquidcode7.hearthcraft.worker.DairyWorker
 import com.liquidcode7.hearthcraft.worker.HiveWorker
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -68,9 +70,17 @@ class GatheringViewModel @Inject constructor(
     val hiveSlot: StateFlow<GrowingSlot?> = growing.observeSlot(HiveWorker.SLOT_ID)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
+    val coopSlot: StateFlow<GrowingSlot?> = growing.observeSlot(CoopWorker.SLOT_ID)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
+
+    val dairySlot: StateFlow<GrowingSlot?> = growing.observeSlot(DairyWorker.SLOT_ID)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
+
     init {
         viewModelScope.launch {
             if (growing.getSlot(HiveWorker.SLOT_ID) == null) startHive()
+            if (growing.getSlot(CoopWorker.SLOT_ID) == null) startCoop()
+            if (growing.getSlot(DairyWorker.SLOT_ID) == null) startDairy()
         }
     }
 
@@ -156,6 +166,38 @@ class GatheringViewModel @Inject constructor(
         }
     }
 
+    fun startCoop() {
+        viewModelScope.launch {
+            if (growing.getSlot(CoopWorker.SLOT_ID) != null) return@launch
+            val request = CoopWorker.buildRequest(DURATION_COOP_MS)
+            WorkManager.getInstance(context).enqueue(request)
+            growing.plantSlot(
+                id            = CoopWorker.SLOT_ID,
+                type          = "coop",
+                ingredientId  = "hens_egg",
+                plantedAtMs   = System.currentTimeMillis(),
+                durationMs    = DURATION_COOP_MS,
+                workRequestId = request.id.toString()
+            )
+        }
+    }
+
+    fun startDairy() {
+        viewModelScope.launch {
+            if (growing.getSlot(DairyWorker.SLOT_ID) != null) return@launch
+            val request = DairyWorker.buildRequest(DURATION_DAIRY_MS)
+            WorkManager.getInstance(context).enqueue(request)
+            growing.plantSlot(
+                id            = DairyWorker.SLOT_ID,
+                type          = "dairy",
+                ingredientId  = "milk",
+                plantedAtMs   = System.currentTimeMillis(),
+                durationMs    = DURATION_DAIRY_MS,
+                workRequestId = request.id.toString()
+            )
+        }
+    }
+
     fun startForage() {
         viewModelScope.launch {
             if (sessions.activeGathering() != null) return@launch
@@ -212,7 +254,11 @@ class GatheringViewModel @Inject constructor(
                 baseXp = PlayerRepository.XP_GATHER_SESSION,
                 discoveryBonusXp = 0
             )
-            if (slotId == HiveWorker.SLOT_ID) startHive()
+            when (slotId) {
+                HiveWorker.SLOT_ID  -> startHive()
+                CoopWorker.SLOT_ID  -> startCoop()
+                DairyWorker.SLOT_ID -> startDairy()
+            }
         }
     }
 
@@ -236,6 +282,8 @@ class GatheringViewModel @Inject constructor(
         const val DURATION_GARDEN_MS = 4 * 60 * 1000L
         const val DURATION_FORAGE_MS = 3 * 60 * 1000L
         const val DURATION_FORAGE_TARGETED_MS = 5 * 60 * 1000L
-        const val DURATION_HIVE_MS = 10 * 60 * 1000L
+        const val DURATION_HIVE_MS  = 10 * 60 * 1000L
+        const val DURATION_COOP_MS  = 15 * 60 * 1000L
+        const val DURATION_DAIRY_MS = 20 * 60 * 1000L
     }
 }

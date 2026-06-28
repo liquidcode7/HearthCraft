@@ -39,6 +39,8 @@ import com.liquidcode7.hearthcraft.ui.viewmodel.ForageTargetDetail
 import com.liquidcode7.hearthcraft.ui.viewmodel.GatheringViewModel
 import com.liquidcode7.hearthcraft.ui.viewmodel.HarvestReadout
 import com.liquidcode7.hearthcraft.ui.viewmodel.SeedDetail
+import com.liquidcode7.hearthcraft.worker.CoopWorker
+import com.liquidcode7.hearthcraft.worker.DairyWorker
 import com.liquidcode7.hearthcraft.worker.HiveWorker
 import kotlinx.coroutines.delay
 
@@ -47,6 +49,8 @@ fun GatheringScreen(viewModel: GatheringViewModel = hiltViewModel()) {
     val farmPlot by viewModel.farmPlot.collectAsState()
     val gardenSlots by viewModel.gardenSlots.collectAsState()
     val hiveSlot by viewModel.hiveSlot.collectAsState()
+    val coopSlot by viewModel.coopSlot.collectAsState()
+    val dairySlot by viewModel.dairySlot.collectAsState()
     val forageSession by viewModel.forageSession.collectAsState()
     val seeds by viewModel.seeds.collectAsState()
     val lastHarvest by viewModel.lastHarvest.collectAsState()
@@ -150,6 +154,38 @@ fun GatheringScreen(viewModel: GatheringViewModel = hiltViewModel()) {
         HiveCard(
             slot      = hiveSlot,
             onHarvest = { viewModel.collectGrowingSlot(HiveWorker.SLOT_ID) }
+        )
+
+        Spacer(modifier = Modifier.height(20.dp))
+        HorizontalDivider()
+        Spacer(modifier = Modifier.height(20.dp))
+        SectionHeader("Coop")
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            "Your hens lay steadily. Collect eggs every 15 minutes.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        CoopCard(
+            slot      = coopSlot,
+            onCollect = { viewModel.collectGrowingSlot(CoopWorker.SLOT_ID) }
+        )
+
+        Spacer(modifier = Modifier.height(20.dp))
+        HorizontalDivider()
+        Spacer(modifier = Modifier.height(20.dp))
+        SectionHeader("Dairy")
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            "Keep your cow milked. Ready every 20 minutes.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        DairyCard(
+            slot      = dairySlot,
+            onCollect = { viewModel.collectGrowingSlot(DairyWorker.SLOT_ID) }
         )
 
         Spacer(modifier = Modifier.height(20.dp))
@@ -592,6 +628,84 @@ private fun ForageTargetDialog(
             TextButton(onClick = onDismiss) { Text("Cancel") }
         }
     )
+}
+
+@Composable
+private fun CoopCard(slot: GrowingSlot?, onCollect: () -> Unit) {
+    Card(modifier = Modifier.fillMaxWidth()) {
+        when {
+            slot?.pendingResultJson != null -> {
+                Row(
+                    modifier = Modifier.padding(12.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("Coop", style = MaterialTheme.typography.bodyMedium)
+                        Text("Eggs are ready.", style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.primary)
+                    }
+                    Button(onClick = onCollect) { Text("Collect") }
+                }
+            }
+            slot != null -> {
+                Column(modifier = Modifier.padding(12.dp)) {
+                    Text("Coop", style = MaterialTheme.typography.bodyMedium)
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text("Hens laying — ", style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        SlotTimer(startedAtMs = slot.plantedAtMs, durationMs = slot.durationMs)
+                    }
+                }
+            }
+            else -> {
+                Column(modifier = Modifier.padding(12.dp)) {
+                    Text("Coop", style = MaterialTheme.typography.bodyMedium)
+                    Text("Starting…", style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun DairyCard(slot: GrowingSlot?, onCollect: () -> Unit) {
+    Card(modifier = Modifier.fillMaxWidth()) {
+        when {
+            slot?.pendingResultJson != null -> {
+                Row(
+                    modifier = Modifier.padding(12.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("Dairy", style = MaterialTheme.typography.bodyMedium)
+                        Text("Milk is ready.", style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.primary)
+                    }
+                    Button(onClick = onCollect) { Text("Collect") }
+                }
+            }
+            slot != null -> {
+                Column(modifier = Modifier.padding(12.dp)) {
+                    Text("Dairy", style = MaterialTheme.typography.bodyMedium)
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text("Milking — ", style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        SlotTimer(startedAtMs = slot.plantedAtMs, durationMs = slot.durationMs)
+                    }
+                }
+            }
+            else -> {
+                Column(modifier = Modifier.padding(12.dp)) {
+                    Text("Dairy", style = MaterialTheme.typography.bodyMedium)
+                    Text("Starting…", style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+        }
+    }
 }
 
 private fun isForageTimerElapsed(session: com.liquidcode7.hearthcraft.data.db.GatheringSession): Boolean =
