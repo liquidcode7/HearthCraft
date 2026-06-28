@@ -1,7 +1,6 @@
 # HearthCraft — Wishlist
 
-> Deferred ideas. Add freely. Never act on during V1.
-> When V1 ships, this becomes the starting point for V2 planning.
+> Ideas and deferred features. Add freely.
 
 ---
 
@@ -10,7 +9,7 @@
 - **Achievements** — discrete milestone rewards (XP, resources, money) for meaningful first-time and
   cumulative accomplishments. Examples: "First Pristine Harvest," "Fed the band three wins in a row,"
   "Mastered your first recipe." Fits the design identity: reinforces the same spike XP moments the
-  pacing system already rewards. Build as a V1.5 layer once the core loop is tested — the XP and
+  pacing system already rewards. Build once the core loop is tested — the XP and
   resource reward infrastructure will already exist.
 
 - **Member inspection screen** — tap a member to open a full detail panel: large
@@ -29,7 +28,7 @@
 
 - **Band management as a second pillar** — the game currently has deep
   player-side systems (gathering, cooking, provisioning) but a thin band
-  side (pick food, send, wait). V2 should give the band side equal weight:
+  side (pick food, send, wait). Band management needs equal weight:
   mission-specific member selection (choose who goes, not just what they
   eat), recruiting to replace losses, member training and growth arcs,
   equipment that complements provisioning, and inter-member dynamics.
@@ -74,8 +73,7 @@
   players who have mastered the craft.
 
 - **Cooking skill trees** — specialization paths (Baking, Pastry, Knife
-  Work, etc.) that gate recipe categories. Evaluate after V1 — does the
-  base loop create demand for this?
+  Work, etc.) that gate recipe categories. Evaluate once the base loop is solid — does it create demand for this?
 
 - **Band member storylines** — named members with personal arcs that
   unfold over time. Missions tied to specific members. Relationship depth
@@ -112,7 +110,7 @@
   and "second breakfast." The player character, who also never fights,
   is basically a Hobbit. There is something to this.
 
-## Recipe Discovery and Alchemy (V2)
+## Recipe Discovery and Alchemy
 
 - **Ingredient combination interface** — how many slots does the experimentation
   screen have? What does a failed experiment feel like vs. a discovery moment?
@@ -160,11 +158,11 @@ a fixed offset.
 
 **Locked encounter baselines (post-stat-bonuses, role-matched food, no Shadow):**
 - Neekerbreekers FL1=47%, FL2=79%, FL3=99%, FL4=~100%
-- Wolves in the Chetwood: not yet re-validated post-stat-bonuses (do this before V2 combat)
+- Wolves in the Chetwood: not yet re-validated post-stat-bonuses (validate before combat system ships)
 
 ---
 
-## Combat System (Simulator / V2+)
+## Combat System (Simulator)
 
 - **The 5th role (melee DPS)** — slot reserved in the sim and Mechanics Reference.
   Needs full design before the Campaign combat system is built. Key questions:
@@ -202,7 +200,7 @@ a fixed offset.
 - **Forgejo migration** — move repo from GitHub to self-hosted Forgejo
   when convenient. Trivial git remote swap, no rush.
 
-- **F-Droid submission** — submit to F-Droid once V1 is stable.
+- **F-Droid submission** — submit to F-Droid once stable.
 
 - **Multiplayer ingredient trading** — if the game ever goes online,
   players of different bands trade region-exclusive ingredients.
@@ -210,24 +208,24 @@ a fixed offset.
 
 ---
 
-## Combat Role Subtype Design (V2+)
+## Combat Role Subtype Design
 
 **Melee vs. ranged DPS by faction.** Different bands will have the Hunter role
 filled by either a melee striker or a ranged archer, and this distinction will
-need mechanical locking before V2 combat is built. Questions to resolve:
+need mechanical locking before combat is built. Questions to resolve:
 - Does melee DPS scale differently than ranged? (e.g., melee = higher Might coefficient; ranged = Agility-dominant as now)
 - Are there enemy types that resist ranged or melee differently?
 - Does the Hunter flavor slider (`hunterA` vs `hunterM`) become a melee/ranged flag instead of just a stat weight?
 - How does this interact with armor penetration? (ranged = Agi pen; melee = Mig pen?)
 
-Decision must be locked before the first V2 battleground roster is designed.
-Each band's DPS member identity (melee vs. ranged) should be canonical in `docs/characters.md`.
+Decision must be locked before the first battleground roster is designed.
+Each band's DPS member identity (melee vs. ranged) should be canonical in `design/characters.md`.
 
 ---
 
 ---
 
-## Racial Affinities (design stalled — revisit before V2 campaign)
+## Racial Affinities (design stalled)
 
 **Status: unresolved. Multiple directions explored and rejected. Captured so we
 don't re-pitch them.**
@@ -277,7 +275,7 @@ not raw power that makes one band strictly better.
 
 ## Burglar — Open Design Questions
 
-The settled mechanic is in `docs/design.md`. These are the unresolved threads:
+The settled mechanic is in `design/design.md`. These are the unresolved threads:
 
 - **5th role or party-of-5?** Is the burglar a 5th role that sits in a fixed
   party-of-5, or does party composition change (field-4-from-5 roster, meaning
@@ -316,7 +314,7 @@ random. Decide when the Inspiration system is tuned in the sim.
 
 **Open thread raised by the three-era narrative structure.**
 
-The current V1/sim encounter placement is a placeholder. Goblin-town at recLevel
+The current sim encounter placement is a placeholder. Goblin-town at recLevel
 5 puts armored goblins in era 1 (western Eriador), but Goblin-town is deep in
 the High Pass of the Misty Mountains — logically a post-Rivendell, post-hinge
 destination. Placing it at level 5 is almost certainly too early given the
@@ -343,7 +341,7 @@ Tolkien holds both registers:
   won; grief carried without complaint.
 
 Which is *dominant* changes how all narrative reads. Decide before the narrative
-content pass begins. See `docs/voice-tone.md` for more detail.
+content pass begins. See `design/voice-tone.md` for more detail.
 
 ---
 
@@ -359,8 +357,7 @@ The Kingswake's starting region is not yet decided. Candidates discussed:
 Resolve when the three-era narrative frame is written in detail.
 
 
-These rules must be honored when the Battlegrounds endgame mode is eventually
-built. Captured here so they aren't forgotten during V2/V3 design decisions.
+These rules must be honored when the Battlegrounds endgame mode is eventually built.
 
 - **Member growth must route through the player.** Stats, strength, and
   capability must improve because of what the player provides (better food,
@@ -373,7 +370,7 @@ built. Captured here so they aren't forgotten during V2/V3 design decisions.
   This is the connective tissue between the provisioning game and the raid RPG.
   Do not dilute it into a simpler pre-battle buff model when the time comes.
 
-Full Battlegrounds design: `docs/battlegrounds.md` and `docs/battlegrounds-rpg.md`
+Full Battlegrounds design: `design/battlegrounds.md` and `design/battlegrounds-rpg.md`
 
 ---
 
@@ -385,7 +382,7 @@ Full Battlegrounds design: `docs/battlegrounds.md` and `docs/battlegrounds-rpg.m
   - Field hive (level ~5?) → `field_honey` (clover bees, Bree-land)
   - Heather hive (level ~10?) → `heather_honey` (moorland bees)
   - Stone hive (level ~15?) → `stone_honey` (cave bees, rare — Undermarch specialty)
-  - Royal jelly and rare cultivars at higher tiers per `docs/design.md`
+  - Royal jelly and rare cultivars at higher tiers per `design/design.md`
   Needs a design session before building: hive crafting, slot count, unlock gating,
   whether hive type is a separate entity or a slot configuration.
 

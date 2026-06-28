@@ -1,12 +1,11 @@
 # Galadriel's Mirrors — Parked Design
 
 > Status: not yet in active design. Captured here for when this topic opens.
-> This is a V2+ Campaign feature. Do not build until promoted to `docs/`.
 >
 > Companion topics that must be designed alongside this:
-> - Narrative frame (three-era structure) — see `docs/design.md`
-> - Outlast-fight encounter type — see `docs/combat-model.md`
-> - Campaign structure (Lothlórien as a hub) — see `docs/redefinition.md`
+> - Narrative frame (three-era structure) — see `design/design.md`
+> - Outlast-fight encounter type — see `design/combat-model.md`
+> - Campaign structure (Lothlórien as a hub) — see `brainstorm/redefinition.md`
 
 ---
 
@@ -30,7 +29,7 @@ They are a witness.
 
 ## Mechanical Home
 
-**The outlast / survival fight** (already designed in `docs/combat-model.md`).
+**The outlast / survival fight** (already designed in `design/combat-model.md`).
 
 A Mirror is never won by altering the event — you cannot kill the Balrog; it
 is a vision and beyond you anyway. The mission is to *endure the vision* until
@@ -127,6 +126,6 @@ haunting than a staged conversation. Characters speaking in a vision is fully
 allowed if a given Mirror wants it; do whatever serves the moment. But lean
 toward showing forces rather than staging dialogues.
 
-All flavor text inside a Mirror follows `docs/voice-tone.md`. These are the
+All flavor text inside a Mirror follows `design/voice-tone.md`. These are the
 most tonally demanding moments in the game; the register discipline matters
 most here.

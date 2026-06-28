@@ -3,7 +3,7 @@
 > Authoritative phase plan — June 2026.
 > Covers everything from current state to the complete game.
 > Phases within each layer are ordered by dependency, not necessarily time.
-> V1 = foundation layer. Campaign = the full core game. Ettenmoors = endgame.
+> Layer 1 = foundation. Campaign = the full core game. Ettenmoors = endgame.
 
 ---
 
@@ -22,7 +22,7 @@ The provisioning engine is built and playable:
 
 ---
 
-## Layer 1 — V1 Completion
+## Layer 1 — Foundation
 
 *Finish the foundation before building upward.*
 
@@ -66,7 +66,7 @@ The provisioning engine is built and playable:
 ### Phase 2B — Full 8-member rosters
 - Second member of each role (permadeath insurance) loads from JSON
 - Backup activates when the first member of that role is lost
-- Player never manually recruits in V1 — the roster is the roster
+- Player never manually recruits — the roster is the roster
 - Member detail screen showing personality, stats, history
 
 ### Phase 2C — Recipe discovery

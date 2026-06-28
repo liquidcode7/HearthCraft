@@ -2,7 +2,7 @@
 
 > Authoritative design document — June 2026.
 > 32 named members across four bands. Eight per band, two per role.
-> V1 uses four per band (one of each role); the second of each role unlocks
+> Four active per band at start (one of each role); the second of each role unlocks
 > as a replacement if the first is lost (permadeath insurance).
 >
 > Role/stat leanings are STARTING TENDENCIES — never caps. "Greatness is made,

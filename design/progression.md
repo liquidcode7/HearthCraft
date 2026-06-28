@@ -2,7 +2,7 @@
 
 > Authoritative design document — June 2026.
 > Stat system and progression design for band members. Not fully built yet —
-> stats exist in V1 but growth mechanics are minimal. This is what they grow into.
+> stats exist in the current build but growth mechanics are minimal. This is what they grow into.
 > Companion files: battlegrounds.md, battlegrounds-rpg.md, bestiary.md.
 > Stat foundation is LotRO's, trimmed to what HearthCraft's systems actually use.
 
@@ -227,7 +227,7 @@ early content cannot throw them. Early variety comes from foe **shape**
   (most intuitive tutorial) or Old Forest's Wakefulness (most geographically
   natural step out of the Shire)? Resolve when regional design lands.
 
-V1 is Rung 0 only. The full onramp is the campaign destination.
+The current build implements Rung 0 only. The full onramp is the campaign destination.
 
 ---
 

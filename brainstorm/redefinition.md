@@ -180,7 +180,7 @@ This was the central design worry, and the structure resolves it:
    kitchen scale up to supply all of them (provisioning demand multiplies), or
    does the Ettenmoors have its own supply logic? This is the most important
    unresolved Ettenmoors mechanic and should be decided before that layer is
-   built — but it does not block V1 or V2. Resolve after the campaign is playable.
+   built — resolve after the campaign is playable.
 
 2. **The Ettenmoors readiness gate.** What concretely signals "you are ready" —
    crafting tier, recipe count, battlegrounds cleared, member development, or a
@@ -191,16 +191,15 @@ This was the central design worry, and the structure resolves it:
    does it relate to the Ettenmoors unlock? (Likely the Moors opens before the
    campaign's hardest content, so both remain live.)
 
-4. **V1 combat fidelity.** When battlegrounds eventually land, V1-era combat should
+4. **Early combat fidelity.** When battlegrounds eventually land, early-era combat should
    be a stripped skirmish-tier threshold model behind an interface that can upgrade
    to the full two-pool model without a rewrite.
 
 ---
 
-## Impact on V1
+## Impact on the current build
 
-None. V1 is still the core provisioning loop: gather → cook → provision → mission
-→ rewards. Nothing in this redefinition changes what gets built next. The structure
-above is the destination that quietly informs architecture — keep mission
-resolution extensible toward multi-member, multi-stage, variance-based outcomes —
-but it does not pull focus from shipping the small game first.
+None. The core provisioning loop — gather → cook → provision → mission → rewards —
+is unchanged. The structure above is the destination that quietly informs architecture:
+keep mission resolution extensible toward multi-member, multi-stage, variance-based
+outcomes. It does not pull focus from shipping the foundation first.

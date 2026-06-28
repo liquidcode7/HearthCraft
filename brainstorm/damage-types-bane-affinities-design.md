@@ -9,9 +9,9 @@
 
 Two related concepts, at different levels of design maturity:
 
-1. **Damage Types** (ready) — outgoing DPS is split into physical vs. magic channels. Magic damage has a named type drawn from a shared taxonomy. The specific type is determined by the *source* (character's innate nature in V1; weapon-driven in V2). Armor only applies to physical.
+1. **Damage Types** (ready) — outgoing DPS is split into physical vs. magic channels. Magic damage has a named type drawn from a shared taxonomy. The specific type is determined by the *source* (character's innate nature now; weapon-driven once weapons exist). Armor only applies to physical.
 
-2. **Bane Affinities** (V2 — weapon-gated) — legendary weapons carry a damage type. When a weapon's type matches an enemy's category vulnerability, a bane multiplier fires. No bane can fire without a weapon.
+2. **Bane Affinities** (weapon-gated) — legendary weapons carry a damage type. When a weapon's type matches an enemy's category vulnerability, a bane multiplier fires. No bane can fire without a weapon.
 
 3. **Incoming Damage Types** (design pending) — placeholder only. Enemy damage has types too (shadow, wraith damage, etc.); the mitigation model is not yet designed.
 
@@ -25,8 +25,8 @@ Magic damage can be any of the following named types. These are not exhaustive �
 |---|---|---|
 | **Beleriand** | The ancient enmity — elvish and dwarven power forged in the First Age wars against Morgoth | Outgoing (weapon) |
 | **Mormegil** | The doom of the Black Sword; Gurthang's willing stroke against dragon-kind | Outgoing (weapon) |
-| **Light** | Grace of the Valar; the fire of Aman and Elbereth's starlight | Outgoing (magic, V1 Keeper default) |
-| **Westernesse** | The strength of Númenorean heritage; ancient craftsmanship and the lineage of kings | Outgoing (magic, V1 Captain default) |
+| **Light** | Grace of the Valar; the fire of Aman and Elbereth's starlight | Outgoing (magic, Keeper default) |
+| **Westernesse** | The strength of Númenorean heritage; ancient craftsmanship and the lineage of kings | Outgoing (magic, Captain default) |
 | **Shadow** | Sauron's corrupting will; the encroaching darkness of Mordor that breaks resolve | Incoming (enemy) |
 | **Unlight** | Ungoliant's devouring darkness — not mere absence of light but the active consumption of it | Incoming (enemy) |
 | **Cataclysm** | Dragonfire and dragon-wrath; the world-breaking devastation of the great serpents | Incoming (enemy) |
@@ -40,7 +40,7 @@ Physical damage is not in this list. Physical is the absence of a magic type —
 
 ---
 
-## Outgoing Damage Types (V1)
+## Outgoing Damage Types (current)
 
 ### Physical vs. magic
 
@@ -50,10 +50,10 @@ Might and Agility drive physical damage. Will drives magic damage — but *what 
 |---|---|---|
 | Might (Warden, Hunter, Captain) | Physical | Yes — `physMit` applies |
 | Agility (Hunter) | Physical | Yes |
-| Will (Keeper) | Magic — **Light** (V1 default) | No |
-| Will (Captain) | Magic — **Westernesse** (V1 default) | No |
+| Will (Keeper) | Magic — **Light** (default) | No |
+| Will (Captain) | Magic — **Westernesse** (default) | No |
 
-In V1, with no weapons, the Keeper's magic is Light and the Captain's is Westernesse because of who they are — healer and captain of Númenorean lineage respectively. These are not locked facts; a weapon with a different type would change the character's magic output type.
+Without weapons, the Keeper's magic is Light and the Captain's is Westernesse because of who they are — healer and captain of Númenorean lineage respectively. These are not locked facts; a weapon with a different type would change the character's magic output type.
 
 ### DPS formulas (unchanged, type labels added)
 
@@ -78,7 +78,7 @@ This replaces the current single-`raw` path in `dpsBreakdown()`.
 
 ---
 
-## Bane Affinities (V2 — weapon-gated)
+## Bane Affinities (weapon-gated)
 
 ### Concept
 
@@ -110,9 +110,9 @@ Applies after armor reduction. A member with a Beleriand weapon fighting an `orc
 
 `BANE_MULTIPLIER = 1.15` (placeholder — validate in sim when bane weapons are designed)
 
-### V2 scope
+### Weapon-gating
 
-No bane fires without a weapon. V1 has no weapons — the system does not exist in V1 gameplay. Encounter category tags can be authored now for forward-compatibility.
+No bane fires without a weapon. Weapons aren't in the game yet — the system does not affect current gameplay. Encounter category tags can be authored now for forward-compatibility.
 
 ---
 
@@ -132,28 +132,28 @@ Do not implement incoming typed damage until these are answered.
 
 ---
 
-## sim implementation scope (V1 — damage type split only)
+## sim implementation scope (damage type split only — banes deferred)
 
 Changes to `tools/sim/run_sim.js`:
 
 1. **`dpsBreakdown()`** — track `physDps` and `magicDps` separately per member; apply armor only to `physDps` total; sum both after. Return sub-totals for logging.
-2. **No bane multiplier** — enemy category tags can be parsed/stored but nothing fires in V1.
+2. **No bane multiplier** — enemy category tags can be parsed/stored but nothing fires yet.
 3. **No incoming typed damage** — pending design.
 
-Changes to `docs/combat-model.md`:
+Changes to `design/combat-model.md`:
 
-1. Update DPS formulas table with Physical / Magic type labels and V1 defaults.
+1. Update DPS formulas table with Physical / Magic type labels and current defaults.
 2. Add a "Damage Type Taxonomy" section with the full type list.
 3. Add "Armor application" section with the revised physDps/magicDps split formula.
-4. Add a "Bane Affinities" section — concept, enemy vulnerability table, V2 weapon-gating.
+4. Add a "Bane Affinities" section — concept, enemy vulnerability table, weapon-gating.
 5. Add a stub "Incoming Damage Types" section marked design-pending.
-6. Update the constants block with `BANE_MULTIPLIER = 1.15` (V2 placeholder).
+6. Update the constants block with `BANE_MULTIPLIER = 1.15` (placeholder).
 
 ---
 
 ## What this is NOT
 
 - No innate role banes — banes come from weapons.
-- No mechanical bonus from damage type alone in V1 — magic bypasses armor, that is all.
+- No mechanical bonus from damage type alone yet — magic bypasses armor, that is all.
 - No incoming typed damage yet — pending design session.
-- No player-facing damage type UI in V1.
+- No player-facing damage type UI yet.

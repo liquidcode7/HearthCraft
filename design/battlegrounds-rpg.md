@@ -2,7 +2,7 @@
 
 > Authoritative design document — June 2026.
 > The party combat system for the Campaign layer. Not built yet — this is the
-> design the code grows toward. Nothing here changes V1 scope.
+> design the code grows toward.
 >
 > Companion files: battlegrounds.md (lore roster), bestiary.md (enemy tiers).
 
@@ -22,12 +22,11 @@ pre-battle buff. This is the original idea that makes the two halves one game.
 
 ---
 
-## Scope Honesty (read every time)
+## Context (read every time)
 
-This is a second full game. It only exists if (1) the V1 provisioning loop ships
-and is fun, (2) alchemy + multi-member provisioning land (V2–V3), (3) the builder
-has real Kotlin fluency. If the core cooking loop isn't fun, none of this matters
-— nobody reaches it. The fastest path to this RPG is shipping the small game.
+This is a second full game built on top of the provisioning foundation. If the core
+cooking loop isn't fun, none of this matters — nobody reaches it. The fastest path
+to this RPG is shipping the foundation first.
 
 ---
 
@@ -534,9 +533,8 @@ in real time. BUT two genuine risks remain:
   much for the format.
 - **Build-feasibility risk:** this is a person-years combat engine to build and
   BALANCE; large and growing. A non-programmer learning Kotlin is far from this.
-This is all V5+; whether it's "too complex" can't truly be judged until the V1
-core loop ships and real players show how much depth they absorb. Do not let it
-pull focus from V1.
+Whether it's "too complex" can't truly be judged until the core loop ships and
+real players show how much depth they absorb.
 
 ---
 

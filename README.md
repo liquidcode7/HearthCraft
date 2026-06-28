@@ -66,7 +66,7 @@ The remnant of the line of Isildur. Heirs to a kingdom that fell and was never r
 
 Thirty-two named members across four bands — eight per band, two per role. They are not faceless stats. They are people. Permadeath is real, and every role has a backup within the band so a single loss never leaves a gap that cannot be filled.
 
-Four roles: **Warden, Keeper, Hunter, Captain.** Each essential. The four-role party is the only formation that works — no redundant position, no optional slot. Full roster in `docs/characters.md`.
+Four roles: **Warden, Keeper, Hunter, Captain.** Each essential. The four-role party is the only formation that works — no redundant position, no optional slot. Full roster in `design/characters.md`.
 
 ---
 
@@ -92,7 +92,7 @@ Fourteen named set-piece engagements drawn from the history of Middle-earth. Eac
 - Battle of Azanulbizar
 - The Fall of Gondolin *(First Age, mythic register)*
 
-Full lore and design in `docs/battlegrounds.md`.
+Full lore and design in `design/battlegrounds.md`.
 
 ---
 
@@ -115,7 +115,7 @@ The player's agency is in preparation and composition. The raid resolves over re
 - **The Nine** — the Nazgûl; never killed, only survived or repelled; their Dread aura buffs the entire host and breaks your company's will
 - **Nameless Things** — beneath Moria; not a combat target at all
 
-Full systems design in `docs/battlegrounds-rpg.md` and `docs/bestiary.md`.
+Full systems design in `design/battlegrounds-rpg.md` and `design/bestiary.md`.
 
 ---
 
@@ -129,7 +129,7 @@ Ordinary wounds heal with time and the right food — back in the player's domai
 
 ## Current State
 
-The provisioning loop is complete and playable. The combat model is fully designed and tuned. Encounter data is ready for the simulator now, and for the Android app when combat is built in V2.
+The provisioning loop is complete and playable. The combat model is fully designed and tuned. Encounter data is ready for the simulator now, and for the Android app when combat is built.
 
 **What exists today:**
 - Working gather → cook → provision → mission loop
@@ -142,7 +142,7 @@ The provisioning loop is complete and playable. The combat model is fully design
 - Harvest collect mechanic — forage and farm results are claimed actively, not auto-deposited
 - Intro screen with opening lore, band selection, and welcome quotes
 - Four bands: The Mithlost, The Undermarch, The Kingswake, The Greycloaks — each with four named members (Captain, Warden, Keeper, Hunter)
-- Full combat model spec — party stats, DPS, mitigation, hazards, food-stat model, Inspiration (`docs/combat-model.md`)
+- Full combat model spec — party stats, DPS, mitigation, hazards, food-stat model, Inspiration (`design/combat-model.md`)
 - 14 encounter JSON files across L1–L40 in `app/src/main/assets/data/encounters/`
 - Encounter design and tuning toolkit in `tools/sim/` (see below)
 

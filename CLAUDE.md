@@ -159,18 +159,6 @@ don't re-explain from scratch, just name them.
 
 ---
 
-## Scope Discipline
-
-The roadmap is in `docs/roadmap.md`. When Wes floats an idea that isn't in the
-current phase:
-
-> That's not in the current phase. Should I add it to `future/wishlist.md` for later?
-> Staying focused means we ship sooner.
-
-Do not bend on this.
-
----
-
 ## What This Game Is Not — Ever
 
 - No multiplayer, trading, or leaderboards

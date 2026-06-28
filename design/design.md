@@ -22,7 +22,7 @@ don't care. It works.
 This is not a cozy cooking sim. It is a specialist identity fantasy rooted in
 craft and deep knowledge. The long-term destination is a full raid RPG fought
 across named battlegrounds from Middle-earth's history, with this provisioning
-game as the indispensable foundation. V1 proves the foundation feels good.
+game as the indispensable foundation.
 
 Design inspirations:
 - **GW2** — crafting tier structure, recipe discovery, ambient tone
@@ -77,7 +77,7 @@ each session. Both contribute XP to the same Gathering pool.
 #### Forage / Wild
 - Uncultivated ingredients: wild herbs, mushrooms, bark, roots, unusual plants
 - Unpredictable output — occasionally surprising, sometimes lean
-- Primary source for unusual and alchemical inputs (V2+)
+- Primary source for unusual and alchemical inputs
 - Rare finds possible at any level; more frequent at higher levels
 - Neither track obsoletes the other
 
@@ -106,16 +106,14 @@ XP than the last.
 **Grimoires** — rare mission drops that unlock the deepest recipes within tiers
 3, 5, and 7. Finding one is a meaningful event. They cannot be bought or crafted.
 
-**Specialization trees** — deferred to post-max-level content (V2+, wishlist).
-V1 has one linear cooking progression with no branches.
+**Specialization trees** — deferred to post-max-level content (wishlist). One linear cooking progression with no branches for now.
 
-#### Recipes (V1)
-- V1 uses hand-coded recipes only — no discovery system yet (V2)
+#### Recipes (Current)
+- Hand-coded recipes — discovery system is designed in `brainstorm/damage-types-bane-affinities-design.md` and `implemented/recipe-discovery-design.md`
 - Starting set: 8–10 recipes, visible in the recipe book from the start
-- V1 uses a simplified buff model (see below); the full stat-based model
-  is implemented in V2+ alongside the combat system
+- Current implementation uses a simplified buff model (see below); the full stat-based model lands alongside the combat system
 
-#### Food & Buffs — Full Model (V2+)
+#### Food & Buffs — Full Model
 
 Every recipe has a **stat focus** (1–2 stats boosted strongly) that persists
 at every tier. Higher tiers add **breadth** (minor boosts to other stats), but
@@ -143,25 +141,24 @@ Six **hazard antidotes** are secondary effects carried by specific recipes:
 | Shadow | Radiance | Will + Fate drain |
 
 Hazards are properties of **regions** — the clue system telegraphs which
-hazard a region carries before the player faces it. See `docs/combat-model.md`
+hazard a region carries before the player faces it. See `design/combat-model.md`
 for the full mechanical spec.
 
-#### Food & Buffs — V1 Simplification
+#### Food & Buffs — Current Implementation
 
-V1 uses a single **buff strength** number (stronger food → better mission odds)
+The current implementation uses a single **buff strength** number (stronger food → better mission odds)
 rather than the full stat model. This lets the core gather→cook→provision loop
-be playable before the combat system is built. V1 buff strength scales with
-Cooking level:
+be playable before the combat system is built. Buff strength scales with Cooking level:
 - Simple recipes (30-min cook): base 10, +0.4 per level
 - Complex recipes (90-min cook): base 12, +0.65 per level
 
-V1 missions use buff strength vs. a vitality threshold to determine success
+Current missions use buff strength vs. a vitality threshold to determine success
 probability. This layer is replaced when full combat lands.
 
 #### Food Flavor Tags
 Every recipe has a flavor tag: sweet, hearty, light, spicy, herbal, earthy.
 This vocabulary is shared with band member food preferences. Not mechanically
-linked in V1 — the data is in place for future use.
+linked yet — the data is in place for future use.
 
 ---
 
@@ -187,7 +184,7 @@ Missions feel like stewardship and a rearguard action against encroaching shadow
 Ingredients lean toward woodland herbs, moonflower, ancient resins, things that
 grow in old-growth forests.
 
-**Members (V1 — 4 active, full roster in `docs/characters.md`):**
+**Members (4 active at start, full roster in `design/characters.md`):**
 - **Aelindra** (Captain) — Ancient and precise. Carries centuries of grief without
   making it anyone else's burden. Food: earthy. Quirk: food from the ground, honest, unadorned.
 - **Thalindel** (Hunter/ranged) — Young by elven reckoning. Finds the world
@@ -208,7 +205,7 @@ hard march, but they notice — and remember — who kept them fed. Missions fee
 deep delves and the defense of ancient holds. Ingredients lean toward cave fungi,
 deep minerals, things that grow without sunlight.
 
-**Members (V1 — 3 active, full roster in `docs/characters.md`):**
+**Members (3 active at start, full roster in `design/characters.md`):**
 - **Borin Ironmantle** (Warden) — Never complained once in forty years. Reliable as
   bedrock. Food: hearty. Quirk: dense food, nothing complicated.
 - **Dagra Copperhelm** (Hunter/melee) — Laughs at everything. The band finds this
@@ -229,7 +226,7 @@ deliberate, with a standard for how things are done that comes from somewhere
 older than the Age. Missions feel like contracted work and earned trust. Ingredients
 lean toward sea herbs, salt-cured finds, preserved stores from long voyages.
 
-**Members (V1 — 3 active, full roster in `docs/characters.md`):**
+**Members (3 active at start, full roster in `design/characters.md`):**
 - **Reva Tidecaller** (Captain) — Descended from the old navigator families.
   Carries herself with the quiet assurance of someone who knows what she is, even
   if no one else does. Decides fast and is right often enough that no one argues.
@@ -254,7 +251,7 @@ The world has mostly forgotten. Ingredients lean toward trail food, preserved
 rations, foraged Eriador herbs — the food of a people who live in the open by
 duty, not by preference.
 
-**Members (V1 — 4 active, full roster in `docs/characters.md`):**
+**Members (4 active at start, full roster in `design/characters.md`):**
 - **Aldric** (Captain) — Descended from the old chieftains. Quiet, unsentimental,
   and possessed of the long memory his line carries. Does not speak often. When he
   does, it is the weight of generations behind it. Food: earthy. Quirk: grounding
@@ -279,9 +276,9 @@ Members are named individuals with personalities and a food preference. Cooking
 for them is personal, not transactional.
 
 - Each member has: name, personality, food preference (flavor tag), role lean
-- Role leans are starting tendencies only — not caps (see `docs/progression.md`)
-- Food preference is flavor in V1 — does not affect mission outcomes yet
-- Members can be lost on badly failed missions. Loss is permanent in V1.
+- Role leans are starting tendencies only — not caps (see `design/progression.md`)
+- Food preference is flavor only currently — does not affect mission outcomes yet
+- Members can be lost on badly failed missions. Loss is permanent.
 - Member loss condition: buff strength below 60% of required threshold AND a
   33% random roll succeeds
 
@@ -307,7 +304,7 @@ for them is personal, not transactional.
 
 #### Encounter Difficulty — Four Food Tiers
 
-> **V2+ combat system — not V1.** V1 uses a single buff-strength number for mission outcomes. This section describes the full HP/s encounter model that replaces it in V2+.
+> **Full combat system — not yet implemented.** Current missions use a single buff-strength number. This section describes the full HP/s encounter model.
 
 Each encounter is tuned against **four food quality tiers** defined by the player's
 cooking level within the recommended range. The party's food HP/s (healing per
@@ -326,13 +323,13 @@ win rates to 97–99%. No food is a fail state regardless of tier.
 The HP/s steps between tiers are small (~0.2 HP/s). Each encounter is tuned at a
 specific drain rate so the interesting zone — where food quality genuinely changes
 outcomes — aligns with the player's expected cooking level for that encounter.
-Full analysis in `docs/combat-model.md` (Tuned Encounters section).
+Full analysis in `design/combat-model.md` (Tuned Encounters section).
 
 ---
 
 ### The Burglar
 
-> **V2+ — not in V1 scope.** Full design is here for architectural awareness. Do not build until promoted in `docs/v1-plan.md`.
+> Full design is here for architectural awareness.
 
 A fifth band member archetype — not a fifth combat role, but a *specialist*
 slotted into the party alongside the four fixed roles. The provisioner is
@@ -387,7 +384,7 @@ one, the bit has built genuine fondness. The band protecting the little one
 without quite saying so is the tone to hit.
 
 All band member lines about the burglar must follow the voice and tone guide —
-no modern idiom. See `docs/voice-tone.md`.
+no modern idiom. See `design/voice-tone.md`.
 
 **Open questions** (to resolve when the burglar is designed in full — see
 `future/wishlist.md`):**
@@ -416,15 +413,14 @@ Three independent axes that reinforce each other:
 
 A player can be high on one axis and low on another. No single forced path.
 
-**Band combat level cap: 20 (V1).** The simulator and encounter design treat band
-level as the primary difficulty axis. V1 caps this at 20; later expansions may
-raise the ceiling. Gathering and Cooking skill levels are uncapped.
+**Band combat level cap: 20 (current).** The simulator and encounter design treat band
+level as the primary difficulty axis. Later phases may raise the ceiling. Gathering and Cooking skill levels are uncapped.
 
 ---
 
 ## Combat Roles and Damage Types
 
-Four roles, each with a distinct damage profile. Full mechanical spec in `docs/combat-model.md`.
+Four roles, each with a distinct damage profile. Full mechanical spec in `design/combat-model.md`.
 
 | Role | Color | Damage type | Stat | Notes |
 |---|---|---|---|---|
@@ -445,12 +441,11 @@ Four roles, each with a distinct damage profile. Full mechanical spec in `docs/c
 
 ---
 
-## The Shape of the Whole Game (not V1 — for architectural awareness only)
+## The Shape of the Whole Game
 
-The provisioning loop is the core of a two-half game. These layers exist in
-`future/` and must NOT be built until promoted to `docs/`. They are noted here
-so architectural decisions in V1 don't accidentally foreclose them. Full
-structure is in `docs/redefinition.md`.
+The provisioning loop is the core of a two-half game. These layers are noted here
+so architectural decisions don't accidentally foreclose them. Full
+structure is in `brainstorm/redefinition.md`.
 
 ### Narrative Frame — Adjacent to the Fellowship
 
@@ -511,8 +506,7 @@ Rivendell.** These are two separate transitions, not one.
 ### Encounter Placement and the Eastward Journey
 
 **Open thread — see `future/wishlist.md` for the full encounter ladder
-placement question.** The narrative frame makes some V1 encounter placeholders
-obviously wrong: Goblin-town at recLevel 5 places armored goblins *before* the
+placement question.** The current sim placement has issues: Goblin-town at recLevel 5 places armored goblins *before* the
 Rivendell hinge (era 1), which conflicts with the eastward journey logic —
 Goblin-town is deep in the Misty Mountains, a post-hinge destination. Encounter
 placement must be reconciled with the three-era geography before the encounter
@@ -569,31 +563,31 @@ duration. Keep the resolution layer thin and replaceable.
 
 - **Player title** — [PLACEHOLDER]. Do not use Hearthwright or warlock-culinarian.
 
-V2+ open questions (recipe discovery interface, Alchemy discovery system) are
+Open questions (recipe discovery interface, Alchemy discovery system) are
 tracked in `future/wishlist.md`.
 
 **Resolved:**
 - *How are band member losses triggered?* — Below 60% of required buff strength
-  AND 33% random roll. Implemented in MissionWorker. (V1 simplification — full
-  combat uses wounds + grievous system; see `docs/combat-model.md`.)
-- *How many named band members does the player start with?* — 3 per band (V1).
-  Full 8-member rosters are designed in `docs/characters.md` for V2+.
+  AND 33% random roll. Implemented in MissionWorker. (current simplification — full
+  combat uses wounds + grievous system; see `design/combat-model.md`.)
+- *How many named band members does the player start with?* — 3–4 active per band at start.
+  Full 8-member rosters are in `design/characters.md`.
 - *Four starting bands?* — The Mithlost (elves/forest), The Undermarch
   (dwarves/mountain), The Kingswake (corsairs/sea), The Greycloaks
   (wardens/borderlands).
 - *Ingredient quality tiers?* — No. Complexity lives in the cook's skill and
   decisions, not raw materials. Never add quality tiers.
 - *Craft branches (Waybread Fortifier, Miruvor Distiller, Athelas Apothecary)?*
-  — Removed from V1 and from the active design. May return as specialization
+  — Removed from the active design. May return as specialization
   trees at max level (wishlist). GW2 seven-tier linear progression replaces them.
 - *Abstract buff vocabulary (Endurance / Agility / Acuity / Warmth / Luck)?* —
   **Retired.** Food now buffs the five base stats directly (Might / Agility /
-  Vitality / Will / Fate) + HP/s sustain. V1 code retains a simplified
-  buff-strength number as a prototype layer; V2+ implements the full stat model.
+  Vitality / Will / Fate) + HP/s sustain. Current code retains a simplified
+  buff-strength number as a prototype layer; the full stat model is in `design/combat-model.md`.
 - *Mission failure — partial success?* — No partial success. Failure is outright.
   Failed experiments also consume ingredients.
 - *Encounter vs Battleground vocabulary* — **Locked.** **Encounters** = single-stage
-  fights (the V1 unit; what `tools/sim/` runs). **Battlegrounds** = named historical
+  fights (what `tools/sim/` runs). **Battlegrounds** = named historical
   set-pieces (Fornost, Pelennor, Azanulbizar) — multi-stage, differently scored,
   Campaign-layer content. Same underlying engine, different shape and scope. Reward
   tables for Encounters are band-agnostic; Named Legendary drops belong to

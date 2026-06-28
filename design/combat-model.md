@@ -1,7 +1,7 @@
 # HearthCraft — Combat Model
 
-> Not V1. The campaign combat system. This is the design destination, not the
-> current build. V1 uses a simplified mission model; full combat lands in V2+.
+> The campaign combat system. This is the design destination, not the
+> current build. Current missions use a simplified buff-strength model; full combat is designed here.
 >
 > **Executable spec: `tools/sim/hearthcraft_fight_sim.html`** — where this doc
 > and the HTML disagree, the HTML wins. Flag any divergence and reconcile.
@@ -421,7 +421,7 @@ Claude Code builds the Kotlin data class / Room entity against this schema.
 | `wakefulness` | int | Wakefulness severity (0–10) |
 | `stageFlavor` | string | Optional flavor text for this specific stage |
 
-**V1 forward-compat note:** build the V1 encounter loader to accept a
+**Forward-compat note:** build the encounter loader to accept a
 `stages` list of length 1 — one layer of indirection now means multi-stage
 support is a later data change, not a code rewrite.
 
@@ -511,7 +511,7 @@ in early content by construction.
 | 6 | Fight while the light fails? | Great spiders, Balrog, the Nine | Mirkwood, Moria, Morgul-vale | Radiance |
 | 7 | All at once. | Sieges, combined raids | Fornost, the Black Gate | Multi-stage prep, the full toolkit |
 
-**V1 is Rung 0 only.** Rungs 0–4 are all single-stage fights. Multi-stage
+**Current build is Rung 0 only.** Rungs 0–4 are all single-stage fights. Multi-stage
 journeys and gauntlets appear first at Rung 7.
 
 Early encounter variety before Dread/Shadow comes from **foe shape** (swarm,
@@ -523,7 +523,7 @@ region-bands of variety before a player ever meets fear.
 Each band has its own Rung 0 pair matched to their home region. Same mechanical
 role as Neekerbreekers (swarm/attrition) and Wolves (spike-heavy), different skin.
 Numbers are **not yet tuned** — use Neekerbreekers and Wolves as the tuning target
-for feel; validate per-band encounters before V2 combat ships.
+for feel; validate per-band encounters before the combat system ships.
 
 | Band | Rung 0a (swarm/drain — Neekerbreekers slot) | Rung 0b (spike-heavy — Wolves slot) |
 |---|---|---|
@@ -539,7 +539,7 @@ different feel.
 
 ---
 
-## Multi-Stage Encounters (campaign destination, not V1)
+## Multi-Stage Encounters (campaign destination, not yet built)
 
 An encounter is an ordered list of stages. A normal boss fight is one stage.
 Two dials differentiate the shapes:
@@ -562,7 +562,7 @@ clear reduces the boss stage's resolve; arriving battered means full resolve.
 ## Open Threads
 
 Active design questions that need resolution before the relevant system is built.
-Deferred V2+ items and polish tasks live in `future/wishlist.md`.
+Deferred items and polish tasks live in `future/wishlist.md`.
 
 1. **All magnitudes are placeholders** — stat growth, mitigation per bestiary
    tier, wound count (~5), Keeper burst size + the 5-cap, Inspiration base

@@ -311,10 +311,8 @@ identity resonates.
 
 ---
 
-## Scope Reality Check
-V3/V4 territory. Exists only if V1 ships and the core loop is fun, then alchemy
-+ multi-member provisioning land in V2. Captured here so the destination is
+## Architecture Note
+Later-phase content. Captured here so the destination is
 known and can quietly inform architecture: keep mission resolution extensible
 toward multi-member, multi-stage, variance-based outcomes, and toward
 scoring partial/hopeless outcomes (hold-time, survivors) not just pass/fail.
-Do not let it pull focus from V1.

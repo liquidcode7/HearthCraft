@@ -128,7 +128,7 @@ recipe-strength gaps land the tiers at risky/confident/assured.
   penetration. That contradicts the locked "potency = single-source, food-only" direction. Replacing it
   with a multiplicative potency pierce (Lever 5) does double duty: implements the redesign *and* makes
   armor a non-substitutable counter.
-- `docs/combat-model.md` / `docs/mechanics-math-reference.md`: document β, the sink, and the
+- `design/combat-model.md` / `implemented/mechanics-math-reference.md`: document β, the sink, and the
   additive-vs-multiplicative rule once a direction is chosen.
 - Recipe tiers: re-derive the HP/s spacing that lands 25/60/90 against the real `TIER_TABLE`.
 

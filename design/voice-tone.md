@@ -102,7 +102,7 @@ is not making a joke. They are making an observation.
 ## Inspiration Flavor Text
 
 Inspiration lines are the clearest expression of this register: observational,
-past tense, plain, slightly archaic. See `docs/combat-model.md` for the seed
+past tense, plain, slightly archaic. See `design/combat-model.md` for the seed
 lines and the full design note.
 
 ---
