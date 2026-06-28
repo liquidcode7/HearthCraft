@@ -2,6 +2,7 @@ package com.liquidcode7.hearthcraft.data.repository
 
 import com.liquidcode7.hearthcraft.data.db.BandMemberState
 import com.liquidcode7.hearthcraft.data.db.dao.BandMemberStateDao
+import com.liquidcode7.hearthcraft.data.model.Recipe
 import com.liquidcode7.hearthcraft.engine.MemberInput
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
@@ -77,25 +78,71 @@ class BandRepository @Inject constructor(
     suspend fun memberInputsForBand(
         bandId: String,
         draughtPotency: Float,
-        hpsList: List<Float>  // ordered: warden, hunter, keeper, captain
+        memberRecipes: Map<String, Recipe?>,  // memberId → Recipe (null = no food)
+        cookLevel: Int
     ): List<MemberInput> {
         val roleOrder = listOf("warden", "hunter", "keeper", "captain")
         return gameData.bandMembers
             .filter { it.bandId == bandId }
             .sortedBy { roleOrder.indexOf(it.role.lowercase()) }
-            .mapIndexed { i, member ->
-                val state = dao.get(member.id)
+            .map { member ->
+                val state  = dao.get(member.id)
+                val recipe = memberRecipes[member.id]
+                val bonus  = { stat: String ->
+                    if (recipe != null)
+                        statBonusFor(stat, recipe.primaryStat, recipe.primaryBoost,
+                                     recipe.secondaryStat, recipe.secondaryBoost)
+                    else 0f
+                }
                 MemberInput(
                     id             = member.id,
                     role           = member.role.lowercase(),
-                    might          = (state?.might    ?: member.startingMight).toFloat(),
-                    agility        = (state?.agility  ?: member.startingAgility).toFloat(),
-                    vitality       = (state?.vitality ?: member.startingVitality).toFloat(),
-                    will           = (state?.will     ?: member.startingWill).toFloat(),
+                    might          = (state?.might    ?: member.startingMight).toFloat()    + bonus("mig"),
+                    agility        = (state?.agility  ?: member.startingAgility).toFloat()  + bonus("agi"),
+                    vitality       = (state?.vitality ?: member.startingVitality).toFloat() + bonus("vit"),
+                    will           = (state?.will     ?: member.startingWill).toFloat()     + bonus("wil"),
                     fate           = (state?.fate     ?: member.startingFate).toFloat(),
-                    hps            = hpsList.getOrElse(i) { 5f },
+                    hps            = if (recipe != null) hpsForCookLevel(cookLevel) else 0f,
                     draughtPotency = draughtPotency
                 )
             }
+    }
+
+    companion object {
+        private data class HpsTier(val range: IntRange, val hpsLo: Float, val hpsHi: Float)
+
+        private val TIER_TABLE = listOf(
+            HpsTier(1..4,   5.0f,  5.6f),
+            HpsTier(5..9,   6.0f,  9.0f),
+            HpsTier(10..15, 10.0f, 17.0f),
+            HpsTier(16..22, 18.0f, 30.0f),
+            HpsTier(23..30, 31.0f, 46.0f),
+            HpsTier(31..40, 47.0f, 76.0f),
+            HpsTier(41..50, 77.0f, 120.0f)
+        )
+
+        fun hpsForCookLevel(cookLevel: Int): Float {
+            val level = cookLevel.coerceIn(1, 50)
+            for (t in TIER_TABLE) {
+                if (level in t.range) {
+                    val span = (t.range.last - t.range.first).toFloat().coerceAtLeast(1f)
+                    val frac = (level - t.range.first) / span
+                    return t.hpsLo + frac * (t.hpsHi - t.hpsLo)
+                }
+            }
+            return 5.0f
+        }
+
+        fun statBonusFor(
+            stat: String,
+            primaryStat: String?,
+            primaryBoost: Int,
+            secondaryStat: String?,
+            secondaryBoost: Int
+        ): Float = when (stat) {
+            primaryStat   -> primaryBoost.toFloat()
+            secondaryStat -> secondaryBoost.toFloat()
+            else          -> 0f
+        }
     }
 }
