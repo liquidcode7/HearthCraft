@@ -374,3 +374,20 @@ built. Captured here so they aren't forgotten during V2/V3 design decisions.
   Do not dilute it into a simpler pre-battle buff model when the time comes.
 
 Full Battlegrounds design: `docs/battlegrounds.md` and `docs/battlegrounds-rpg.md`
+
+---
+
+## Beekeeping Expansion
+
+- **Multiple hive types** — different bee species produce different honey varieties.
+  Each hive type is unlocked at a higher gathering level and produces a rarer honey:
+  - Common hive (level 1) → `forest_honey` *(already built)*
+  - Field hive (level ~5?) → `field_honey` (clover bees, Bree-land)
+  - Heather hive (level ~10?) → `heather_honey` (moorland bees)
+  - Stone hive (level ~15?) → `stone_honey` (cave bees, rare — Undermarch specialty)
+  - Royal jelly and rare cultivars at higher tiers per `docs/design.md`
+  Needs a design session before building: hive crafting, slot count, unlock gating,
+  whether hive type is a separate entity or a slot configuration.
+
+- **Hive label rename** — current "Plant" button on the hive slot reads oddly
+  (Plant a hive?). Rename to "Tend" or "Start" in a future polish pass.

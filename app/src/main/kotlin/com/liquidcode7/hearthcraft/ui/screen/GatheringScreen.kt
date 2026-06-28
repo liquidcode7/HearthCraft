@@ -146,27 +146,12 @@ fun GatheringScreen(viewModel: GatheringViewModel = hiltViewModel()) {
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         Spacer(modifier = Modifier.height(8.dp))
-        if (gatheringLevel < 8) {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-            ) {
-                Column(modifier = Modifier.padding(12.dp)) {
-                    Text(
-                        "Locked — reach Gathering level 8",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-        } else {
-            GrowingSlotCard(
-                slot      = hiveSlot,
-                label     = "Hive",
-                onPlant   = { if (hiveSlot?.pendingResultJson == null) viewModel.startHive() },
-                onCollect = { viewModel.collectGrowingSlot(HiveWorker.SLOT_ID) }
-            )
-        }
+        GrowingSlotCard(
+            slot      = hiveSlot,
+            label     = "Hive",
+            onPlant   = { if (hiveSlot?.pendingResultJson == null) viewModel.startHive() },
+            onCollect = { viewModel.collectGrowingSlot(HiveWorker.SLOT_ID) }
+        )
 
         Spacer(modifier = Modifier.height(20.dp))
         HorizontalDivider()
