@@ -7,12 +7,12 @@
 
 ## Current Status — June 28, 2026
 
-**Phase:** Core loop solid — gather targeting with discovery gating, farm/garden seed drops, post-harvest XP readout, region data clean.
-**V1 progress:** All six tabs functional. Full loop playable end to end.
-**What's working:** Forage targeting gated behind ingredient discovery (discover first, then target); targeted forage takes 5 min vs 3 min random; post-harvest dialog shows base XP + discovery bonus + NEW badges; farm/garden harvests always drop 1–2 seeds of the harvested ingredient; all cross-region recipe violations fixed (6 recipes corrected); Ferny's Treacle added.
-**What's not wired yet:** Market screen. Live animated combat screen (deferred).
-**Next session:** Market screen — buy ingredients and seeds with gold earned from missions.
-**Open questions:** None blocking.
+**Phase:** Core loop solid — all six audit items addressed; per-member provisioning, recipe discovery, and beekeeping added.
+**V1 progress:** All six tabs functional. Full loop playable end to end. Audit fixes complete.
+**What's working:** Per-member food provisioning before each mission (stat bonuses + HP/s wired into EncounterEngine); recipe discovery now free-assembly (no ingredient cost until exact match confirmed); starter pantry seeded on first launch; post-forage Kitchen nudge; forage delay bug fixed; XP_GATHER_SESSION reduced 90→30; seed drops guaranteed; Contemplative Tea available to all bands; beekeeping unlocked at gathering level 8 (HiveWorker, 10-min timer, forest_honey); all honey types now forageable as wild finds.
+**What's not wired yet:** Market screen. Live animated combat screen (deferred). Multiple hive types (V2 — different honey varieties need different hives, design TBD).
+**Next session:** Design session for hive system (multiple hive types gated by level, each producing a different honey variety) — or Market screen if hive design is deferred to V2.
+**Open questions:** Hive system scope — is one hive type (V1 current) enough for launch, or do we need field_honey and heather_honey hive variants? Gate by gathering level or by crafted hive item?
 
 ---
 
@@ -1616,3 +1616,48 @@ Full implementation of the recipe discovery system: recipes are now hidden until
 - Next session: Forage targeting — pin discovered ingredients as forage priority
 - Near term: Market screen implementation
 - Future ideas logged: none this session.
+
+---
+
+## Session 43 — June 28, 2026
+**Audit June 2026: per-member provisioning, free-assembly recipe discovery, beekeeping, five targeted fixes**
+
+**What was built:**
+- `Recipe.kt`: Added `primaryBoost: Int = 0`, `secondaryBoost: Int = 0` fields; all food recipes now carry explicit stat boost values in `recipes.json`
+- `recipes.json`: Contemplative Tea changed from `band: "mithlost"` to `band: "all"` — fixes Greycloaks Will food gap; boost values added to 26 food recipes following tier-based scaling
+- `PlayerState.kt`: Added `hasSeenExperimentHint`, `hasSeenPostForageNudge`, `hasReceivedStarterPantry` boolean fields
+- `HearthCraftDatabase.kt`: Bumped to v10, AutoMigration(from=9, to=10) added
+- `PlayerRepository.kt`: Added `markExperimentHintSeen()`, `markPostForageNudgeSeen()`, `markStarterPantryReceived()`, `observeHasReceivedStarterPantry()` helpers
+- `BandRepository.kt`: `memberInputsForBand()` signature changed to accept `Map<String, Recipe?>` per member + `cookLevel: Int`; stat bonuses applied per member; HP/s now computed from 7-tier cook level table (mirrors `food_model.js`); `hpsForCookLevel()` and `statBonusFor()` in companion object
+- `BandViewModel.kt`: `_selectedFood`/`selectFood()` removed; replaced with `_memberFood: Map<String, PreparedFoodDetail?>`, `assignFoodToMember()`, `clearMemberFood()`; `sendOnEncounter()` now builds per-member recipe map, applies stat bonuses, and consumes one PreparedFood per member
+- `UiModels.kt`: `PreparedFoodDetail` gains `primaryStat`, `primaryBoost`, `secondaryStat`, `secondaryBoost` fields
+- `EncounterWorker.kt`: Fallback path updated to use `emptyMap(), cookLevel=1`
+- `BandScreen.kt`: Provisioning dialog added — one row per living member, food picker with stat preview (MIG/AGI/VIT/WIL/FAT abbreviations), Assign/Change/Clear per member
+- `KitchenViewModel.kt`: `submitExperiment()` deleted; replaced with `evaluateLive()` (free, no cost) and `commitDiscovery()` (spends ingredients, only callable on exact match); `liveResult`, `canCommit`, `experimentHintSeen` state flows added
+- `KitchenScreen.kt`: Experiment tab now shows live proximity feedback as player assembles ingredients; "Cook it" button enabled only on exact match; one-time dismissible hint card on first visit
+- `starter_inventory.json`: New asset; 5 band-appropriate ingredients seeded on first launch
+- `GameDataRepository.kt`: Added `starterInventoryFor(bandId)` method
+- `KitchenViewModel.init{}`: Starter pantry seeded on first launch, guarded by `hasReceivedStarterPantry`
+- `GatheringViewModel.kt`: Added `showPostForageNudge`, `dismissPostForageNudge()`, `hiveSlot`, `startHive()`, `DURATION_HIVE_MS = 10 * 60 * 1000L`
+- `GatheringScreen.kt`: Post-forage nudge card; "Finishing up…" state when forage timer elapses before worker fires; Hive section (locked below level 8); `GrowingSlotCard` reused for hive slot
+- `GatheringWorker.kt`: Seed drop now unconditional (removed 25% roll); `SEED_DROP_CHANCE` constant deleted
+- `PlayerRepository.kt`: `XP_GATHER_SESSION` reduced 90 → 30
+- `ingredients.json`: `forest_honey` and `field_honey` changed to `gatheringMode: "forage"` — forageable as wild finds, consistent with all honey types; `HiveWorker` produces `forest_honey` as the dedicated timer-based source
+- `HiveWorker.kt`: New `@HiltWorker`; 10-min timer; produces 2–4 `forest_honey`; slot ID `"hive_0"`
+- `GrowingRepository.kt`: Added `observeSlot(id: String): Flow<GrowingSlot?>` generic method
+
+**Decisions made:**
+- Per-member food provisioning: each member gets their own food before each mission; stat bonuses are explicit data on recipes (not formula-derived); HP/s from cook level tier table
+- Recipe discovery: free assembly phase (live proximity feedback, no cost) + commit phase (spends ingredients only on exact match); submitExperiment() removed entirely
+- Starter pantry seeds 5 band-appropriate ingredients on first launch to enable immediate Kitchen experimentation without foraging first
+- Honey design: all honey types are forageable as wild finds; the hive system provides reliable timer-based supply; different hive types for different honey varieties = V2 (not in V1 scope)
+- XP_GATHER_SESSION 90→30: level 5 now takes ~4 sessions (was 2); more sustainable progression
+- Beekeeping unlocks at gathering level 8; one hive slot in V1
+
+**Anything that diverged from docs/design.md:**
+- Honey mechanics refined: honey is both forageable (wild) and hive-produced (reliable). Design.md mentions "honey → royal jelly → rare cultivars" as hive progression — that structure is preserved; V1 just has the first tier (forest honey from one hive type). Royal jelly and rare cultivars remain deferred to V2.
+
+**Coming up:**
+- Next session: Design session for hive system — multiple hive types gated by gathering level, each producing a different honey variety (field_honey hive, heather hive, etc.) — OR defer to V2 and move to Market screen
+- Near term: Market screen (buy ingredients and seeds with gold from missions)
+- Future ideas logged: Multiple hive types (different honey = different bees = different hive) — needs design session before building
