@@ -1,7 +1,7 @@
 # HearthCraft — Full Character Roster
 
 > Authoritative design document — June 2026.
-> 32 named members across four bands. Eight per band, two per role.
+> 24 named members across three bands. Eight per band, two per role.
 > Four active per band at start (one of each role); the second of each role unlocks
 > as a replacement if the first is lost (permadeath insurance).
 >
@@ -19,7 +19,7 @@
 > vocabulary: sweet, hearty, light, spicy, herbal, earthy.
 >
 > Bands: The Mithlost (Forest/elves), The Undermarch (Mountain/dwarves),
-> The Kingswake (Sea/Númenórean corsairs), The Greycloaks (Dúnedain of the North).
+> The Greycloaks (Dúnedain of the North).
 
 ---
 
@@ -143,66 +143,6 @@ hard march, but they notice — and remember — who kept them fed.*
 
 ---
 
-## THE KINGSWAKE — Sea, corsairs
-*Free, chaotic, opportunistic. Answer to no flag and no crown. Eat what they can
-get, go where the money is — but learned the right meal before a hard job changes
-everything.*
-
-**Wardens**
-### Marta Wavebreaker
-- Loud, boastful, terrifyingly capable. The stories she tells about herself are
-  exaggerated; the actual events were worse.
-- Food: hearty. Quirk: plenty of it.
-- Role: Warden. Lean: Might/Vitality (built for excess).
-
-### Bosun Harl
-- A mountain of a man who holds the deck like a breakwater. Slow to anger, and
-  you do not want to see the end of that slow road.
-- Food: hearty. Quirk: stew, endless stew.
-- Role: Warden. Lean: Vitality/Might (the breakwater).
-
-**Keepers**
-### Old Cassia
-- Sailed longer than anyone living should have. Mends rope, bone, and morale with
-  the same unbothered hands. Has buried more crew than she'll say.
-- Food: hearty. Quirk: a full bowl, no fuss.
-- Role: Keeper. Lean: Will/Fate (patches everyone up).
-
-### Tally Brisk
-- Fast-talking, faster-moving; keeps the only honest ledger on the ship and the
-  only dishonest one too. Cheerful under fire in a way that unnerves people.
-- Food: light. Quirk: quick bites, never sits long.
-- Role: Keeper. Lean: Will/Fate (patches on the move).
-
-**Hunters**
-### Silas Thorn  *(ranged)*
-- Quiet, watchful, knows things he won't explain. The fleet uses him as a
-  compass — he always knows when something's wrong before it is. Deadly at range.
-- Food: herbal. Quirk: something brewed and quiet, like him.
-- Role: Hunter (ranged). Lean: Agility (the one who sees, and shoots).
-
-### Rook Calloway  *(melee)*
-- Boarding-axe in each hand and a grin that means trouble. Lives for the leap
-  from rail to rail. Reckless in a way that has somehow kept him alive.
-- Food: spicy. Quirk: hot food, fast, before the leap.
-- Role: Hunter (melee). Lean: Might/Agility (the boarder).
-
-**Captains**
-### Reva Tidecaller
-- Charismatic and completely unpredictable. Decides in three seconds flat and is
-  right often enough that no one argues anymore. The fleet follows because she's
-  usually worth following.
-- Food: light. Quirk: nothing heavy before a job.
-- Role: Captain. Lean: Will/Fate (a natural, magnetic leader).
-
-### Garrick Stormhand
-- Captain of his own ship once, before he lost it; doesn't talk about how. Steady
-  where Reva is wild, the ballast to her sail.
-- Food: hearty. Quirk: the same meal every time, by choice.
-- Role: Captain. Lean: Will/Fate (the grounded counterweight).
-
----
-
 ## THE GREYCLOAKS — Eriador, Dúnedain of the North
 *The remnant of the line of Isildur. Heirs to a kingdom that fell and was never
 rebuilt. They walk the wild lands of Eriador not as wanderers but as guardians
@@ -290,7 +230,6 @@ they are. Among themselves, that matters not at all.*
 |------|-------|---------|------------------------|----------|
 | Mithlost | Caranthir, Sereghil | Galadorn, Faelith | Lúthiel(m), Thalindel(r) | Aelindra, Orenmir |
 | Undermarch | Borin, Snorri | Thrain, Old Vidrun | Dagra(m), Brokk(r) | Keldra, Durgan |
-| Kingswake | Marta, Bosun Harl | Old Cassia, Tally | Rook(m), Silas(r) | Reva, Garrick |
 | Greycloaks | Hollis, Thoral | Cael, Wrenna | Dav(m), Mira(r) | Aldric, Bregan |
 
 Losing any single member never wipes out a role — every role has a backup within

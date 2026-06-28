@@ -7,12 +7,11 @@
 
 ## Current Status — June 28, 2026
 
-**Phase:** Core loop solid — all six audit items addressed; per-member provisioning, recipe discovery, and beekeeping added.
-**V1 progress:** All six tabs functional. Full loop playable end to end. Audit fixes complete.
-**What's working:** Per-member food provisioning before each mission (stat bonuses + HP/s wired into EncounterEngine); recipe discovery now free-assembly (no ingredient cost until exact match confirmed); starter pantry seeded on first launch; post-forage Kitchen nudge; forage delay bug fixed; XP_GATHER_SESSION reduced 90→30; seed drops guaranteed; Contemplative Tea available to all bands; beekeeping unlocked at gathering level 8 (HiveWorker, 10-min timer, forest_honey); all honey types now forageable as wild finds.
-**What's not wired yet:** Market screen. Live animated combat screen (deferred). Multiple hive types (V2 — different honey varieties need different hives, design TBD).
-**Next session:** Design session for hive system (multiple hive types gated by level, each producing a different honey variety) — or Market screen if hive design is deferred to V2.
-**Open questions:** Hive system scope — is one hive type (V1 current) enough for launch, or do we need field_honey and heather_honey hive variants? Gate by gathering level or by crafted hive item?
+**Phase:** Ingredient sourcing data pass complete. Taxonomy, honey region-lock, and recipe fixes shipped.
+**What's working:** Full gatherType taxonomy on all 141 ingredients; honey types consolidated to hive (region-locked per band); HiveWorker and GatheringViewModel derive honey from player's band; three starter recipes fixed (Ferny's Treacle, Brookcress Bannock, Sloe Bitters); 7 new Draw water-source ingredients added for all 3 bands; Milk added as future dairy ingredient. Kingswake band scrubbed from all active design docs — three bands only.
+**What's not wired yet:** Process station (timed kitchen station for render/churn/cure/smoke/brew/mill/press — Plan B); Coop and Dairy producers; Draw station UI; Market screen; live combat screen.
+**Next session:** Write and execute Plan B — Process station + Coop + Dairy workers.
+**Open questions:** Process station cooking-level gates (all at lv1 for now, tune later). Raw ingredient IDs for processInputs (need to define when Process station ships).
 
 ---
 
@@ -1661,3 +1660,32 @@ Full implementation of the recipe discovery system: recipes are now hidden until
 - Next session: Design session for hive system — multiple hive types gated by gathering level, each producing a different honey variety (field_honey hive, heather hive, etc.) — OR defer to V2 and move to Market screen
 - Near term: Market screen (buy ingredients and seeds with gold from missions)
 - Future ideas logged: Multiple hive types (different honey = different bees = different hive) — needs design session before building
+
+---
+
+## Session 44 — June 28, 2026
+**Ingredient Sourcing Data Pass (Plan A)**
+
+**What was built:**
+- `Ingredient.kt`: Added `gatherType: String?`, `processType: String?`, and `processInputs: List<ProcessInput>?` fields (all nullable, null default); added `ProcessInput` data class
+- `ingredients.json`: Full `gatherType` taxonomy applied to all 134 existing ingredients (cultivate/forage/hunt_fish/draw/husbandry/process/craft/mission/trade); `processType` added to 18 processed items; `gatheringMode` changed on exactly 5 honey types (forest_honey, stone_honey, white_nectar, field_honey, heather_honey → "husbandry" to drive hive-only production)
+- `ingredients.json`: 7 new entries added (total 141): bree_well_water, brandywine_water, chetwood_spring, lhun_brine, deep_cistern_water, pass_snowmelt (all Draw water sources per band); milk (husbandry, all bands, future dairy)
+- `recipes.json`: Three surgical fixes — ferny's_treacle swaps rendered_fat → hens_egg (rendered_fat now process-only); brookcress_bannock and sloe_bitters swap field_honey → forest_honey (field_honey now husbandry/hive-only and not accessible to Greycloaks)
+- `HiveWorker.kt`: Region-locked via new `honeyForBand(bandId)` companion function — Greycloaks→forest_honey, Mithlost→white_nectar, Undermarch→stone_honey
+- `GatheringViewModel.kt`: `startHive()` updated to derive honey type from player's band via `HiveWorker.honeyForBand()`
+- All active design docs scrubbed of Kingswake (fourth band): `design/design.md`, `design/characters.md`, `design/combat-model.md`, `design/voice-tone.md`, `docs/roadmap.md`, `README.md`, `future/wishlist.md`
+
+**Decisions made:**
+- gatherType is informational only — `gatheringMode` continues to drive runtime gathering logic (unchanged except for 5 honey types); processInputs populated in Plan B when Process station ships
+- Honey region-lock: each band's hive produces only their regional honey; field_honey and heather_honey exist in data but are not currently acquirable (reserved for Plan B or alternate hive variants)
+- ferny's_treacle fixed to use hens_egg (cookLevel 1 starter must not require a process ingredient)
+- All process ingredients set to cookLevel 1 gates for now — tune later once Process station is in
+- Three bands confirmed as authoritative: greycloaks, mithlost, undermarch. No fourth band.
+
+**Anything that diverged from design/design.md:**
+- Nothing new; Kingswake removal was already flagged and applied across docs
+
+**Coming up:**
+- Next session: Plan B — Process station (timed kitchen station), Coop, Dairy workers
+- Near term: Draw station UI; Market screen
+- Future ideas logged: None this session

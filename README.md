@@ -44,7 +44,7 @@ The Campaign is the game. A player who never touches the Ettenmoors has a comple
 
 ---
 
-## The Four Bands
+## The Three Bands
 
 At the start, the player chooses two bands to work with. The choice sets the flavor of the entire world — mission names, ingredient character, the culture you operate within. Developing both bands is what eventually opens the Ettenmoors.
 
@@ -54,9 +54,6 @@ Ancient, grey, lingering. The ones who stayed to fight a long defeat when others
 ### The Undermarch — Mountain / Dwarves
 Grim, loyal, stone-deep. Words mostly unnecessary. They will not complain about a hard march or a bad night, but they will notice — and remember — who kept them fed. Their missions go into the deep places: cave-ins or worse, holds to reclaim, passes to defend.
 
-### The Kingswake — Sea / Númenórean Corsairs
-Their bloodlines trace to Númenór — mariners who carried the old knowledge of sail and star long after the island sank. They answer to no current king because they remember kings who have been dust for three thousand years. Proud, long-memoried, formal in ways that surprise newcomers. Of all the bands, only the Greycloaks share the same ancient blood — two branches of the same lineage, grown in different directions.
-
 ### The Greycloaks — Eriador / Dúnedain of the North
 The remnant of the line of Isildur. Heirs to a kingdom that fell and was never rebuilt. They walk the wild lands of Eriador not as wanderers but as guardians bound by an oath older than the Shire. They have no home because their home is gone. They wait for the return of the King of the North, and in the meantime they hold the darkness back with their own hands. They are not what they once were. They are more than the world knows.
 
@@ -64,7 +61,7 @@ The remnant of the line of Isildur. Heirs to a kingdom that fell and was never r
 
 ## The Roster
 
-Thirty-two named members across four bands — eight per band, two per role. They are not faceless stats. They are people. Permadeath is real, and every role has a backup within the band so a single loss never leaves a gap that cannot be filled.
+Twenty-four named members across three bands — eight per band, two per role. They are not faceless stats. They are people. Permadeath is real, and every role has a backup within the band so a single loss never leaves a gap that cannot be filled.
 
 Four roles: **Warden, Keeper, Hunter, Captain.** Each essential. The four-role party is the only formation that works — no redundant position, no optional slot. Full roster in `design/characters.md`.
 
@@ -141,7 +138,7 @@ The provisioning loop is complete and playable. The combat model is fully design
 - Market for buying seeds with earned gold
 - Harvest collect mechanic — forage and farm results are claimed actively, not auto-deposited
 - Intro screen with opening lore, band selection, and welcome quotes
-- Four bands: The Mithlost, The Undermarch, The Kingswake, The Greycloaks — each with four named members (Captain, Warden, Keeper, Hunter)
+- Three bands: The Mithlost, The Undermarch, The Greycloaks — each with four named members (Captain, Warden, Keeper, Hunter)
 - Full combat model spec — party stats, DPS, mitigation, hazards, food-stat model, Inspiration (`design/combat-model.md`)
 - 14 encounter JSON files across L1–L40 in `app/src/main/assets/data/encounters/`
 - Encounter design and tuning toolkit in `tools/sim/` (see below)

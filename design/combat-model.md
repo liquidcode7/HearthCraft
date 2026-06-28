@@ -490,7 +490,6 @@ Validated at band Lv5, 5000 runs, role-matched food (Warden: Hearthbread, Hunter
 - **Greycloaks:** goblin warband working the East Road east of Weathertop; intercepted at dusk. Region: Lone-lands.
 - **Mithlost:** goblins probing down from the mountain passes above Celondim, three nights at the tree-line. Region: Ered Luin western woodland edge.
 - **Undermarch:** mountain goblins hitting the outer approach to Thorin's Halls before dawn — a test of the defenses, not a raid. Region: Blue Mountains, Thorin's Halls approach.
-- **Kingswake:** placeholder (home region not yet locked).
 
 ---
 
@@ -530,7 +529,6 @@ for feel; validate per-band encounters before the combat system ships.
 | **Greycloaks** | Neekerbreekers at the Marsh's Edge *(validated)* | Wolves in the Chetwood *(validated)* |
 | **Mithlost** | Midges at the forest margin (Celondim woodland edge, Ered Luin) — `mithlost_midges` | Wargs on the mountain slopes above Celondim — `mithlost_wargs` |
 | **Undermarch** | Cave bats in the lower halls (Blue Mountain tunnels — swarming, claustrophobic, deep-dark) | Mountain wolves on the outer passes above Thorin's Halls |
-| **Kingswake** | TBD — home region not yet locked | TBD |
 
 **Design note:** the Undermarch bats are creatures, not enemies with intent — tonally
 distinct from the goblin raid that follows. The first fight is deep underground and

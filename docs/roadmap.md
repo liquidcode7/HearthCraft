@@ -11,7 +11,7 @@
 
 The provisioning engine is built and playable:
 - Gather → grow → cook → provision → mission loop works end-to-end
-- Four bands, four members each (Warden / Keeper / Hunter / Captain)
+- Three bands, four members each (Warden / Keeper / Hunter / Captain)
 - Stats system (Might, Agility, Vitality, Will, Fate) initialized and growing
 - Vitality-gated missions with probability-based outcomes
 - Wounds (ordinary and grievous), wound treatment

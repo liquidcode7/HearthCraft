@@ -165,14 +165,14 @@ linked yet — the data is in place for future use.
 ## The Band
 
 ### Identity
-At the start of the game the player chooses one of four bands. This is a
+At the start of the game the player chooses one of three bands. This is a
 permanent flavor choice — no mechanical advantage. The choice sets the tone:
 mission names, ingredient flavor text, and the culture the player operates
 within. All bands are equivalent in power.
 
 ---
 
-### The Four Starting Bands
+### The Three Starting Bands
 
 #### The Mithlost — Forest / Elves
 **Home region: Celondim / Duillond, western Ered Luin** — the elf-havens at the
@@ -212,31 +212,6 @@ deep minerals, things that grow without sunlight.
   inspiring or alarming depending on the day. Food: spicy. Quirk: give her heat.
 - **Keldra** (Captain) — Youngest in the company. Ambitious in a way she hasn't
   learned to hide. Food: spicy. Quirk: bold flavors for a bold dwarf.
-
-#### The Kingswake — Sea / Corsairs
-**Home region: [PLACEHOLDER — not yet decided. Candidate: Grey Havens / Lond Daer
-(the old Númenórean anchorage south of the Greyflood). To be locked when the
-narrative frame is written.)]**
-
-Númenórean-descended mariners — ancient bloodlines, formal bearing, kings three
-thousand years in the dust. The sea took most of that back. What remains is a
-fleet that answers to no crown, because their crown drowned with Númenor; that
-accepts no master, because they remember what mastery once was. Proud,
-deliberate, with a standard for how things are done that comes from somewhere
-older than the Age. Missions feel like contracted work and earned trust. Ingredients
-lean toward sea herbs, salt-cured finds, preserved stores from long voyages.
-
-**Members (3 active at start, full roster in `design/characters.md`):**
-- **Reva Tidecaller** (Captain) — Descended from the old navigator families.
-  Carries herself with the quiet assurance of someone who knows what she is, even
-  if no one else does. Decides fast and is right often enough that no one argues.
-  Food: light. Quirk: nothing heavy before a job.
-- **Silas Thorn** (Hunter/ranged) — Quiet, watchful. The fleet uses him as a
-  compass — he always knows when something's wrong before it is. Food: herbal.
-  Quirk: something brewed and quiet, like him.
-- **Marta Wavebreaker** (Warden) — Loud, boastful, terrifyingly capable. The
-  stories she tells about herself are exaggerated; the actual events were worse.
-  Food: hearty. Quirk: plenty of it.
 
 #### The Greycloaks — Eriador / Dúnedain of the North
 **Home region: Bree-land** — crossroads of the world, ranging country, the
@@ -572,9 +547,8 @@ tracked in `future/wishlist.md`.
   combat uses wounds + grievous system; see `design/combat-model.md`.)
 - *How many named band members does the player start with?* — 3–4 active per band at start.
   Full 8-member rosters are in `design/characters.md`.
-- *Four starting bands?* — The Mithlost (elves/forest), The Undermarch
-  (dwarves/mountain), The Kingswake (corsairs/sea), The Greycloaks
-  (wardens/borderlands).
+- *Three starting bands?* — The Mithlost (elves/forest), The Undermarch
+  (dwarves/mountain), The Greycloaks (wardens/borderlands).
 - *Ingredient quality tiers?* — No. Complexity lives in the cook's skill and
   decisions, not raw materials. Never add quality tiers.
 - *Craft branches (Waybread Fortifier, Miruvor Distiller, Athelas Apothecary)?*

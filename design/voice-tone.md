@@ -52,7 +52,6 @@ Each people has a distinct register. Use it consistently.
 | **Elves** | Graver, more measured. Amused melancholy — they have seen too much of the world's grief to be surprised, but they are not without joy. Long sentences are natural to them; brevity is a choice. |
 | **Rangers / Dúnedain** | Spare, plain-spoken. Economy of words. They say what needs saying and no more. Emotions are real but not announced. |
 | **Hobbits** | Homely, practical, fond of comfort and good food. Cheerful by default. Talk about meals, weather, and the comforts of home even in bad situations. Their plainness is not stupidity — it is a different set of priorities. |
-| **Númenórean-descended (Kingswake)** | Formal, deliberate, old-blooded. They carry their history with the quiet assurance of people who know what they are. More measured than rangers; less sad than elves. |
 
 ### 4. Vocabulary discipline
 

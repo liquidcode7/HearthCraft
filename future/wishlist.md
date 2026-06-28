@@ -345,18 +345,6 @@ content pass begins. See `design/voice-tone.md` for more detail.
 
 ---
 
-## Kingswake Home Region (placeholder)
-
-The Kingswake's starting region is not yet decided. Candidates discussed:
-- **Grey Havens** — the obvious Númenórean-descended maritime anchor in
-  western Eriador, though tonally complex (it is Círdan's haven, not a
-  Númenórean one).
-- **Lond Daer** — the old Númenórean anchorage south of the Greyflood; less
-  prominent in Tolkien canon but more historically plausible for the bloodline.
-
-Resolve when the three-era narrative frame is written in detail.
-
-
 These rules must be honored when the Battlegrounds endgame mode is eventually built.
 
 - **Member growth must route through the player.** Stats, strength, and
