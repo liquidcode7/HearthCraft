@@ -34,6 +34,7 @@ class CookingWorker @AssistedInject constructor(
     override suspend fun doWork(): Result {
         val recipeId = inputData.getString(KEY_RECIPE_ID) ?: return Result.failure()
         val recipe = gameData.recipes.find { it.id == recipeId } ?: return Result.failure()
+        val slot = inputData.getInt(KEY_SLOT, 0)
 
         val oldLevel = player.get()?.cookingLevel ?: 1
 
@@ -60,9 +61,9 @@ class CookingWorker @AssistedInject constructor(
             player.discoverRecipes(toDiscover)
         }
 
-        sessions.clearCooking()
+        sessions.clearCookingSlot(slot)
 
-        notify("Cooking Complete", "${recipe.name} is ready.", NOTIFICATION_ID)
+        notify("Cooking Complete", "${recipe.name} is ready.", NOTIFICATION_ID + slot)
 
         return Result.success()
     }
@@ -91,11 +92,15 @@ class CookingWorker @AssistedInject constructor(
 
     companion object {
         const val KEY_RECIPE_ID = "recipeId"
+        const val KEY_SLOT = "slot"
         const val NOTIFICATION_ID = 2
 
-        fun buildRequest(recipeId: String, durationMs: Long): OneTimeWorkRequest =
+        fun buildRequest(recipeId: String, durationMs: Long, slot: Int = 0): OneTimeWorkRequest =
             OneTimeWorkRequestBuilder<CookingWorker>()
-                .setInputData(workDataOf(KEY_RECIPE_ID to recipeId))
+                .setInputData(workDataOf(
+                    KEY_RECIPE_ID to recipeId,
+                    KEY_SLOT to slot
+                ))
                 .setInitialDelay(durationMs, TimeUnit.MILLISECONDS)
                 .build()
     }
