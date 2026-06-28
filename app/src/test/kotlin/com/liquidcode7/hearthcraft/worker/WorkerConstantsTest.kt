@@ -54,4 +54,24 @@ class WorkerConstantsTest {
     fun `durationForType unknown falls back to 5 minutes`() {
         assertEquals(5 * 60 * 1000L, ProcessWorker.durationForType("unknown_type"))
     }
+
+    @Test
+    fun `CoopWorker SLOT_ID is coop_0`() {
+        assertEquals("coop_0", CoopWorker.SLOT_ID)
+    }
+
+    @Test
+    fun `CoopWorker NOTIFICATION_ID is 41`() {
+        assertEquals(41, CoopWorker.NOTIFICATION_ID)
+    }
+
+    @Test
+    fun `DairyWorker SLOT_ID is dairy_0`() {
+        assertEquals("dairy_0", DairyWorker.SLOT_ID)
+    }
+
+    @Test
+    fun `DairyWorker NOTIFICATION_ID is 42`() {
+        assertEquals(42, DairyWorker.NOTIFICATION_ID)
+    }
 }
