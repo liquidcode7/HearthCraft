@@ -192,6 +192,10 @@ class BandViewModel @Inject constructor(
     private val _memberFood = MutableStateFlow<Map<String, PreparedFoodDetail?>>(emptyMap())
     val memberFood: StateFlow<Map<String, PreparedFoodDetail?>> = _memberFood.asStateFlow()
 
+    val anyFoodAssigned: StateFlow<Boolean> = _memberFood
+        .map { it.values.any { food -> food != null } }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+
     private val _selectedEncounter = MutableStateFlow<EncounterDetail?>(null)
     val selectedEncounter: StateFlow<EncounterDetail?> = _selectedEncounter.asStateFlow()
 

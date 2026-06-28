@@ -54,6 +54,7 @@ fun MissionsScreen(
     val activeEncounterSession by bandViewModel.activeEncounterSession.collectAsState()
     val activeMission by bandViewModel.activeMission.collectAsState()
     val combatReport by bandViewModel.combatReport.collectAsState()
+    val anyFoodAssigned by bandViewModel.anyFoodAssigned.collectAsState()
 
     // Only show encounters that are actually unlocked — hidden is better than locked/greyed.
     val unlockedEncounters = encounters.filter { it.isUnlocked }
@@ -127,6 +128,7 @@ fun MissionsScreen(
                 EncounterCard(
                     encounter = enc,
                     isSelected = enc.encounterId == selectedEncounter?.encounterId,
+                    provisioned = anyFoodAssigned,
                     onClick = { bandViewModel.selectEncounter(enc) }
                 )
                 Spacer(modifier = Modifier.height(8.dp))
@@ -199,7 +201,12 @@ private fun FoodRow(food: PreparedFoodDetail, isSelected: Boolean, onClick: () -
 }
 
 @Composable
-private fun EncounterCard(encounter: EncounterDetail, isSelected: Boolean, onClick: () -> Unit) {
+private fun EncounterCard(
+    encounter: EncounterDetail,
+    isSelected: Boolean,
+    provisioned: Boolean,
+    onClick: () -> Unit
+) {
     val (difficultyLabel, difficultyColor) = when (encounter.difficulty) {
         "easy"   -> "Routine"     to Color(0xFF4CAF50)
         "medium" -> "Challenging" to Color(0xFFFF9800)
@@ -223,6 +230,14 @@ private fun EncounterCard(encounter: EncounterDetail, isSelected: Boolean, onCli
                 Canvas(modifier = Modifier.size(8.dp)) { drawCircle(color = difficultyColor) }
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(difficultyLabel, style = MaterialTheme.typography.labelSmall, color = difficultyColor)
+            }
+            if (!provisioned) {
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    "Band unprovision — actual difficulty higher",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.error
+                )
             }
             Spacer(modifier = Modifier.height(4.dp))
             Text(encounter.flavorLine, style = MaterialTheme.typography.bodySmall)
