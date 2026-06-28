@@ -128,8 +128,8 @@ fun KitchenScreen(
 
                         // Two cooking slots — always visible
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            CookingSlotCard(slot = 0, session = session0, modifier = Modifier.weight(1f))
-                            CookingSlotCard(slot = 1, session = session1, modifier = Modifier.weight(1f))
+                            CookingSlotCard(slot = 0, session = session0, viewModel = viewModel, modifier = Modifier.weight(1f))
+                            CookingSlotCard(slot = 1, session = session1, viewModel = viewModel, modifier = Modifier.weight(1f))
                         }
                         Spacer(modifier = Modifier.height(12.dp))
 
@@ -142,7 +142,6 @@ fun KitchenScreen(
                                     cookingLevel = cookingLevel,
                                     viewModel = viewModel
                                 )
-                                Spacer(modifier = Modifier.height(10.dp))
                                 val freeSlot = if (session0 == null) 0 else 1
                                 Button(
                                     onClick = { viewModel.startCooking(freeSlot) },
@@ -596,6 +595,7 @@ private fun RecipeDetailPanel(
 private fun CookingSlotCard(
     slot: Int,
     session: CookingSession?,
+    viewModel: KitchenViewModel,
     modifier: Modifier = Modifier
 ) {
     val slotLabel = if (slot == 0) "Slot 1" else "Slot 2"
@@ -605,7 +605,7 @@ private fun CookingSlotCard(
             while (true) { now = System.currentTimeMillis(); delay(1000L) }
         }
         val remaining = maxOf(0L, session.startedAtMs + session.durationMs - now)
-        val recipeName = session.recipeId
+        val recipeName = viewModel.recipes.find { it.id == session.recipeId }?.name ?: session.recipeId
         Card(
             modifier = modifier,
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
