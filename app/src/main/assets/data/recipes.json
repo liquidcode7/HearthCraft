@@ -22,7 +22,8 @@
         "qty": 1
       }
     ],
-    "primaryStat": "mig"
+    "primaryStat": "mig",
+    "primaryBoost": 2
   },
   {
     "id": "fernys_treacle",
@@ -43,7 +44,8 @@
         "qty": 1
       }
     ],
-    "primaryStat": "vit"
+    "primaryStat": "vit",
+    "primaryBoost": 2
   },
   {
     "id": "hedgerow_hand_pie",
@@ -68,7 +70,8 @@
         "qty": 1
       }
     ],
-    "primaryStat": "agi"
+    "primaryStat": "agi",
+    "primaryBoost": 2
   },
   {
     "id": "goodmans_stew",
@@ -93,7 +96,8 @@
         "qty": 1
       }
     ],
-    "primaryStat": "vit"
+    "primaryStat": "vit",
+    "primaryBoost": 2
   },
   {
     "id": "brookcress_bannock",
@@ -118,7 +122,8 @@
         "qty": 1
       }
     ],
-    "primaryStat": "wil"
+    "primaryStat": "wil",
+    "primaryBoost": 2
   },
   {
     "id": "sloe_bitters",
@@ -173,7 +178,9 @@
       }
     ],
     "primaryStat": "mig",
-    "secondaryStat": "vit"
+    "primaryBoost": 3,
+    "secondaryStat": "vit",
+    "secondaryBoost": 1
   },
   {
     "id": "chetwood_rabbit_roast",
@@ -199,7 +206,9 @@
       }
     ],
     "primaryStat": "agi",
-    "secondaryStat": "mig"
+    "primaryBoost": 3,
+    "secondaryStat": "mig",
+    "secondaryBoost": 1
   },
   {
     "id": "field_and_fen_potage",
@@ -229,7 +238,9 @@
       }
     ],
     "primaryStat": "vit",
-    "secondaryStat": "wil"
+    "primaryBoost": 3,
+    "secondaryStat": "wil",
+    "secondaryBoost": 1
   },
   {
     "id": "honey_oat_cake",
@@ -255,7 +266,9 @@
       }
     ],
     "primaryStat": "wil",
-    "secondaryStat": "agi"
+    "primaryBoost": 3,
+    "secondaryStat": "agi",
+    "secondaryBoost": 1
   },
   {
     "id": "bilberry_tonic",
@@ -331,7 +344,9 @@
       }
     ],
     "primaryStat": "mig",
-    "secondaryStat": "agi"
+    "primaryBoost": 4,
+    "secondaryStat": "agi",
+    "secondaryBoost": 2
   },
   {
     "id": "ember_porridge",
@@ -374,7 +389,9 @@
       }
     ],
     "primaryStat": "mig",
-    "secondaryStat": "vit"
+    "primaryBoost": 4,
+    "secondaryStat": "vit",
+    "secondaryBoost": 2
   },
   {
     "id": "heartflame_broth",
@@ -424,7 +441,8 @@
         "qty": 1
       }
     ],
-    "primaryStat": "mig"
+    "primaryStat": "mig",
+    "primaryBoost": 2
   },
   {
     "id": "leafwater_salad",
@@ -449,7 +467,8 @@
         "qty": 1
       }
     ],
-    "primaryStat": "agi"
+    "primaryStat": "agi",
+    "primaryBoost": 2
   },
   {
     "id": "springwater_broth",
@@ -474,7 +493,8 @@
         "qty": 1
       }
     ],
-    "primaryStat": "vit"
+    "primaryStat": "vit",
+    "primaryBoost": 2
   },
   {
     "id": "starflower_wafer",
@@ -499,7 +519,8 @@
         "qty": 1
       }
     ],
-    "primaryStat": "wil"
+    "primaryStat": "wil",
+    "primaryBoost": 2
   },
   {
     "id": "keenwater_tincture",
@@ -550,7 +571,9 @@
       }
     ],
     "primaryStat": "mig",
-    "secondaryStat": "vit"
+    "primaryBoost": 3,
+    "secondaryStat": "vit",
+    "secondaryBoost": 1
   },
   {
     "id": "silver_leek_omelette",
@@ -576,7 +599,9 @@
       }
     ],
     "primaryStat": "agi",
-    "secondaryStat": "wil"
+    "primaryBoost": 3,
+    "secondaryStat": "wil",
+    "secondaryBoost": 1
   },
   {
     "id": "fennel_and_cheese_bake",
@@ -602,7 +627,9 @@
       }
     ],
     "primaryStat": "vit",
-    "secondaryStat": "wil"
+    "primaryBoost": 3,
+    "secondaryStat": "wil",
+    "secondaryBoost": 1
   },
   {
     "id": "moonpetal_tisane",
@@ -673,7 +700,8 @@
         "qty": 1
       }
     ],
-    "primaryStat": "mig"
+    "primaryStat": "mig",
+    "primaryBoost": 2
   },
   {
     "id": "quickfoot_skewer",
@@ -698,7 +726,8 @@
         "qty": 1
       }
     ],
-    "primaryStat": "agi"
+    "primaryStat": "agi",
+    "primaryBoost": 2
   },
   {
     "id": "stoneroot_stew",
@@ -723,7 +752,8 @@
         "qty": 1
       }
     ],
-    "primaryStat": "vit"
+    "primaryStat": "vit",
+    "primaryBoost": 2
   },
   {
     "id": "rockmoss_crispbread",
@@ -748,7 +778,8 @@
         "qty": 1
       }
     ],
-    "primaryStat": "wil"
+    "primaryStat": "wil",
+    "primaryBoost": 2
   },
   {
     "id": "ironbite_stout",
@@ -803,7 +834,9 @@
       }
     ],
     "primaryStat": "mig",
-    "secondaryStat": "vit"
+    "primaryBoost": 3,
+    "secondaryStat": "vit",
+    "secondaryBoost": 1
   },
   {
     "id": "goat_and_ironfoot",
@@ -829,7 +862,9 @@
       }
     ],
     "primaryStat": "agi",
-    "secondaryStat": "mig"
+    "primaryBoost": 3,
+    "secondaryStat": "mig",
+    "secondaryBoost": 1
   },
   {
     "id": "deepcap_and_malt_loaf",
@@ -859,7 +894,9 @@
       }
     ],
     "primaryStat": "vit",
-    "secondaryStat": "mig"
+    "primaryBoost": 3,
+    "secondaryStat": "mig",
+    "secondaryBoost": 1
   },
   {
     "id": "stonewort_cure",
@@ -931,7 +968,9 @@
       }
     ],
     "primaryStat": "vit",
-    "secondaryStat": "mig"
+    "primaryBoost": 2,
+    "secondaryStat": "mig",
+    "secondaryBoost": 1
   },
   {
     "id": "wanderers_supper",
@@ -953,17 +992,19 @@
       }
     ],
     "primaryStat": "agi",
-    "secondaryStat": "mig"
+    "primaryBoost": 2,
+    "secondaryStat": "mig",
+    "secondaryBoost": 1
   },
   {
     "id": "contemplative_tea",
     "name": "Contemplative Tea",
-    "band": "mithlost",
+    "band": "all",
     "class": "draught",
     "method": "infuse",
     "tier": 1,
     "cookLevel": 1,
-    "description": "\u2605 Existing. NOTE: Reclassify from stat-food to draught or convert to solid per food rework.",
+    "description": "\u2605 Existing. A contemplative infusion that clarifies the mind.",
     "ingredients": [
       {
         "id": "sunpetal_herb",
@@ -975,7 +1016,9 @@
       }
     ],
     "primaryStat": "wil",
-    "secondaryStat": "agi"
+    "primaryBoost": 2,
+    "secondaryStat": "agi",
+    "secondaryBoost": 1
   },
   {
     "id": "restorative_broth",
