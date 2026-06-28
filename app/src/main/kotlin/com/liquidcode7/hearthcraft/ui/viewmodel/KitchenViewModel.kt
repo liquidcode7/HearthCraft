@@ -49,8 +49,13 @@ class KitchenViewModel @Inject constructor(
     val inventoryItems: StateFlow<List<InventoryItem>> = inventory.observeIngredients()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    val session: StateFlow<CookingSession?> = sessions.observeCooking()
+    val session0: StateFlow<CookingSession?> = sessions.observeCookingSlot(0)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
+
+    val session1: StateFlow<CookingSession?> = sessions.observeCookingSlot(1)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
+
+    val session: StateFlow<CookingSession?> get() = session0   // backward-compat alias
 
     val playerState: StateFlow<PlayerState?> = player.observe()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
@@ -201,15 +206,25 @@ class KitchenViewModel @Inject constructor(
         return recipe.ingredients.all { needed -> (qtyMap[needed.id] ?: 0) >= needed.qty }
     }
 
-    fun startCooking() {
+    fun startCooking(preferredSlot: Int = -1) {
         val recipe = _selectedRecipe.value ?: return
         viewModelScope.launch {
-            if (sessions.activeCooking() != null) return@launch
+            val freeSlot = when {
+                preferredSlot >= 0 -> preferredSlot
+                sessions.activeCookingSlot(0) == null -> 0
+                sessions.activeCookingSlot(1) == null -> 1
+                else -> return@launch
+            }
+            if (sessions.activeCookingSlot(freeSlot) != null) return@launch
+            if (!canCook(recipe, inventoryItems.value)) return@launch
+
             recipe.ingredients.forEach { inventory.removeIngredient(it.id, it.qty) }
-            val request = CookingWorker.buildRequest(recipe.id, recipe.durationMs)
+
+            val request = CookingWorker.buildRequest(recipe.id, recipe.durationMs, freeSlot)
             WorkManager.getInstance(context).enqueue(request)
-            sessions.startCooking(
+            sessions.startCookingInSlot(
                 CookingSession(
+                    id = freeSlot,
                     recipeId = recipe.id,
                     startedAtMs = System.currentTimeMillis(),
                     durationMs = recipe.durationMs,
