@@ -244,13 +244,26 @@ class GatheringViewModel @Inject constructor(
 
     fun collectGrowingSlot(slotId: String) {
         viewModelScope.launch {
+            // Read slot BEFORE clearing to get plantedAtMs and durationMs
+            val slot = growing.getSlot(slotId)
             val items = growing.collectAndClearSlot(slotId)
-            items.forEach { item ->
+
+            // For auto-producers: multiply yield by elapsed full cycles (cap = 3)
+            val producerSlots = setOf(HiveWorker.SLOT_ID, CoopWorker.SLOT_ID, DairyWorker.SLOT_ID)
+            val finalItems = if (slotId in producerSlots && slot != null && slot.durationMs > 0) {
+                val elapsed = System.currentTimeMillis() - slot.plantedAtMs
+                val cycles = (elapsed / slot.durationMs).coerceIn(1L, MAX_STOCKPILE_CYCLES)
+                items.map { it.copy(quantity = it.quantity * cycles.toInt()) }
+            } else {
+                items
+            }
+
+            finalItems.forEach { item ->
                 if (item.rarity == "bonus") inventory.addSeed(item.ingredientId, item.quantity)
                 else inventory.addIngredient(item.ingredientId, item.quantity)
             }
             _lastHarvest.value = HarvestReadout(
-                items = items,
+                items = finalItems,
                 baseXp = PlayerRepository.XP_GATHER_SESSION,
                 discoveryBonusXp = 0
             )
@@ -285,5 +298,6 @@ class GatheringViewModel @Inject constructor(
         const val DURATION_HIVE_MS  = 10 * 60 * 1000L
         const val DURATION_COOP_MS  = 15 * 60 * 1000L
         const val DURATION_DAIRY_MS = 20 * 60 * 1000L
+        private const val MAX_STOCKPILE_CYCLES = 3L
     }
 }
