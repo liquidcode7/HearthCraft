@@ -51,14 +51,31 @@ class ProcessStationTest {
     }
 
     @Test
-    fun `canProcess handles multiple inputs correctly`() {
+    fun `canProcess with multiple inputs returns true when all are available`() {
         val ingredient = Ingredient(
             id = "malt_syrup",
             name = "Malt Syrup",
-            processInputs = listOf(ProcessInput(id = "barleycorn", qty = 3))
+            processInputs = listOf(
+                ProcessInput(id = "barleycorn", qty = 3),
+                ProcessInput(id = "water", qty = 1)
+            )
         )
-        val items = listOf(inventoryItem("barleycorn", 3))
+        val items = listOf(inventoryItem("barleycorn", 3), inventoryItem("water", 2))
         assertTrue(canProcess(ingredient, items))
+    }
+
+    @Test
+    fun `canProcess with multiple inputs returns false when one input is missing`() {
+        val ingredient = Ingredient(
+            id = "malt_syrup",
+            name = "Malt Syrup",
+            processInputs = listOf(
+                ProcessInput(id = "barleycorn", qty = 3),
+                ProcessInput(id = "water", qty = 1)
+            )
+        )
+        val items = listOf(inventoryItem("barleycorn", 3))  // water missing
+        assertFalse(canProcess(ingredient, items))
     }
 
     // Extracted logic matching the ViewModel's canProcess implementation
