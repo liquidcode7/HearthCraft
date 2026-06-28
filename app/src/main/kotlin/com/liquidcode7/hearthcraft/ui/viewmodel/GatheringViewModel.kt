@@ -88,6 +88,32 @@ class GatheringViewModel @Inject constructor(
         .map { planted -> (0..1).map { i -> planted.find { it.id == "garden_$i" } } }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), List(2) { null })
 
+    // Sub-tab selection: 0 = Growing, 1 = Wild, 2 = Producers
+    private val _gatherSubTab = MutableStateFlow(0)
+    val gatherSubTab: StateFlow<Int> = _gatherSubTab.asStateFlow()
+    fun selectGatherSubTab(tab: Int) { _gatherSubTab.value = tab }
+
+    // Badge: number of growing slots with a ready result
+    val growingReadyCount: StateFlow<Int> = combine(
+        farmPlot, gardenSlots
+    ) { farm, garden ->
+        val farmReady = if (farm?.pendingResultJson != null) 1 else 0
+        val gardenReady = garden.count { it?.pendingResultJson != null }
+        farmReady + gardenReady
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+
+    // Badge: forage session has a result waiting
+    val wildReady: StateFlow<Boolean> = forageSession
+        .map { it?.pendingResultJson != null }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+
+    // Badge: number of producers (hive/coop/dairy) with a result waiting
+    val producersReadyCount: StateFlow<Int> = combine(
+        hiveSlot, coopSlot, dairySlot
+    ) { hive, coop, dairy ->
+        listOf(hive, coop, dairy).count { it?.pendingResultJson != null }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+
     val seeds: StateFlow<List<SeedDetail>> = inventory.observeSeeds()
         .map { stocks ->
             stocks.filter { it.quantity > 0 }.map { stock ->
