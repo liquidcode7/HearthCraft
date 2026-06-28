@@ -138,11 +138,13 @@ class KitchenViewModel @Inject constructor(
         .map { it?.hasSeenExperimentHint ?: false }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
-    // ── Init: seed starter recipes for a brand-new player ────────────────────
+    // ── Init: seed starter recipes and starter pantry for a brand-new player ──
 
     init {
         viewModelScope.launch {
             val state = player.get() ?: return@launch
+
+            // Seed starter recipes (existing logic — unchanged)
             if (state.discoveredRecipeIds.isBlank()) {
                 val universals = setOf("hearthbread", "wanderers_supper", "contemplative_tea")
                 val bandStarter = when (state.chosenBandId) {
@@ -154,6 +156,13 @@ class KitchenViewModel @Inject constructor(
                 val toDiscover = (universals + listOfNotNull(bandStarter))
                     .filter { id -> gameData.recipes.any { it.id == id } }
                 player.discoverRecipes(toDiscover)
+            }
+
+            // Seed starter pantry (one-time on first launch)
+            if (!state.hasReceivedStarterPantry) {
+                val starters = gameData.starterInventoryFor(state.chosenBandId)
+                starters.forEach { (id, qty) -> inventory.addIngredient(id, qty) }
+                player.markStarterPantryReceived()
             }
         }
     }

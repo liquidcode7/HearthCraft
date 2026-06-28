@@ -1,0 +1,30 @@
+{
+  "greycloaks": [
+    { "id": "hearthgrain",    "qty": 4 },
+    { "id": "goodmans_taters","qty": 3 },
+    { "id": "pale_cap",       "qty": 3 },
+    { "id": "field_honey",    "qty": 2 },
+    { "id": "common_thyme",   "qty": 3 }
+  ],
+  "mithlost": [
+    { "id": "pale_waybread_grain", "qty": 4 },
+    { "id": "silver_leek",         "qty": 3 },
+    { "id": "sunpetal_herb",       "qty": 3 },
+    { "id": "white_nectar",        "qty": 2 },
+    { "id": "lhun_sage",           "qty": 3 }
+  ],
+  "undermarch": [
+    { "id": "mountain_malt",   "qty": 4 },
+    { "id": "stone_root",      "qty": 3 },
+    { "id": "deepcap",         "qty": 3 },
+    { "id": "rendered_tallow", "qty": 2 },
+    { "id": "cave_onion",      "qty": 3 }
+  ],
+  "kingswake": [
+    { "id": "hearthgrain",  "qty": 4 },
+    { "id": "leek",         "qty": 3 },
+    { "id": "butter",       "qty": 3 },
+    { "id": "field_honey",  "qty": 2 },
+    { "id": "common_thyme", "qty": 3 }
+  ]
+}

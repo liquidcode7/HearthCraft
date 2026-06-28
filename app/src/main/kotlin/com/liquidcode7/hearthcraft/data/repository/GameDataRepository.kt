@@ -7,6 +7,7 @@ import com.liquidcode7.hearthcraft.data.model.Encounter
 import com.liquidcode7.hearthcraft.data.model.Ingredient
 import com.liquidcode7.hearthcraft.data.model.Recipe
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -23,6 +24,17 @@ class GameDataRepository @Inject constructor(
     val recipes: List<Recipe> by lazy { load("recipes.json") }
     val encounters: List<Encounter> by lazy { load("encounters.json") }
 
+    private val starterInventory: Map<String, List<StarterItem>> by lazy {
+        val raw = context.assets.open("data/starter_inventory.json").bufferedReader().readText()
+        json.decodeFromString(raw)
+    }
+
+    fun starterInventoryFor(bandId: String): List<Pair<String, Int>> =
+        starterInventory[bandId]?.map { it.id to it.qty } ?: emptyList()
+
     private inline fun <reified T> load(filename: String): List<T> =
         json.decodeFromString(context.assets.open("data/$filename").bufferedReader().readText())
 }
+
+@Serializable
+private data class StarterItem(val id: String, val qty: Int)
