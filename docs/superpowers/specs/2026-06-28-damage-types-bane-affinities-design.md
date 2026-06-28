@@ -1,6 +1,6 @@
 # Damage Types & Bane Affinities — Design Spec
 
-> Design agreed with Wes. Partially specified — shadow incoming damage and bane
+> Design agreed with Wes. Partially specified — incoming damage types and bane
 > multiplier implementation deferred pending further design sessions.
 
 ---
@@ -9,48 +9,63 @@
 
 Two related concepts, at different levels of design maturity:
 
-1. **Damage Types** (ready) — outgoing DPS is split into physical vs. named affinity channels. The affinity types (Light, Westernesse) are inherent to the *nature of each role's magic damage*, not role-level bane unlocks. Armor only applies to physical.
+1. **Damage Types** (ready) — outgoing DPS is split into physical vs. magic channels. Magic damage has a named type drawn from a shared taxonomy. The specific type is determined by the *source* (character's innate nature in V1; weapon-driven in V2). Armor only applies to physical.
 
-2. **Bane Affinities** (V2 — weapon-gated) — when characters acquire named legendary weapons, those weapons carry bane affinities that multiply damage against matching enemy categories. No innate role banes exist. The encounter enemy-category tag system supports this eventually.
+2. **Bane Affinities** (V2 — weapon-gated) — legendary weapons carry a damage type. When a weapon's type matches an enemy's category vulnerability, a bane multiplier fires. No bane can fire without a weapon.
 
-3. **Incoming Shadow Damage** (design pending) — placeholder only. More design needed before specifying.
+3. **Incoming Damage Types** (design pending) — placeholder only. Enemy damage has types too (shadow, wraith damage, etc.); the mitigation model is not yet designed.
 
 ---
 
-## Outgoing Damage Types
+## Damage Type Taxonomy
 
-### The Rule
+Magic damage can be any of the following named types. These are not exhaustive — the list can grow with new content. The same taxonomy applies to both player-side magic and (eventually) enemy-side damage.
 
-Might and Agility are physical by nature. Will is non-physical — its character depends on whose Will it is:
+| Type | Lore character |
+|---|---|
+| **Beleriand** | The ancient enmity — elvish and dwarven power forged in the First Age wars against Morgoth |
+| **Mormegil** | The doom of the Black Sword; Gurthang's willing stroke against dragon-kind |
+| **Light** | Grace of the Valar; the fire of Aman and Elbereth's starlight |
+| **Shadow** | The Unlight of Ungoliant; the darkness that unmakes light *(appears on enemy side; TBD on player side)* |
+| **Westernesse** | The strength of Númenorean heritage; ancient craftsmanship and the lineage of kings |
+| **Wraith** | *(design pending — appears on enemy side; TBD on player side)* |
 
-| Source | Damage type | Armor? |
+Physical damage is not in this list. Physical is the absence of a magic type — it is steel, strength, and skill, and it is what armor is built to stop.
+
+---
+
+## Outgoing Damage Types (V1)
+
+### Physical vs. magic
+
+Might and Agility drive physical damage. Will drives magic damage — but *what kind* of magic depends on the character and their weapon.
+
+| Source | Channel | Armor? |
 |---|---|---|
 | Might (Warden, Hunter, Captain) | Physical | Yes — `physMit` applies |
 | Agility (Hunter) | Physical | Yes |
-| **Will (Keeper)** | **Light** | No — bypasses armor |
-| **Will (Captain)** | **Westernesse** | No — bypasses armor |
+| Will (Keeper) | Magic — **Light** (V1 default) | No |
+| Will (Captain) | Magic — **Westernesse** (V1 default) | No |
 
-The Keeper and Captain's magic is named because it matters lore-specifically which kind of power it is — not because it grants a bonus on its own. Light is the grace of the Valar; Westernesse is the strength of Númenorean heritage. These are not mechanical boons yet. They become mechanically relevant when legendary weapons add bane affinities (V2).
+In V1, with no weapons, the Keeper's magic is Light and the Captain's is Westernesse because of who they are — healer and captain of Númenorean lineage respectively. These are not locked facts; a weapon with a different type would change the character's magic output type.
 
-### DPS formulas (unchanged, relabeled)
+### DPS formulas (unchanged, type labels added)
 
 - **Warden:** `Mig × 0.5` — Physical
 - **Hunter (Agi build):** `Agi + Mig × 0.4` — Physical
 - **Hunter (Mig build):** `Mig + Agi × 0.4` — Physical
-- **Keeper:** `Wil × 0.9` — **Light** *(zero on any tick spent on a rescue)*
-- **Captain:** `Mig × 0.3` (Physical) + `Wil × 0.2` (**Westernesse**)
-
-Captain's Will is Westernesse because she is of that lineage — it is not a bane toggle. If she fights a wraith, the Westernesse damage type is present, but there is no multiplier attached to it until she carries a Westernesse weapon.
+- **Keeper:** `Wil × 0.9` — Magic / **Light** *(zero on any tick spent on a rescue)*
+- **Captain:** `Mig × 0.3` (Physical) + `Wil × 0.2` (Magic / **Westernesse**)
 
 ### Armor application (revised)
 
-Physical sub-totals from all active members are summed first; armor is applied to that total. Affinity damage (Light + Westernesse) is summed separately and added after:
+Physical sub-totals from all active members are summed first; armor is applied. Magic damage (all types, all members) is summed separately and added after:
 
 ```
-physDps     = Σ physical contributions (Warden, Hunter, Captain Mig portion)
-affinityDps = Σ Light (Keeper) + Σ Westernesse (Captain Wil portion)
+physDps     = Σ physical contributions from all active members
+magicDps    = Σ magic contributions from all active members (any type)
 effArmor    = physMit × (1 - min(1, draughtPotency / PEN_SCALE))
-effectiveDps = physDps × (1 - effArmor) + affinityDps
+effectiveDps = physDps × (1 - effArmor) + magicDps
 ```
 
 This replaces the current single-`raw` path in `dpsBreakdown()`.
@@ -61,63 +76,78 @@ This replaces the current single-`raw` path in `dpsBreakdown()`.
 
 ### Concept
 
-Enemy encounters carry category tags (`orc`, `wraith`, `shadow`, `dragon`, etc.). Named legendary weapons carry bane affinities that match one or more of these categories. When a member carries a bane weapon that matches the enemy category, their DPS is multiplied.
+Enemy encounters carry category tags that describe what they are. Legendary weapons carry a magic damage type. When a character is dealing magic damage of a type that the enemy is vulnerable to, a bane multiplier fires on that character's damage contribution.
 
-| Bane name | Enemy category | Lore anchor |
+The bane is the *weapon's* property meeting the *enemy's* vulnerability — not a role perk.
+
+### Enemy categories and their vulnerabilities
+
+| Enemy category | Vulnerable to | Notes |
 |---|---|---|
-| Beleriand | `orc` | Elvish/dwarven steel from the First Age wars against Morgoth |
-| Westernesse | `wraith` | Númenórean steel; Barrow-blades and Dúnedain weapons that wound the undead |
-| Light | `shadow` | Grace of the Valar; Elbereth's light that shadow-creatures cannot endure |
-| Mormegil | `dragon` | The doom of the Black Sword; Gurthang's killing blow against Glaurung |
+| `orc` | Beleriand | Orcs, Uruk-hai, goblins — ancient enemies of the First Age races |
+| `dragon` | Mormegil | Cold-drakes and fire-drakes; Glaurung, Smaug |
+| `shadow` | Light | Shadow-creatures; Balrog, great spiders, Ungoliant-spawn |
+| `wraith` | Westernesse | Ringwraiths, Barrow-wights, Dead Men of Dunharrow |
 
-### V2 scope
+Other categories (`beast`, `huorn`, etc.) have no defined bane vulnerability yet. They may receive one in future design.
 
-Weapon bane system is entirely V2+. No innate role banes exist — the multiplier is always weapon-sourced. The damage *type* on magic output (Light, Westernesse) is what makes a weapon's bane affinity relevant for that role: a Westernesse weapon in the Captain's hands multiplies her Westernesse output against wraiths.
+### How it fires
+
+A bane multiplier applies when the member's weapon damage type matches the enemy's vulnerability:
+
+```
+if member.weapon.type == enemy.vulnerableTo:
+    memberEffDps *= BANE_MULTIPLIER
+```
+
+Applies after armor reduction. A member with a Beleriand weapon fighting an `orc`-tagged encounter gets the multiplier on their full effective DPS contribution. A member with a Westernesse weapon fighting orcs gets nothing extra.
 
 `BANE_MULTIPLIER = 1.15` (placeholder — validate in sim when bane weapons are designed)
 
-### V1 note
+### V2 scope
 
-Encounter enemy-category tags can be authored now. V1 encounters may carry them for forward-compatibility. No bane fires in V1 (no weapons). When bane weapons land in V2, already-tagged encounters will work without reauthoring.
+No bane fires without a weapon. V1 has no weapons — the system does not exist in V1 gameplay. Encounter category tags can be authored now for forward-compatibility.
 
 ---
 
-## Incoming Shadow Damage — DESIGN PENDING
+## Incoming Damage Types — DESIGN PENDING
 
 > **Placeholder.** This section needs a dedicated design session before it is specified.
 
-Open questions:
-- Is shadow damage a separate per-tick channel (like drain), or is it attached to spike events?
-- What is the mitigation model — individual Will, party-wide radiance, both?
-- How does it interact with the existing Shadow status effect (which drains Will + Fate over time)? Are they additive, or does the status effect gate the damage channel?
-- Which enemy categories deal shadow damage? Ringwraiths obviously — what else?
-- Is there a design reason to separate "the Black Breath" (undead-flavored shadow wound) from generic shadow damage?
+Enemies deal damage too, and some of it is clearly typed — a Ringwraith's Black Breath is not the same as a goblin's spear. The taxonomy above includes Shadow and Wraith as types that appear on the enemy side.
 
-Do not implement shadow incoming damage until these are answered. Keep the encounter schema field as a TBD stub.
+Open questions:
+- Is incoming shadow/wraith damage a separate per-tick channel alongside drain, or is it attached to spike events?
+- What is the mitigation model? (Will for shadow? Westernesse affinity for wraith damage?)
+- How does incoming shadow damage interact with the Shadow *status effect* (which drains Will + Fate over time)? Same thing expressed differently, or two distinct mechanics that stack?
+- Can player characters ever deal Shadow or Wraith damage? (Corrupted weapons? The Morgul blade?) Or are those permanently enemy-side types?
+
+Do not implement incoming typed damage until these are answered.
 
 ---
 
-## sim implementation scope (damage types only)
+## sim implementation scope (V1 — damage type split only)
 
 Changes to `tools/sim/run_sim.js`:
 
-1. **`dpsBreakdown()`** — split into `physDps` and `affinityDps`; apply armor only to `physDps`; sum after. Return both sub-totals for logging.
-2. **No bane multiplier in V1 sim** — enemy category tags can be parsed but nothing fires.
-3. **No shadow damage channel** — pending design.
+1. **`dpsBreakdown()`** — track `physDps` and `magicDps` separately per member; apply armor only to `physDps` total; sum both after. Return sub-totals for logging.
+2. **No bane multiplier** — enemy category tags can be parsed/stored but nothing fires in V1.
+3. **No incoming typed damage** — pending design.
 
 Changes to `docs/combat-model.md`:
 
-1. Update DPS formulas table with damage type labels (Physical / Light / Westernesse).
-2. Add a "Damage Types" section with the armor-split formula.
-3. Add a "Bane Affinities" section — concept and V2 weapon-gating, four-bane table.
-4. Add a stub "Incoming Shadow Damage" section marked design-pending.
-5. Update the constants block with `BANE_MULTIPLIER = 1.15` (V2 placeholder).
+1. Update DPS formulas table with Physical / Magic type labels and V1 defaults.
+2. Add a "Damage Type Taxonomy" section with the full type list.
+3. Add "Armor application" section with the revised physDps/magicDps split formula.
+4. Add a "Bane Affinities" section — concept, enemy vulnerability table, V2 weapon-gating.
+5. Add a stub "Incoming Damage Types" section marked design-pending.
+6. Update the constants block with `BANE_MULTIPLIER = 1.15` (V2 placeholder).
 
 ---
 
 ## What this is NOT
 
-- No innate role banes — banes come from weapons, not from being a Keeper or a Warden.
-- No mechanical bonus from damage types alone in V1 — Light and Westernesse bypass armor, that is all.
-- No shadow damage channel yet — pending design session.
-- No player-facing damage type UI in V1 — the system is backend only for now.
+- No innate role banes — banes come from weapons.
+- No mechanical bonus from damage type alone in V1 — magic bypasses armor, that is all.
+- No incoming typed damage yet — pending design session.
+- No player-facing damage type UI in V1.
