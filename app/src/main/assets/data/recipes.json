@@ -106,7 +106,7 @@
     "class": "draught",
     "method": "infuse",
     "tier": 1,
-    "cookLevel": 1,
+    "cookLevel": 5,
     "description": "Bitter and sharp. Teaches the band to cut through what resists them.",
     "ingredients": [
       {
@@ -318,8 +318,8 @@
     "band": "greycloaks",
     "class": "food",
     "method": "simmer",
-    "tier": 1,
-    "cookLevel": 1,
+    "tier": 2,
+    "cookLevel": 3,
     "description": "★ Existing. Hot and sustaining. Counters the cold.",
     "ingredients": [
       {
@@ -487,7 +487,7 @@
     "class": "draught",
     "method": "infuse",
     "tier": 1,
-    "cookLevel": 1,
+    "cookLevel": 5,
     "description": "Precise and cold. Teaches armor-cutting through purity of preparation.",
     "ingredients": [
       {
@@ -736,7 +736,7 @@
     "class": "draught",
     "method": "brew",
     "tier": 1,
-    "cookLevel": 1,
+    "cookLevel": 5,
     "description": "A flat stout brewed for penetration, not pleasure. The best one.",
     "ingredients": [
       {

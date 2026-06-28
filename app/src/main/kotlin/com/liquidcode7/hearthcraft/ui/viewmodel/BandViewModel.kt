@@ -4,15 +4,18 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
+import com.liquidcode7.hearthcraft.data.db.CombatReport
 import com.liquidcode7.hearthcraft.data.db.EncounterSession
 import com.liquidcode7.hearthcraft.data.db.MissionSession
 import com.liquidcode7.hearthcraft.data.model.Band
 import com.liquidcode7.hearthcraft.data.repository.BandRepository
+import com.liquidcode7.hearthcraft.data.repository.CombatRepository
 import com.liquidcode7.hearthcraft.data.repository.EncounterRepository
 import com.liquidcode7.hearthcraft.data.repository.GameDataRepository
 import com.liquidcode7.hearthcraft.data.repository.InventoryRepository
 import com.liquidcode7.hearthcraft.data.repository.PlayerRepository
 import com.liquidcode7.hearthcraft.data.repository.SessionRepository
+import com.liquidcode7.hearthcraft.engine.EncounterEngine
 import com.liquidcode7.hearthcraft.worker.EncounterWorker
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -40,7 +43,8 @@ class BandViewModel @Inject constructor(
     private val band: BandRepository,
     private val inventory: InventoryRepository,
     private val sessions: SessionRepository,
-    private val player: PlayerRepository
+    private val player: PlayerRepository,
+    private val combatRepo: CombatRepository
 ) : ViewModel() {
 
     private val playerState = player.observe()
@@ -171,6 +175,19 @@ class BandViewModel @Inject constructor(
         .distinctUntilChanged()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
 
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val combatReport: StateFlow<CombatReport?> = activeBandId
+        .flatMapLatest { bandId ->
+            if (bandId == null) flowOf(null)
+            else combatRepo.observe(bandId)
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
+
+    fun dismissCombatReport() {
+        val bandId = activeBandId.value ?: return
+        viewModelScope.launch { combatRepo.clear(bandId) }
+    }
+
     private val _selectedFood = MutableStateFlow<PreparedFoodDetail?>(null)
     val selectedFood: StateFlow<PreparedFoodDetail?> = _selectedFood.asStateFlow()
 
@@ -196,20 +213,44 @@ class BandViewModel @Inject constructor(
     fun sendOnEncounter() {
         val encounter = _selectedEncounter.value ?: return
         val bandId    = activeBandId.value ?: return
-        // safe on UI thread: EncounterRepository.get() is a pure in-memory list lookup (not a DB call)
         val enc       = encounterRepo.get(encounter.encounterId) ?: return
         val food      = _selectedFood.value
         viewModelScope.launch {
             if (sessions.activeEncounter(bandId) != null) return@launch
-            // V1: all members get same HP/s from the food's buffStrength (0 if no food packed).
             val hps     = food?.buffStrength?.toFloat()?.div(10f) ?: 0f
             val hpsList = listOf(hps, hps, hps, hps)
+
+            // Pre-compute fight to find actual end time — band may die early.
+            val stage = enc.stages.firstOrNull() ?: return@launch
+            val members = band.memberInputsForBand(bandId, _draughtPotency.value, hpsList)
+            if (members.isEmpty()) return@launch
+            val result = EncounterEngine.resolve(stage, members)
+
+            // Scale the real-time delay to match when the fight actually ends.
+            val msPerGameSec = enc.durationMs / stage.durationSec.toLong()
+            val actualDelayMs = result.endedAtSec.toLong() * msPerGameSec
+
+            // Store combat report so EncounterWorker can apply results and UI can show them.
+            combatRepo.save(CombatReport(
+                bandId                  = bandId,
+                encounterId             = enc.id,
+                encounterName           = enc.name,
+                outcome                 = result.outcome.name,
+                endedAtSec              = result.endedAtSec,
+                durationSec             = stage.durationSec,
+                woundsJson              = result.woundsByMember.entries.joinToString(",") { "${it.key}:${it.value}" },
+                rescuesUsed             = result.rescuesUsed,
+                wardGuardsUsed          = result.wardGuardsUsed,
+                resolveRemainingFraction= result.resolveRemainingFraction,
+                createdAtMs             = System.currentTimeMillis()
+            ))
+
             val request = EncounterWorker.buildRequest(
                 encounterId    = encounter.encounterId,
                 bandId         = bandId,
                 draughtPotency = _draughtPotency.value,
                 hps            = hpsList,
-                durationMs     = enc.durationMs
+                durationMs     = actualDelayMs
             )
             WorkManager.getInstance(context).enqueue(request)
             sessions.startEncounter(
@@ -218,7 +259,7 @@ class BandViewModel @Inject constructor(
                     encounterId    = encounter.encounterId,
                     draughtPotency = _draughtPotency.value,
                     startedAtMs    = System.currentTimeMillis(),
-                    durationMs     = enc.durationMs,
+                    durationMs     = actualDelayMs,
                     workRequestId  = request.id.toString()
                 )
             )

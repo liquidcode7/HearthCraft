@@ -35,7 +35,8 @@ data class EncounterResult(
     val woundsByMember: Map<String, Int>,
     val rescuesUsed: Int,
     val wardGuardsUsed: Int,
-    val resolveRemainingFraction: Float  // 0.0 = killed, 1.0 = untouched
+    val resolveRemainingFraction: Float,  // 0.0 = killed, 1.0 = untouched
+    val endedAtSec: Int                   // game-time tick when fight concluded
 )
 
 object EncounterEngine {
@@ -105,7 +106,7 @@ object EncounterEngine {
                 return EncounterResult(
                     Outcome.VICTORY,
                     party.associate { it.input.id to it.wounds },
-                    rescues, wardGuards, 0f
+                    rescues, wardGuards, 0f, t
                 )
             }
 
@@ -154,7 +155,7 @@ object EncounterEngine {
                     Outcome.DEFEAT,
                     party.associate { it.input.id to it.wounds },
                     rescues, wardGuards,
-                    boss / stage.resolve
+                    boss / stage.resolve, t
                 )
             }
         }
@@ -165,7 +166,8 @@ object EncounterEngine {
             finalOutcome,
             party.associate { it.input.id to it.wounds },
             rescues, wardGuards,
-            max(0f, boss / stage.resolve)
+            max(0f, boss / stage.resolve),
+            stage.durationSec
         )
     }
 

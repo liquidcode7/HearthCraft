@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -26,6 +27,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -70,6 +72,7 @@ fun KitchenScreen(
     val experimentMethod by viewModel.experimentMethod.collectAsState()
     val lastResult by viewModel.lastExperimentResult.collectAsState()
     val hintsSeen by viewModel.hintsSeen.collectAsState()
+    val cookingXp by viewModel.cookingXpProgress.collectAsState()
     val cookingLevel = playerState?.cookingLevel ?: 1
     val isCooking = session != null
 
@@ -78,6 +81,8 @@ fun KitchenScreen(
         // ── Fixed top section ──────────────────────────────────────────────
         Column(modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 8.dp)) {
             Text("Kitchen", style = MaterialTheme.typography.headlineMedium)
+            Spacer(modifier = Modifier.height(4.dp))
+            KitchenXpBar(level = cookingXp.level, earned = cookingXp.earned, needed = cookingXp.needed)
             Spacer(modifier = Modifier.height(8.dp))
 
             if (!isCooking) {
@@ -535,6 +540,27 @@ private fun CookingActiveCard(recipeName: String, startedAtMs: Long, durationMs:
             Text(formatMs(remainingMs), style = MaterialTheme.typography.headlineSmall, color = MaterialTheme.colorScheme.primary)
             Text("remaining", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
+    }
+}
+
+@Composable
+private fun KitchenXpBar(level: Int, earned: Int, needed: Int) {
+    Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+        Text(
+            "Cooking lv$level",
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.width(80.dp)
+        )
+        LinearProgressIndicator(
+            progress = { earned.toFloat() / needed.toFloat().coerceAtLeast(1f) },
+            modifier = Modifier.weight(1f).height(6.dp)
+        )
+        Text(
+            "  $earned/$needed",
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }
 

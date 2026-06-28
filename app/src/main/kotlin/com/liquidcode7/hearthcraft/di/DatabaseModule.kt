@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.liquidcode7.hearthcraft.data.db.HearthCraftDatabase
 import com.liquidcode7.hearthcraft.data.db.dao.BandMemberStateDao
+import com.liquidcode7.hearthcraft.data.db.dao.CombatReportDao
 import com.liquidcode7.hearthcraft.data.db.dao.CookingSessionDao
 import com.liquidcode7.hearthcraft.data.db.dao.EncounterSessionDao
 import com.liquidcode7.hearthcraft.data.db.dao.GatheringSessionDao
@@ -41,4 +42,5 @@ object DatabaseModule {
     @Provides fun provideSeedStockDao(db: HearthCraftDatabase): SeedStockDao = db.seedStockDao()
     @Provides fun provideGrowingSlotDao(db: HearthCraftDatabase): GrowingSlotDao = db.growingSlotDao()
     @Provides fun provideEncounterSessionDao(db: HearthCraftDatabase): EncounterSessionDao = db.encounterSessionDao()
+    @Provides fun provideCombatReportDao(db: HearthCraftDatabase): CombatReportDao = db.combatReportDao()
 }

@@ -4,6 +4,7 @@ import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import com.liquidcode7.hearthcraft.data.db.dao.BandMemberStateDao
+import com.liquidcode7.hearthcraft.data.db.dao.CombatReportDao
 import com.liquidcode7.hearthcraft.data.db.dao.CookingSessionDao
 import com.liquidcode7.hearthcraft.data.db.dao.EncounterSessionDao
 import com.liquidcode7.hearthcraft.data.db.dao.GatheringSessionDao
@@ -26,12 +27,14 @@ import com.liquidcode7.hearthcraft.data.db.dao.SeedStockDao
         BandMemberState::class,
         SeedStock::class,
         GrowingSlot::class,
+        CombatReport::class,
     ],
-    version = 7,
+    version = 8,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 5, to = 6),
-        AutoMigration(from = 6, to = 7)
+        AutoMigration(from = 6, to = 7),
+        AutoMigration(from = 7, to = 8)
     ]
 )
 abstract class HearthCraftDatabase : RoomDatabase() {
@@ -45,4 +48,5 @@ abstract class HearthCraftDatabase : RoomDatabase() {
     abstract fun bandMemberStateDao(): BandMemberStateDao
     abstract fun seedStockDao(): SeedStockDao
     abstract fun growingSlotDao(): GrowingSlotDao
+    abstract fun combatReportDao(): CombatReportDao
 }

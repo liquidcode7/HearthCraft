@@ -16,6 +16,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -45,6 +46,7 @@ fun GatheringScreen(viewModel: GatheringViewModel = hiltViewModel()) {
     val seeds by viewModel.seeds.collectAsState()
     val lastHarvest by viewModel.lastHarvest.collectAsState()
     val gatheringLevel by viewModel.gatheringLevel.collectAsState()
+    val gatheringXp by viewModel.gatheringXpProgress.collectAsState()
 
     var pickingSlot by remember { mutableStateOf<String?>(null) }
 
@@ -75,8 +77,10 @@ fun GatheringScreen(viewModel: GatheringViewModel = hiltViewModel()) {
             .padding(16.dp)
     ) {
         Text("Gathering", style = MaterialTheme.typography.headlineMedium)
+        Spacer(modifier = Modifier.height(4.dp))
+        XpBar(label = "Gathering", level = gatheringXp.level, earned = gatheringXp.earned, needed = gatheringXp.needed)
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(16.dp))
         SectionHeader("Farm Plot")
         Spacer(modifier = Modifier.height(8.dp))
         if (gatheringLevel < 5) {
@@ -324,6 +328,27 @@ private fun SeedPickerDialog(
             TextButton(onClick = onDismiss) { Text("Cancel") }
         }
     )
+}
+
+@Composable
+private fun XpBar(label: String, level: Int, earned: Int, needed: Int) {
+    Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+        Text(
+            "$label lv$level",
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.width(80.dp)
+        )
+        LinearProgressIndicator(
+            progress = { earned.toFloat() / needed.toFloat().coerceAtLeast(1f) },
+            modifier = Modifier.weight(1f).height(6.dp)
+        )
+        Text(
+            "  $earned/$needed",
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
 }
 
 private fun formatMs(ms: Long): String {

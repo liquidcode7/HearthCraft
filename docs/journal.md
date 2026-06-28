@@ -5,14 +5,14 @@
 
 ---
 
-## Current Status — June 27, 2026
+## Current Status — June 28, 2026
 
-**Phase:** Home screen hub complete. Core loop playable with proper orientation and discovery feedback.
-**V1 progress:** All six tabs functional. Home is now a real hub. Journal sub-screen accessible from Home.
-**What's working:** Home screen with flavor text, live active timers (cooking/foraging/mission), band thumbnail (name + member status), 2×2 nav cards (Gather/Kitchen/Band/Missions), skill XP bars, Journal button. Journal sub-screen: stats glossary (VIT/MGT/AGI/WIL/FAT), food effects reference (11 effects), discovered recipes list grouped by tier. HomeViewModel wired with band name, member counts, encounter session, cooking recipe name, discovered count.
-**What's not wired yet:** Band member stat detail cards (clickable → bar graph readout). Market screen implementation. Wound system is placeholder.
-**Next session:** Band member detail cards — make each row in BandScreen tappable, show a card/modal with stat bar graphs for VIT/MGT/AGI/WIL/FAT.
-**Open questions:** None blocking. Future: deeper per-band onboarding lore, seeds gated behind first forage, market implementation.
+**Phase:** Combat now pre-computes outcomes at dispatch time; missions end early on band death.
+**V1 progress:** All six tabs functional. Post-fight readout wired. XP bars fixed. Role abilities visible.
+**What's working:** Missions end at the correct time (pre-computed via EncounterEngine at dispatch). Post-fight CombatReportCard shows Tolkienesque narrative, fight duration, rescues/shields used, dismiss button. XP bars at top of Gathering and Kitchen tabs. XP display no longer goes negative. Role ability description shown in member detail dialog. Greycloaks starter corrected to ploughmans_plate. Warmth/potency recipe level gates fixed.
+**What's not wired yet:** Forage targeting (no way to prioritize specific discovered ingredients yet). Market screen. Live animated combat screen.
+**Next session:** Forage targeting — allow the player to pin a discovered ingredient as a forage priority so it shows up more reliably.
+**Open questions:** None blocking.
 
 ---
 
@@ -1530,5 +1530,41 @@ Full implementation of the recipe discovery system: recipes are now hidden until
 
 **Coming up:**
 - Next session: Band member detail cards — clickable rows in BandScreen → stat bar graph readout
+- Near term: Market screen implementation
+
+---
+
+## Session 40 — June 28, 2026
+**Early mission termination + post-fight readout + XP bars + role abilities + recipe gates**
+
+**What was built:**
+- `EncounterEngine.kt`: Added `endedAtSec: Int` to `EncounterResult` — records the actual game-time tick the fight ended (VICTORY/DEFEAT at tick `t`, STALEMATE at full `durationSec`)
+- `CombatReport.kt` (new): Room entity storing pre-computed fight results (outcome, wounds, rescues, wardGuards, resolveRemainingFraction, endedAtSec, durationSec)
+- `CombatReportDao.kt` (new): Upsert, get, observe (Flow), clear by bandId
+- `CombatRepository.kt` (new): Thin repository wrapping CombatReportDao
+- `HearthCraftDatabase.kt`: Bumped to v8, added CombatReport entity and AutoMigration from v7
+- `DatabaseModule.kt`: Added `provideCombatReportDao`
+- `BandViewModel.kt`: `sendOnEncounter()` now pre-computes fight via `EncounterEngine.resolve()`, calculates `actualDelayMs = endedAtSec * msPerGameSec`, saves CombatReport to DB, schedules WorkManager with `actualDelayMs` (not full `durationMs`). Added `combatReport: StateFlow<CombatReport?>` and `dismissCombatReport()`
+- `EncounterWorker.kt`: Reads stored CombatReport and applies pre-computed outcome; fallback re-runs engine if no report found (handles in-flight tasks during upgrade)
+- `MissionsScreen.kt`: Added `CombatReportCard` composable — colored card (green/red/amber by outcome), Tolkienesque narrative, fight duration, rescues/shields used, dismiss button. Shows between mission timer and encounter selector.
+- `GatheringViewModel.kt`: Added `gatheringXpProgress: StateFlow<XpProgress>` with correct power-curve formula
+- `KitchenViewModel.kt`: Added `cookingXpProgress: StateFlow<XpProgress>`; changed greycloaks starter to `ploughmans_plate`
+- `GatheringScreen.kt`: XP bar at top of tab using `LinearProgressIndicator`
+- `KitchenScreen.kt`: XP bar in fixed top section
+- `HomeViewModel.kt`: Fixed `xpProgressFor()` — now uses `PlayerRepository.totalXpForLevel()` instead of old linear `l * 100` formula; was causing negative earned XP display
+- `BandScreen.kt`: Added `roleAbility()` in member detail dialog — shows per-role ability name and description (Warden: shield guard, Hunter: relentless shot, Keeper: rescue grace, Captain: will of the host)
+- `recipes.json`: Fixed 4 recipe cook levels — `sloe_bitters`, `keenwater_tincture`, `ironbite_stout` → cookLevel 5; `ember_porridge` → cookLevel 3, tier 2
+- `PlayerRepository.kt`: Moved `enum class Track` from inside `companion object` to direct nested class of `PlayerRepository` (fixes "Unresolved reference 'Track'" compiler error)
+
+**Decisions made:**
+- Pre-compute fight at dispatch, store in DB, Worker reads stored result — no double computation, accurate countdown timer
+- Forage targeting deferred to next session
+- Live animated combat screen deferred (future)
+
+**Anything that diverged from docs/design.md:**
+- None
+
+**Coming up:**
+- Next session: Forage targeting — pin discovered ingredients as forage priority
 - Near term: Market screen implementation
 - Future ideas logged: none this session.

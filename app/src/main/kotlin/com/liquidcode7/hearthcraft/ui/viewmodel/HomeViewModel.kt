@@ -36,11 +36,11 @@ class HomeViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
     val gatheringProgress: StateFlow<XpProgress> = player.observe()
-        .map { xpProgressFor(it?.gatheringXp ?: 0) }
+        .map { xpProgressFor(it?.gatheringXp ?: 0, PlayerRepository.Track.GATHERING) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), XpProgress(1, 0, 100))
 
     val cookingProgress: StateFlow<XpProgress> = player.observe()
-        .map { xpProgressFor(it?.cookingXp ?: 0) }
+        .map { xpProgressFor(it?.cookingXp ?: 0, PlayerRepository.Track.COOKING) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), XpProgress(1, 0, 100))
 
     val gatheringSession: StateFlow<GatheringSession?> = sessions.observeGathering()
@@ -107,14 +107,14 @@ class HomeViewModel @Inject constructor(
         .map { it.size }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
 
-    private fun xpProgressFor(totalXp: Int): XpProgress {
-        val level = PlayerRepository.levelForXp(totalXp)
-        var levelStartXp = 0
-        for (l in 1 until level) levelStartXp += l * 100
+    private fun xpProgressFor(totalXp: Int, track: PlayerRepository.Track): XpProgress {
+        val level = PlayerRepository.levelForTotalXp(totalXp, track)
+        val levelStartXp = PlayerRepository.totalXpForLevel(level, track)
+        val levelEndXp = PlayerRepository.totalXpForLevel(level + 1, track)
         return XpProgress(
             level = level,
             earned = totalXp - levelStartXp,
-            needed = level * 100
+            needed = (levelEndXp - levelStartXp).coerceAtLeast(1)
         )
     }
 }

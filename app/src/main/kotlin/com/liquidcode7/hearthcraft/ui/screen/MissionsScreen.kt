@@ -20,6 +20,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -33,6 +34,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.liquidcode7.hearthcraft.data.db.CombatReport
 import com.liquidcode7.hearthcraft.ui.viewmodel.BandViewModel
 import com.liquidcode7.hearthcraft.ui.viewmodel.EncounterDetail
 import com.liquidcode7.hearthcraft.ui.viewmodel.InventoryViewModel
@@ -51,6 +53,7 @@ fun MissionsScreen(
     val preparedFood by inventoryViewModel.preparedFood.collectAsState()
     val activeEncounterSession by bandViewModel.activeEncounterSession.collectAsState()
     val activeMission by bandViewModel.activeMission.collectAsState()
+    val combatReport by bandViewModel.combatReport.collectAsState()
 
     // Only show encounters that are actually unlocked — hidden is better than locked/greyed.
     val unlockedEncounters = encounters.filter { it.isUnlocked }
@@ -75,6 +78,15 @@ fun MissionsScreen(
             val duration  = activeEncounterSession?.durationMs  ?: activeMission!!.durationMs
             MissionActiveCard(missionName = name, startedAtMs = startedAt, durationMs = duration)
             return@Column
+        }
+
+        // ── Post-fight readout ─────────────────────────────────────────────
+        if (combatReport != null) {
+            CombatReportCard(
+                report = combatReport!!,
+                onDismiss = { bandViewModel.dismissCombatReport() }
+            )
+            Spacer(modifier = Modifier.height(16.dp))
         }
 
         // ── Food selection ─────────────────────────────────────────────────
@@ -268,4 +280,72 @@ private fun formatMissionMs(ms: Long): String {
     val m = total / 60
     val s = total % 60
     return "%d:%02d".format(m, s)
+}
+
+@Composable
+private fun CombatReportCard(report: CombatReport, onDismiss: () -> Unit) {
+    val (containerColor, headerText) = when (report.outcome) {
+        "VICTORY"  -> MaterialTheme.colorScheme.primaryContainer to "Victory"
+        "DEFEAT"   -> MaterialTheme.colorScheme.errorContainer to "Fallen"
+        else       -> MaterialTheme.colorScheme.secondaryContainer to "No Result"
+    }
+    val narrative = buildCombatNarrative(report)
+    val minutesFought = report.endedAtSec / 60
+    val secondsFought = report.endedAtSec % 60
+    val fightDuration = if (minutesFought > 0) "${minutesFought}m ${secondsFought}s" else "${secondsFought}s"
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = containerColor)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                "${report.encounterName} — $headerText",
+                style = MaterialTheme.typography.titleSmall
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(narrative, style = MaterialTheme.typography.bodySmall)
+            Spacer(modifier = Modifier.height(10.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text("Fought: $fightDuration", style = MaterialTheme.typography.labelSmall)
+                if (report.rescuesUsed > 0)
+                    Text("Rescues: ${report.rescuesUsed}", style = MaterialTheme.typography.labelSmall)
+                if (report.wardGuardsUsed > 0)
+                    Text("Shields: ${report.wardGuardsUsed}", style = MaterialTheme.typography.labelSmall)
+            }
+            Spacer(modifier = Modifier.height(10.dp))
+            OutlinedButton(onClick = onDismiss, modifier = Modifier.fillMaxWidth()) {
+                Text("Dismiss")
+            }
+        }
+    }
+}
+
+private fun buildCombatNarrative(report: CombatReport): String {
+    val enc = report.encounterName
+    val fullDuration = report.durationSec
+    return when (report.outcome) {
+        "VICTORY" -> {
+            val timeNote = if (report.endedAtSec < fullDuration / 2)
+                "The fight was swift — the enemy broke in the first half of the engagement."
+            else "A hard-fought victory. The band held until the enemy could hold no longer."
+            "$timeNote The $enc could not withstand them."
+        }
+        "DEFEAT" -> {
+            val foodNote = if (report.endedAtSec < 60)
+                "Without provisions, the band had nothing to sustain them. They were overwhelmed almost at once."
+            else "The $enc wore them down, wound by wound, until there was no one left standing."
+            val rescueNote = if (report.rescuesUsed > 0)
+                " The Keeper fought to the last, pulling ${report.rescuesUsed} from the edge — but it was not enough."
+            else ""
+            "$foodNote$rescueNote"
+        }
+        else -> {
+            "The band fought the full engagement but could not break through. The $enc endures — ${
+                if (report.resolveRemainingFraction > 0.5f) "barely scratched"
+                else if (report.resolveRemainingFraction > 0.2f) "bloodied but standing"
+                else "on the edge of breaking, but still unbroken"
+            }. The band retreated in order."
+        }
+    }
 }

@@ -12,6 +12,7 @@ import com.liquidcode7.hearthcraft.data.repository.GrowingRepository
 import com.liquidcode7.hearthcraft.data.repository.InventoryRepository
 import com.liquidcode7.hearthcraft.data.repository.PlayerRepository
 import com.liquidcode7.hearthcraft.data.repository.SessionRepository
+import com.liquidcode7.hearthcraft.ui.viewmodel.XpProgress
 import com.liquidcode7.hearthcraft.worker.FarmWorker
 import com.liquidcode7.hearthcraft.worker.GardenWorker
 import com.liquidcode7.hearthcraft.worker.GatheringWorker
@@ -46,6 +47,10 @@ class GatheringViewModel @Inject constructor(
     val gatheringLevel: StateFlow<Int> = player.observe()
         .map { it?.gatheringLevel ?: 1 }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 1)
+
+    val gatheringXpProgress: StateFlow<XpProgress> = player.observe()
+        .map { xpProgress(it?.gatheringXp ?: 0) }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), XpProgress(1, 0, 100))
 
     val gardenSlots: StateFlow<List<GrowingSlot?>> = growing.observeGardenSlots()
         .map { planted -> (0..1).map { i -> planted.find { it.id == "garden_$i" } } }
@@ -132,6 +137,17 @@ class GatheringViewModel @Inject constructor(
 
     fun clearLastHarvest() {
         _lastHarvest.value = emptyList()
+    }
+
+    private fun xpProgress(totalXp: Int): XpProgress {
+        val level = PlayerRepository.levelForTotalXp(totalXp, PlayerRepository.Track.GATHERING)
+        val levelStartXp = PlayerRepository.totalXpForLevel(level, PlayerRepository.Track.GATHERING)
+        val levelEndXp = PlayerRepository.totalXpForLevel(level + 1, PlayerRepository.Track.GATHERING)
+        return XpProgress(
+            level = level,
+            earned = totalXp - levelStartXp,
+            needed = (levelEndXp - levelStartXp).coerceAtLeast(1)
+        )
     }
 
     companion object {

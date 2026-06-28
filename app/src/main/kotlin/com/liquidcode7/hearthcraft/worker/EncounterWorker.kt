@@ -14,6 +14,7 @@ import androidx.work.workDataOf
 import com.liquidcode7.hearthcraft.HearthCraftApp
 import com.liquidcode7.hearthcraft.MainActivity
 import com.liquidcode7.hearthcraft.data.repository.BandRepository
+import com.liquidcode7.hearthcraft.data.repository.CombatRepository
 import com.liquidcode7.hearthcraft.data.repository.EncounterRepository
 import com.liquidcode7.hearthcraft.data.repository.InventoryRepository
 import com.liquidcode7.hearthcraft.data.repository.PlayerRepository
@@ -33,60 +34,70 @@ class EncounterWorker @AssistedInject constructor(
     private val inventory: InventoryRepository,
     private val player: PlayerRepository,
     private val sessions: SessionRepository,
-    private val band: BandRepository
+    private val band: BandRepository,
+    private val combatRepo: CombatRepository
 ) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
-        val encounterId    = inputData.getString(KEY_ENCOUNTER_ID) ?: return Result.failure()
-        val bandId         = inputData.getString(KEY_BAND_ID) ?: return Result.failure()
-        val draughtPotency = inputData.getFloat(KEY_DRAUGHT_POTENCY, 0f)
-        val hpsWarden      = inputData.getFloat(KEY_HPS_WARDEN, 0f)
-        val hpsHunter      = inputData.getFloat(KEY_HPS_HUNTER, 0f)
-        val hpsKeeper      = inputData.getFloat(KEY_HPS_KEEPER, 0f)
-        val hpsCaptain     = inputData.getFloat(KEY_HPS_CAPTAIN, 0f)
+        val encounterId = inputData.getString(KEY_ENCOUNTER_ID) ?: return Result.failure()
+        val bandId      = inputData.getString(KEY_BAND_ID) ?: return Result.failure()
+        val encounter   = encounters.get(encounterId) ?: return Result.failure()
 
-        val encounter = encounters.get(encounterId) ?: return Result.failure()
-        val stage = encounter.stages.firstOrNull() ?: return Result.failure()
-
-        // Build MemberInput list from live stats
-        val memberStates = band.memberInputsForBand(
-            bandId,
-            draughtPotency,
-            listOf(hpsWarden, hpsHunter, hpsKeeper, hpsCaptain)
-        )
-        if (memberStates.isEmpty()) return Result.failure()
-
-        val result = EncounterEngine.resolve(stage, memberStates, Random.nextLong())
-
-        when (result.outcome) {
-            Outcome.VICTORY -> {
-                val multiplier = encounter.rewardMultiplier
-                val money = (encounter.rewardMoneyMin..encounter.rewardMoneyMax).random() * multiplier
-                player.addMoney(money)
-                val rewardCount = minOf(3, (1..3).random() + (multiplier - 1))
-                encounter.rewardTable.shuffled().take(rewardCount).forEach {
-                    inventory.addIngredient(it, 1)
-                }
-                player.addCookingXp(PlayerRepository.XP_COOK_WIN)
-                player.addGatheringXp(PlayerRepository.XP_GATHER_WIN)
-                band.grantMissionStats(bandId, succeeded = true)
-                notify("Mission Complete", "${encounter.name} — your band has returned.")
-            }
-            Outcome.STALEMATE -> {
-                // Band survived but didn't kill — no rewards, no wounds beyond what happened
-                band.grantMissionStats(bandId, succeeded = false)
-                notify("No Result", "${encounter.name} — the band held but couldn't finish it.")
-            }
-            Outcome.DEFEAT -> {
-                applyWounds(result.woundsByMember)
-                band.grantMissionStats(bandId, succeeded = false)
-                notify("Mission Failed", "${encounter.name} — your band did not prevail.")
-            }
+        val report = combatRepo.get(bandId)
+        if (report != null) {
+            val wounds = parseWounds(report.woundsJson)
+            applyOutcome(report.outcome, wounds, encounter)
+        } else {
+            // Fallback: re-run engine fresh (handles old WorkManager tasks in flight during update)
+            val draughtPotency = inputData.getFloat(KEY_DRAUGHT_POTENCY, 0f)
+            val hps = listOf(
+                inputData.getFloat(KEY_HPS_WARDEN, 0f),
+                inputData.getFloat(KEY_HPS_HUNTER, 0f),
+                inputData.getFloat(KEY_HPS_KEEPER, 0f),
+                inputData.getFloat(KEY_HPS_CAPTAIN, 0f)
+            )
+            val stage = encounter.stages.firstOrNull() ?: return Result.failure()
+            val members = band.memberInputsForBand(bandId, draughtPotency, hps)
+            if (members.isEmpty()) return Result.failure()
+            val result = EncounterEngine.resolve(stage, members, Random.nextLong())
+            applyOutcome(result.outcome.name, result.woundsByMember, encounter)
         }
 
         sessions.clearEncounter(bandId)
         return Result.success()
     }
+
+    private suspend fun applyOutcome(outcome: String, wounds: Map<String, Int>, encounter: com.liquidcode7.hearthcraft.data.model.Encounter) {
+        val bandId = inputData.getString(KEY_BAND_ID) ?: return
+        when (outcome) {
+            "VICTORY" -> {
+                val multiplier = encounter.rewardMultiplier
+                val money = (encounter.rewardMoneyMin..encounter.rewardMoneyMax).random() * multiplier
+                player.addMoney(money)
+                val rewardCount = minOf(3, (1..3).random() + (multiplier - 1))
+                encounter.rewardTable.shuffled().take(rewardCount).forEach { inventory.addIngredient(it, 1) }
+                player.addCookingXp(PlayerRepository.XP_COOK_WIN)
+                player.addGatheringXp(PlayerRepository.XP_GATHER_WIN)
+                band.grantMissionStats(bandId, succeeded = true)
+                notify("Mission Complete", "${encounter.name} — your band has returned.")
+            }
+            "STALEMATE" -> {
+                band.grantMissionStats(bandId, succeeded = false)
+                notify("No Result", "${encounter.name} — the band held but couldn't finish it.")
+            }
+            else -> { // DEFEAT
+                applyWounds(wounds)
+                band.grantMissionStats(bandId, succeeded = false)
+                notify("Mission Failed", "${encounter.name} — your band did not prevail.")
+            }
+        }
+    }
+
+    private fun parseWounds(json: String): Map<String, Int> =
+        json.split(",").mapNotNull { entry ->
+            val parts = entry.split(":")
+            if (parts.size == 2) parts[0] to (parts[1].toIntOrNull() ?: 0) else null
+        }.toMap()
 
     private suspend fun applyWounds(woundsByMember: Map<String, Int>) {
         woundsByMember.forEach { (memberId, wounds) ->

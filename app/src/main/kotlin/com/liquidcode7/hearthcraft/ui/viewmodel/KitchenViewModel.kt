@@ -57,6 +57,10 @@ class KitchenViewModel @Inject constructor(
         .map { it?.hasSeenFoodStructureHints ?: false }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
+    val cookingXpProgress: StateFlow<XpProgress> = player.observe()
+        .map { xpProgress(it?.cookingXp ?: 0) }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), XpProgress(1, 0, 100))
+
     val bandRecipes: StateFlow<List<Recipe>> = combine(
         player.observe(),
         player.observeDiscoveredIds()
@@ -131,7 +135,7 @@ class KitchenViewModel @Inject constructor(
             if (state.discoveredRecipeIds.isBlank()) {
                 val universals = setOf("hearthbread", "wanderers_supper", "contemplative_tea")
                 val bandStarter = when (state.chosenBandId) {
-                    "greycloaks" -> "ember_porridge"
+                    "greycloaks" -> "ploughmans_plate"
                     "mithlost"   -> "springwater_broth"
                     "undermarch" -> "delvers_hash"
                     else -> null
@@ -219,5 +223,16 @@ class KitchenViewModel @Inject constructor(
 
     fun markHintsSeen() {
         viewModelScope.launch { player.markHintsSeen() }
+    }
+
+    private fun xpProgress(totalXp: Int): XpProgress {
+        val level = PlayerRepository.levelForTotalXp(totalXp, PlayerRepository.Track.COOKING)
+        val levelStartXp = PlayerRepository.totalXpForLevel(level, PlayerRepository.Track.COOKING)
+        val levelEndXp = PlayerRepository.totalXpForLevel(level + 1, PlayerRepository.Track.COOKING)
+        return XpProgress(
+            level = level,
+            earned = totalXp - levelStartXp,
+            needed = (levelEndXp - levelStartXp).coerceAtLeast(1)
+        )
     }
 }

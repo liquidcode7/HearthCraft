@@ -13,6 +13,8 @@ import kotlin.math.roundToInt
 class PlayerRepository @Inject constructor(
     private val dao: PlayerStateDao
 ) {
+
+    enum class Track { COOKING, GATHERING }
     fun observe(): Flow<PlayerState?> = dao.observe()
 
     suspend fun get(): PlayerState? = dao.get()
@@ -79,8 +81,6 @@ class PlayerRepository @Inject constructor(
     }
 
     companion object {
-
-        enum class Track { COOKING, GATHERING }
 
         // Tier boundaries for cooking — these match TIER_TABLE in the sim/food_model.js
         private val COOK_TIER_BOUNDARIES = setOf(5, 10, 16, 23, 31, 41)
