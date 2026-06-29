@@ -111,8 +111,9 @@ object EncounterEngine {
             }
 
             // ── Drain ─────────────────────────────────────────────────────────
-            val standingCount = max(1, standing().size)
-            val drainPerMember = stage.drain / standingCount.toFloat()
+            // Each member always soaks drain/4. Losing a member never increases
+            // pressure on survivors — the cascade was removed by design.
+            val drainPerMember = stage.drain / 4f
             for (m in standing()) {
                 applyDamage(m, drainPerMember)
             }
