@@ -62,6 +62,7 @@ import com.liquidcode7.hearthcraft.engine.ExperimentResult
 import com.liquidcode7.hearthcraft.engine.ProximityTier
 import com.liquidcode7.hearthcraft.ui.viewmodel.KitchenViewModel
 import com.liquidcode7.hearthcraft.ui.viewmodel.RecipeTier
+import com.liquidcode7.hearthcraft.ui.util.formatMs
 import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -662,25 +663,6 @@ private fun CookingSlotCard(
 }
 
 @Composable
-private fun CookingActiveCard(recipeName: String, startedAtMs: Long, durationMs: Long) {
-    var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
-    LaunchedEffect(startedAtMs) {
-        while (true) { now = System.currentTimeMillis(); delay(1000L) }
-    }
-    val remainingMs = maxOf(0L, startedAtMs + durationMs - now)
-    Card(modifier = Modifier.fillMaxWidth()) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text("Cooking in progress", style = MaterialTheme.typography.titleSmall)
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(recipeName, style = MaterialTheme.typography.bodyMedium)
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(formatMs(remainingMs), style = MaterialTheme.typography.headlineSmall, color = MaterialTheme.colorScheme.primary)
-            Text("remaining", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        }
-    }
-}
-
-@Composable
 private fun KitchenXpBar(level: Int, earned: Int, needed: Int) {
     Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
         Text(
@@ -841,7 +823,3 @@ private fun ProcessTimer(startedAtMs: Long, durationMs: Long) {
     )
 }
 
-private fun formatMs(ms: Long): String {
-    val total = ms / 1000; val m = total / 60; val s = total % 60
-    return "%d:%02d".format(m, s)
-}

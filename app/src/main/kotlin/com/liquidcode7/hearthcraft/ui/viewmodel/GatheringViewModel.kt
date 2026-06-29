@@ -273,11 +273,12 @@ class GatheringViewModel @Inject constructor(
         }
     }
 
-    private val producerSlotIds = setOf(HiveWorker.SLOT_ID, CoopWorker.SLOT_ID, DairyWorker.SLOT_ID)
+    private val selfReschedulingTypes = setOf("hive", "coop", "dairy")
 
     fun collectGrowingSlot(slotId: String) {
         viewModelScope.launch {
-            val items = if (slotId in producerSlotIds) {
+            val slot = growing.getSlot(slotId)
+            val items = if (slot?.type in selfReschedulingTypes) {
                 growing.collectAndClearPendingOnly(slotId)
             } else {
                 growing.collectAndClearSlot(slotId)

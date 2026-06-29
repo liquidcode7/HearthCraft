@@ -57,8 +57,6 @@ class KitchenViewModel @Inject constructor(
     val session1: StateFlow<CookingSession?> = sessions.observeCookingSlot(1)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
-    val session: StateFlow<CookingSession?> get() = session0   // backward-compat alias
-
     val playerState: StateFlow<PlayerState?> = player.observe()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 

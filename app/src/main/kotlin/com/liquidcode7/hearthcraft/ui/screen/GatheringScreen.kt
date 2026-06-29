@@ -49,6 +49,7 @@ import com.liquidcode7.hearthcraft.ui.viewmodel.SeedDetail
 import com.liquidcode7.hearthcraft.worker.CoopWorker
 import com.liquidcode7.hearthcraft.worker.DairyWorker
 import com.liquidcode7.hearthcraft.worker.HiveWorker
+import com.liquidcode7.hearthcraft.ui.util.formatMs
 import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -604,13 +605,6 @@ private fun DairyCard(slot: GrowingSlot?, onCollect: () -> Unit) {
 
 private fun isForageTimerElapsed(session: com.liquidcode7.hearthcraft.data.db.GatheringSession): Boolean =
     System.currentTimeMillis() >= session.startedAtMs + session.durationMs
-
-private fun formatMs(ms: Long): String {
-    val total = ms / 1000
-    val m = total / 60
-    val s = total % 60
-    return "%d:%02d".format(m, s)
-}
 
 @Composable
 private fun GatherStatusStrip(

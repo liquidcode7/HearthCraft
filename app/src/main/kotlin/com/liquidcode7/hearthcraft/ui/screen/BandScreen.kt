@@ -39,6 +39,7 @@ import com.liquidcode7.hearthcraft.ui.viewmodel.BandViewModel
 import com.liquidcode7.hearthcraft.ui.viewmodel.EncounterDetail
 import com.liquidcode7.hearthcraft.ui.viewmodel.InventoryViewModel
 import com.liquidcode7.hearthcraft.ui.viewmodel.PreparedFoodDetail
+import com.liquidcode7.hearthcraft.ui.util.formatMs
 import kotlinx.coroutines.delay
 
 @Composable
@@ -472,13 +473,6 @@ private fun MissionActiveCard(missionName: String, startedAtMs: Long, durationMs
             )
         }
     }
-}
-
-private fun formatMs(ms: Long): String {
-    val total = ms / 1000
-    val m = total / 60
-    val s = total % 60
-    return "%d:%02d".format(m, s)
 }
 
 @Composable
