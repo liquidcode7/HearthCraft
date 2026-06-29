@@ -195,8 +195,6 @@ fun BandScreen(
                 )
             } else {
                 Spacer(modifier = Modifier.height(16.dp))
-                Text("Send the Band", style = MaterialTheme.typography.titleSmall)
-                Spacer(modifier = Modifier.height(8.dp))
                 unlockedEncounters.forEach { enc ->
                     EncounterSendRow(
                         encounter = enc,
@@ -315,7 +313,7 @@ private fun roleAbility(role: String): Pair<String, String>? = when (role.lowerc
     "keeper" -> "Hands of Healing" to
         "When a companion is downed, the Keeper calls them back with a healing burst. Can be used up to five times per engagement. Without the Keeper, fallen members stay fallen."
     "captain" -> "Wrath, Ruin, and the Red Dawn" to
-        "The Captain's resolve strengthens the entire company. Will and Might both feed into attack, and a portion of their damage bypasses enemy armor — the Captain always contributes, armored or not."
+        "When the Captain calls, the entire company fights with renewed fury — all damage output rises by half again for ten strikes. Once per engagement."
     else -> null
 }
 

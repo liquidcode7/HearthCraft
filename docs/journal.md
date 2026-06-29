@@ -5,13 +5,13 @@
 
 ---
 
-## Current Status — June 28, 2026
+## Current Status — June 29, 2026
 
-**Phase:** Plan C complete — nav cleanup, missions improvements, recipe data fix, inspiration names locked for Greycloaks.
-**What's working:** Bottom nav has 4 tabs (Home / Gather / Kitchen / Missions); Band accessible via Home NavCard; Missions screen shows per-member fed status and warns when band is unprovisioned; Contemplative Tea correctly assigned to Mithlost; Greycloaks inspiration names set (Hands of Healing / Horn of Gondor / Black Arrow / Wrath, Ruin, and the Red Dawn).
-**What's not wired yet:** Undermarch and Mithlost inspiration names (Wes will supply); producer upgrade system (where gathering XP for Hive/Coop/Dairy will live).
-**Next session:** TBD — candidate work: producer upgrade system, Band/Mission UI polish, or next audit pass.
-**Open questions:** Undermarch and Mithlost inspiration names (deferred to wishlist, Wes will name them).
+**Phase:** App Audit 28JUN2026 3.0 — all confirmed issues addressed across Kitchen, Gathering, Band, and data layers.
+**What's working:** Audit batch complete — methods consolidated to 3 (cook/bake/brew), kilns labeled "Kiln 1/2", recipe list always visible, stat letters on recipe rows (italic for draughts), penalty display for Ferny's Treacle, process→prepare rename, salted pork/hog meat data fix, forage filter excludes process items, starter recipe seeding corrected per band, Captain inspiration description fixed (×1.5 DPS for 10 ticks, not armor bypass), "Send the Band" label removed.
+**What's not wired yet:** Ironroot region move (blocked on 4 Greycloaks recipes that use it — needs substitute ingredient first); Undermarch and Mithlost inspiration names (deferred to wishlist).
+**Next session:** Producer upgrade system, or next round of testing/audit.
+**Open questions:** Ironroot substitute for the 4 Greycloaks recipes that use it (hearth_and_hops, rangers_fare, heartflame_broth, restorative_broth) — needed before ironroot can move to Thorin's Halls.
 
 ---
 
@@ -1823,3 +1823,35 @@ Full implementation of the recipe discovery system: recipes are now hidden until
 - Next session: TBD — producer upgrade system, Band/Mission polish, or next audit pass
 - Deferred: Undermarch and Mithlost inspiration names (Wes will supply; wishlist entry created)
 - Minor notes from final review: `anyFoodAssigned` warning clears after feeding one member (intentional — BandReadyPanel shows full truth); M3 color-token pairing in BandReadyPanel uses `primary`/`error` rather than `onPrimaryContainer`/`onErrorContainer` (fine for current theme; revisit if dynamic color is ever added)
+
+---
+
+## Session 50 — June 29, 2026
+**App Audit 28JUN2026 3.0 — Kitchen, Gathering, Band, and data fixes**
+
+Full audit pass working through all confirmed issues from the 28JUN2026 audit document.
+
+**What was built:**
+- `app/src/main/assets/data/recipes.json`: "★ Existing. " prefix stripped from 9 recipe descriptions; methods consolidated — simmer/roast → cook, infuse → brew (only cook/bake/brew remain); `fernys_treacle` gets `"penalty": true` and `"primaryBoost": -2`.
+- `app/src/main/assets/data/ingredients.json`: `salted_pork` changed to forage source with `processInputs: [{id: "hog_meat", qty: 1}]`; new `hog_meat` ingredient added (forage/hunt_fish, Bree-land region, mig/vit).
+- `data/model/Recipe.kt`: `val penalty: Boolean = false` added to Recipe data class.
+- `ui/viewmodel/KitchenViewModel.kt`: Starter recipe seeding fixed — 2 universals (hearthbread, wanderers_supper) + 2 band-specific starters each; Greycloaks now get brookcress_bannock (Will food) as second starter; Contemplative Tea seeded only for Mithlost; `_experimentMethod` default changed from "simmer" to "cook".
+- `ui/viewmodel/GatheringViewModel.kt`: Forage filter excludes `gatherType == "process"` items (fixes smoked trout appearing as forageable); `ingredientName()` lookup function added.
+- `ui/screen/GatheringScreen.kt`: Growing slot cards now display ingredient name (via `ingredientNameFor` lambda) instead of raw underscore-separated ID.
+- `ui/screen/KitchenScreen.kt`: Tab 2 renamed Process → Prepare; methods list trimmed to 3 (cook/bake/brew); kiln labels changed to "Kiln 1"/"Kiln 2"; tier labels no longer show level suffix (just "Hearthkeeper", not "Hearthkeeper · Lv 1"); recipe list always visible — detail panel shown when recipe selected, Start Cooking button hidden only when both kilns busy; auto-scroll to top on recipe selection; RecipeRow shows stat letter (M/A/V/W) instead of method tag, italic for draughts (Warm/P/H/R/Alt), error color for penalty recipes; RecipeDetailPanel shows penalty effect in error color using `primaryBoost` directly; ProcessPanel text renamed prepare/preparing/Start Preparing.
+- `ui/screen/RecipeBookScreen.kt`: effectLine handles `recipe.penalty` — shows `"StatName -2"` in error color.
+- `ui/screen/BandScreen.kt`: "Send the Band" header label removed; Captain ability description corrected — "party damage ×1.5 for ten strikes" replaces incorrect "bypasses armor" description.
+
+**Decisions made:**
+- Method consolidation to 3 is data-only; RecipeDiscoveryEngine still matches on method so old experiments with "simmer" would fail — acceptable since discovery state persists the method string, and "simmer" recipes in JSON are now "cook".
+- Ironroot not moved (would break 4 Greycloaks recipes); flagged as blocked pending substitute ingredient work.
+- Food structures hint card (`FoodHintsCard`) left unchanged — Wes flagged it for a separate redesign pass.
+- Penalty display uses `primaryBoost` directly (−2) rather than deriving from the buff formula, so the negative value is always exact regardless of cooking level.
+
+**Anything that diverged from design/design.md:**
+- None
+
+**Coming up:**
+- Next session: Producer upgrade system, or test on device and next audit round
+- Near term: Ironroot region move (needs 4 Greycloaks recipe substitutions first); Undermarch/Mithlost inspiration names
+- Future ideas logged: None this session

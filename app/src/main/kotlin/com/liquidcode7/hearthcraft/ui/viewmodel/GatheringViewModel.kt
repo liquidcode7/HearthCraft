@@ -124,7 +124,8 @@ class GatheringViewModel @Inject constructor(
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    // Only shows forageable ingredients the player has already discovered
+    // Only shows forageable ingredients the player has already discovered.
+    // Excludes process-type items (e.g. smoked trout) — those can't be foraged directly.
     val foragableIngredients: StateFlow<List<ForageTargetDetail>> = combine(
         player.observe(),
         player.observeDiscoveredIngredientIds()
@@ -133,11 +134,15 @@ class GatheringViewModel @Inject constructor(
         val regions = GatheringWorker.foragableRegions(bandId)
         gameData.ingredients.filter { ingredient ->
             ingredient.gatheringMode == GatheringWorker.MODE_FORAGE &&
+            ingredient.gatherType != "process" &&
             (regions.isEmpty() || regions.any { ingredient.region.contains(it) }) &&
             discoveredIds.contains(ingredient.id)
         }.map { ForageTargetDetail(it.id, it.name, it.rarity) }
             .sortedBy { it.name }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    fun ingredientName(id: String): String =
+        gameData.ingredients.find { it.id == id }?.name ?: id.replace('_', ' ')
 
     private val _forageTargetId = MutableStateFlow<String?>(null)
     val forageTargetId: StateFlow<String?> = _forageTargetId.asStateFlow()

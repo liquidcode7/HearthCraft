@@ -343,7 +343,12 @@
     "gatheringMode": "farm",
     "gatherType": "process",
     "processType": "churn",
-    "processInputs": [{"id": "milk", "qty": 2}],
+    "processInputs": [
+      {
+        "id": "milk",
+        "qty": 2
+      }
+    ],
     "primaryStat": "vit",
     "secondaryStat": "mig",
     "notes": "Churned. Richness and body."
@@ -357,7 +362,12 @@
     "gatheringMode": "farm",
     "gatherType": "process",
     "processType": "render",
-    "processInputs": [{"id": "rabbit", "qty": 2}],
+    "processInputs": [
+      {
+        "id": "rabbit",
+        "qty": 2
+      }
+    ],
     "primaryStat": "mig",
     "secondaryStat": "vit",
     "notes": "Lard or dripping. Carries heat and sustains."
@@ -371,7 +381,12 @@
     "gatheringMode": "forage",
     "gatherType": "process",
     "processType": "smoke",
-    "processInputs": [{"id": "river_trout", "qty": 1}],
+    "processInputs": [
+      {
+        "id": "river_trout",
+        "qty": 1
+      }
+    ],
     "primaryStat": "mig",
     "secondaryStat": "agi",
     "notes": "Chetwood rivers. Smoked for keeping."
@@ -381,13 +396,19 @@
     "name": "Salted Pork",
     "region": "Bree-land & The Shire",
     "rarity": "c",
-    "source": "farm",
-    "gatheringMode": "farm",
+    "source": "forage",
+    "gatheringMode": "forage",
     "gatherType": "process",
     "processType": "cure",
     "primaryStat": "mig",
     "secondaryStat": "vit",
-    "notes": "Cured. Keeps well. Field ration staple."
+    "notes": "Cured. Keeps well. Field ration staple.",
+    "processInputs": [
+      {
+        "id": "hog_meat",
+        "qty": 1
+      }
+    ]
   },
   {
     "id": "rabbit",
@@ -400,6 +421,18 @@
     "primaryStat": "agi",
     "secondaryStat": "vit",
     "notes": "Lean. Quick to cook. The Gaffer's taters would approve."
+  },
+  {
+    "id": "hog_meat",
+    "name": "Hog Meat",
+    "region": "Bree-land & The Shire",
+    "rarity": "c",
+    "source": "forage",
+    "gatheringMode": "forage",
+    "gatherType": "hunt_fish",
+    "primaryStat": "mig",
+    "secondaryStat": "vit",
+    "notes": "Wild pig from Chetwood and the Shire margins. Coarse but filling."
   },
   {
     "id": "hens_egg",
@@ -467,7 +500,12 @@
     "gatheringMode": "farm",
     "gatherType": "process",
     "processType": "mill",
-    "processInputs": [{"id": "barleycorn", "qty": 2}],
+    "processInputs": [
+      {
+        "id": "barleycorn",
+        "qty": 2
+      }
+    ],
     "primaryStat": "vit",
     "notes": "Unleavened; keeps long. Dense field ration."
   },
@@ -705,7 +743,12 @@
     "gatheringMode": "farm",
     "gatherType": "process",
     "processType": "press",
-    "processInputs": [{"id": "lhun_plum", "qty": 3}],
+    "processInputs": [
+      {
+        "id": "lhun_plum",
+        "qty": 3
+      }
+    ],
     "primaryStat": "agi",
     "secondaryStat": "mig",
     "notes": "Cold-pressed coastal olives. Elvish kitchens staple."
@@ -719,7 +762,12 @@
     "gatheringMode": "forage",
     "gatherType": "process",
     "processType": "render",
-    "processInputs": [{"id": "seabird_egg", "qty": 2}],
+    "processInputs": [
+      {
+        "id": "seabird_egg",
+        "qty": 2
+      }
+    ],
     "primaryStat": "mig",
     "notes": "Rich and strong. Not elegant, but they're a field band."
   },
@@ -732,7 +780,12 @@
     "gatheringMode": "forage",
     "gatherType": "process",
     "processType": "cure",
-    "processInputs": [{"id": "river_trout", "qty": 1}],
+    "processInputs": [
+      {
+        "id": "river_trout",
+        "qty": 1
+      }
+    ],
     "primaryStat": "mig",
     "secondaryStat": "vit",
     "notes": "Preserved sea fish from the Gulf of Lhûn."
@@ -746,7 +799,12 @@
     "gatheringMode": "forage",
     "gatherType": "process",
     "processType": "smoke",
-    "processInputs": [{"id": "eel", "qty": 1}],
+    "processInputs": [
+      {
+        "id": "eel",
+        "qty": 1
+      }
+    ],
     "primaryStat": "mig",
     "secondaryStat": "agi",
     "notes": "River eel from the Lhûn estuary. Strong flavor."
@@ -772,7 +830,12 @@
     "gatheringMode": "forage",
     "gatherType": "process",
     "processType": "cure",
-    "processInputs": [{"id": "deer_haunch", "qty": 1}],
+    "processInputs": [
+      {
+        "id": "deer_haunch",
+        "qty": 1
+      }
+    ],
     "primaryStat": "mig",
     "secondaryStat": "vit",
     "notes": "Dried venison. Old-forest hunting. Field ration."
@@ -786,7 +849,12 @@
     "gatheringMode": "farm",
     "gatherType": "process",
     "processType": "press",
-    "processInputs": [{"id": "milk", "qty": 2}],
+    "processInputs": [
+      {
+        "id": "milk",
+        "qty": 2
+      }
+    ],
     "primaryStat": "vit",
     "secondaryStat": "wil",
     "notes": "Firm elvish cheese aged with herbs. Not fussy — good."
@@ -1176,7 +1244,12 @@
     "gatheringMode": "farm",
     "gatherType": "process",
     "processType": "brew",
-    "processInputs": [{"id": "barleycorn", "qty": 3}],
+    "processInputs": [
+      {
+        "id": "barleycorn",
+        "qty": 3
+      }
+    ],
     "primaryStat": "vit",
     "notes": "Reduced mountain malt. Sweet, thick. Baking and brewing."
   },
@@ -1199,7 +1272,12 @@
     "gatheringMode": "farm",
     "gatherType": "process",
     "processType": "brew",
-    "processInputs": [{"id": "barleycorn", "qty": 2}],
+    "processInputs": [
+      {
+        "id": "barleycorn",
+        "qty": 2
+      }
+    ],
     "primaryStat": "mig",
     "notes": "Fermented black barley. Used in stews and braising."
   },
@@ -1386,7 +1464,12 @@
     "gatheringMode": "forage",
     "gatherType": "process",
     "processType": "smoke",
-    "processInputs": [{"id": "grouse", "qty": 1}],
+    "processInputs": [
+      {
+        "id": "grouse",
+        "qty": 1
+      }
+    ],
     "primaryStat": "mig",
     "secondaryStat": "vit",
     "notes": "Moorland bird. Peat-smoked for preservation."

@@ -25,7 +25,8 @@ data class Recipe(
     val tertiaryStat: String? = null,
     val hazardEffect: String? = null,
     val description: String = "",
-    val ingredients: List<RecipeIngredient> = emptyList()
+    val ingredients: List<RecipeIngredient> = emptyList(),
+    val penalty: Boolean = false
 ) {
     // Derived properties used by existing UI code.
     // buffType maps the primary stat to a human-readable buff category.

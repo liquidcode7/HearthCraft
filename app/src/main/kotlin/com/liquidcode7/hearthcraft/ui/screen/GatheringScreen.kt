@@ -168,6 +168,7 @@ fun GatheringScreen(viewModel: GatheringViewModel = hiltViewModel()) {
                     farmPlot = farmPlot,
                     gardenSlots = gardenSlots,
                     gatheringLevel = gatheringLevel,
+                    ingredientNameFor = { viewModel.ingredientName(it) },
                     onPickSlot = { pickingSlot = it },
                     onCollect = { viewModel.collectGrowingSlot(it) }
                 )
@@ -199,7 +200,13 @@ private fun SectionHeader(text: String) {
 }
 
 @Composable
-private fun GrowingSlotCard(slot: GrowingSlot?, label: String, onPlant: () -> Unit, onCollect: () -> Unit) {
+private fun GrowingSlotCard(
+    slot: GrowingSlot?,
+    label: String,
+    ingredientNameFor: (String) -> String,
+    onPlant: () -> Unit,
+    onCollect: () -> Unit
+) {
     Card(modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier.padding(12.dp),
@@ -232,7 +239,7 @@ private fun GrowingSlotCard(slot: GrowingSlot?, label: String, onPlant: () -> Un
                     Column(modifier = Modifier.weight(1f)) {
                         Text(label, style = MaterialTheme.typography.bodyMedium)
                         Text(
-                            slot.ingredientId ?: "",
+                            ingredientNameFor(slot.ingredientId ?: ""),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.primary
                         )
@@ -677,6 +684,7 @@ private fun GrowingTab(
     farmPlot: GrowingSlot?,
     gardenSlots: List<GrowingSlot?>,
     gatheringLevel: Int,
+    ingredientNameFor: (String) -> String,
     onPickSlot: (String) -> Unit,
     onCollect: (String) -> Unit
 ) {
@@ -705,6 +713,7 @@ private fun GrowingTab(
             GrowingSlotCard(
                 slot = farmPlot,
                 label = "Farm plot",
+                ingredientNameFor = ingredientNameFor,
                 onPlant = { if (farmPlot?.pendingResultJson == null) onPickSlot("farm_0") },
                 onCollect = { onCollect("farm_0") }
             )
@@ -717,6 +726,7 @@ private fun GrowingTab(
             GrowingSlotCard(
                 slot = slot,
                 label = "Bed ${index + 1}",
+                ingredientNameFor = ingredientNameFor,
                 onPlant = { if (slot?.pendingResultJson == null) onPickSlot("garden_$index") },
                 onCollect = { onCollect("garden_$index") }
             )

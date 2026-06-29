@@ -71,17 +71,15 @@ fun RecipeBookScreen(
 private fun RecipeEntry(recipe: Recipe, cookingLevel: Int, kitchenViewModel: KitchenViewModel) {
     val buffAtLevel = (recipe.baseBuffStrength + (cookingLevel - 1) * recipe.buffStrengthPerLevel).toInt()
     val hps = buffAtLevel / 10f
+    val statName: String? = when (recipe.primaryStat) {
+        "mig" -> "Might"; "agi" -> "Agility"; "vit" -> "Vitality"; "wil" -> "Will"
+        else  -> recipe.primaryStat
+    }
     val effectLine = when {
-        recipe.primaryStat != null -> {
-            val statName = when (recipe.primaryStat) {
-                "mig" -> "Might"
-                "agi" -> "Agility"
-                "vit" -> "Vitality"
-                "wil" -> "Will"
-                else  -> recipe.primaryStat
-            }
+        recipe.penalty && statName != null ->
+            "$statName ${recipe.primaryBoost} · %.1f HP/s".format(hps)
+        recipe.primaryStat != null && statName != null ->
             "$statName +$buffAtLevel · %.1f HP/s".format(hps)
-        }
         recipe.hazardEffect != null -> {
             val hazardLabel = when (recipe.hazardEffect) {
                 "warmth"   -> "Warmth (cold resist)"
@@ -113,7 +111,11 @@ private fun RecipeEntry(recipe: Recipe, cookingLevel: Int, kitchenViewModel: Kit
             Spacer(modifier = Modifier.height(4.dp))
             Text(recipe.description, style = MaterialTheme.typography.bodySmall)
             Spacer(modifier = Modifier.height(6.dp))
-            Text(effectLine, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
+            Text(
+                effectLine,
+                style = MaterialTheme.typography.labelMedium,
+                color = if (recipe.penalty) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
+            )
             Spacer(modifier = Modifier.height(4.dp))
             recipe.ingredients.forEach { ing ->
                 Text(

@@ -133,7 +133,7 @@ class KitchenViewModel @Inject constructor(
     private val _experimentIngredients = MutableStateFlow<Map<String, Int>>(emptyMap())
     val experimentIngredients: StateFlow<Map<String, Int>> = _experimentIngredients.asStateFlow()
 
-    private val _experimentMethod = MutableStateFlow("simmer")
+    private val _experimentMethod = MutableStateFlow("cook")
     val experimentMethod: StateFlow<String> = _experimentMethod.asStateFlow()
 
     private val _lastExperimentResult = MutableStateFlow<ExperimentResult?>(null)
@@ -172,16 +172,16 @@ class KitchenViewModel @Inject constructor(
         viewModelScope.launch {
             val state = player.get() ?: return@launch
 
-            // Seed starter recipes (existing logic — unchanged)
+            // Seed starter recipes on first launch
             if (state.discoveredRecipeIds.isBlank()) {
-                val universals = setOf("hearthbread", "wanderers_supper", "contemplative_tea")
-                val bandStarter = when (state.chosenBandId) {
-                    "greycloaks" -> "ploughmans_plate"
-                    "mithlost"   -> "springwater_broth"
-                    "undermarch" -> "delvers_hash"
-                    else -> null
+                val universals = listOf("hearthbread", "wanderers_supper")
+                val bandStarters = when (state.chosenBandId) {
+                    "greycloaks" -> listOf("ploughmans_plate", "brookcress_bannock")
+                    "mithlost"   -> listOf("springwater_broth", "contemplative_tea")
+                    "undermarch" -> listOf("delvers_hash", "rockmoss_crispbread")
+                    else -> emptyList()
                 }
-                val toDiscover = (universals + listOfNotNull(bandStarter))
+                val toDiscover = (universals + bandStarters)
                     .filter { id -> gameData.recipes.any { it.id == id } }
                 player.discoverRecipes(toDiscover)
             }
