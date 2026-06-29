@@ -30,6 +30,8 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import javax.inject.Inject
 
 data class RecipeTier(val label: String, val minLevel: Int, val recipes: List<Recipe>)
@@ -197,6 +199,8 @@ class KitchenViewModel @Inject constructor(
 
     // ── Existing recipe functions ─────────────────────────────────────────────
 
+    private val cookingMutex = Mutex()
+
     fun selectRecipe(recipe: Recipe) { _selectedRecipe.value = recipe }
 
     fun ingredientName(id: String): String = gameData.ingredients.find { it.id == id }?.name ?: id
@@ -209,28 +213,30 @@ class KitchenViewModel @Inject constructor(
     fun startCooking(preferredSlot: Int = -1) {
         val recipe = _selectedRecipe.value ?: return
         viewModelScope.launch {
-            val freeSlot = when {
-                preferredSlot >= 0 -> preferredSlot
-                sessions.activeCookingSlot(0) == null -> 0
-                sessions.activeCookingSlot(1) == null -> 1
-                else -> return@launch
-            }
-            if (sessions.activeCookingSlot(freeSlot) != null) return@launch
-            if (!canCook(recipe, inventoryItems.value)) return@launch
+            cookingMutex.withLock {
+                val freeSlot = when {
+                    preferredSlot >= 0 -> preferredSlot
+                    sessions.activeCookingSlot(0) == null -> 0
+                    sessions.activeCookingSlot(1) == null -> 1
+                    else -> return@withLock
+                }
+                if (sessions.activeCookingSlot(freeSlot) != null) return@withLock
+                if (!canCook(recipe, inventoryItems.value)) return@withLock
 
-            recipe.ingredients.forEach { inventory.removeIngredient(it.id, it.qty) }
+                recipe.ingredients.forEach { inventory.removeIngredient(it.id, it.qty) }
 
-            val request = CookingWorker.buildRequest(recipe.id, recipe.durationMs, freeSlot)
-            WorkManager.getInstance(context).enqueue(request)
-            sessions.startCookingInSlot(
-                CookingSession(
-                    id = freeSlot,
-                    recipeId = recipe.id,
-                    startedAtMs = System.currentTimeMillis(),
-                    durationMs = recipe.durationMs,
-                    workRequestId = request.id.toString()
+                val request = CookingWorker.buildRequest(recipe.id, recipe.durationMs, freeSlot)
+                WorkManager.getInstance(context).enqueue(request)
+                sessions.startCookingInSlot(
+                    CookingSession(
+                        id = freeSlot,
+                        recipeId = recipe.id,
+                        startedAtMs = System.currentTimeMillis(),
+                        durationMs = recipe.durationMs,
+                        workRequestId = request.id.toString()
+                    )
                 )
-            )
+            }
         }
     }
 
