@@ -140,8 +140,12 @@ This was the central design worry, and the structure resolves it:
   supply train consumed over time, not a pre-battle buff.
 - **Inspiration belongs to the fighters, not the player.** The player is why they
   are standing there; the rally is theirs.
-- **Ingredient quality tiers are unwanted** — complexity lives in the cook's
-  skill and decisions, never raw materials.
+- **Ingredient quality is a core axis** — grade (Crude → Pristine) is the
+  bridge that makes the Gather → Process → Cook chain matter end to end.
+  Cook skill still governs access and the quality ceiling; raw materials are
+  now an *input to* the cook's outcome, not a substitute for skill.
+  Full mechanics in `docs/superpowers/plans/2026-06-29-ingredient-quality-system.md`
+  and `ingredient_quality_spec.md`.
 - **Mission failure is outright** — no partial success. Failed experiments
   consume ingredients.
 - **Four starting bands as permanent flavor choices**, no mechanical difference:
