@@ -76,8 +76,8 @@ fun GatheringScreen(viewModel: GatheringViewModel = hiltViewModel()) {
     var pickingForageTarget by remember { mutableStateOf(false) }
 
     val pagerState = rememberPagerState(pageCount = { 3 })
-    LaunchedEffect(subTab) { pagerState.animateScrollToPage(subTab) }
-    LaunchedEffect(pagerState.currentPage) { viewModel.selectGatherSubTab(pagerState.currentPage) }
+    LaunchedEffect(subTab) { if (pagerState.currentPage != subTab) pagerState.animateScrollToPage(subTab) }
+    LaunchedEffect(pagerState.currentPage) { if (pagerState.currentPage != subTab) viewModel.selectGatherSubTab(pagerState.currentPage) }
 
     if (lastHarvest != null) {
         HarvestResultDialog(readout = lastHarvest!!, onDismiss = { viewModel.clearLastHarvest() })
