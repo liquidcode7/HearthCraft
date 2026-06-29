@@ -55,7 +55,7 @@ fun MissionsScreen(
     val activeEncounterSession by bandViewModel.activeEncounterSession.collectAsState()
     val activeMission by bandViewModel.activeMission.collectAsState()
     val combatReport by bandViewModel.combatReport.collectAsState()
-    val anyFoodAssigned by bandViewModel.anyFoodAssigned.collectAsState()
+    val allAliveProvisioned by bandViewModel.allAliveProvisioned.collectAsState()
     val members by bandViewModel.members.collectAsState()
 
     // Only show encounters that are actually unlocked — hidden is better than locked/greyed.
@@ -130,7 +130,7 @@ fun MissionsScreen(
                 EncounterCard(
                     encounter = enc,
                     isSelected = enc.encounterId == selectedEncounter?.encounterId,
-                    provisioned = anyFoodAssigned,
+                    provisioned = allAliveProvisioned,
                     onClick = { bandViewModel.selectEncounter(enc) }
                 )
                 Spacer(modifier = Modifier.height(8.dp))

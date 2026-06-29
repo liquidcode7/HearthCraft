@@ -196,6 +196,11 @@ class BandViewModel @Inject constructor(
         .map { it.values.any { food -> food != null } }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
+    val allAliveProvisioned: StateFlow<Boolean> = combine(members, _memberFood) { memberList, food ->
+        val aliveMembers = memberList.filter { it.isAlive }
+        aliveMembers.isNotEmpty() && aliveMembers.all { food[it.memberId] != null }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+
     private val _selectedEncounter = MutableStateFlow<EncounterDetail?>(null)
     val selectedEncounter: StateFlow<EncounterDetail?> = _selectedEncounter.asStateFlow()
 
