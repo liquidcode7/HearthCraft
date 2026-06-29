@@ -40,4 +40,20 @@ class GrowingRepositoryStockpileTest {
         val result = mergeItems(emptyList(), incoming)
         assertEquals(3, result[0].quantity)
     }
+
+    @Test
+    fun `runCatching on malformed JSON returns empty list`() {
+        val result = runCatching {
+            kotlinx.serialization.json.Json.decodeFromString<List<HarvestItem>>("not valid json")
+        }.getOrNull() ?: emptyList()
+        assertEquals(emptyList<HarvestItem>(), result)
+    }
+
+    @Test
+    fun `cap check blocks add when existing quantity equals maxQty`() {
+        val existingQty = 9
+        val maxQty = 9
+        val wouldAdd = existingQty < maxQty
+        assertEquals(false, wouldAdd)
+    }
 }

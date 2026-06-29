@@ -30,4 +30,7 @@ interface GrowingSlotDao {
 
     @Query("UPDATE growing_slots SET pendingResultJson = NULL WHERE id = :id")
     suspend fun clearPendingResult(id: String)
+
+    @Query("UPDATE growing_slots SET plantedAtMs = :ms WHERE id = :id")
+    suspend fun updatePlantedAt(id: String, ms: Long)
 }

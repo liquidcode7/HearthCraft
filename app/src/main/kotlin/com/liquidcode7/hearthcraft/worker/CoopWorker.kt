@@ -16,9 +16,8 @@ import com.liquidcode7.hearthcraft.data.model.HarvestItem
 import com.liquidcode7.hearthcraft.data.repository.GrowingRepository
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import androidx.work.ExistingWorkPolicy
 import androidx.work.WorkManager
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.json.Json
 import java.util.concurrent.TimeUnit
 import kotlin.random.Random
 
@@ -30,23 +29,18 @@ class CoopWorker @AssistedInject constructor(
 ) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
-        val qty = BASE_YIELD + Random.nextInt(2)   // 2–3 eggs
+        growing.updatePlantedAt(SLOT_ID, System.currentTimeMillis())
+
+        val qty = BASE_YIELD + Random.nextInt(2)
         val items = listOf(
             HarvestItem(ingredientId = "hens_egg", name = "Hen's Egg", quantity = qty, rarity = "common")
         )
 
-        val slot = growing.getSlot(SLOT_ID)
-        val existingJson = slot?.pendingResultJson
-        val existingQty = if (existingJson != null) {
-            Json.decodeFromString<List<HarvestItem>>(existingJson).sumOf { it.quantity }
-        } else 0
-        val atCap = existingQty >= MAX_STOCKPILE_CYCLES * (BASE_YIELD + 1)
+        val added = growing.addToPendingResult(SLOT_ID, items, MAX_STOCKPILE_CYCLES * (BASE_YIELD + 1))
+        if (added) notify("Coop ready — tap to collect", "Your hens have laid eggs.")
 
-        if (!atCap) {
-            growing.addToPendingResult(SLOT_ID, items)
-            notify("Coop ready — tap to collect", "Your hens have laid eggs.")
-        }
-        WorkManager.getInstance(applicationContext).enqueue(buildRequest(DURATION_COOP_MS))
+        WorkManager.getInstance(applicationContext)
+            .enqueueUniqueWork(SLOT_ID, ExistingWorkPolicy.KEEP, buildRequest(DURATION_COOP_MS))
         return Result.success()
     }
 

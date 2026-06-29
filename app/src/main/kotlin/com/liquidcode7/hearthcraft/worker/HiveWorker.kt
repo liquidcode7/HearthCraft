@@ -17,9 +17,8 @@ import com.liquidcode7.hearthcraft.data.repository.GrowingRepository
 import com.liquidcode7.hearthcraft.data.repository.PlayerRepository
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import androidx.work.ExistingWorkPolicy
 import androidx.work.WorkManager
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.json.Json
 import java.util.concurrent.TimeUnit
 import kotlin.random.Random
 
@@ -32,29 +31,21 @@ class HiveWorker @AssistedInject constructor(
 ) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
+        growing.updatePlantedAt(SLOT_ID, System.currentTimeMillis())
+
         val bandId = player.get()?.chosenBandId ?: "greycloaks"
         val (honeyId, honeyName) = honeyForBand(bandId)
-        val honeyQty = BASE_YIELD + Random.nextInt(3)   // 2–4 honey
+        val honeyQty = BASE_YIELD + Random.nextInt(3)
 
         val items = listOf(
             HarvestItem(ingredientId = honeyId, name = honeyName, quantity = honeyQty, rarity = "common")
         )
 
-        // Accumulate — count existing cycles to enforce the cap
-        val slot = growing.getSlot(SLOT_ID)
-        val existingJson = slot?.pendingResultJson
-        val existingQty = if (existingJson != null) {
-            Json.decodeFromString<List<HarvestItem>>(existingJson).sumOf { it.quantity }
-        } else 0
+        val added = growing.addToPendingResult(SLOT_ID, items, MAX_STOCKPILE_CYCLES * (BASE_YIELD + 1))
+        if (added) notify("Hive ready — tap to collect", "$honeyName is ready to harvest.")
 
-        val atCap = existingQty >= MAX_STOCKPILE_CYCLES * (BASE_YIELD + 1)
-        if (!atCap) {
-            growing.addToPendingResult(SLOT_ID, items)
-            notify("Hive ready — tap to collect", "$honeyName is ready to harvest.")
-        }
-
-        // Always reschedule — even at cap, so player collecting clears the way for the next cycle
-        WorkManager.getInstance(applicationContext).enqueue(buildRequest(DURATION_HIVE_MS))
+        WorkManager.getInstance(applicationContext)
+            .enqueueUniqueWork(SLOT_ID, ExistingWorkPolicy.KEEP, buildRequest(DURATION_HIVE_MS))
         return Result.success()
     }
 
