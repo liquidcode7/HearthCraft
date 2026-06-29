@@ -10,17 +10,8 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface CookingSessionDao {
 
-    @Query("SELECT * FROM cooking_session WHERE id = 0")
-    fun observe(): Flow<CookingSession?>
-
-    @Query("SELECT * FROM cooking_session WHERE id = 0")
-    suspend fun get(): CookingSession?
-
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun start(session: CookingSession)
-
-    @Query("DELETE FROM cooking_session WHERE id = 0")
-    suspend fun clear()
 
     @Query("SELECT * FROM cooking_session WHERE id = :slot LIMIT 1")
     fun observeSlot(slot: Int): Flow<CookingSession?>

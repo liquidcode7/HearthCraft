@@ -51,11 +51,14 @@ fun HomeScreen(
     val gProgress by viewModel.gatheringProgress.collectAsState()
     val cProgress by viewModel.cookingProgress.collectAsState()
     val gSession by viewModel.gatheringSession.collectAsState()
-    val cSession by viewModel.cookingSession.collectAsState()
+    val cSession0 by viewModel.cookingSession0.collectAsState()
+    val cSession1 by viewModel.cookingSession1.collectAsState()
     val mSession by viewModel.missionSession.collectAsState()
     val eSession by viewModel.encounterSession.collectAsState()
     val growingCount by viewModel.activeGrowingCount.collectAsState()
-    val cookingName by viewModel.cookingRecipeName.collectAsState()
+    val cookingName0 by viewModel.cookingRecipeName0.collectAsState()
+    val cookingName1 by viewModel.cookingRecipeName1.collectAsState()
+    val anyCooking by viewModel.anyCookingActive.collectAsState()
     val encounterName by viewModel.encounterName.collectAsState()
     val activeBandName by viewModel.activeBandName.collectAsState()
     val aliveCount by viewModel.aliveMemberCount.collectAsState()
@@ -72,7 +75,7 @@ fun HomeScreen(
 
     val flavorText = when {
         anyMissionActive -> "The band is away. Hold the fire."
-        cSession != null -> "Something is on the fire."
+        anyCooking       -> "Something is on the fire."
         gSession != null -> "Out gathering. The wild provides."
         else             -> "The hearth is quiet."
     }
@@ -102,7 +105,7 @@ fun HomeScreen(
         SectionLabel("Active")
         Spacer(modifier = Modifier.height(8.dp))
 
-        val nothingActive = gSession == null && cSession == null && !anyMissionActive && growingCount == 0
+        val nothingActive = gSession == null && !anyCooking && !anyMissionActive && growingCount == 0
         if (nothingActive) {
             Text(
                 "Nothing running. Send the band, start a forage, or cook.",
@@ -110,11 +113,19 @@ fun HomeScreen(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         } else {
-            if (cSession != null) {
+            if (cSession0 != null) {
                 ActiveTimerRow(
-                    label = "Cooking${if (cookingName != null) ": $cookingName" else ""}",
-                    startedAtMs = cSession!!.startedAtMs,
-                    durationMs = cSession!!.durationMs
+                    label = "Cooking${if (cookingName0 != null) ": $cookingName0" else ""}",
+                    startedAtMs = cSession0!!.startedAtMs,
+                    durationMs = cSession0!!.durationMs
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+            }
+            if (cSession1 != null) {
+                ActiveTimerRow(
+                    label = "Cooking${if (cookingName1 != null) ": $cookingName1" else ""}",
+                    startedAtMs = cSession1!!.startedAtMs,
+                    durationMs = cSession1!!.durationMs
                 )
                 Spacer(modifier = Modifier.height(4.dp))
             }
@@ -134,7 +145,7 @@ fun HomeScreen(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
             }
-            if (growingCount > 0 && gSession == null && cSession == null && !anyMissionActive) {
+            if (growingCount > 0 && gSession == null && !anyCooking && !anyMissionActive) {
                 Text(
                     "$growingCount plot${if (growingCount > 1) "s" else ""} growing",
                     style = MaterialTheme.typography.bodySmall,
@@ -208,7 +219,7 @@ fun HomeScreen(
                 label = "Kitchen",
                 icon = Icons.Filled.LocalDining,
                 statusLine = when {
-                    cSession != null -> cookingName ?: "Cooking"
+                    anyCooking -> cookingName0 ?: cookingName1 ?: "Cooking"
                     discoveredCount > 0 -> "$discoveredCount recipes"
                     else -> "Nothing cooking"
                 },

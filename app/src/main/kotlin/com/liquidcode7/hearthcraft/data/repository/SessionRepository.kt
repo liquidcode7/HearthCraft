@@ -22,20 +22,15 @@ class SessionRepository @Inject constructor(
     private val encounterDao: EncounterSessionDao
 ) {
     fun observeGathering(): Flow<GatheringSession?> = gatheringDao.observe()
-    fun observeCooking(): Flow<CookingSession?> = cookingDao.observe()
     fun observeMission(bandId: String): Flow<MissionSession?> = missionDao.observe(bandId)
     fun observeEncounter(bandId: String): Flow<EncounterSession?> = encounterDao.observe(bandId)
 
     suspend fun activeGathering(): GatheringSession? = gatheringDao.get()
-    suspend fun activeCooking(): CookingSession? = cookingDao.get()
     suspend fun activeMission(bandId: String): MissionSession? = missionDao.get(bandId)
     suspend fun activeEncounter(bandId: String): EncounterSession? = encounterDao.get(bandId)
 
     suspend fun startGathering(session: GatheringSession) = gatheringDao.start(session)
     suspend fun clearGathering() = gatheringDao.clear()
-
-    suspend fun startCooking(session: CookingSession) = cookingDao.start(session)
-    suspend fun clearCooking() = cookingDao.clear()
 
     fun observeCookingSlot(slot: Int): Flow<CookingSession?> = cookingDao.observeSlot(slot)
     suspend fun activeCookingSlot(slot: Int): CookingSession? = cookingDao.getSlot(slot)

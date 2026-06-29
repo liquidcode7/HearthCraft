@@ -47,12 +47,25 @@ class HomeViewModel @Inject constructor(
     val gatheringSession: StateFlow<GatheringSession?> = sessions.observeGathering()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
-    val cookingSession: StateFlow<CookingSession?> = sessions.observeCooking()
+    val cookingSession0: StateFlow<CookingSession?> = sessions.observeCookingSlot(0)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
-    val cookingRecipeName: StateFlow<String?> = sessions.observeCooking()
+    val cookingSession1: StateFlow<CookingSession?> = sessions.observeCookingSlot(1)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
+
+    val cookingRecipeName0: StateFlow<String?> = sessions.observeCookingSlot(0)
         .map { s -> s?.let { gameData.recipes.find { r -> r.id == s.recipeId }?.name } }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
+
+    val cookingRecipeName1: StateFlow<String?> = sessions.observeCookingSlot(1)
+        .map { s -> s?.let { gameData.recipes.find { r -> r.id == s.recipeId }?.name } }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
+
+    val anyCookingActive: StateFlow<Boolean> = combine(
+        cookingSession0,
+        cookingSession1
+    ) { s0, s1 -> s0 != null || s1 != null }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val missionSession: StateFlow<MissionSession?> = player.observe()
