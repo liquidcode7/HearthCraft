@@ -171,6 +171,7 @@ function runFight(cfg, verbose) {
       else if (k==="warden")  raw += M[k].mig * 0.5;
       else if (k==="captain") raw += M[k].mig * 0.3 + M[k].wil * 0.2;
     });
+    if (windows.dawn > 0) raw *= 1.5;
     const physAfter = Math.max(0, cfg.phys * (1 - Math.min(1, cfg.potency/PEN_SCALE)));
     const capWil = (!M.captain.grievous && !M.captain.stunned) ? M.captain.wil : 0;
     const willCut = Math.min(1, capWil/100), hopeCut = Math.min(1, cfg.hope/100);
