@@ -26,6 +26,7 @@ data class Recipe(
     val hazardEffect: String? = null,
     val description: String = "",
     val ingredients: List<RecipeIngredient> = emptyList(),
+    val heroIngredient: String = "",   // id of the hero ingredient (counts double in grade resolution)
     val penalty: Boolean = false
 ) {
     // Derived properties used by existing UI code.

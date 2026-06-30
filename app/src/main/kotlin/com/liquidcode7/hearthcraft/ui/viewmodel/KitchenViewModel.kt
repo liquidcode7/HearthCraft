@@ -8,7 +8,9 @@ import com.liquidcode7.hearthcraft.data.db.CookingSession
 import com.liquidcode7.hearthcraft.data.db.GrowingSlot
 import com.liquidcode7.hearthcraft.data.db.InventoryItem
 import com.liquidcode7.hearthcraft.data.db.PlayerState
+import com.liquidcode7.hearthcraft.data.model.Grade
 import com.liquidcode7.hearthcraft.data.model.Ingredient
+import com.liquidcode7.hearthcraft.data.model.resolveDishGrade
 import com.liquidcode7.hearthcraft.data.model.Recipe
 import com.liquidcode7.hearthcraft.data.repository.GameDataRepository
 import com.liquidcode7.hearthcraft.data.repository.GrowingRepository
@@ -221,9 +223,24 @@ class KitchenViewModel @Inject constructor(
                 if (sessions.activeCookingSlot(freeSlot) != null) return@withLock
                 if (!canCook(recipe, inventoryItems.value)) return@withLock
 
+                // Resolve dish grade before consuming (we need the stock to read grades).
+                val cookLevel = player.get()?.cookingLevel ?: 1
+                val heroId = recipe.heroIngredient.ifBlank { recipe.ingredients.firstOrNull()?.id.orEmpty() }
+                val heroGrade = Grade.fromOrdinal(
+                    (0..4).firstOrNull { g -> inventory.ingredientQtyAtGrade(heroId, g) > 0 } ?: 0
+                )
+                val supportingGrades = recipe.ingredients
+                    .filter { it.id != heroId }
+                    .map { ing ->
+                        Grade.fromOrdinal(
+                            (0..4).firstOrNull { g -> inventory.ingredientQtyAtGrade(ing.id, g) > 0 } ?: 0
+                        )
+                    }
+                val dishGrade = resolveDishGrade(heroGrade, supportingGrades, cookLevel, recipe.cookLevel)
+
                 recipe.ingredients.forEach { inventory.removeIngredient(it.id, it.qty) }
 
-                val request = CookingWorker.buildRequest(recipe.id, recipe.durationMs, freeSlot)
+                val request = CookingWorker.buildRequest(recipe.id, recipe.durationMs, freeSlot, dishGrade.ordinal)
                 WorkManager.getInstance(context).enqueue(request)
                 sessions.startCookingInSlot(
                     CookingSession(

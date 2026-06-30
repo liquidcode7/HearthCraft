@@ -7,20 +7,12 @@
     "method": "cook",
     "tier": 1,
     "cookLevel": 1,
+    "heroIngredient": "goodmans_taters",
     "description": "Dense roasted taters and browncap with hearthgrain flatbread. Hits like a working meal should.",
     "ingredients": [
-      {
-        "id": "goodmans_taters",
-        "qty": 2
-      },
-      {
-        "id": "hearthgrain",
-        "qty": 1
-      },
-      {
-        "id": "chetwood_browncap",
-        "qty": 1
-      }
+      { "id": "goodmans_taters", "qty": 2 },
+      { "id": "hearthgrain",     "qty": 1 },
+      { "id": "chetwood_browncap","qty": 1 }
     ],
     "primaryStat": "mig",
     "primaryBoost": 2
@@ -33,16 +25,11 @@
     "method": "cook",
     "tier": 1,
     "cookLevel": 1,
+    "heroIngredient": "hens_egg",
     "description": "An insult to the palate and most likely to the ethics of food sourcing. Thick, dark, and faintly sweet in a way that suggests the sweetness has something to apologize for. No one who can cook will make this willingly.",
     "ingredients": [
-      {
-        "id": "hens_egg",
-        "qty": 2
-      },
-      {
-        "id": "nettleleaf",
-        "qty": 1
-      }
+      { "id": "hens_egg",    "qty": 2 },
+      { "id": "nettleleaf",  "qty": 1 }
     ],
     "primaryStat": "vit",
     "primaryBoost": -2,
@@ -56,20 +43,12 @@
     "method": "bake",
     "tier": 1,
     "cookLevel": 1,
+    "heroIngredient": "hedgerow_berry",
     "description": "Tart berry and cress stuffed into a short pastry. Light and fast.",
     "ingredients": [
-      {
-        "id": "hedgerow_berry",
-        "qty": 2
-      },
-      {
-        "id": "hearthgrain",
-        "qty": 1
-      },
-      {
-        "id": "brookcress",
-        "qty": 1
-      }
+      { "id": "hedgerow_berry", "qty": 2 },
+      { "id": "hearthgrain",    "qty": 1 },
+      { "id": "brookcress",     "qty": 1 }
     ],
     "primaryStat": "agi",
     "primaryBoost": 2
@@ -82,20 +61,12 @@
     "method": "cook",
     "tier": 1,
     "cookLevel": 1,
+    "heroIngredient": "goodmans_taters",
     "description": "The stew that keeps a household going. Plain, honest, deeply sustaining.",
     "ingredients": [
-      {
-        "id": "goodmans_taters",
-        "qty": 2
-      },
-      {
-        "id": "pale_cap",
-        "qty": 1
-      },
-      {
-        "id": "hearthgrain",
-        "qty": 1
-      }
+      { "id": "goodmans_taters", "qty": 2 },
+      { "id": "pale_cap",        "qty": 1 },
+      { "id": "hearthgrain",     "qty": 1 }
     ],
     "primaryStat": "vit",
     "primaryBoost": 2
@@ -108,20 +79,12 @@
     "method": "bake",
     "tier": 1,
     "cookLevel": 1,
+    "heroIngredient": "brookcress",
     "description": "Unleavened flatbread sharp with cress and sweetened with honey. Clears the head.",
     "ingredients": [
-      {
-        "id": "brookcress",
-        "qty": 2
-      },
-      {
-        "id": "hearthgrain",
-        "qty": 1
-      },
-      {
-        "id": "forest_honey",
-        "qty": 1
-      }
+      { "id": "brookcress",    "qty": 2 },
+      { "id": "hearthgrain",   "qty": 1 },
+      { "id": "forest_honey",  "qty": 1 }
     ],
     "primaryStat": "wil",
     "primaryBoost": 2
@@ -134,20 +97,12 @@
     "method": "brew",
     "tier": 1,
     "cookLevel": 5,
+    "heroIngredient": "sloe",
     "description": "Bitter and sharp. Teaches the band to cut through what resists them.",
     "ingredients": [
-      {
-        "id": "sloe",
-        "qty": 2
-      },
-      {
-        "id": "brookcress",
-        "qty": 1
-      },
-      {
-        "id": "forest_honey",
-        "qty": 1
-      }
+      { "id": "sloe",         "qty": 2 },
+      { "id": "brookcress",   "qty": 1 },
+      { "id": "forest_honey", "qty": 1 }
     ],
     "hazardEffect": "potency"
   },
@@ -159,24 +114,13 @@
     "method": "cook",
     "tier": 2,
     "cookLevel": 5,
+    "heroIngredient": "salted_pork",
     "description": "Long-simmered pork and ironroot. The kind of meal you eat when the road gets hard.",
     "ingredients": [
-      {
-        "id": "salted_pork",
-        "qty": 2
-      },
-      {
-        "id": "ironroot",
-        "qty": 1
-      },
-      {
-        "id": "barleycorn",
-        "qty": 1
-      },
-      {
-        "id": "onion",
-        "qty": 1
-      }
+      { "id": "salted_pork",  "qty": 2 },
+      { "id": "ironroot",     "qty": 1 },
+      { "id": "barleycorn",   "qty": 1 },
+      { "id": "onion",        "qty": 1 }
     ],
     "primaryStat": "mig",
     "primaryBoost": 3,
@@ -191,20 +135,12 @@
     "method": "cook",
     "tier": 2,
     "cookLevel": 5,
+    "heroIngredient": "rabbit",
     "description": "Roasted rabbit with hedgerow berries and thyme. Quick fire, good result.",
     "ingredients": [
-      {
-        "id": "rabbit",
-        "qty": 2
-      },
-      {
-        "id": "hedgerow_berry",
-        "qty": 1
-      },
-      {
-        "id": "common_thyme",
-        "qty": 1
-      }
+      { "id": "rabbit",         "qty": 2 },
+      { "id": "hedgerow_berry", "qty": 1 },
+      { "id": "common_thyme",   "qty": 1 }
     ],
     "primaryStat": "agi",
     "primaryBoost": 3,
@@ -219,24 +155,13 @@
     "method": "cook",
     "tier": 2,
     "cookLevel": 5,
+    "heroIngredient": "goodmans_taters",
     "description": "A thicker stew with willowherb. Something calming about it besides the filling.",
     "ingredients": [
-      {
-        "id": "goodmans_taters",
-        "qty": 2
-      },
-      {
-        "id": "willowherb",
-        "qty": 1
-      },
-      {
-        "id": "leek",
-        "qty": 1
-      },
-      {
-        "id": "pale_cap",
-        "qty": 1
-      }
+      { "id": "goodmans_taters", "qty": 2 },
+      { "id": "willowherb",      "qty": 1 },
+      { "id": "leek",            "qty": 1 },
+      { "id": "pale_cap",        "qty": 1 }
     ],
     "primaryStat": "vit",
     "primaryBoost": 3,
@@ -251,20 +176,12 @@
     "method": "bake",
     "tier": 2,
     "cookLevel": 6,
+    "heroIngredient": "oat_sheaf",
     "description": "Dense oat cake cut with sorrel. Sweet-sour, clarifying.",
     "ingredients": [
-      {
-        "id": "oat_sheaf",
-        "qty": 2
-      },
-      {
-        "id": "forest_honey",
-        "qty": 1
-      },
-      {
-        "id": "sorrel",
-        "qty": 1
-      }
+      { "id": "oat_sheaf",    "qty": 2 },
+      { "id": "forest_honey", "qty": 1 },
+      { "id": "sorrel",       "qty": 1 }
     ],
     "primaryStat": "wil",
     "primaryBoost": 3,
@@ -279,16 +196,11 @@
     "method": "brew",
     "tier": 2,
     "cookLevel": 3,
+    "heroIngredient": "bilberry",
     "description": "Tastes terrible. Works. Combats the fog that long dark roads put in the mind.",
     "ingredients": [
-      {
-        "id": "bilberry",
-        "qty": 3
-      },
-      {
-        "id": "meadowsweet",
-        "qty": 1
-      }
+      { "id": "bilberry",     "qty": 3 },
+      { "id": "meadowsweet",  "qty": 1 }
     ],
     "hazardEffect": "alert"
   },
@@ -300,20 +212,12 @@
     "method": "brew",
     "tier": 2,
     "cookLevel": 4,
+    "heroIngredient": "yarrow",
     "description": "Old cure for old trouble. Bitter and honest. Disease-counter.",
     "ingredients": [
-      {
-        "id": "yarrow",
-        "qty": 2
-      },
-      {
-        "id": "meadowsweet",
-        "qty": 1
-      },
-      {
-        "id": "rosehip",
-        "qty": 1
-      }
+      { "id": "yarrow",       "qty": 2 },
+      { "id": "meadowsweet",  "qty": 1 },
+      { "id": "rosehip",      "qty": 1 }
     ],
     "hazardEffect": "hale"
   },
@@ -325,24 +229,13 @@
     "method": "cook",
     "tier": 3,
     "cookLevel": 10,
+    "heroIngredient": "smoked_river_trout",
     "description": "River trout with stormcap and butter. Fast, hot, excellent.",
     "ingredients": [
-      {
-        "id": "smoked_river_trout",
-        "qty": 2
-      },
-      {
-        "id": "stormcap",
-        "qty": 1
-      },
-      {
-        "id": "butter",
-        "qty": 1
-      },
-      {
-        "id": "leek",
-        "qty": 1
-      }
+      { "id": "smoked_river_trout", "qty": 2 },
+      { "id": "stormcap",           "qty": 1 },
+      { "id": "butter",             "qty": 1 },
+      { "id": "leek",               "qty": 1 }
     ],
     "primaryStat": "mig",
     "primaryBoost": 4,
@@ -357,16 +250,11 @@
     "method": "cook",
     "tier": 2,
     "cookLevel": 3,
+    "heroIngredient": "heartflame_pepper",
     "description": "Hot and sustaining. Counters the cold.",
     "ingredients": [
-      {
-        "id": "hearthgrain",
-        "qty": 2
-      },
-      {
-        "id": "heartflame_pepper",
-        "qty": 1
-      }
+      { "id": "hearthgrain",       "qty": 2 },
+      { "id": "heartflame_pepper", "qty": 1 }
     ],
     "hazardEffect": "warmth"
   },
@@ -378,16 +266,11 @@
     "method": "cook",
     "tier": 4,
     "cookLevel": 10,
+    "heroIngredient": "ironroot",
     "description": "What rangers carry when they travel long and fight hard at the end of it.",
     "ingredients": [
-      {
-        "id": "ironroot",
-        "qty": 2
-      },
-      {
-        "id": "pale_cap",
-        "qty": 1
-      }
+      { "id": "ironroot",  "qty": 2 },
+      { "id": "pale_cap",  "qty": 1 }
     ],
     "primaryStat": "mig",
     "primaryBoost": 4,
@@ -402,20 +285,12 @@
     "method": "cook",
     "tier": 4,
     "cookLevel": 6,
+    "heroIngredient": "heartflame_pepper",
     "description": "Warming broth. Keeps a person warm in conditions that shouldn't be survived.",
     "ingredients": [
-      {
-        "id": "heartflame_pepper",
-        "qty": 2
-      },
-      {
-        "id": "ironroot",
-        "qty": 1
-      },
-      {
-        "id": "hearthgrain",
-        "qty": 1
-      }
+      { "id": "heartflame_pepper", "qty": 2 },
+      { "id": "ironroot",          "qty": 1 },
+      { "id": "hearthgrain",       "qty": 1 }
     ],
     "hazardEffect": "warmth"
   },
@@ -427,20 +302,12 @@
     "method": "bake",
     "tier": 1,
     "cookLevel": 1,
+    "heroIngredient": "pale_waybread_grain",
     "description": "Dense coastal bread. The Mithlost don't waste a meal on ceremony.",
     "ingredients": [
-      {
-        "id": "pale_waybread_grain",
-        "qty": 2
-      },
-      {
-        "id": "white_nectar",
-        "qty": 1
-      },
-      {
-        "id": "shorewrack_greens",
-        "qty": 1
-      }
+      { "id": "pale_waybread_grain", "qty": 2 },
+      { "id": "white_nectar",        "qty": 1 },
+      { "id": "shorewrack_greens",   "qty": 1 }
     ],
     "primaryStat": "mig",
     "primaryBoost": 2
@@ -453,20 +320,12 @@
     "method": "brew",
     "tier": 1,
     "cookLevel": 1,
+    "heroIngredient": "shorewrack_greens",
     "description": "Fresh sea-greens with sunpetal. Light and quick. Elvish field food.",
     "ingredients": [
-      {
-        "id": "shorewrack_greens",
-        "qty": 2
-      },
-      {
-        "id": "sunpetal_herb",
-        "qty": 1
-      },
-      {
-        "id": "white_nectar",
-        "qty": 1
-      }
+      { "id": "shorewrack_greens", "qty": 2 },
+      { "id": "sunpetal_herb",     "qty": 1 },
+      { "id": "white_nectar",      "qty": 1 }
     ],
     "primaryStat": "agi",
     "primaryBoost": 2
@@ -479,20 +338,12 @@
     "method": "cook",
     "tier": 1,
     "cookLevel": 1,
+    "heroIngredient": "springwater_lhun",
     "description": "A clean broth. Deceptively sustaining.",
     "ingredients": [
-      {
-        "id": "springwater_lhun",
-        "qty": 2
-      },
-      {
-        "id": "shorewrack_greens",
-        "qty": 1
-      },
-      {
-        "id": "sunpetal_herb",
-        "qty": 1
-      }
+      { "id": "springwater_lhun",  "qty": 2 },
+      { "id": "shorewrack_greens", "qty": 1 },
+      { "id": "sunpetal_herb",     "qty": 1 }
     ],
     "primaryStat": "vit",
     "primaryBoost": 2
@@ -505,20 +356,12 @@
     "method": "bake",
     "tier": 1,
     "cookLevel": 1,
+    "heroIngredient": "sunpetal_herb",
     "description": "Thin, precise, clarifying. A Mithlost clarity dish — solid, not a tea.",
     "ingredients": [
-      {
-        "id": "sunpetal_herb",
-        "qty": 2
-      },
-      {
-        "id": "moonpetal",
-        "qty": 1
-      },
-      {
-        "id": "pale_waybread_grain",
-        "qty": 1
-      }
+      { "id": "sunpetal_herb",      "qty": 2 },
+      { "id": "moonpetal",          "qty": 1 },
+      { "id": "pale_waybread_grain","qty": 1 }
     ],
     "primaryStat": "wil",
     "primaryBoost": 2
@@ -531,20 +374,12 @@
     "method": "brew",
     "tier": 1,
     "cookLevel": 5,
+    "heroIngredient": "springwater_lhun",
     "description": "Precise and cold. Teaches armor-cutting through purity of preparation.",
     "ingredients": [
-      {
-        "id": "springwater_lhun",
-        "qty": 2
-      },
-      {
-        "id": "moonpetal",
-        "qty": 1
-      },
-      {
-        "id": "sunpetal_herb",
-        "qty": 1
-      }
+      { "id": "springwater_lhun", "qty": 2 },
+      { "id": "moonpetal",        "qty": 1 },
+      { "id": "sunpetal_herb",    "qty": 1 }
     ],
     "hazardEffect": "potency"
   },
@@ -556,20 +391,12 @@
     "method": "cook",
     "tier": 2,
     "cookLevel": 5,
+    "heroIngredient": "lhun_saltfish",
     "description": "Preserved fish and kelp in a clean broth. The real Mithlost sustaining meal.",
     "ingredients": [
-      {
-        "id": "lhun_saltfish",
-        "qty": 2
-      },
-      {
-        "id": "tidal_kelp",
-        "qty": 1
-      },
-      {
-        "id": "lhun_sage",
-        "qty": 1
-      }
+      { "id": "lhun_saltfish", "qty": 2 },
+      { "id": "tidal_kelp",    "qty": 1 },
+      { "id": "lhun_sage",     "qty": 1 }
     ],
     "primaryStat": "mig",
     "primaryBoost": 3,
@@ -584,20 +411,12 @@
     "method": "cook",
     "tier": 2,
     "cookLevel": 5,
+    "heroIngredient": "seabird_egg",
     "description": "Eggs cooked fast with leek and cress. Elvish precision in a pan.",
     "ingredients": [
-      {
-        "id": "seabird_egg",
-        "qty": 2
-      },
-      {
-        "id": "silver_leek",
-        "qty": 1
-      },
-      {
-        "id": "tidal_cress",
-        "qty": 1
-      }
+      { "id": "seabird_egg",  "qty": 2 },
+      { "id": "silver_leek",  "qty": 1 },
+      { "id": "tidal_cress",  "qty": 1 }
     ],
     "primaryStat": "agi",
     "primaryBoost": 3,
@@ -612,20 +431,12 @@
     "method": "bake",
     "tier": 2,
     "cookLevel": 6,
+    "heroIngredient": "fennel_bulb",
     "description": "Baked fennel with cheese on waybread. Substantial and refined.",
     "ingredients": [
-      {
-        "id": "fennel_bulb",
-        "qty": 2
-      },
-      {
-        "id": "pressed_herb_cheese",
-        "qty": 1
-      },
-      {
-        "id": "pale_waybread_grain",
-        "qty": 1
-      }
+      { "id": "fennel_bulb",          "qty": 2 },
+      { "id": "pressed_herb_cheese",  "qty": 1 },
+      { "id": "pale_waybread_grain",  "qty": 1 }
     ],
     "primaryStat": "vit",
     "primaryBoost": 3,
@@ -640,16 +451,11 @@
     "method": "brew",
     "tier": 2,
     "cookLevel": 6,
+    "heroIngredient": "moonpetal",
     "description": "Smells like a forest at midnight. Shadow-counter tendency.",
     "ingredients": [
-      {
-        "id": "moonpetal",
-        "qty": 3
-      },
-      {
-        "id": "ironbark_resin",
-        "qty": 1
-      }
+      { "id": "moonpetal",       "qty": 3 },
+      { "id": "ironbark_resin",  "qty": 1 }
     ],
     "hazardEffect": "radiance"
   },
@@ -661,20 +467,12 @@
     "method": "brew",
     "tier": 2,
     "cookLevel": 4,
+    "heroIngredient": "silvern_mint",
     "description": "Elvish anti-torpor preparation. Precise, cold, effective.",
     "ingredients": [
-      {
-        "id": "silvern_mint",
-        "qty": 2
-      },
-      {
-        "id": "sunpetal_herb",
-        "qty": 1
-      },
-      {
-        "id": "white_nectar",
-        "qty": 1
-      }
+      { "id": "silvern_mint",  "qty": 2 },
+      { "id": "sunpetal_herb", "qty": 1 },
+      { "id": "white_nectar",  "qty": 1 }
     ],
     "hazardEffect": "alert"
   },
@@ -686,20 +484,12 @@
     "method": "cook",
     "tier": 1,
     "cookLevel": 1,
+    "heroIngredient": "deepcap",
     "description": "Chopped and roasted in a flat pan over hall-fire. Dense, earthy, strong.",
     "ingredients": [
-      {
-        "id": "deepcap",
-        "qty": 2
-      },
-      {
-        "id": "stone_root",
-        "qty": 1
-      },
-      {
-        "id": "smoked_goat",
-        "qty": 1
-      }
+      { "id": "deepcap",     "qty": 2 },
+      { "id": "stone_root",  "qty": 1 },
+      { "id": "smoked_goat", "qty": 1 }
     ],
     "primaryStat": "mig",
     "primaryBoost": 2
@@ -712,20 +502,12 @@
     "method": "cook",
     "tier": 1,
     "cookLevel": 1,
+    "heroIngredient": "smoked_goat",
     "description": "Goat and mushroom on a skewer. Dwarf fast-food. Surprisingly good.",
     "ingredients": [
-      {
-        "id": "smoked_goat",
-        "qty": 2
-      },
-      {
-        "id": "rockmoss",
-        "qty": 1
-      },
-      {
-        "id": "deepcap",
-        "qty": 1
-      }
+      { "id": "smoked_goat", "qty": 2 },
+      { "id": "rockmoss",    "qty": 1 },
+      { "id": "deepcap",     "qty": 1 }
     ],
     "primaryStat": "agi",
     "primaryBoost": 2
@@ -738,20 +520,12 @@
     "method": "cook",
     "tier": 1,
     "cookLevel": 1,
+    "heroIngredient": "stone_root",
     "description": "The stew that every Undermarch member grew up eating. Plain, strong, keeps all day.",
     "ingredients": [
-      {
-        "id": "stone_root",
-        "qty": 2
-      },
-      {
-        "id": "deepcap",
-        "qty": 1
-      },
-      {
-        "id": "mountain_malt",
-        "qty": 1
-      }
+      { "id": "stone_root",    "qty": 2 },
+      { "id": "deepcap",       "qty": 1 },
+      { "id": "mountain_malt", "qty": 1 }
     ],
     "primaryStat": "vit",
     "primaryBoost": 2
@@ -764,20 +538,12 @@
     "method": "bake",
     "tier": 1,
     "cookLevel": 1,
+    "heroIngredient": "rockmoss",
     "description": "Hard flatbread with rockmoss. Bitter. Clarifying in the dwarf manner.",
     "ingredients": [
-      {
-        "id": "rockmoss",
-        "qty": 2
-      },
-      {
-        "id": "mountain_malt",
-        "qty": 1
-      },
-      {
-        "id": "deepcap",
-        "qty": 1
-      }
+      { "id": "rockmoss",      "qty": 2 },
+      { "id": "mountain_malt", "qty": 1 },
+      { "id": "deepcap",       "qty": 1 }
     ],
     "primaryStat": "wil",
     "primaryBoost": 2
@@ -790,20 +556,12 @@
     "method": "brew",
     "tier": 1,
     "cookLevel": 5,
+    "heroIngredient": "mountain_malt",
     "description": "A flat stout brewed for penetration, not pleasure. The best one.",
     "ingredients": [
-      {
-        "id": "mountain_malt",
-        "qty": 2
-      },
-      {
-        "id": "hallspring_water",
-        "qty": 1
-      },
-      {
-        "id": "deepcap",
-        "qty": 1
-      }
+      { "id": "mountain_malt",    "qty": 2 },
+      { "id": "hallspring_water", "qty": 1 },
+      { "id": "deepcap",          "qty": 1 }
     ],
     "hazardEffect": "potency"
   },
@@ -815,24 +573,13 @@
     "method": "cook",
     "tier": 2,
     "cookLevel": 5,
+    "heroIngredient": "dried_marrow_bone",
     "description": "Long-simmered marrow broth. Rich to the point of guilt.",
     "ingredients": [
-      {
-        "id": "dried_marrow_bone",
-        "qty": 2
-      },
-      {
-        "id": "mountain_malt",
-        "qty": 1
-      },
-      {
-        "id": "cave_onion",
-        "qty": 1
-      },
-      {
-        "id": "stone_root",
-        "qty": 1
-      }
+      { "id": "dried_marrow_bone", "qty": 2 },
+      { "id": "mountain_malt",     "qty": 1 },
+      { "id": "cave_onion",        "qty": 1 },
+      { "id": "stone_root",        "qty": 1 }
     ],
     "primaryStat": "mig",
     "primaryBoost": 3,
@@ -847,20 +594,12 @@
     "method": "cook",
     "tier": 2,
     "cookLevel": 5,
+    "heroIngredient": "smoked_goat",
     "description": "Roasted goat with ironfoot mushroom. The deep sage makes it.",
     "ingredients": [
-      {
-        "id": "smoked_goat",
-        "qty": 2
-      },
-      {
-        "id": "ironfoot_shroom",
-        "qty": 1
-      },
-      {
-        "id": "deep_sage",
-        "qty": 1
-      }
+      { "id": "smoked_goat",     "qty": 2 },
+      { "id": "ironfoot_shroom", "qty": 1 },
+      { "id": "deep_sage",       "qty": 1 }
     ],
     "primaryStat": "agi",
     "primaryBoost": 3,
@@ -875,24 +614,13 @@
     "method": "bake",
     "tier": 2,
     "cookLevel": 6,
+    "heroIngredient": "deepcap",
     "description": "Dense mushroom bread. The stone_honey version is better but costs more.",
     "ingredients": [
-      {
-        "id": "deepcap",
-        "qty": 2
-      },
-      {
-        "id": "mountain_malt",
-        "qty": 1
-      },
-      {
-        "id": "cave_onion",
-        "qty": 1
-      },
-      {
-        "id": "malt_syrup",
-        "qty": 1
-      }
+      { "id": "deepcap",       "qty": 2 },
+      { "id": "mountain_malt", "qty": 1 },
+      { "id": "cave_onion",    "qty": 1 },
+      { "id": "malt_syrup",    "qty": 1 }
     ],
     "primaryStat": "vit",
     "primaryBoost": 3,
@@ -907,20 +635,12 @@
     "method": "brew",
     "tier": 2,
     "cookLevel": 4,
+    "heroIngredient": "stonewort",
     "description": "The traditional Undermarch disease-counter. Terrible taste. Works.",
     "ingredients": [
-      {
-        "id": "stonewort",
-        "qty": 2
-      },
-      {
-        "id": "bitter_bulb",
-        "qty": 1
-      },
-      {
-        "id": "hallspring_water",
-        "qty": 1
-      }
+      { "id": "stonewort",        "qty": 2 },
+      { "id": "bitter_bulb",      "qty": 1 },
+      { "id": "hallspring_water", "qty": 1 }
     ],
     "hazardEffect": "hale"
   },
@@ -932,20 +652,12 @@
     "method": "brew",
     "tier": 2,
     "cookLevel": 5,
+    "heroIngredient": "coldwort",
     "description": "Brewed to survive the passes. Warmth-counter. A necessity, not a pleasure.",
     "ingredients": [
-      {
-        "id": "coldwort",
-        "qty": 2
-      },
-      {
-        "id": "mountain_thyme",
-        "qty": 1
-      },
-      {
-        "id": "mountain_ale_flat",
-        "qty": 1
-      }
+      { "id": "coldwort",          "qty": 2 },
+      { "id": "mountain_thyme",    "qty": 1 },
+      { "id": "mountain_ale_flat", "qty": 1 }
     ],
     "hazardEffect": "warmth"
   },
@@ -957,16 +669,11 @@
     "method": "bake",
     "tier": 1,
     "cookLevel": 1,
+    "heroIngredient": "hearthgrain",
     "description": "Dense sweet bread. Not exciting. Deeply reliable.",
     "ingredients": [
-      {
-        "id": "hearthgrain",
-        "qty": 2
-      },
-      {
-        "id": "forest_honey",
-        "qty": 1
-      }
+      { "id": "hearthgrain",  "qty": 2 },
+      { "id": "forest_honey", "qty": 1 }
     ],
     "primaryStat": "vit",
     "primaryBoost": 2,
@@ -981,16 +688,11 @@
     "method": "cook",
     "tier": 1,
     "cookLevel": 1,
+    "heroIngredient": "wanderer_fig",
     "description": "Light fare for people who eat on the move.",
     "ingredients": [
-      {
-        "id": "wanderer_fig",
-        "qty": 2
-      },
-      {
-        "id": "duskberry",
-        "qty": 1
-      }
+      { "id": "wanderer_fig", "qty": 2 },
+      { "id": "duskberry",    "qty": 1 }
     ],
     "primaryStat": "agi",
     "primaryBoost": 2,
@@ -1005,16 +707,11 @@
     "method": "brew",
     "tier": 1,
     "cookLevel": 1,
+    "heroIngredient": "sunpetal_herb",
     "description": "A contemplative infusion that clarifies the mind.",
     "ingredients": [
-      {
-        "id": "sunpetal_herb",
-        "qty": 2
-      },
-      {
-        "id": "moonpetal",
-        "qty": 1
-      }
+      { "id": "sunpetal_herb", "qty": 2 },
+      { "id": "moonpetal",     "qty": 1 }
     ],
     "primaryStat": "wil",
     "primaryBoost": 2,
@@ -1029,16 +726,11 @@
     "method": "cook",
     "tier": 3,
     "cookLevel": 8,
+    "heroIngredient": "yarrow",
     "description": "Long-simmered. Tissue repairs; ache recedes.",
     "ingredients": [
-      {
-        "id": "ironroot",
-        "qty": 1
-      },
-      {
-        "id": "yarrow",
-        "qty": 2
-      }
+      { "id": "ironroot", "qty": 1 },
+      { "id": "yarrow",   "qty": 2 }
     ],
     "hazardEffect": "hale"
   },
@@ -1050,20 +742,12 @@
     "method": "brew",
     "tier": 5,
     "cookLevel": 12,
+    "heroIngredient": "athelas",
     "description": "The last line between a grievous wound and what comes after.",
     "ingredients": [
-      {
-        "id": "athelas",
-        "qty": 2
-      },
-      {
-        "id": "meadowsweet",
-        "qty": 1
-      },
-      {
-        "id": "wolf_moss",
-        "qty": 1
-      }
+      { "id": "athelas",      "qty": 2 },
+      { "id": "meadowsweet",  "qty": 1 },
+      { "id": "wolf_moss",    "qty": 1 }
     ],
     "hazardEffect": "hale"
   }

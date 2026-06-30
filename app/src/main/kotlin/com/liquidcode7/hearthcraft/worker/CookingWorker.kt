@@ -35,11 +35,12 @@ class CookingWorker @AssistedInject constructor(
         val recipeId = inputData.getString(KEY_RECIPE_ID) ?: return Result.failure()
         val recipe = gameData.recipes.find { it.id == recipeId } ?: return Result.failure()
         val slot = inputData.getInt(KEY_SLOT, 0)
+        val dishGrade = inputData.getInt(KEY_DISH_GRADE, 0)
 
         val oldLevel = player.get()?.cookingLevel ?: 1
 
         val isFirstCook = inventory.preparedFoodQty(recipeId) == 0
-        inventory.addPreparedFood(recipeId)
+        inventory.addPreparedFood(recipeId, dishGrade)
         val cookingXp = if (isFirstCook) PlayerRepository.XP_COOK_FIRST else PlayerRepository.XP_COOK_REPEAT
         player.addCookingXp(cookingXp)
 
@@ -91,15 +92,17 @@ class CookingWorker @AssistedInject constructor(
     }
 
     companion object {
-        const val KEY_RECIPE_ID = "recipeId"
-        const val KEY_SLOT = "slot"
+        const val KEY_RECIPE_ID  = "recipeId"
+        const val KEY_SLOT       = "slot"
+        const val KEY_DISH_GRADE = "dishGrade"
         const val NOTIFICATION_ID = 2
 
-        fun buildRequest(recipeId: String, durationMs: Long, slot: Int = 0): OneTimeWorkRequest =
+        fun buildRequest(recipeId: String, durationMs: Long, slot: Int = 0, dishGrade: Int = 0): OneTimeWorkRequest =
             OneTimeWorkRequestBuilder<CookingWorker>()
                 .setInputData(workDataOf(
-                    KEY_RECIPE_ID to recipeId,
-                    KEY_SLOT to slot
+                    KEY_RECIPE_ID  to recipeId,
+                    KEY_SLOT       to slot,
+                    KEY_DISH_GRADE to dishGrade
                 ))
                 .setInitialDelay(durationMs, TimeUnit.MILLISECONDS)
                 .build()
