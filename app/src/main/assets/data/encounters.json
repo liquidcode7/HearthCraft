@@ -344,11 +344,11 @@
         "type": "attrition",
         "objective": "kill",
         "durationSec": 1800,
-        "resolve": 90000,
+        "resolve": 110000,
         "drain": 20,
         "spike": 90,
         "spikeIntervalSec": 11,
-        "physMitPct": 20,
+        "physMitPct": 0,
         "dread": 0, "shadow": 0, "disease": 0,
         "cold": 0, "heat": 0, "wakefulness": 0,
         "stageFlavor": "The blood-speaker drains your band to refill his own resolve. Out-damage the heal."
