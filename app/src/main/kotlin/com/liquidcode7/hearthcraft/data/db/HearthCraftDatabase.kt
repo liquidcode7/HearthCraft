@@ -29,7 +29,7 @@ import com.liquidcode7.hearthcraft.data.db.dao.SeedStockDao
         GrowingSlot::class,
         CombatReport::class,
     ],
-    version = 10,
+    version = 11,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 5, to = 6),

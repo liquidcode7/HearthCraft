@@ -1,0 +1,39 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 11,
+    "identityHash": "placeholder_run_build_to_regenerate",
+    "entities": [
+      {
+        "tableName": "player_state",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `chosenBandId` TEXT NOT NULL, `secondBandId` TEXT NOT NULL, `gatheringLevel` INTEGER NOT NULL, `gatheringXp` INTEGER NOT NULL, `cookingLevel` INTEGER NOT NULL, `cookingXp` INTEGER NOT NULL, `money` INTEGER NOT NULL, `discoveredRecipeIds` TEXT NOT NULL DEFAULT '', `hasSeenFoodStructureHints` INTEGER NOT NULL DEFAULT 0, `discoveredIngredientIds` TEXT NOT NULL DEFAULT '', `hasSeenExperimentHint` INTEGER NOT NULL DEFAULT 0, `hasSeenPostForageNudge` INTEGER NOT NULL DEFAULT 0, `hasReceivedStarterPantry` INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(`id`))",
+        "fields": [],
+        "primaryKey": { "autoGenerate": false, "columnNames": ["id"] }
+      },
+      {
+        "tableName": "inventory_items",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`ingredientId` TEXT NOT NULL, `grade` INTEGER NOT NULL DEFAULT 0, `quantity` INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(`ingredientId`, `grade`))",
+        "fields": [
+          { "fieldPath": "ingredientId", "columnName": "ingredientId", "affinity": "TEXT", "notNull": true },
+          { "fieldPath": "grade",        "columnName": "grade",        "affinity": "INTEGER", "notNull": true, "defaultValue": "0" },
+          { "fieldPath": "quantity",     "columnName": "quantity",     "affinity": "INTEGER", "notNull": true, "defaultValue": "0" }
+        ],
+        "primaryKey": { "autoGenerate": false, "columnNames": ["ingredientId", "grade"] }
+      },
+      {
+        "tableName": "prepared_food",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`recipeId` TEXT NOT NULL, `grade` INTEGER NOT NULL DEFAULT 0, `quantity` INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(`recipeId`, `grade`))",
+        "fields": [
+          { "fieldPath": "recipeId",  "columnName": "recipeId",  "affinity": "TEXT",    "notNull": true },
+          { "fieldPath": "grade",     "columnName": "grade",     "affinity": "INTEGER", "notNull": true, "defaultValue": "0" },
+          { "fieldPath": "quantity",  "columnName": "quantity",  "affinity": "INTEGER", "notNull": true, "defaultValue": "0" }
+        ],
+        "primaryKey": { "autoGenerate": false, "columnNames": ["recipeId", "grade"] }
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'placeholder_run_build_to_regenerate')"
+    ]
+  }
+}

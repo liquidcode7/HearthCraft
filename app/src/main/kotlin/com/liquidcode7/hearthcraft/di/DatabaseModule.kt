@@ -14,7 +14,7 @@ import com.liquidcode7.hearthcraft.data.db.dao.MissionSessionDao
 import com.liquidcode7.hearthcraft.data.db.dao.PlayerStateDao
 import com.liquidcode7.hearthcraft.data.db.dao.PreparedFoodDao
 import com.liquidcode7.hearthcraft.data.db.dao.SeedStockDao
-import dagger.Module
+import com.liquidcode7.hearthcraft.data.db.MIGRATION_10_11
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -29,6 +29,7 @@ object DatabaseModule {
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): HearthCraftDatabase =
         Room.databaseBuilder(context, HearthCraftDatabase::class.java, "hearthcraft.db")
+            .addMigrations(MIGRATION_10_11)
             .fallbackToDestructiveMigration(true)
             .build()
 

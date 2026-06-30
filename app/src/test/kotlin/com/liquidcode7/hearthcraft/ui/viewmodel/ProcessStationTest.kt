@@ -81,7 +81,7 @@ class ProcessStationTest {
     // Extracted logic matching the ViewModel's canProcess implementation
     private fun canProcess(ingredient: Ingredient, items: List<InventoryItem>): Boolean {
         val inputs = ingredient.processInputs ?: return false
-        val qtyMap = items.associate { it.ingredientId to it.quantity }
+        val qtyMap = items.groupBy { it.ingredientId }.mapValues { (_, rows) -> rows.sumOf { it.quantity } }
         return inputs.all { (qtyMap[it.id] ?: 0) >= it.qty }
     }
 }

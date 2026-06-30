@@ -204,7 +204,7 @@ class KitchenViewModel @Inject constructor(
     fun ingredientName(id: String): String = gameData.ingredients.find { it.id == id }?.name ?: id
 
     fun canCook(recipe: Recipe, items: List<InventoryItem>): Boolean {
-        val qtyMap = items.associate { it.ingredientId to it.quantity }
+        val qtyMap = items.groupBy { it.ingredientId }.mapValues { (_, rows) -> rows.sumOf { it.quantity } }
         return recipe.ingredients.all { needed -> (qtyMap[needed.id] ?: 0) >= needed.qty }
     }
 
@@ -309,7 +309,7 @@ class KitchenViewModel @Inject constructor(
 
     fun canProcess(ingredient: Ingredient, items: List<InventoryItem>): Boolean {
         val inputs = ingredient.processInputs ?: return false
-        val qtyMap = items.associate { it.ingredientId to it.quantity }
+        val qtyMap = items.groupBy { it.ingredientId }.mapValues { (_, rows) -> rows.sumOf { it.quantity } }
         return inputs.all { (qtyMap[it.id] ?: 0) >= it.qty }
     }
 

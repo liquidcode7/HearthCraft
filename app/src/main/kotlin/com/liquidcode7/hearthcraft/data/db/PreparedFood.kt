@@ -1,10 +1,10 @@
 package com.liquidcode7.hearthcraft.data.db
 
 import androidx.room.Entity
-import androidx.room.PrimaryKey
 
-@Entity(tableName = "prepared_food")
+@Entity(tableName = "prepared_food", primaryKeys = ["recipeId", "grade"])
 data class PreparedFood(
-    @PrimaryKey val recipeId: String,
+    val recipeId: String,
+    val grade: Int = 0,        // ordinal of Grade enum: 0=Crude … 4=Pristine
     val quantity: Int = 0
 )
