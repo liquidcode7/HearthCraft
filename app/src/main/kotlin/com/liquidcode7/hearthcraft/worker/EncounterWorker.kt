@@ -21,6 +21,7 @@ import com.liquidcode7.hearthcraft.data.repository.PlayerRepository
 import com.liquidcode7.hearthcraft.data.repository.SessionRepository
 import com.liquidcode7.hearthcraft.engine.EncounterEngine
 import com.liquidcode7.hearthcraft.engine.Outcome
+import com.liquidcode7.hearthcraft.ui.viewmodel.PreparedFoodDetail
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import java.util.concurrent.TimeUnit
@@ -51,7 +52,7 @@ class EncounterWorker @AssistedInject constructor(
             // Fallback: re-run engine fresh (handles old WorkManager tasks in flight during update)
             val draughtPotency = inputData.getFloat(KEY_DRAUGHT_POTENCY, 0f)
             val stage = encounter.stages.firstOrNull() ?: return Result.failure()
-            val members = band.memberInputsForBand(bandId, draughtPotency, emptyMap(), cookLevel = 1)
+            val members = band.memberInputsForBand(bandId, draughtPotency, emptyMap<String, PreparedFoodDetail?>(), cookLevel = 1)
             if (members.isEmpty()) return Result.failure()
             val result = EncounterEngine.resolve(stage, members, Random.nextLong())
             applyOutcome(result.outcome.name, result.woundsByMember, encounter)

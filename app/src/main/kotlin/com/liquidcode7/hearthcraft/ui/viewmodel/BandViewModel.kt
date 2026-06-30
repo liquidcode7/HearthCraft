@@ -8,7 +8,6 @@ import com.liquidcode7.hearthcraft.data.db.CombatReport
 import com.liquidcode7.hearthcraft.data.db.EncounterSession
 import com.liquidcode7.hearthcraft.data.db.MissionSession
 import com.liquidcode7.hearthcraft.data.model.Band
-import com.liquidcode7.hearthcraft.data.model.Recipe
 import com.liquidcode7.hearthcraft.data.repository.BandRepository
 import com.liquidcode7.hearthcraft.data.repository.CombatRepository
 import com.liquidcode7.hearthcraft.data.repository.EncounterRepository
@@ -232,18 +231,12 @@ class BandViewModel @Inject constructor(
             if (sessions.activeEncounter(bandId) != null) return@launch
             val cookLevel = playerState.value?.cookingLevel ?: 1
 
-            // Map memberId → Recipe (null = no food assigned to that member)
-            val memberRecipeMap: Map<String, Recipe?> =
-                foodMap.mapValues { (_, detail) ->
-                    if (detail != null) gameData.recipes.find { it.id == detail.recipeId } else null
-                }
-
             // Pre-compute fight to find actual end time — band may die early.
             val stage = enc.stages.firstOrNull() ?: return@launch
             val members = band.memberInputsForBand(
                 bandId         = bandId,
                 draughtPotency = _draughtPotency.value,
-                memberRecipes  = memberRecipeMap,
+                memberFood     = foodMap,
                 cookLevel      = cookLevel
             )
             if (members.isEmpty()) return@launch

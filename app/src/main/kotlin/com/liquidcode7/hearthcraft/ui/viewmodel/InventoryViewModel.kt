@@ -54,6 +54,7 @@ class InventoryViewModel @Inject constructor(
                 buffType      = recipe.buffType,
                 buffStrength  = strength,
                 quantity      = pf.quantity,
+                grade         = pf.grade,
                 primaryStat   = recipe.primaryStat,
                 primaryBoost  = recipe.primaryBoost,
                 secondaryStat = recipe.secondaryStat,

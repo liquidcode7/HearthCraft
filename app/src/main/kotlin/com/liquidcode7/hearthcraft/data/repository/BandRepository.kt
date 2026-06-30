@@ -2,8 +2,11 @@ package com.liquidcode7.hearthcraft.data.repository
 
 import com.liquidcode7.hearthcraft.data.db.BandMemberState
 import com.liquidcode7.hearthcraft.data.db.dao.BandMemberStateDao
+import com.liquidcode7.hearthcraft.data.model.gradeStep
+import com.liquidcode7.hearthcraft.data.model.Grade
 import com.liquidcode7.hearthcraft.data.model.Recipe
 import com.liquidcode7.hearthcraft.engine.MemberInput
+import com.liquidcode7.hearthcraft.ui.viewmodel.PreparedFoodDetail
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -78,7 +81,7 @@ class BandRepository @Inject constructor(
     suspend fun memberInputsForBand(
         bandId: String,
         draughtPotency: Float,
-        memberRecipes: Map<String, Recipe?>,  // memberId → Recipe (null = no food)
+        memberFood: Map<String, PreparedFoodDetail?>,  // memberId → food detail (null = no food)
         cookLevel: Int
     ): List<MemberInput> {
         val roleOrder = listOf("warden", "hunter", "keeper", "captain")
@@ -87,12 +90,15 @@ class BandRepository @Inject constructor(
             .sortedBy { roleOrder.indexOf(it.role.lowercase()) }
             .map { member ->
                 val state  = dao.get(member.id)
-                val recipe = memberRecipes[member.id]
+                val food   = memberFood[member.id]
                 val bonus  = { stat: String ->
-                    if (recipe != null)
-                        statBonusFor(stat, recipe.primaryStat, recipe.primaryBoost,
-                                     recipe.secondaryStat, recipe.secondaryBoost)
-                    else 0f
+                    if (food != null) {
+                        val base = statBonusFor(stat, food.primaryStat, food.primaryBoost,
+                                                food.secondaryStat, food.secondaryBoost)
+                        // Grade adds a flat step on top of the authored boost, on matching stats only.
+                        val step = if (base > 0f) gradeStep(Grade.fromOrdinal(food.grade)) else 0f
+                        base + step
+                    } else 0f
                 }
                 MemberInput(
                     id             = member.id,
@@ -102,7 +108,7 @@ class BandRepository @Inject constructor(
                     vitality       = (state?.vitality ?: member.startingVitality).toFloat() + bonus("vit"),
                     will           = (state?.will     ?: member.startingWill).toFloat()     + bonus("wil"),
                     fate           = (state?.fate     ?: member.startingFate).toFloat(),
-                    hps            = if (recipe != null) hpsForCookLevel(cookLevel) else 0f,
+                    hps            = if (food != null) hpsForCookLevel(cookLevel) else 0f,
                     draughtPotency = draughtPotency
                 )
             }

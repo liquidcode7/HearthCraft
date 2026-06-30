@@ -5,6 +5,21 @@
 
 const FOOD_MODEL = (function () {
 
+  // ── Ingredient quality grades ────────────────────────────────────────────────
+  // Mirrors Grade.kt ordinals. CRUDE is the zero-point baseline — no bonus, no penalty.
+  // gradeStep values are TODO:TUNE placeholders matching QualityUtils.kt.
+  const GRADE_NAMES  = ["Crude", "Common", "Fine", "Superb", "Pristine"];
+  const GRADE_STEPS  = [0, 0.5, 1.0, 1.75, 2.5];  // TODO:TUNE — additive stat bonus per grade
+
+  // Apply grade bonus to an authored stat boost.
+  // Only adds a step when the stat is a matching primary or secondary (base > 0).
+  function effectiveStatBoost(authoredBoost, gradeOrdinal) {
+    if (authoredBoost === 0) return 0;
+    return authoredBoost + (GRADE_STEPS[gradeOrdinal] || 0);
+  }
+
+  function gradeName(ordinal) { return GRADE_NAMES[ordinal] || "Crude"; }
+
   // ── HP/s tier table ─────────────────────────────────────────────────────────
   const TIER_TABLE = [
     { tier:1, title:"Hearthkeeper", lo:1,  hi:4,  hpsLo:5.0, hpsHi:5.6  },
@@ -102,8 +117,10 @@ const FOOD_MODEL = (function () {
 
   const FM = {
     TIER_TABLE, SCURVE_P, RECIPES,
+    GRADE_NAMES, GRADE_STEPS,
     recipeLevelToHps, recipeLevelLabel,
     flFromCookLevel, statBonusesAt, statBonusesForCookLevel, hpsAt, bonusSummary,
+    effectiveStatBoost, gradeName,
   };
 
   if (typeof module !== "undefined" && module.exports) module.exports = FM;
