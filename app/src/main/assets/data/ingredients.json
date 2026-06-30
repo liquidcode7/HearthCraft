@@ -9,7 +9,8 @@
     "gatherType": "cultivate",
     "primaryStat": "vit",
     "secondaryStat": "mig",
-    "notes": "Short-stalked kitchen grain. The foundation."
+    "notes": "Short-stalked kitchen grain. The foundation.",
+    "cultivatable": true
   },
   {
     "id": "goodmans_taters",
@@ -20,7 +21,8 @@
     "gatheringMode": "farm",
     "gatherType": "cultivate",
     "primaryStat": "vit",
-    "notes": "Potatoes. The Gaffer's pride."
+    "notes": "Potatoes. The Gaffer's pride.",
+    "cultivatable": true
   },
   {
     "id": "barleycorn",
@@ -32,7 +34,8 @@
     "gatherType": "cultivate",
     "primaryStat": "vit",
     "secondaryStat": "mig",
-    "notes": "Heavier than hearthgrain. Ales and breads."
+    "notes": "Heavier than hearthgrain. Ales and breads.",
+    "cultivatable": true
   },
   {
     "id": "rye_stalk",
@@ -43,7 +46,8 @@
     "gatheringMode": "farm",
     "gatherType": "cultivate",
     "primaryStat": "vit",
-    "notes": "Dark grain. Dense flat loaves."
+    "notes": "Dark grain. Dense flat loaves.",
+    "cultivatable": true
   },
   {
     "id": "oat_sheaf",
@@ -55,11 +59,12 @@
     "gatherType": "cultivate",
     "primaryStat": "vit",
     "secondaryStat": "wil",
-    "notes": "Steady grain. Porridge, bannock, field rations."
+    "notes": "Steady grain. Porridge, bannock, field rations.",
+    "cultivatable": true
   },
   {
-    "id": "ironroot",
-    "name": "Ironroot",
+    "id": "brackenroot",
+    "name": "Brackenroot",
     "region": "Bree-land & The Shire",
     "rarity": "c",
     "source": "farm",
@@ -67,7 +72,8 @@
     "gatherType": "cultivate",
     "primaryStat": "mig",
     "secondaryStat": "vit",
-    "notes": "Deep-purple root. Bitter raw, sustaining cooked."
+    "notes": "Dense fern-root from Chetwood margins. Bitter raw, purplish when roasted. What rangers carry.",
+    "cultivatable": true
   },
   {
     "id": "parsnip",
@@ -78,7 +84,8 @@
     "gatheringMode": "farm",
     "gatherType": "cultivate",
     "primaryStat": "vit",
-    "notes": "Sweet when roasted. Common in stews."
+    "notes": "Sweet when roasted. Common in stews.",
+    "cultivatable": true
   },
   {
     "id": "turnip",
@@ -89,7 +96,8 @@
     "gatheringMode": "farm",
     "gatherType": "cultivate",
     "primaryStat": "vit",
-    "notes": "Humble. Filling. Keeps well."
+    "notes": "Humble. Filling. Keeps well.",
+    "cultivatable": true
   },
   {
     "id": "leek",
@@ -101,7 +109,8 @@
     "gatherType": "cultivate",
     "primaryStat": "agi",
     "secondaryStat": "wil",
-    "notes": "Sharp, clean. Goes in everything."
+    "notes": "Sharp, clean. Goes in everything.",
+    "cultivatable": true
   },
   {
     "id": "onion",
@@ -112,7 +121,8 @@
     "gatheringMode": "farm",
     "gatherType": "cultivate",
     "primaryStat": "vit",
-    "notes": "The base of half the cooking in Bree-land."
+    "notes": "The base of half the cooking in Bree-land.",
+    "cultivatable": true
   },
   {
     "id": "pipeweed_leaf",
@@ -123,7 +133,8 @@
     "gatheringMode": "farm",
     "gatherType": "cultivate",
     "primaryStat": "wil",
-    "notes": "Infusion only (not smoked). A particular calm."
+    "notes": "Infusion only (not smoked). A particular calm.",
+    "cultivatable": true
   },
   {
     "id": "duskberry",
@@ -134,7 +145,8 @@
     "gatheringMode": "farm",
     "gatherType": "cultivate",
     "primaryStat": "agi",
-    "notes": "Small dark berries, tart. Ripen at season's end."
+    "notes": "Small dark berries, tart. Ripen at season's end.",
+    "cultivatable": true
   },
   {
     "id": "hedgerow_berry",
@@ -146,7 +158,8 @@
     "gatherType": "forage",
     "primaryStat": "agi",
     "secondaryStat": "mig",
-    "notes": "Mixed dark fruits of the hedgerow."
+    "notes": "Mixed dark fruits of the hedgerow.",
+    "cultivatable": true
   },
   {
     "id": "sloe",
@@ -158,7 +171,8 @@
     "gatherType": "forage",
     "primaryStat": "agi",
     "hazardTendency": "potency",
-    "notes": "Bitter wild plum. Bitters, preserves, draughts."
+    "notes": "Bitter wild plum. Bitters, preserves, draughts.",
+    "cultivatable": true
   },
   {
     "id": "crabapple",
@@ -170,7 +184,8 @@
     "gatherType": "forage",
     "primaryStat": "agi",
     "secondaryStat": "vit",
-    "notes": "Sharp. Best cooked down."
+    "notes": "Sharp. Best cooked down.",
+    "cultivatable": true
   },
   {
     "id": "rosehip",
@@ -182,7 +197,8 @@
     "gatherType": "forage",
     "primaryStat": "vit",
     "secondaryStat": "wil",
-    "notes": "High hips from the briar. Recovery preparations."
+    "notes": "High hips from the briar. Recovery preparations.",
+    "cultivatable": true
   },
   {
     "id": "wanderer_fig",
@@ -193,7 +209,8 @@
     "gatheringMode": "forage",
     "gatherType": "forage",
     "primaryStat": "agi",
-    "notes": "Small wild fig along old roads. Slightly smoky."
+    "notes": "Small wild fig along old roads. Slightly smoky.",
+    "cultivatable": true
   },
   {
     "id": "brookcress",
@@ -206,7 +223,8 @@
     "primaryStat": "agi",
     "secondaryStat": "wil",
     "hazardTendency": "potency",
-    "notes": "Peppery streamside green. Eaten fresh or wilted."
+    "notes": "Peppery streamside green. Eaten fresh or wilted.",
+    "cultivatable": true
   },
   {
     "id": "common_thyme",
@@ -218,7 +236,8 @@
     "gatherType": "cultivate",
     "primaryStat": "vit",
     "secondaryStat": "wil",
-    "notes": "Kitchen herb. Preserves and broths."
+    "notes": "Kitchen herb. Preserves and broths.",
+    "cultivatable": true
   },
   {
     "id": "meadowsweet",
@@ -229,7 +248,8 @@
     "gatheringMode": "forage",
     "gatherType": "forage",
     "primaryStat": "wil",
-    "notes": "Sweet herb of riverbanks. Infusions and draughts."
+    "notes": "Sweet herb of riverbanks. Infusions and draughts.",
+    "cultivatable": true
   },
   {
     "id": "yarrow",
@@ -241,7 +261,8 @@
     "gatherType": "forage",
     "primaryStat": "vit",
     "hazardTendency": "hale",
-    "notes": "Old healing herb. Bitter. Recovery draughts."
+    "notes": "Old healing herb. Bitter. Recovery draughts.",
+    "cultivatable": true
   },
   {
     "id": "feverfew",
@@ -252,7 +273,8 @@
     "gatheringMode": "forage",
     "gatherType": "forage",
     "hazardTendency": "hale",
-    "notes": "Bitter headache herb. Disease-counter tendency."
+    "notes": "Bitter headache herb. Disease-counter tendency.",
+    "cultivatable": true
   },
   {
     "id": "sorrel",
@@ -264,7 +286,8 @@
     "gatherType": "forage",
     "primaryStat": "agi",
     "secondaryStat": "wil",
-    "notes": "Sour leaf. Wakes the mind. Good in light dishes."
+    "notes": "Sour leaf. Wakes the mind. Good in light dishes.",
+    "cultivatable": true
   },
   {
     "id": "pale_cap",
@@ -275,7 +298,8 @@
     "gatheringMode": "farm",
     "gatherType": "cultivate",
     "primaryStat": "vit",
-    "notes": "Cultivated mushroom. Mild, reliable."
+    "notes": "Cultivated mushroom. Mild, reliable.",
+    "cultivatable": true
   },
   {
     "id": "stormcap",
@@ -286,7 +310,8 @@
     "gatheringMode": "forage",
     "gatherType": "forage",
     "primaryStat": "agi",
-    "notes": "Wild. Springs up after rain. Timing matters."
+    "notes": "Wild. Springs up after rain. Timing matters.",
+    "cultivatable": true
   },
   {
     "id": "chetwood_browncap",
@@ -298,7 +323,8 @@
     "gatherType": "forage",
     "primaryStat": "mig",
     "secondaryStat": "vit",
-    "notes": "Common woodland mushroom. Earthy and dense."
+    "notes": "Common woodland mushroom. Earthy and dense.",
+    "cultivatable": true
   },
   {
     "id": "blushcap",
@@ -309,7 +335,8 @@
     "gatheringMode": "forage",
     "gatherType": "forage",
     "primaryStat": "agi",
-    "notes": "Faintly pink wild variety. Delicate; quick to cook."
+    "notes": "Faintly pink wild variety. Delicate; quick to cook.",
+    "cultivatable": true
   },
   {
     "id": "forest_honey",
@@ -339,8 +366,8 @@
     "name": "Butter",
     "region": "Bree-land & The Shire",
     "rarity": "c",
-    "source": "farm",
-    "gatheringMode": "farm",
+    "source": "process",
+    "gatheringMode": "process",
     "gatherType": "process",
     "processType": "churn",
     "processInputs": [
@@ -354,12 +381,31 @@
     "notes": "Churned. Richness and body."
   },
   {
+    "id": "hard_cheese",
+    "name": "Hard Cheese",
+    "region": "Bree-land & The Shire",
+    "rarity": "u",
+    "source": "process",
+    "gatheringMode": "process",
+    "gatherType": "process",
+    "processType": "press",
+    "processInputs": [
+      {
+        "id": "milk",
+        "qty": 2
+      }
+    ],
+    "primaryStat": "vit",
+    "secondaryStat": "wil",
+    "notes": "Pressed and aged. Keeps well on the road. Better than butter for long marches."
+  },
+  {
     "id": "rendered_fat",
     "name": "Rendered Fat",
     "region": "Bree-land & The Shire",
     "rarity": "c",
-    "source": "farm",
-    "gatheringMode": "farm",
+    "source": "process",
+    "gatheringMode": "process",
     "gatherType": "process",
     "processType": "render",
     "processInputs": [
@@ -377,8 +423,8 @@
     "name": "Smoked River Trout",
     "region": "Bree-land & The Shire",
     "rarity": "u",
-    "source": "forage",
-    "gatheringMode": "forage",
+    "source": "process",
+    "gatheringMode": "process",
     "gatherType": "process",
     "processType": "smoke",
     "processInputs": [
@@ -396,8 +442,8 @@
     "name": "Salted Pork",
     "region": "Bree-land & The Shire",
     "rarity": "c",
-    "source": "forage",
-    "gatheringMode": "forage",
+    "source": "process",
+    "gatheringMode": "process",
     "gatherType": "process",
     "processType": "cure",
     "primaryStat": "mig",
@@ -455,7 +501,8 @@
     "gatherType": "forage",
     "primaryStat": "wil",
     "hazardTendency": "alert",
-    "notes": "Bitter moorland berry. Fog/disease resistance."
+    "notes": "Bitter moorland berry. Fog/disease resistance.",
+    "cultivatable": true
   },
   {
     "id": "heartflame_pepper",
@@ -466,7 +513,8 @@
     "gatheringMode": "forage",
     "gatherType": "forage",
     "hazardTendency": "warmth",
-    "notes": "Intense delayed heat. Used carefully."
+    "notes": "Intense delayed heat. Used carefully.",
+    "cultivatable": true
   },
   {
     "id": "athelas",
@@ -477,7 +525,8 @@
     "gatheringMode": "forage",
     "gatherType": "forage",
     "hazardTendency": "hale",
-    "notes": "Looks like a weed. In the right hands, extraordinary."
+    "notes": "Looks like a weed. In the right hands, extraordinary.",
+    "cultivatable": true
   },
   {
     "id": "pale_waybread_grain",
@@ -489,11 +538,12 @@
     "gatherType": "cultivate",
     "primaryStat": "vit",
     "secondaryStat": "mig",
-    "notes": "Fine-milled fortifying grain. Lembas-tradition bread base."
+    "notes": "Fine-milled fortifying grain. Lembas-tradition bread base.",
+    "cultivatable": true
   },
   {
     "id": "lhun_flatbread_base",
-    "name": "Lhûn Flatbread Base",
+    "name": "Lh\u00fbn Flatbread Base",
     "region": "Celondim / Ered Luin",
     "rarity": "c",
     "source": "farm",
@@ -519,7 +569,8 @@
     "gatherType": "cultivate",
     "primaryStat": "mig",
     "secondaryStat": "vit",
-    "notes": "Old cultivar. Slower to grow, stronger."
+    "notes": "Old cultivar. Slower to grow, stronger.",
+    "cultivatable": true
   },
   {
     "id": "saltmarsh_root",
@@ -531,7 +582,8 @@
     "gatherType": "cultivate",
     "primaryStat": "vit",
     "secondaryStat": "mig",
-    "notes": "Coastal root. Mild sea-salt edge. Sustaining."
+    "notes": "Coastal root. Mild sea-salt edge. Sustaining.",
+    "cultivatable": true
   },
   {
     "id": "fennel_bulb",
@@ -543,7 +595,8 @@
     "gatherType": "cultivate",
     "primaryStat": "agi",
     "secondaryStat": "wil",
-    "notes": "Anise-scented. Elven kitchens use it whole."
+    "notes": "Anise-scented. Elven kitchens use it whole.",
+    "cultivatable": true
   },
   {
     "id": "silver_leek",
@@ -555,7 +608,8 @@
     "gatherType": "cultivate",
     "primaryStat": "agi",
     "secondaryStat": "wil",
-    "notes": "Paler than common leek. A common Mithlost ingredient."
+    "notes": "Paler than common leek. A common Mithlost ingredient.",
+    "cultivatable": true
   },
   {
     "id": "tidal_cress",
@@ -566,11 +620,12 @@
     "gatheringMode": "forage",
     "gatherType": "forage",
     "primaryStat": "agi",
-    "notes": "Sea-edge green. Peppery, mineral."
+    "notes": "Sea-edge green. Peppery, mineral.",
+    "cultivatable": true
   },
   {
     "id": "lhun_plum",
-    "name": "Lhûn Plum",
+    "name": "Lh\u00fbn Plum",
     "region": "Celondim / Ered Luin",
     "rarity": "c",
     "source": "farm",
@@ -578,7 +633,8 @@
     "gatherType": "cultivate",
     "primaryStat": "agi",
     "secondaryStat": "vit",
-    "notes": "A blue-black coastal plum. Tart, complex."
+    "notes": "A blue-black coastal plum. Tart, complex.",
+    "cultivatable": true
   },
   {
     "id": "shorewrack_berry",
@@ -589,7 +645,8 @@
     "gatheringMode": "forage",
     "gatherType": "forage",
     "primaryStat": "agi",
-    "notes": "Small bitter fruit from coastal shrubs."
+    "notes": "Small bitter fruit from coastal shrubs.",
+    "cultivatable": true
   },
   {
     "id": "starfruit_havens",
@@ -601,7 +658,8 @@
     "gatherType": "cultivate",
     "primaryStat": "wil",
     "secondaryStat": "agi",
-    "notes": "Rare cultivar; grown only in old elvish gardens."
+    "notes": "Rare cultivar; grown only in old elvish gardens.",
+    "cultivatable": true
   },
   {
     "id": "seabloom_hip",
@@ -613,7 +671,8 @@
     "gatherType": "forage",
     "primaryStat": "vit",
     "secondaryStat": "wil",
-    "notes": "Sea-rose hips. Tart and restorative."
+    "notes": "Sea-rose hips. Tart and restorative.",
+    "cultivatable": true
   },
   {
     "id": "sunpetal_herb",
@@ -624,7 +683,8 @@
     "gatheringMode": "farm",
     "gatherType": "cultivate",
     "primaryStat": "wil",
-    "notes": "Bright herb, sweet fragrance. Good for the mind."
+    "notes": "Bright herb, sweet fragrance. Good for the mind.",
+    "cultivatable": true
   },
   {
     "id": "moonpetal",
@@ -636,11 +696,12 @@
     "gatherType": "forage",
     "primaryStat": "wil",
     "hazardTendency": "radiance",
-    "notes": "Night-blooming. Luminous in low light."
+    "notes": "Night-blooming. Luminous in low light.",
+    "cultivatable": true
   },
   {
     "id": "lhun_sage",
-    "name": "Lhûn Sage",
+    "name": "Lh\u00fbn Sage",
     "region": "Celondim / Ered Luin",
     "rarity": "c",
     "source": "farm",
@@ -648,7 +709,8 @@
     "gatherType": "cultivate",
     "primaryStat": "wil",
     "secondaryStat": "mig",
-    "notes": "Silver-leafed coastal sage. Assertive; clarifying."
+    "notes": "Silver-leafed coastal sage. Assertive; clarifying.",
+    "cultivatable": true
   },
   {
     "id": "starflower",
@@ -660,7 +722,8 @@
     "gatherType": "cultivate",
     "primaryStat": "wil",
     "secondaryStat": "agi",
-    "notes": "Small blue flower. Elvish gardens. Clarity preparations."
+    "notes": "Small blue flower. Elvish gardens. Clarity preparations.",
+    "cultivatable": true
   },
   {
     "id": "seagrass_herb",
@@ -672,7 +735,8 @@
     "gatherType": "forage",
     "primaryStat": "agi",
     "secondaryStat": "wil",
-    "notes": "Grows at the tideline. Mineral, clean."
+    "notes": "Grows at the tideline. Mineral, clean.",
+    "cultivatable": true
   },
   {
     "id": "silvern_mint",
@@ -684,7 +748,8 @@
     "gatherType": "cultivate",
     "primaryStat": "wil",
     "hazardTendency": "alert",
-    "notes": "Pale, cool-tasting mint. Combats torpor."
+    "notes": "Pale, cool-tasting mint. Combats torpor.",
+    "cultivatable": true
   },
   {
     "id": "white_nettle",
@@ -696,7 +761,8 @@
     "gatherType": "forage",
     "primaryStat": "mig",
     "secondaryStat": "vit",
-    "notes": "Stinging nettle but pale. Blanched: rich and green."
+    "notes": "Stinging nettle but pale. Blanched: rich and green.",
+    "cultivatable": true
   },
   {
     "id": "dawnshroom",
@@ -708,7 +774,8 @@
     "gatherType": "forage",
     "primaryStat": "wil",
     "secondaryStat": "agi",
-    "notes": "Appears in old-growth at dawn. Faintly gold."
+    "notes": "Appears in old-growth at dawn. Faintly gold.",
+    "cultivatable": true
   },
   {
     "id": "forest_ghost",
@@ -720,7 +787,8 @@
     "gatherType": "forage",
     "primaryStat": "wil",
     "hazardTendency": "radiance",
-    "notes": "Pale translucent fungus from ancient root-systems."
+    "notes": "Pale translucent fungus from ancient root-systems.",
+    "cultivatable": true
   },
   {
     "id": "white_nectar",
@@ -736,7 +804,7 @@
   },
   {
     "id": "lhun_olive_oil",
-    "name": "Lhûn Olive Oil",
+    "name": "Lh\u00fbn Olive Oil",
     "region": "Celondim / Ered Luin",
     "rarity": "u",
     "source": "farm",
@@ -773,7 +841,7 @@
   },
   {
     "id": "lhun_saltfish",
-    "name": "Lhûn Saltfish",
+    "name": "Lh\u00fbn Saltfish",
     "region": "Celondim / Ered Luin",
     "rarity": "c",
     "source": "forage",
@@ -788,7 +856,7 @@
     ],
     "primaryStat": "mig",
     "secondaryStat": "vit",
-    "notes": "Preserved sea fish from the Gulf of Lhûn."
+    "notes": "Preserved sea fish from the Gulf of Lh\u00fbn."
   },
   {
     "id": "smoked_eel",
@@ -807,7 +875,7 @@
     ],
     "primaryStat": "mig",
     "secondaryStat": "agi",
-    "notes": "River eel from the Lhûn estuary. Strong flavor."
+    "notes": "River eel from the Lh\u00fbn estuary. Strong flavor."
   },
   {
     "id": "seabird_egg",
@@ -857,7 +925,7 @@
     ],
     "primaryStat": "vit",
     "secondaryStat": "wil",
-    "notes": "Firm elvish cheese aged with herbs. Not fussy — good."
+    "notes": "Firm elvish cheese aged with herbs. Not fussy \u2014 good."
   },
   {
     "id": "shorewrack_greens",
@@ -869,7 +937,8 @@
     "gatherType": "forage",
     "primaryStat": "agi",
     "secondaryStat": "vit",
-    "notes": "Tender sea-greens off the coast."
+    "notes": "Tender sea-greens off the coast.",
+    "cultivatable": true
   },
   {
     "id": "tidal_kelp",
@@ -881,11 +950,12 @@
     "gatherType": "forage",
     "primaryStat": "vit",
     "secondaryStat": "mig",
-    "notes": "Dried sea-kelp. Mineral richness in broths."
+    "notes": "Dried sea-kelp. Mineral richness in broths.",
+    "cultivatable": true
   },
   {
     "id": "springwater_lhun",
-    "name": "Springwater of Lhûn",
+    "name": "Springwater of Lh\u00fbn",
     "region": "Celondim / Ered Luin",
     "rarity": "c",
     "source": "forage",
@@ -903,7 +973,8 @@
     "gatherType": "forage",
     "primaryStat": "mig",
     "secondaryStat": "vit",
-    "notes": "Old-tree sap. Fixes and binds preparations."
+    "notes": "Old-tree sap. Fixes and binds preparations.",
+    "cultivatable": true
   },
   {
     "id": "elderflower",
@@ -915,7 +986,8 @@
     "gatherType": "forage",
     "primaryStat": "wil",
     "hazardTendency": "hope",
-    "notes": "Gentle bloom with an old association with lightness of spirit."
+    "notes": "Gentle bloom with an old association with lightness of spirit.",
+    "cultivatable": true
   },
   {
     "id": "mountain_malt",
@@ -927,7 +999,8 @@
     "gatherType": "cultivate",
     "primaryStat": "mig",
     "secondaryStat": "vit",
-    "notes": "Hard grain from mountain terraces. Bread, cram, ale."
+    "notes": "Hard grain from mountain terraces. Bread, cram, ale.",
+    "cultivatable": true
   },
   {
     "id": "cram_base_grain",
@@ -938,7 +1011,8 @@
     "gatheringMode": "farm",
     "gatherType": "cultivate",
     "primaryStat": "vit",
-    "notes": "The raw ingredient for cram. Flavorless by design. Sustains."
+    "notes": "The raw ingredient for cram. Flavorless by design. Sustains.",
+    "cultivatable": true
   },
   {
     "id": "black_barley",
@@ -949,7 +1023,8 @@
     "gatheringMode": "farm",
     "gatherType": "cultivate",
     "primaryStat": "mig",
-    "notes": "Dark and heavy. Slow-fermented. Strong flavor."
+    "notes": "Dark and heavy. Slow-fermented. Strong flavor.",
+    "cultivatable": true
   },
   {
     "id": "stone_root",
@@ -961,7 +1036,8 @@
     "gatherType": "cultivate",
     "primaryStat": "mig",
     "secondaryStat": "vit",
-    "notes": "Hardy root grown in minimal light. Strong, plain, reliable."
+    "notes": "Hardy root grown in minimal light. Strong, plain, reliable.",
+    "cultivatable": true
   },
   {
     "id": "deep_carrot",
@@ -973,7 +1049,8 @@
     "gatherType": "cultivate",
     "primaryStat": "vit",
     "secondaryStat": "agi",
-    "notes": "Pale carrot grown underground. Sweeter than surface varieties."
+    "notes": "Pale carrot grown underground. Sweeter than surface varieties.",
+    "cultivatable": true
   },
   {
     "id": "iron_turnip",
@@ -985,7 +1062,8 @@
     "gatherType": "cultivate",
     "primaryStat": "mig",
     "secondaryStat": "vit",
-    "notes": "Denser, darker variety. Takes longer to cook. Worth it."
+    "notes": "Denser, darker variety. Takes longer to cook. Worth it.",
+    "cultivatable": true
   },
   {
     "id": "bitter_bulb",
@@ -996,7 +1074,8 @@
     "gatheringMode": "farm",
     "gatherType": "cultivate",
     "hazardTendency": "hale",
-    "notes": "Sharp-tasting underground bulb. Disease-counter tendency."
+    "notes": "Sharp-tasting underground bulb. Disease-counter tendency.",
+    "cultivatable": true
   },
   {
     "id": "cave_onion",
@@ -1007,7 +1086,8 @@
     "gatheringMode": "farm",
     "gatherType": "cultivate",
     "primaryStat": "vit",
-    "notes": "Grows in the dark. Pungent. Foundational in dwarf cooking."
+    "notes": "Grows in the dark. Pungent. Foundational in dwarf cooking.",
+    "cultivatable": true
   },
   {
     "id": "deepcap",
@@ -1019,7 +1099,8 @@
     "gatherType": "cultivate",
     "primaryStat": "mig",
     "secondaryStat": "vit",
-    "notes": "Cave mushroom in managed beds. The staple."
+    "notes": "Cave mushroom in managed beds. The staple.",
+    "cultivatable": true
   },
   {
     "id": "cave_truffle",
@@ -1031,7 +1112,8 @@
     "gatherType": "forage",
     "primaryStat": "vit",
     "secondaryStat": "agi",
-    "notes": "Found near old growth and cave mouths. Rare; highly prized."
+    "notes": "Found near old growth and cave mouths. Rare; highly prized.",
+    "cultivatable": true
   },
   {
     "id": "ironfoot_shroom",
@@ -1042,7 +1124,8 @@
     "gatheringMode": "forage",
     "gatherType": "forage",
     "primaryStat": "mig",
-    "notes": "Tough-footed fungus from deep tunnels. Chewy, earthy."
+    "notes": "Tough-footed fungus from deep tunnels. Chewy, earthy.",
+    "cultivatable": true
   },
   {
     "id": "goldmoss_cap",
@@ -1054,7 +1137,8 @@
     "gatherType": "forage",
     "primaryStat": "vit",
     "secondaryStat": "wil",
-    "notes": "Small golden fungus from underside of rock ledges."
+    "notes": "Small golden fungus from underside of rock ledges.",
+    "cultivatable": true
   },
   {
     "id": "ghostgill",
@@ -1066,7 +1150,8 @@
     "gatherType": "forage",
     "primaryStat": "wil",
     "hazardTendency": "alert",
-    "notes": "Pale luminous gills in the deep dark. Rare."
+    "notes": "Pale luminous gills in the deep dark. Rare.",
+    "cultivatable": true
   },
   {
     "id": "hall_bracket",
@@ -1077,7 +1162,8 @@
     "gatheringMode": "forage",
     "gatherType": "forage",
     "primaryStat": "vit",
-    "notes": "Large flat fungus from great hall timbers. Smoked, keeps months."
+    "notes": "Large flat fungus from great hall timbers. Smoked, keeps months.",
+    "cultivatable": true
   },
   {
     "id": "smoked_goat",
@@ -1163,7 +1249,8 @@
     "gatherType": "forage",
     "primaryStat": "wil",
     "secondaryStat": "mig",
-    "notes": "Bitter herb from stone surfaces. An acquired taste."
+    "notes": "Bitter herb from stone surfaces. An acquired taste.",
+    "cultivatable": true
   },
   {
     "id": "stonewort",
@@ -1175,7 +1262,8 @@
     "gatherType": "forage",
     "primaryStat": "vit",
     "hazardTendency": "hale",
-    "notes": "Low herb in cracks. Bitter, medicinal. Disease-counter."
+    "notes": "Low herb in cracks. Bitter, medicinal. Disease-counter.",
+    "cultivatable": true
   },
   {
     "id": "mountain_thyme",
@@ -1187,7 +1275,8 @@
     "gatherType": "forage",
     "primaryStat": "vit",
     "hazardTendency": "warmth",
-    "notes": "Wild thyme from high passes. Warming tendency."
+    "notes": "Wild thyme from high passes. Warming tendency.",
+    "cultivatable": true
   },
   {
     "id": "coldwort",
@@ -1198,7 +1287,8 @@
     "gatheringMode": "forage",
     "gatherType": "forage",
     "hazardTendency": "warmth",
-    "notes": "High-altitude herb. Almost exclusively in warming draughts."
+    "notes": "High-altitude herb. Almost exclusively in warming draughts.",
+    "cultivatable": true
   },
   {
     "id": "ironweed",
@@ -1209,7 +1299,8 @@
     "gatheringMode": "forage",
     "gatherType": "forage",
     "primaryStat": "mig",
-    "notes": "Coarse wiry herb. Adds bitterness and strength."
+    "notes": "Coarse wiry herb. Adds bitterness and strength.",
+    "cultivatable": true
   },
   {
     "id": "deep_sage",
@@ -1221,7 +1312,8 @@
     "gatherType": "forage",
     "primaryStat": "wil",
     "secondaryStat": "mig",
-    "notes": "Cave-growing sage. Darker and more potent than surface varieties."
+    "notes": "Cave-growing sage. Darker and more potent than surface varieties.",
+    "cultivatable": true
   },
   {
     "id": "stone_honey",
@@ -1291,7 +1383,8 @@
     "gatherType": "cultivate",
     "primaryStat": "mig",
     "hazardTendency": "potency",
-    "notes": "Bittering agent for ale. Potency tendency in draughts."
+    "notes": "Bittering agent for ale. Potency tendency in draughts.",
+    "cultivatable": true
   },
   {
     "id": "thornberry",
@@ -1303,7 +1396,8 @@
     "gatherType": "forage",
     "primaryStat": "agi",
     "secondaryStat": "mig",
-    "notes": "Tough wild berry with thorned canes. Chewy, tart."
+    "notes": "Tough wild berry with thorned canes. Chewy, tart.",
+    "cultivatable": true
   },
   {
     "id": "old_forest_mushroom",
@@ -1314,7 +1408,8 @@
     "gatheringMode": "forage",
     "gatherType": "forage",
     "primaryStat": "wil",
-    "notes": "From the Old Forest fringe. Unusual flavors."
+    "notes": "From the Old Forest fringe. Unusual flavors.",
+    "cultivatable": true
   },
   {
     "id": "marshwort",
@@ -1325,19 +1420,21 @@
     "gatheringMode": "forage",
     "gatherType": "forage",
     "hazardTendency": "hale",
-    "notes": "Swamp-edge herb. Bitter. Damp/disease resistance."
+    "notes": "Swamp-edge herb. Bitter. Damp/disease resistance.",
+    "cultivatable": true
   },
   {
     "id": "nettleleaf",
     "name": "Nettleleaf",
-    "region": "Bree Wildlands / Lone-Lands",
+    "region": "Bree-land & The Shire",
     "rarity": "c",
     "source": "forage",
     "gatheringMode": "forage",
     "gatherType": "forage",
     "primaryStat": "mig",
     "secondaryStat": "vit",
-    "notes": "Stinging nettle. Blanched: rich and green."
+    "notes": "Stinging nettle. Blanched: rich and green.",
+    "cultivatable": true
   },
   {
     "id": "pale_fen_cap",
@@ -1348,7 +1445,8 @@
     "gatheringMode": "forage",
     "gatherType": "forage",
     "primaryStat": "wil",
-    "notes": "Ghostly mushroom of the Midgewater Marshes."
+    "notes": "Ghostly mushroom of the Midgewater Marshes.",
+    "cultivatable": true
   },
   {
     "id": "road_herb",
@@ -1360,7 +1458,8 @@
     "gatherType": "forage",
     "primaryStat": "agi",
     "secondaryStat": "vit",
-    "notes": "Tough low herb that grows along the old roads."
+    "notes": "Tough low herb that grows along the old roads.",
+    "cultivatable": true
   },
   {
     "id": "chetwood_acorn",
@@ -1372,7 +1471,8 @@
     "gatherType": "forage",
     "primaryStat": "vit",
     "secondaryStat": "mig",
-    "notes": "Ground into flour. Bitter until treated."
+    "notes": "Ground into flour. Bitter until treated.",
+    "cultivatable": true
   },
   {
     "id": "wolf_moss",
@@ -1383,7 +1483,8 @@
     "gatheringMode": "forage",
     "gatherType": "forage",
     "hazardTendency": "alert",
-    "notes": "Dark lichen from deep forest floors. Rare."
+    "notes": "Dark lichen from deep forest floors. Rare.",
+    "cultivatable": true
   },
   {
     "id": "moorgrass_seed",
@@ -1394,7 +1495,8 @@
     "gatheringMode": "forage",
     "gatherType": "forage",
     "primaryStat": "vit",
-    "notes": "Gathered from open moorland grasses. Tedious but reliable."
+    "notes": "Gathered from open moorland grasses. Tedious but reliable.",
+    "cultivatable": true
   },
   {
     "id": "heather_honey",
@@ -1418,7 +1520,8 @@
     "gatherType": "forage",
     "primaryStat": "agi",
     "hazardTendency": "warmth",
-    "notes": "Cold-climate berry. Sharp. Warming tendency."
+    "notes": "Cold-climate berry. Sharp. Warming tendency.",
+    "cultivatable": true
   },
   {
     "id": "hillwort",
@@ -1430,7 +1533,8 @@
     "gatherType": "forage",
     "primaryStat": "vit",
     "hazardTendency": "warmth",
-    "notes": "Wind-hardened herb. Cold counter tendency."
+    "notes": "Wind-hardened herb. Cold counter tendency.",
+    "cultivatable": true
   },
   {
     "id": "fell_mushroom",
@@ -1441,7 +1545,8 @@
     "gatheringMode": "forage",
     "gatherType": "forage",
     "primaryStat": "mig",
-    "notes": "Tough moorland fungus. Strong flavor."
+    "notes": "Tough moorland fungus. Strong flavor.",
+    "cultivatable": true
   },
   {
     "id": "mountain_sorrel",
@@ -1453,7 +1558,8 @@
     "gatherType": "forage",
     "primaryStat": "agi",
     "secondaryStat": "wil",
-    "notes": "Sour, cold-resistant. Acid brightness in a dish."
+    "notes": "Sour, cold-resistant. Acid brightness in a dish.",
+    "cultivatable": true
   },
   {
     "id": "peat_smoked_grouse",
@@ -1495,7 +1601,8 @@
     "gatherType": "forage",
     "primaryStat": "vit",
     "hazardTendency": "warmth",
-    "notes": "Cold-growing lichen. Strong warming tendency when prepared."
+    "notes": "Cold-growing lichen. Strong warming tendency when prepared.",
+    "cultivatable": true
   },
   {
     "id": "peak_thyme",
@@ -1507,7 +1614,8 @@
     "gatherType": "forage",
     "primaryStat": "vit",
     "hazardTendency": "warmth",
-    "notes": "Tiny intense herb from above the treeline."
+    "notes": "Tiny intense herb from above the treeline.",
+    "cultivatable": true
   },
   {
     "id": "flint_truffle",
@@ -1519,7 +1627,8 @@
     "gatherType": "forage",
     "primaryStat": "mig",
     "secondaryStat": "agi",
-    "notes": "Found only in high-altitude rock crevices. Potent."
+    "notes": "Found only in high-altitude rock crevices. Potent.",
+    "cultivatable": true
   },
   {
     "id": "mountain_crow_egg",
@@ -1543,7 +1652,8 @@
     "gatherType": "forage",
     "primaryStat": "agi",
     "hazardTendency": "warmth",
-    "notes": "Small pale berry that grows in the snow itself."
+    "notes": "Small pale berry that grows in the snow itself.",
+    "cultivatable": true
   },
   {
     "id": "mirkwood_blackcap",
@@ -1555,7 +1665,8 @@
     "gatherType": "forage",
     "primaryStat": "wil",
     "hazardTendency": "radiance",
-    "notes": "Dark mushroom from old-forest floor."
+    "notes": "Dark mushroom from old-forest floor.",
+    "cultivatable": true
   },
   {
     "id": "cobweb_grass",
@@ -1566,7 +1677,8 @@
     "gatheringMode": "forage",
     "gatherType": "forage",
     "hazardTendency": "radiance",
-    "notes": "Pale grass that grows in shadow. Hard to gather."
+    "notes": "Pale grass that grows in shadow. Hard to gather.",
+    "cultivatable": true
   },
   {
     "id": "shadowbane_herb",
@@ -1577,7 +1689,8 @@
     "gatheringMode": "forage",
     "gatherType": "forage",
     "hazardTendency": "radiance",
-    "notes": "Light-seeking herb. Primary Radiance ingredient in the east."
+    "notes": "Light-seeking herb. Primary Radiance ingredient in the east.",
+    "cultivatable": true
   },
   {
     "id": "beorns_honey",
@@ -1600,7 +1713,8 @@
     "gatheringMode": "forage",
     "gatherType": "forage",
     "primaryStat": "vit",
-    "notes": "Tall river reed. Ground to flour or used in broths."
+    "notes": "Tall river reed. Ground to flour or used in broths.",
+    "cultivatable": true
   },
   {
     "id": "royal_jelly",
@@ -1662,14 +1776,15 @@
   {
     "id": "willowherb",
     "name": "Willowherb",
-    "region": "Wildwood / Cardolan",
+    "region": "Bree-land & The Shire",
     "rarity": "c",
     "source": "forage",
     "gatheringMode": "forage",
     "gatherType": "forage",
     "primaryStat": "vit",
     "secondaryStat": "wil",
-    "notes": "Tall pink herb of riverbanks and clearings. Mild. Used in light preparations."
+    "notes": "Tall pink herb of riverbanks and clearings. Mild. Used in light preparations.",
+    "cultivatable": true
   },
   {
     "id": "bree_well_water",
@@ -1703,13 +1818,13 @@
   },
   {
     "id": "lhun_brine",
-    "name": "Lhûn Brine",
+    "name": "Lh\u00fbn Brine",
     "region": "Celondim / Ered Luin",
     "rarity": "c",
     "source": "draw",
     "gatheringMode": "draw",
     "gatherType": "draw",
-    "notes": "Seawater from the Gulf of Lhûn. Salt and mineral. Used in curing and preserving."
+    "notes": "Seawater from the Gulf of Lh\u00fbn. Salt and mineral. Used in curing and preserving."
   },
   {
     "id": "deep_cistern_water",

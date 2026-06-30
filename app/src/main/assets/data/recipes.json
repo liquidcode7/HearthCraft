@@ -115,10 +115,10 @@
     "tier": 2,
     "cookLevel": 5,
     "heroIngredient": "salted_pork",
-    "description": "Long-simmered pork and ironroot. The kind of meal you eat when the road gets hard.",
+    "description": "Long-simmered pork and brackenroot. The kind of meal you eat when the road gets hard.",
     "ingredients": [
       { "id": "salted_pork",  "qty": 2 },
-      { "id": "ironroot",     "qty": 1 },
+      { "id": "brackenroot",     "qty": 1 },
       { "id": "barleycorn",   "qty": 1 },
       { "id": "onion",        "qty": 1 }
     ],
@@ -266,10 +266,10 @@
     "method": "cook",
     "tier": 4,
     "cookLevel": 10,
-    "heroIngredient": "ironroot",
+    "heroIngredient": "brackenroot",
     "description": "What rangers carry when they travel long and fight hard at the end of it.",
     "ingredients": [
-      { "id": "ironroot",  "qty": 2 },
+      { "id": "brackenroot",  "qty": 2 },
       { "id": "pale_cap",  "qty": 1 }
     ],
     "primaryStat": "mig",
@@ -289,7 +289,7 @@
     "description": "Warming broth. Keeps a person warm in conditions that shouldn't be survived.",
     "ingredients": [
       { "id": "heartflame_pepper", "qty": 2 },
-      { "id": "ironroot",          "qty": 1 },
+      { "id": "brackenroot",          "qty": 1 },
       { "id": "hearthgrain",       "qty": 1 }
     ],
     "hazardEffect": "warmth"
@@ -729,7 +729,7 @@
     "heroIngredient": "yarrow",
     "description": "Long-simmered. Tissue repairs; ache recedes.",
     "ingredients": [
-      { "id": "ironroot", "qty": 1 },
+      { "id": "brackenroot", "qty": 1 },
       { "id": "yarrow",   "qty": 2 }
     ],
     "hazardEffect": "hale"

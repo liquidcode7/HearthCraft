@@ -32,8 +32,8 @@ is a full raid RPG fought across named battlegrounds from Middle-earth's history
 with the cooking game as its indispensable foundation. Building toward a complete
 F-Droid release — no version gates, one game.
 
-Full design vision is in `design/design.md`. Read it. Every decision you make
-must be consistent with it.
+Full design vision is in `design/master-design.md`. Read it. Every decision
+you make must be consistent with it.
 
 ---
 
@@ -72,7 +72,7 @@ No Google Play Services dependency. F-Droid compatible. Minimum SDK: API 26.
 
 ### Session Start — do these in order
 1. Read this file
-2. Read `design/design.md`
+2. Read `design/master-design.md`
 3. Read `docs/roadmap.md`
 4. Read the **Current Status** section at the top of `docs/journal.md`
 5. Read the latest session entry in `docs/journal.md`
@@ -119,10 +119,10 @@ Also update the **Current Status** block at the top of `docs/journal.md`:
 ```
 
 ### Design Decisions
-If you make any design decision not already covered in `design/design.md` —
+If you make any design decision not already covered in `design/master-design.md` —
 including renames, new mechanics, data structure changes, or behavior choices —
-you must update `design/design.md` to reflect it before committing. The docs
-and the code must always agree.
+you must update `design/master-design.md` to reflect it before committing. The
+docs and the code must always agree.
 
 ### Before Editing Any File
 Read:
@@ -177,10 +177,8 @@ If a feature implies any of these, flag it immediately.
 
 | Folder | What lives here |
 |--------|----------------|
-| `design/` | Finalized design — settled decisions, build toward these |
-| `implemented/` | Designs for systems already coded and working in the app |
-| `brainstorm/` | Explorations not yet committed to — do not implement without discussion |
-| `retired/` | Rejected design work — kept for context, never implement |
+| `design/` | Active design — the master design doc lives here |
+| `legacy/` | All pre-30-Jun-2026 design docs — archived, never implement from these |
 | `docs/` | Process artifacts: journal, roadmap, session plans |
 | `future/` | Deferred ideas and wishlist items |
 
@@ -189,28 +187,12 @@ If a feature implies any of these, flag it immediately.
 - `docs/roadmap.md` — full phase plan
 
 ### Authoritative design (build toward these)
-- `design/design.md` — master GDD, always current
-- `design/voice-tone.md` — all in-game writing answers to this
-- `design/characters.md` — full 32-member roster
-- `design/battlegrounds.md` — lore roster of 14 named battlegrounds
-- `design/battlegrounds-rpg.md` — campaign combat system
-- `design/bestiary.md` — enemy tier system
-- `design/progression.md` — stat and progression design
-- `design/combat-model.md` — full combat model
+- `design/master-design.md` — master GDD, always current. **Single source of truth.**
 
-### Implemented system docs
-- `implemented/mechanics-math-reference.md` — combat formulas derived from sim
-- `implemented/dps-meter-design.md`
-- `implemented/draughts-and-armor-pen-design.md`
-- `implemented/dread-redesign.md`
-- `implemented/recipe-discovery-design.md`
-- `implemented/audit-june-2026-design.md`
-
-### In-progress design (not committed)
-- `brainstorm/damage-types-bane-affinities-design.md` — partially specified; incoming damage types pending
-- `brainstorm/combat-curve-problem.md` — analysis, paths not yet chosen
-- `brainstorm/redefinition.md` — transitional doc, context only
-- `brainstorm/galadriel-mirrors.md` — future mechanic idea
+### Legacy (reference only — do not implement from these)
+- `legacy/design/` — old GDD, combat model, battlegrounds, bestiary, etc.
+- `legacy/implemented/` — old implemented system docs
+- `legacy/brainstorm/` — old explorations
 
 ### Deferred small ideas
 - `future/wishlist.md` — small ideas and deferred features, add freely

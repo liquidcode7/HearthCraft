@@ -7,11 +7,11 @@
 
 ## Current Status — June 30, 2026
 
-**Phase:** Quality system Phases 1–6 complete; starter region encounter data added.
-**What's working:** Full ingredient quality pipeline — grade rolls at gather, preserves through process, resolves at cook (hero-weighted avg + cook ceiling), scales stat boosts at provisioning. Grade badges in Pantry, Kitchen, Missions, Band screens. 9 new encounters added (miniboss + region boss + return vault per band, minus 2 parked return vaults).
-**What's not wired yet:** Quality tuning tables (all placeholder — TODO:TUNE); grimoire system (design-complete, code deferred until grimoire contents pinned); miniboss tricks for Dourhand and Large Spider (parked); Undermarch/Mithlost return vault creatures (parked); expedition mechanic (parked).
-**Next session:** Grimoire system implementation — requires basic-vs-grimoire recipe data pass first. Or: quality tuning with the sim.
-**Open questions:** Miniboss tricks for Dourhand dwarves and Large Spider need distinct gimmicks (currently both endurance grind — noted as parked). HP/s display in UI shows baseBuffStrength/10f (0.5 for tier-1) instead of actual combat value (5.0) — pre-existing bug, easy fix. Ironroot substitute for 4 Greycloaks recipes still open.
+**Phase:** Ground-up redesign — god document written, Men ingredient roster finalized, old design docs archived. No code changes this session.
+**What's working:** Existing code is unchanged and still functional. The design direction has been completely reset.
+**What's not wired yet:** Everything in the new design. The combat engine still runs the old HP/s model. Ingredient/recipe JSON still has old data. Code work begins next session.
+**Next session:** Implement the new ingredient and recipe data for Men (Greycloaks) — rename ironroot→brackenroot in ingredients.json and the 4 affected recipes, restructure ingredient regions, update prepared ingredients.
+**Open questions:** Player title (still TBD). Warden's secondary stat. Exact Lone-Lands unlock trigger. Number of cooking tiers needed for full campaign. All captured in design/master-design.md §14.
 
 ---
 
@@ -1896,6 +1896,40 @@ Post-Session-49 code review surfaced 9 correctness bugs and 6 cleanup issues. Al
 - Next session: Producer upgrade system, or feature work
 - Near term: Ironroot region move; Undermarch/Mithlost inspiration names
 - Future ideas logged: None this session
+
+---
+
+## Session 52 — June 30, 2026
+**Ground-up redesign: god document written, Men ingredients finalized, legacy archived**
+
+**What was built:**
+- `design/master-design.md`: comprehensive master GDD capturing all redesign decisions
+- `legacy/`: all prior design/, implemented/, brainstorm/, retired/ docs moved here — archived, not authoritative
+- `CLAUDE.md`: updated to point to master-design.md, reflect new folder structure
+
+**Decisions made:**
+- Combat model B: food provides stat boosts only, no HP/s. Keeper is sole healer.
+- Universal streak system: Fate×k trigger, 5 ticks, 1.5×, all roles equal. No Fate food ever.
+- Captain: Will primary, Fate+Vitality secondary (two secondaries). Hybrid damage. Sole Dread anchor.
+- Keeper: two independent HoT slots, triage heal, group heal, rescue burst (5-cap), DPS in all gaps.
+- Per-member provisioning: 4 food + 4 draught = 8 slots. Nothing is party-wide.
+- Houses of Healing: third craft track, own grimoires, only grievous-wound mechanic. Recovery buff = elevated incoming healing (not damage reduction).
+- Shadow renamed Despair. Cold = double-bind (DPS rate + healing rate). Disease = healing + Inspiration odds.
+- Regional ingredient separation: forage/hunt location-locked; all plants farmable once acquired; husbandry portable.
+- All crafting including prep steps (butter, cheese, etc.) in the kitchen.
+- No T1 recipes requiring Lone-Lands ingredients.
+- ironroot renamed brackenroot (Bree-land root — name was too Dwarven).
+- nettleleaf moved to Bree-land core (grows anywhere; was incorrectly Lone-Lands).
+- willowherb moved to Bree-land core (riverbank herb; was incorrectly Wildwood/Cardolan).
+- Full Bree-land ingredient roster designed: 46 core + 10 Lone-Lands = 56 total for Men.
+
+**Anything that diverged from prior design:**
+- Everything. This is a ground-up redesign. All prior design docs are archived in legacy/.
+
+**Coming up:**
+- Next session: Update ingredients.json (rename brackenroot, restructure regions, add cultivatable flag), update recipes.json (4 ironroot→brackenroot swaps), update band_members.json (park Mithlost/Undermarch, focus Men)
+- Near term: Combat engine rewrite for Model B (remove HP/s, wire Keeper healing), per-member provisioning slots
+- Future: Elves redesign (Mithlost), Dwarves redesign (Undermarch)
 
 ---
 

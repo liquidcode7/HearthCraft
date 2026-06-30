@@ -56,7 +56,7 @@ class MarketViewModel @Inject constructor(
         const val SEED_PRICE_GOLD = 5
         val SEED_CATALOGUE = listOf(
             "hearthgrain_seed" to "Hearthgrain Seed",
-            "ironroot_seed" to "Ironroot Seed",
+            "brackenroot_seed" to "Brackenroot Seed",
             "sunpetal_herb_seed" to "Sunpetal Herb Seed",
             "duskberry_seed" to "Duskberry Seed",
             "pale_cap_seed" to "Pale Cap Seed"
