@@ -54,6 +54,12 @@ const TRIAGE_COOLDOWN = 2;    // ticks between triage uses
 const GROUP_HEAL_IV   = 20;   // ticks between group heals
 const GROUP_HEAL_MUL  = 0.5;  // groupHeal per member = keeper.wil * GROUP_HEAL_MUL
 
+// ── Fate streak constants (must match EncounterEngine.kt Task 7) ───────────
+const STREAK_K          = 0.002; // trigger prob per eligible tick = fat * STREAK_K
+const STREAK_REFRACTORY = 20;    // ticks before streak can re-trigger
+const STREAK_DURATION   = 5;     // streak active ticks
+const STREAK_MULT       = 1.5;   // DPS/heal multiplier during streak
+
 const statAt  = (tpl, k, lvl) => tpl.start[k] + tpl.grow[k] * (lvl - 1);
 const moraleOf= (tpl, lvl)    => Math.round(30 + statAt(tpl,"vit",lvl) * 16);
 const fmtT    = s => `${Math.floor(s/60)}:${String(Math.max(0,s)%60).padStart(2,"0")}`;
@@ -164,6 +170,10 @@ function runFight(cfg, verbose) {
     };
   });
 
+  // Per-member streak state
+  const streak = {};
+  ORDER.forEach(k => { streak[k] = { refractory: 0, active: 0 }; });
+
   // Keeper HoT state — two independent slots
   let hot1 = null, hot2 = null; // { targetKey, ticksLeft, healPerTick }
   let triageCooldown = 0;
@@ -179,10 +189,13 @@ function runFight(cfg, verbose) {
     let raw = 0;
     ORDER.forEach(k => {
       if (M[k].grievous || M[k].hp <= 0 || M[k].stunned || M[k].broken) return;
-      if (k==="keeper")  { if (keeperDealtDps) raw += M[k].wil * 0.9; }
-      else if (k==="fighter") raw += M[k].agi + M[k].mig * 0.4;
-      else if (k==="warden")  raw += M[k].mig * 0.5;
-      else if (k==="captain") raw += M[k].mig * 0.3 + M[k].wil * 0.2;
+      const mult = (streak[k] && streak[k].active > 0) ? STREAK_MULT : 1;
+      let base = 0;
+      if (k==="keeper")        { if (keeperDealtDps) base = M[k].wil * 0.9; }
+      else if (k==="fighter")  base = M[k].agi + M[k].mig * 0.4;
+      else if (k==="warden")   base = M[k].mig * 0.5;
+      else if (k==="captain")  base = M[k].mig * 0.3 + M[k].wil * 0.2;
+      raw += base * mult;
     });
     if (windows.dawn > 0) raw *= 1.5;
     const physAfter = Math.max(0, cfg.phys * (1 - Math.min(1, cfg.potency/PEN_SCALE)));
@@ -211,10 +224,12 @@ function runFight(cfg, verbose) {
     t++;
     // ── Keeper HoT ticks ──────────────────────────────────────────────────────
     if (!M.keeper.grievous && M.keeper.hp > 0 && !M.keeper.stunned) {
+      const keepStreak = streak["keeper"];
+      const healMult = (keepStreak && keepStreak.active > 0) ? STREAK_MULT : 1;
       for (const hot of [hot1, hot2].filter(Boolean)) {
         const tgt = M[hot.targetKey];
         if (tgt && !tgt.grievous) {
-          tgt.hp = Math.min(tgt.max, tgt.hp + hot.healPerTick);
+          tgt.hp = Math.min(tgt.max, tgt.hp + hot.healPerTick * healMult);
         }
         hot.ticksLeft--;
       }
@@ -235,6 +250,21 @@ function runFight(cfg, verbose) {
 
     const act = active();
     const live = standing();
+
+    // ── Streak updates ────────────────────────────────────────────────────────
+    act.forEach(k => {
+      const s = streak[k];
+      if (M[k].grievous || M[k].broken || M[k].stunned) return;
+      if (s.active > 0) {
+        s.active--;
+      } else if (s.refractory > 0) {
+        s.refractory--;
+      } else if (Math.random() < M[k].fat * STREAK_K) {
+        s.active = STREAK_DURATION;
+        s.refractory = STREAK_REFRACTORY;
+        lg(`★ STREAK — ${M[k].tpl.name}`);
+      }
+    });
 
     // ── Keeper action ─────────────────────────────────────────────────────────
     keeperDealtDps = true; // default: keeper contributes DPS this tick
@@ -608,6 +638,10 @@ function report(cfg, res) {
     if(k==="Black Arrow"&&cfg.survival) return;
     console.log(`  ${(inspNames[k]||k).padEnd(26)} ${pct(v).padStart(6)}  fired in ${v} fights`);
   });
+
+  console.log("\n── Streak activity ──");
+  console.log(`  Fate×${STREAK_K} trigger | ${STREAK_DURATION}-tick duration | ${STREAK_MULT}× multiplier`);
+  console.log(`  Refractory: ${STREAK_REFRACTORY} ticks`);
 
   if (res.sample && res.sample.logs.length) {
     console.log("\n── Verbose log (fight #1) ──");
