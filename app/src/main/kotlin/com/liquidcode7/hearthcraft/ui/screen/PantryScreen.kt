@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -23,6 +24,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -75,12 +77,17 @@ fun PantryScreen(onBack: () -> Unit = {}, viewModel: InventoryViewModel = hiltVi
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(12.dp)) {
                     namedIngredients.forEachIndexed { i, stock ->
-                        Row(modifier = Modifier.fillMaxWidth()) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
                             Text(
                                 stock.name,
                                 modifier = Modifier.weight(1f),
                                 style = MaterialTheme.typography.bodyMedium
                             )
+                            GradeBadge(stock.grade)
+                            Spacer(modifier = Modifier.width(8.dp))
                             Text("×${stock.quantity}", style = MaterialTheme.typography.bodyMedium)
                         }
                         if (i < namedIngredients.lastIndex) {
@@ -108,15 +115,17 @@ fun PantryScreen(onBack: () -> Unit = {}, viewModel: InventoryViewModel = hiltVi
                         .fillMaxWidth()
                         .padding(bottom = 4.dp)
                 ) {
-                    Row(modifier = Modifier.padding(12.dp)) {
+                    Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
                         Column(modifier = Modifier.weight(1f)) {
                             Text(food.name, style = MaterialTheme.typography.bodyMedium)
                             Text(
                                 "${food.buffType} +${food.buffStrength}",
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+                            )
                         }
+                        GradeBadge(food.grade)
+                        Spacer(modifier = Modifier.width(8.dp))
                         Text("×${food.quantity}", style = MaterialTheme.typography.bodyMedium)
                     }
                 }

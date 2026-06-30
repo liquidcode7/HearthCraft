@@ -205,6 +205,8 @@ private fun FoodRow(food: PreparedFoodDetail, isSelected: Boolean, onClick: () -
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
+            GradeBadge(food.grade)
+            Spacer(modifier = Modifier.width(6.dp))
             Text("×${food.quantity}", style = MaterialTheme.typography.bodySmall)
         }
     }

@@ -599,7 +599,7 @@ private fun FoodPickerDialog(
                             onClick  = { onSelect(food) },
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Row(modifier = Modifier.fillMaxWidth()) {
+                            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                                 Column(modifier = Modifier.weight(1f)) {
                                     Text(food.name)
                                     if (food.primaryStat != null) {
@@ -613,6 +613,8 @@ private fun FoodPickerDialog(
                                         )
                                     }
                                 }
+                                GradeBadge(food.grade)
+                                Spacer(modifier = Modifier.width(6.dp))
                                 Text(
                                     "×${food.quantity}",
                                     color = MaterialTheme.colorScheme.onSurfaceVariant

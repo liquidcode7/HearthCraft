@@ -59,7 +59,8 @@ data class HarvestReadout(
 data class IngredientStock(
     val ingredientId: String,
     val name: String,
-    val quantity: Int
+    val quantity: Int,
+    val grade: Int = 0   // ordinal of Grade enum; one IngredientStock per (id, grade) pair
 )
 
 data class EncounterDetail(

@@ -56,6 +56,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.liquidcode7.hearthcraft.data.db.CookingSession
 import com.liquidcode7.hearthcraft.data.db.GrowingSlot
 import com.liquidcode7.hearthcraft.data.db.InventoryItem
+import com.liquidcode7.hearthcraft.data.model.Grade
 import com.liquidcode7.hearthcraft.data.model.Ingredient
 import com.liquidcode7.hearthcraft.data.model.Recipe
 import com.liquidcode7.hearthcraft.engine.ExperimentResult
@@ -145,10 +146,12 @@ fun KitchenScreen(
                         // Recipe detail + cook button — detail always visible when recipe selected;
                         // cook button only shown when a kiln is free
                         if (selectedRecipe != null) {
+                            val predictedGrade by viewModel.predictedDishGrade.collectAsState()
                             RecipeDetailPanel(
                                 recipe = selectedRecipe!!,
                                 inventoryItems = inventoryItems,
                                 cookingLevel = cookingLevel,
+                                predictedGrade = predictedGrade,
                                 viewModel = viewModel
                             )
                             if (!bothBusy) {
@@ -561,9 +564,12 @@ private fun RecipeDetailPanel(
     recipe: Recipe,
     inventoryItems: List<InventoryItem>,
     cookingLevel: Int,
+    predictedGrade: Pair<Grade, Boolean>?,
     viewModel: KitchenViewModel
 ) {
-    val qtyMap = inventoryItems.associate { it.ingredientId to it.quantity }
+    // Aggregate qty across all grade rows for each ingredient
+    val qtyMap = inventoryItems.groupBy { it.ingredientId }
+        .mapValues { (_, rows) -> rows.sumOf { it.quantity } }
     val buffAtLevel = (recipe.baseBuffStrength + (cookingLevel - 1) * recipe.buffStrengthPerLevel).toInt()
     val hps = buffAtLevel / 10f
 
@@ -604,17 +610,51 @@ private fun RecipeDetailPanel(
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
+
+            // Predicted grade row
+            if (predictedGrade != null) {
+                Spacer(modifier = Modifier.height(6.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        "Predicted: ",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    GradeBadge(predictedGrade.first.ordinal)
+                    if (predictedGrade.second) {
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            "Cook Lv caps this",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+
             Spacer(modifier = Modifier.height(8.dp))
             Text("Ingredients:", style = MaterialTheme.typography.labelMedium)
             recipe.ingredients.forEach { ing ->
                 val have = qtyMap[ing.id] ?: 0
                 val name = viewModel.ingredientName(ing.id)
-                Text(
-                    "• $name  $have/${ing.qty}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = if (have >= ing.qty) MaterialTheme.colorScheme.onSurface
-                            else MaterialTheme.colorScheme.error
-                )
+                val isHero = ing.id == recipe.heroIngredient
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        if (isHero) "★ $name  $have/${ing.qty}"
+                        else "• $name  $have/${ing.qty}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = if (have >= ing.qty) MaterialTheme.colorScheme.onSurface
+                                else MaterialTheme.colorScheme.error,
+                        modifier = Modifier.weight(1f)
+                    )
+                    if (isHero) {
+                        Text(
+                            "hero",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
             }
         }
     }
@@ -774,7 +814,9 @@ private fun ProcessItemRow(
     viewModel: KitchenViewModel,
     onClick: () -> Unit
 ) {
-    val qtyMap = remember(inventoryItems) { inventoryItems.associate { it.ingredientId to it.quantity } }
+    val qtyMap = remember(inventoryItems) {
+        inventoryItems.groupBy { it.ingredientId }.mapValues { (_, rows) -> rows.sumOf { it.quantity } }
+    }
     Card(
         onClick = onClick,
         border = if (isSelected) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null,

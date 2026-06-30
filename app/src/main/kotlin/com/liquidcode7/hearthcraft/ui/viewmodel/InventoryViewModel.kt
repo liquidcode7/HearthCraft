@@ -26,13 +26,14 @@ class InventoryViewModel @Inject constructor(
 
     val namedIngredients: StateFlow<List<IngredientStock>> = inventory.observeIngredients()
         .map { items ->
-            items.map { item ->
+            items.filter { it.quantity > 0 }.map { item ->
                 IngredientStock(
                     ingredientId = item.ingredientId,
                     name = gameData.ingredients.find { it.id == item.ingredientId }?.name ?: item.ingredientId,
-                    quantity = item.quantity
+                    quantity = item.quantity,
+                    grade = item.grade
                 )
-            }
+            }.sortedWith(compareBy({ it.name }, { it.grade }))
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 

@@ -91,7 +91,7 @@ class KitchenViewModel @Inject constructor(
         player.observeDiscoveredIds()
     ) { items, state, discovered ->
         val bandId = state?.chosenBandId.orEmpty()
-        val qtyMap = items.associate { it.ingredientId to it.quantity }
+        val qtyMap = items.groupBy { it.ingredientId }.mapValues { (_, rows) -> rows.sumOf { it.quantity } }
         gameData.recipes
             .filter { (it.band == bandId || it.band == "all") && bandId.isNotEmpty() }
             .filter { it.id in discovered }
@@ -124,6 +124,34 @@ class KitchenViewModel @Inject constructor(
 
     private val _selectedRecipe = MutableStateFlow<Recipe?>(null)
     val selectedRecipe: StateFlow<Recipe?> = _selectedRecipe.asStateFlow()
+
+    /**
+     * Live predicted dish grade for the currently selected recipe.
+     * null when no recipe is selected or ingredients are missing.
+     * Pair.first = predicted Grade, Pair.second = true if the cook ceiling is binding.
+     */
+    val predictedDishGrade: StateFlow<Pair<Grade, Boolean>?> = combine(
+        _selectedRecipe,
+        inventory.observeIngredients(),
+        playerState
+    ) { recipe, items, state ->
+        if (recipe == null) return@combine null
+        val cookLevel = state?.cookingLevel ?: 1
+        val heroId = recipe.heroIngredient.ifBlank { recipe.ingredients.firstOrNull()?.id.orEmpty() }
+        val heroRow = items.filter { it.ingredientId == heroId && it.quantity > 0 }
+            .minByOrNull { it.grade }
+        val heroGrade = Grade.fromOrdinal(heroRow?.grade ?: 0)
+        val supportGrades = recipe.ingredients
+            .filter { it.id != heroId }
+            .map { ing ->
+                val row = items.filter { it.ingredientId == ing.id && it.quantity > 0 }
+                    .minByOrNull { it.grade }
+                Grade.fromOrdinal(row?.grade ?: 0)
+            }
+        val unclamped = resolveDishGrade(heroGrade, supportGrades, cookLevel = 99, recipeUnlockLevel = recipe.cookLevel)
+        val actual    = resolveDishGrade(heroGrade, supportGrades, cookLevel, recipe.cookLevel)
+        actual to (actual < unclamped)
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
     // ── Tab selection ─────────────────────────────────────────────────────────
 
