@@ -398,8 +398,8 @@
     "difficulty": "hard",
     "recLevel": 4,
     "requiredCookingLevel": 5,
-    "flavorIntro": "Dourhand dwarves, mail-clad and holding the deep gate. They will not yield. They have been here a long time and they know the ground. The fight will be long — your band needs to outlast them.",
-    "flavorLine": "They will not break. Sustain your band and grind them down.",
+    "flavorIntro": "Dourhand dwarves, mail-clad and holding the deep gate. They will not yield. They have been here a long time and they know the ground. The armor is the problem — and the clock.",
+    "flavorLine": "Thick mail and fat resolve. Without penetration you are chipping stone against the clock.",
     "rewardMoneyMin": 80,
     "rewardMoneyMax": 120,
     "rewardMultiplier": 5,
@@ -412,14 +412,14 @@
         "type": "attrition",
         "objective": "kill",
         "durationSec": 1500,
-        "resolve": 90000,
-        "drain": 22,
-        "spike": 55,
-        "spikeIntervalSec": 18,
-        "physMitPct": 30,
+        "resolve": 100000,
+        "drain": 18,
+        "spike": 65,
+        "spikeIntervalSec": 15,
+        "physMitPct": 40,
         "dread": 0, "shadow": 0, "disease": 0,
         "cold": 0, "heat": 0, "wakefulness": 0,
-        "stageFlavor": "They are armored and they are patient. You need to be more patient."
+        "stageFlavor": "The armor shrugs off most of what you throw. Potency cuts it. Nothing else does."
       }
     ]
   },
@@ -466,8 +466,8 @@
     "difficulty": "hard",
     "recLevel": 4,
     "requiredCookingLevel": 5,
-    "flavorIntro": "Something large has been taking animals from the forest margin for weeks. Not a wolf. The web-signs are unmistakable to elvish eyes — a spider, old and very large, nested in the deadfall above the tree-line. It will not leave on its own.",
-    "flavorLine": "Ancient and patient. It will outlast a band that is not fed.",
+    "flavorIntro": "Something large has been taking animals from the forest margin for weeks. Not a wolf. The web-signs are unmistakable to elvish eyes — a spider, old and very large, nested in the deadfall above the tree-line. It picks the softest target. Always.",
+    "flavorLine": "It hunts the weakest member. Everyone needs to be able to take a hit.",
     "rewardMoneyMin": 80,
     "rewardMoneyMax": 120,
     "rewardMultiplier": 5,
@@ -480,14 +480,14 @@
         "type": "attrition",
         "objective": "kill",
         "durationSec": 1500,
-        "resolve": 85000,
-        "drain": 20,
-        "spike": 50,
-        "spikeIntervalSec": 16,
+        "resolve": 70000,
+        "drain": 14,
+        "spike": 140,
+        "spikeIntervalSec": 8,
         "physMitPct": 10,
         "dread": 0, "shadow": 0, "disease": 0,
         "cold": 0, "heat": 0, "wakefulness": 0,
-        "stageFlavor": "It does not hurry. Feed your band well and outlast it."
+        "stageFlavor": "It finds the gap in your provisioning. Feed the whole band or lose one of them."
       }
     ]
   },

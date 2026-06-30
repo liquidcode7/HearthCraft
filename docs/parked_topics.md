@@ -52,13 +52,6 @@
 - **Barrow-wight final reward** — the planted/forgotten grimoire's actual contents
   (rare apex recipe / Barrow-blade-flavored thing). Pin when late-game economy is clearer.
 
-- **Miniboss tricks for Dourhand and Large Spider** — currently both are endurance
-  grind. Need distinct tricks. Dourhand: already armored (high physMit) so the
-  puzzle is sustain + potency — works as a race variant. Large Spider: needs its
-  own gimmick distinct from Wolf-Master (spike) and Dourhand. Candidates: fragility
-  trap (web-slows targeting the fragile member), or a poison-flavored endurance
-  that is mechanically just disease/Hale. TBD next design session.
-
 ---
 
 ## Combat Engine Dependencies (blocking some bosses)

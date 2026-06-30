@@ -40,7 +40,7 @@ critical path. The **structure is mirrored; the flavor and tricks are band-disti
 |---|---|---|---|
 | Ladder 1 (recLv1) | Neekerbreekers | Cave Bats | Midges |
 | Ladder 2 (recLv3) | Wolves of the Chetwood | Mountain Wolves | Wargs |
-| **Miniboss** (recLv4) | **Wolf-Master** — spike trap | **Dourhand dwarves** — TBD trick | **Large Spider** — TBD trick |
+| **Miniboss** (recLv4) | **Wolf-Master** — spike trap | **Dourhand dwarves** — armor race | **Large Spider** — fragility trap |
 | Malady (recLv5) | Armored Goblin Raiders — armor | Goblin Assault — armor | Goblin Scouts — armor |
 | **Region boss** (recLv6) | **Rhudaur Men** — self-heal race* | **Drakeling** — dragon-fire race | **Huorn** — escalator* |
 | **Return vault** | **Barrow-wight** — Cold+Dread | *TBD* | *TBD* |
