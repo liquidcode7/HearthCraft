@@ -2,26 +2,21 @@
 // HearthCraft headless combat simulator
 // Same math as hearthcraft_fight_sim.html — no DOM required.
 // Usage:
-//   node run_sim.js [--runs N] [--level L] [--duration S] [--food W,H,K,C]
-//                   [--rlevel R]       (cooking level 1-50; HP/s from tier table, no stat bonuses)
-//                   [--recipe ID]      (same recipe for all members; combined with --rlevel or --fl)
-//                   [--fl N]           (food level 1-4+; combined with --recipe)
-//                   [--recipes W,H,K,C]  (per-member recipe IDs; combined with --rlevel or --fl)
+//   node run_sim.js [--runs N] [--level L] [--duration S]
+//                   [--recipe ID]        (same recipe stat bonuses for all members)
+//                   [--recipes W,F,K,C]  (per-member recipe IDs)
+//                   [--statbonus N]      (flat bonus added to all recipe stat outputs; simulates grade step)
 //                   [--boss R] [--drain D] [--spike S] [--spikeiv I]
 //                   [--phys P] [--dread V] [--shadow V] [--cold V] [--heat V]
 //                   [--disease V] [--wake V] [--hope V] [--radiance V]
 //                   [--hale V] [--warmth V] [--heatease V] [--alert V]
-//                   [--survival] [--hunter might] [--burstmul F] [--verbose]
+//                   [--survival] [--fighter might] [--burstmul F] [--verbose]
 //                   [--beta B]      (cascade exponent: 1=cascade/current, 0=neutral, <0=last-stand; default 1)
 //                   [--decouple]    (independent per-member spikes instead of one global spike)
 //                   [--sink]        (replace 40% softcap with a reserve pool that absorbs spikes first)
 //                   [--rmax R]      (reserve pool cap for --sink mode; default 50)
 //
-// Food precedence (highest wins):
-//   --food         raw HP/s per member, no stat bonuses
-//   --recipes+--fl per-member recipe IDs + food level → per-member stat bonuses + HP/s
-//   --recipe+--fl  all members same recipe + food level
-//   --rlevel       HP/s from tier table only (no stat bonuses)
+// Food gives stat bonuses only (Model B — HP/s removed).
 //
 // Runs N fights and prints aggregate stats + Inspiration fire rates.
 
@@ -30,12 +25,12 @@ const FM = require('./food_model');
 // ── constants (mirrored from the browser sim) ──────────────────────────────
 const TPL = {
   warden:  { name:"Borin", role:"Warden",  soak:true,  start:{mig:13,agi:6, vit:15,wil:7, fat:6 }, grow:{mig:0.50,agi:0.15,vit:0.55,wil:0.20,fat:0.15} },
-  hunterA: { name:"Mira",  role:"Hunter",  soak:false, start:{mig:9, agi:15,vit:7, wil:5, fat:9 }, grow:{mig:0.30,agi:0.55,vit:0.20,wil:0.15,fat:0.35} },
-  hunterM: { name:"Mira",  role:"Hunter",  soak:false, start:{mig:15,agi:9, vit:8, wil:5, fat:7 }, grow:{mig:0.55,agi:0.30,vit:0.25,wil:0.15,fat:0.25} },
+  fighterA:{ name:"Mira",  role:"Fighter", soak:false, start:{mig:9, agi:15,vit:7, wil:5, fat:9 }, grow:{mig:0.30,agi:0.55,vit:0.20,wil:0.15,fat:0.35} },
+  fighterM:{ name:"Mira",  role:"Fighter", soak:false, start:{mig:15,agi:9, vit:8, wil:5, fat:7 }, grow:{mig:0.55,agi:0.30,vit:0.25,wil:0.15,fat:0.25} },
   keeper:  { name:"Cael",  role:"Keeper",  soak:false, start:{mig:5, agi:7, vit:9, wil:15,fat:12}, grow:{mig:0.15,agi:0.20,vit:0.30,wil:0.55,fat:0.45} },
   captain: { name:"Aelin", role:"Captain", soak:true,  start:{mig:8, agi:7, vit:12,wil:13,fat:13}, grow:{mig:0.20,agi:0.20,vit:0.40,wil:0.45,fat:0.45} },
 };
-const ORDER        = ["warden","hunter","keeper","captain"];
+const ORDER        = ["warden","fighter","keeper","captain"];
 const PEN_SCALE    = 80;  // must match hearthcraft_fight_sim.html
 const SHADOW_FLOOR = 0.55;
 const SHADOW_RATE  = 0.0011;
@@ -62,74 +57,31 @@ function parseArgs() {
   const get = (flag, def) => { const i = a.indexOf(flag); return i>=0 ? a[i+1] : def; };
   const num = (flag, def) => parseFloat(get(flag, def));
 
-  // Food resolution: --food > --recipes/--recipe + --fl/--rlevel > --rlevel
-  const recipeArg  = get("--recipe",  null);   // single recipe for all members
-  const recipesArg = get("--recipes", null);   // comma-separated per-member (W,H,K,C)
-  const flArg      = a.includes("--fl") ? parseInt(get("--fl", "1")) : null;
-  const rLevel     = a.includes("--rlevel") ? parseFloat(get("--rlevel", "1")) : null;
-
-  // Per-member recipe IDs: --recipes W,H,K,C overrides --recipe for everyone
-  const memberRecipes = { warden:null, hunter:null, keeper:null, captain:null };
+  // Food: recipes provide stat bonuses only (no HP/s).
+  // --recipe ID       same recipe stat bonuses for all members
+  // --recipes W,F,K,C per-member recipe IDs
+  // --statbonus N     flat bonus added to all recipe stat outputs (simulates grade step)
+  const recipeArg  = get("--recipe",  null);
+  const recipesArg = get("--recipes", null);
+  const memberRecipes = { warden:null, fighter:null, keeper:null, captain:null };
   if (recipesArg) {
     const parts = recipesArg.split(",");
-    ["warden","hunter","keeper","captain"].forEach((k,i) => { memberRecipes[k] = parts[i]?.trim() || null; });
+    ["warden","fighter","keeper","captain"].forEach((k,i) => { memberRecipes[k] = parts[i]?.trim() || null; });
   } else if (recipeArg) {
     Object.keys(memberRecipes).forEach(k => { memberRecipes[k] = recipeArg; });
   }
-
-  // Resolve HP/s and per-member stat bonuses
-  let derivedHps = null, effectiveRL = null;
-  const memberStatBonuses = { warden:{}, hunter:{}, keeper:{}, captain:{} };
-
-  const anyRecipe = Object.values(memberRecipes).find(r => r !== null);
-  if (anyRecipe && flArg !== null) {
-    // FL given explicitly — legacy path, still supported
-    const r = FM.RECIPES.find(r => r.id === anyRecipe);
-    effectiveRL = r ? r.cookLevel + flArg - 1 : (rLevel || 1);
-    derivedHps  = FM.recipeLevelToHps(effectiveRL);
-    ["warden","hunter","keeper","captain"].forEach(k => {
-      if (memberRecipes[k]) memberStatBonuses[k] = FM.statBonusesAt(memberRecipes[k], flArg);
-    });
-  } else if (anyRecipe && rLevel !== null) {
-    effectiveRL = rLevel;
-    derivedHps  = FM.recipeLevelToHps(rLevel);
-    ["warden","hunter","keeper","captain"].forEach(k => {
-      if (memberRecipes[k]) memberStatBonuses[k] = FM.statBonusesFor(memberRecipes[k]);
-    });
-  } else if (anyRecipe) {
-    // Recipe with no level specified — use authored stat bonuses, no HP/s override
-    effectiveRL = rLevel;
-    derivedHps  = rLevel ? FM.recipeLevelToHps(rLevel) : null;
-    ["warden","hunter","keeper","captain"].forEach(k => {
-      if (memberRecipes[k]) memberStatBonuses[k] = FM.statBonusesFor(memberRecipes[k]);
-    });
-  } else if (rLevel !== null) {
-    effectiveRL = rLevel;
-    derivedHps  = FM.recipeLevelToHps(rLevel);
-  }
-
-  const foodStr = get("--food", null);
-  let food;
-  if (foodStr) {
-    food = foodStr.split(",").map(Number);
-    ["warden","hunter","keeper","captain"].forEach(k => { memberStatBonuses[k] = {}; });
-  } else if (derivedHps !== null) {
-    food = [derivedHps, derivedHps, derivedHps, derivedHps];
-  } else {
-    food = [26, 20, 22, 24]; // default
-  }
+  const memberStatBonuses = { warden:{}, fighter:{}, keeper:{}, captain:{} };
+  ["warden","fighter","keeper","captain"].forEach(k => {
+    if (memberRecipes[k]) memberStatBonuses[k] = FM.statBonusesFor(memberRecipes[k]);
+  });
 
   return {
     runs:      parseInt(get("--runs", "1000")),
     level:     num("--level",    10),
     duration:  num("--duration", 1800),
-    food:      { warden:food[0]??26, hunter:food[1]??20, keeper:food[2]??22, captain:food[3]??24 },
-    memberStatBonuses,  // per-member { vit:2, fat:1 } etc
+    memberStatBonuses,
     memberRecipes,
     recipeArg,
-    flArg,
-    rLevel: effectiveRL,
-    derivedHps,
     boss:      num("--boss",    8500),
     drain:     num("--drain",   70),
     spike:     num("--spike",   160),
@@ -149,18 +101,18 @@ function parseArgs() {
     heatease:  num("--heatease",0),
     wake:      num("--wake",    0),
     alert:     num("--alert",   0),
-    siphon:    num("--siphon",  0),      // siphon damage to party per tick (0 = disabled)
-    siphonref: num("--siphonref", 0),    // siphon resolve refill to boss per tick (default = same as siphon)
-    siphoniv:  num("--siphoniv",30),     // siphon interval in seconds
-    statbonus: num("--statbonus", 0),    // flat bonus added to all recipe stat outputs (simulates grade step)
+    siphon:    num("--siphon",  0),
+    siphonref: num("--siphonref", 0),
+    siphoniv:  num("--siphoniv",30),
+    statbonus: num("--statbonus", 0),
     survival:  a.includes("--survival"),
-    hunterMight: get("--hunter","agility") === "might",
+    fighterMight: get("--fighter","agility") === "might",
     burstmul:  num("--burstmul", 1.0),
     verbose:   a.includes("--verbose"),
-    beta:      num("--beta",    1.0),    // cascade exponent (1=current, 0=neutral, <0=last-stand)
-    decouple:  a.includes("--decouple"),// independent per-member spikes
-    sink:      a.includes("--sink"),    // reserve pool instead of softcap
-    rmax:      num("--rmax",    50),    // reserve pool cap for sink mode
+    beta:      num("--beta",    1.0),
+    decouple:  a.includes("--decouple"),
+    sink:      a.includes("--sink"),
+    rmax:      num("--rmax",    50),
     // Inspiration rates (fixed in design; exposed for research runs)
     graceBase:      num("--grace",  0.05),
     hornBase:       num("--horn",   0.03),
@@ -175,8 +127,8 @@ function parseArgs() {
 // ── single fight ───────────────────────────────────────────────────────────
 function runFight(cfg, verbose) {
   const lvl   = cfg.level;
-  const hTpl  = cfg.hunterMight ? TPL.hunterM : TPL.hunterA;
-  const tpls  = { warden:TPL.warden, hunter:hTpl, keeper:TPL.keeper, captain:TPL.captain };
+  const fTpl  = cfg.fighterMight ? TPL.fighterM : TPL.fighterA;
+  const tpls  = { warden:TPL.warden, fighter:fTpl, keeper:TPL.keeper, captain:TPL.captain };
 
   // build party — apply per-member food stat bonuses on top of base stats
   const M = {};
@@ -184,7 +136,7 @@ function runFight(cfg, verbose) {
     const tpl = tpls[k];
     const sb  = (cfg.memberStatBonuses && cfg.memberStatBonuses[k]) || {};
     // statbonus simulates grade step: adds cfg.statbonus to any stat that already has a bonus > 0
-    const gs = cfg.statbonus || 0;
+    const gs  = cfg.statbonus || 0;
     const migBonus = (sb.mig||0) > 0 ? (sb.mig||0) + gs : (sb.mig||0);
     const agiBonus = (sb.agi||0) > 0 ? (sb.agi||0) + gs : (sb.agi||0);
     const vitBonus = (sb.vit||0) > 0 ? (sb.vit||0) + gs : (sb.vit||0);
@@ -200,7 +152,7 @@ function runFight(cfg, verbose) {
       mig:baseMig, agi:baseAgi, vit:baseVit, wil:baseWil, fat:baseFat,
       wilBase:baseWil, fatBase:baseFat, shDrain:0,
       stunned:false, stunTicks:0, broken:false,
-      reserve:0,  // sink-mode overflow buffer; absorbs spike damage before morale
+      reserve:0,
     };
   });
 
@@ -208,7 +160,6 @@ function runFight(cfg, verbose) {
   const standing  = () => active().filter(k => M[k].hp > 0);
   const inTrouble = () => active().filter(k => M[k].hp / M[k].max < 0.35).length;
   const inspRoll  = (base, boost) => Math.random() < (base + boost);
-  const sustain   = () => ORDER.filter(k=>!M[k].grievous).reduce((s,k)=>s+cfg.food[k],0);
 
   function dpsBreakdown() {
     if (cfg.survival) return { raw:0, eff:0, physAfter:0, layerADrag:0, potency:0 };
@@ -216,11 +167,10 @@ function runFight(cfg, verbose) {
     ORDER.forEach(k => {
       if (M[k].grievous || M[k].hp <= 0 || M[k].stunned || M[k].broken) return;
       if (k==="keeper")  { if (M[k]._action !== "burst") raw += M[k].wil * 0.9; }
-      else if (k==="hunter")  raw += M[k].agi + M[k].mig * 0.4;
+      else if (k==="fighter") raw += M[k].agi + M[k].mig * 0.4;
       else if (k==="warden")  raw += M[k].mig * 0.5;
       else if (k==="captain") raw += M[k].mig * 0.3 + M[k].wil * 0.2;
     });
-    if (windows.dawn > 0) raw *= 1.5;
     const physAfter = Math.max(0, cfg.phys * (1 - Math.min(1, cfg.potency/PEN_SCALE)));
     const capWil = (!M.captain.grievous && !M.captain.stunned) ? M.captain.wil : 0;
     const willCut = Math.min(1, capWil/100), hopeCut = Math.min(1, cfg.hope/100);
@@ -332,31 +282,6 @@ function runFight(cfg, verbose) {
         }
       }
     }
-
-    // food healing (active members with hp > 0)
-    act.forEach(k => {
-      if (M[k].hp <= 0 || M[k].stunned) return;
-      const hornBlock = windows.horn > 0 && k === "warden"; // Warden gets no food heal during Horn window
-      if (cfg.sink) {
-        // Sink mode: no throttle; overflow above max banks into a finite reserve that absorbs spikes
-        if (!hornBlock) {
-          const next = M[k].hp + cfg.food[k];
-          if (next > M[k].max) {
-            M[k].reserve = Math.min(cfg.rmax, M[k].reserve + (next - M[k].max));
-            M[k].hp = M[k].max;
-          } else {
-            M[k].hp = next;
-          }
-        }
-      } else {
-        // Softcap mode (default): healing above 1.5× drain-per-member runs at 40% efficiency
-        const incPer = cfg.drain / act.length;
-        let heal = cfg.food[k];
-        const soft = incPer * 1.5;
-        if (heal > soft) heal = soft + (heal - soft) * 0.4;
-        if (!hornBlock) M[k].hp = Math.min(M[k].max, M[k].hp + heal);
-      }
-    });
 
     // Keeper rescue burst
     if (rescue) {
@@ -473,18 +398,18 @@ function runFight(cfg, verbose) {
     const bd = dpsBreakdown();
     if (!cfg.survival) boss = Math.max(0, boss - bd.eff * (1 + (Math.random()*2-1)*cfg.jitter));
 
-    // Inspiration: Black Arrow (Hunter)
-    if (!baFired && !M.hunter.grievous && !M.hunter.stunned && !M.hunter.broken && M.hunter.hp>0) {
+    // Inspiration: Black Arrow (Fighter)
+    if (!baFired && !M.fighter.grievous && !M.fighter.stunned && !M.fighter.broken && M.fighter.hp>0) {
       const elapsed = t/maxT;
       const ttk = bd.eff>0 ? boss/bd.eff : 1e9;
       const trem = maxT-t;
       const losing = cfg.survival ? elapsed>0.5 : (ttk>trem && elapsed>0.4);
       if (losing) {
         const rise = Math.min(cfg.blackArrowCap, (elapsed-0.4)*cfg.blackArrowCap*2.5);
-        if (inspRoll(rise + M.hunter.fat*cfg.fateInspCoef, inspBoost)) {
+        if (inspRoll(rise + M.fighter.fat*cfg.fateInspCoef, inspBoost)) {
           baFired=true;
-          if (cfg.survival) { maxT -= Math.round(cfg.duration*0.15); events.push({t, kind:"Black Arrow (flaming)", who:M.hunter.tpl.name}); lg(`★ BLACK ARROW — clock cut`); }
-          else              { boss = Math.max(0, boss-cfg.boss*0.18); events.push({t, kind:"Black Arrow", who:M.hunter.tpl.name}); lg(`★ BLACK ARROW — 18% resolve chunk`); }
+          if (cfg.survival) { maxT -= Math.round(cfg.duration*0.15); events.push({t, kind:"Black Arrow (flaming)", who:M.fighter.tpl.name}); lg(`★ BLACK ARROW — clock cut`); }
+          else              { boss = Math.max(0, boss-cfg.boss*0.18); events.push({t, kind:"Black Arrow", who:M.fighter.tpl.name}); lg(`★ BLACK ARROW — 18% resolve chunk`); }
         }
       }
     }
@@ -560,34 +485,20 @@ function report(cfg, res) {
     console.log(`Siphon ${dmgStr} / ${refStr} every ${cfg.siphoniv}s`);
   }
   if (cfg.dread>0) console.log(`Dread ${cfg.dread} | Hope ${cfg.hope} | Avg stuns/fight: ${(res.totalStuns/n).toFixed(2)} | Avg breaks/fight: ${(res.totalBreaks/n).toFixed(2)}`);
-  // food line
+  // food line (stat bonuses only — no HP/s)
   const anyMemberRecipe = cfg.memberRecipes && Object.values(cfg.memberRecipes).find(r => r !== null);
-  if (anyMemberRecipe && cfg.flArg !== null) {
-    const flLabel = `FL${cfg.flArg}  →  ${cfg.derivedHps} HP/s per member`;
-    const perMember = ["warden","hunter","keeper","captain"].map(k => {
+  if (anyMemberRecipe) {
+    const perMember = ["warden","fighter","keeper","captain"].map(k => {
       const rid = cfg.memberRecipes[k];
       if (!rid) return `${k[0].toUpperCase()}: none`;
       const r = FM.RECIPES.find(r => r.id === rid);
       const sb = cfg.memberStatBonuses[k] || {};
-      const bStr = Object.entries(sb).map(([s,n])=>`+${n}${s}`).join(" ") || "HP/s";
+      const bStr = Object.entries(sb).map(([s,n])=>`+${n}${s}`).join(" ") || "no bonus";
       return `${k[0].toUpperCase()}: ${r ? r.name : rid} [${bStr}]`;
     }).join("  |  ");
-    console.log(`Food ${flLabel}`);
-    console.log(`     ${perMember}`);
-  } else if (anyMemberRecipe && cfg.rLevel !== null) {
-    console.log(`Food: ${FM.recipeLevelLabel(cfg.rLevel)}  →  ${cfg.derivedHps} HP/s per member`);
-    const perMember = ["warden","hunter","keeper","captain"].map(k => {
-      const rid = cfg.memberRecipes[k]; if (!rid) return "";
-      const sb = cfg.memberStatBonuses[k] || {};
-      const bStr = Object.entries(sb).map(([s,n])=>`+${n}${s}`).join(" ") || "HP/s";
-      const r = FM.RECIPES.find(r => r.id === rid);
-      return `${k[0].toUpperCase()}: ${r ? r.name : rid} [${bStr}]`;
-    }).filter(Boolean).join("  |  ");
-    if (perMember) console.log(`     ${perMember}`);
-  } else if (cfg.rLevel !== null) {
-    console.log(`Food: ${FM.recipeLevelLabel(cfg.rLevel)}  →  ${cfg.derivedHps} HP/s per member`);
+    console.log(`Food (stat bonuses): ${perMember}`);
   } else {
-    console.log(`Food W/H/K/C: ${cfg.food.warden}/${cfg.food.hunter}/${cfg.food.keeper}/${cfg.food.captain}/s`);
+    console.log(`Food: none`);
   }
   const haz=[];
   if(cfg.dread>0) haz.push(`Dread ${Math.round(cfg.dread*100)}%`+(cfg.hope>0?` Hope ${cfg.hope}`:""));
@@ -621,7 +532,7 @@ function report(cfg, res) {
   console.log(`  Warden guards ${avg(res.totalWardsUsed)} / ${WARD_CAP}`);
 
   console.log("\n── Inspiration fire rates ──");
-  const inspNames = { "Laurelin's Grace":"Grace (Keeper)", "The Horn of Gondor":"Horn (Warden)", "Wrath, Ruin, and the Red Dawn":"Red Dawn (Captain)", "Black Arrow":"Black Arrow (Hunter)", "Black Arrow (flaming)":"Black Arrow flaming (Hunter)" };
+  const inspNames = { "Laurelin's Grace":"Grace (Keeper)", "The Horn of Gondor":"Horn (Warden)", "Wrath, Ruin, and the Red Dawn":"Red Dawn (Captain)", "Black Arrow":"Black Arrow (Fighter)", "Black Arrow (flaming)":"Black Arrow flaming (Fighter)" };
   Object.entries(res.inspFired).forEach(([k,v])=>{
     if(k==="Black Arrow (flaming)"&&!cfg.survival) return;
     if(k==="Black Arrow"&&cfg.survival) return;
