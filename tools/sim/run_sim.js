@@ -149,6 +149,9 @@ function parseArgs() {
     heatease:  num("--heatease",0),
     wake:      num("--wake",    0),
     alert:     num("--alert",   0),
+    siphon:    num("--siphon",  0),      // siphon damage to party per tick (0 = disabled)
+    siphonref: num("--siphonref", 0),    // siphon resolve refill to boss per tick (default = same as siphon)
+    siphoniv:  num("--siphoniv",30),     // siphon interval in seconds
     survival:  a.includes("--survival"),
     hunterMight: get("--hunter","agility") === "might",
     burstmul:  num("--burstmul", 1.0),
@@ -224,6 +227,7 @@ function runFight(cfg, verbose) {
   let rescuesUsed=0, wardsUsed=0, inspBoost=0, baFired=false;
   // first spike fires after one full interval (with jitter)
   let nextSpikeAt = Math.round(cfg.spikeiv * (0.5 + Math.random()));
+  let nextSiphonAt = cfg.siphon > 0 ? Math.round(cfg.siphoniv * (0.5 + Math.random())) : Infinity;
   const fired   = {};
   const windows = { dawn:0, horn:0 };
   const events  = [];
@@ -372,6 +376,23 @@ function runFight(cfg, verbose) {
     { const haz=[["disease","hale"],["cold","warmth"],["heat","heatease"],["wake","alert"]];
       let extra=0; haz.forEach(([hz,an])=>{ const str=cfg[hz]||0; if(str>0) extra+=(str*0.08)*(1-Math.min(1,(cfg[an]||0)/100)); });
       if(extra>0) act.forEach(k=>{ M[k].hp -= extra/act.length; }); }
+
+    // siphon — blood-speaker drains a random member and independently refills boss resolve
+    if (cfg.siphon > 0 && t >= nextSiphonAt) {
+      const lv = live; // standing() alias
+      if (lv.length > 0) {
+        if (cfg.siphon > 0) {
+          const tgt = lv[Math.floor(Math.random() * lv.length)];
+          const siphonRoll = cfg.siphon * (0.8 + Math.random() * 0.4);
+          M[tgt].hp -= siphonRoll;
+          lg(`siphon dmg → ${M[tgt].tpl.name} (${Math.round(siphonRoll)})`);
+        }
+        const refill = (cfg.siphonref > 0 ? cfg.siphonref : cfg.siphon) * (0.8 + Math.random() * 0.4);
+        boss = Math.min(cfg.boss, boss + refill);
+        lg(`siphon refill → boss +${Math.round(refill)} = ${Math.round(boss)}`);
+      }
+      nextSiphonAt = t + Math.round(cfg.siphoniv * (0.5 + Math.random()));
+    }
 
     // Layer B: dread action denial — checked every BREAK_CHECK_INTERVAL ticks
     if (cfg.dread > 0 && t % BREAK_CHECK_INTERVAL === 0) {
@@ -526,6 +547,11 @@ function report(cfg, res) {
   console.log(`Modes: ${modes}`);
   console.log(`Boss ${cfg.boss} resolve  |  Drain ${cfg.drain}/s  |  Spike ${cfg.spike} every ${cfg.spikeiv}s`);
   if (cfg.phys>0) console.log(`Armor ${Math.round(cfg.phys*100)}% | Draught potency ${cfg.potency} / ${PEN_SCALE}`);
+  if (cfg.siphon>0||cfg.siphonref>0) {
+    const dmgStr = cfg.siphon>0 ? `${cfg.siphon} dmg` : "no dmg";
+    const refStr = cfg.siphonref>0 ? `${cfg.siphonref} refill` : `${cfg.siphon} refill`;
+    console.log(`Siphon ${dmgStr} / ${refStr} every ${cfg.siphoniv}s`);
+  }
   if (cfg.dread>0) console.log(`Dread ${cfg.dread} | Hope ${cfg.hope} | Avg stuns/fight: ${(res.totalStuns/n).toFixed(2)} | Avg breaks/fight: ${(res.totalBreaks/n).toFixed(2)}`);
   // food line
   const anyMemberRecipe = cfg.memberRecipes && Object.values(cfg.memberRecipes).find(r => r !== null);

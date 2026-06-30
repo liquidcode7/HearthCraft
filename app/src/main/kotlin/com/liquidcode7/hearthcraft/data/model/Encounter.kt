@@ -20,6 +20,9 @@ data class Stage(
     val cold: Int = 0,
     val heat: Int = 0,
     val wakefulness: Int = 0,
+    val siphonDamage: Float = 0f,      // damage dealt to a random member per siphon tick
+    val siphonRefill: Float = 0f,      // resolve added back to boss per siphon tick (independent of damage)
+    val siphonIntervalSec: Int = 0,    // 0 = siphon disabled
     val stageFlavor: String = ""
 )
 

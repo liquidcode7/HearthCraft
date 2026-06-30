@@ -85,6 +85,8 @@ object EncounterEngine {
         var rescues = 0
         var wardGuards = 0
         var nextSpike = (stage.spikeIntervalSec * rng.nextDouble(0.5, 1.5)).toFloat()
+        var nextSiphon = if (stage.siphonIntervalSec > 0)
+            (stage.siphonIntervalSec * rng.nextDouble(0.5, 1.5)).toFloat() else Float.MAX_VALUE
         val warden = party.find { it.input.role == "warden" }
         val keeper = party.find { it.input.role == "keeper" }
 
@@ -118,6 +120,26 @@ object EncounterEngine {
                 applyDamage(m, drainPerMember)
             }
             // TODO(v2): shadow drain tick — apply SHADOW_RATE drain to Will/Fate toward SHADOW_FLOOR per stage.shadow severity
+
+            // ── Siphon ────────────────────────────────────────────────────────
+            // Blood-speaker drains a random member (siphonDamage) and independently
+            // refills boss resolve (siphonRefill). Decoupled so party damage and
+            // resolve refill can be tuned separately.
+            if (t >= nextSiphon && stage.siphonIntervalSec > 0) {
+                val standingList = standing()
+                if (standingList.isNotEmpty()) {
+                    if (stage.siphonDamage > 0f) {
+                        val target = standingList.random(rng)
+                        val siphonRoll = stage.siphonDamage * rng.nextFloat(0.8f, 1.2f)
+                        applyDamage(target, siphonRoll)
+                    }
+                    if (stage.siphonRefill > 0f) {
+                        val refillRoll = stage.siphonRefill * rng.nextFloat(0.8f, 1.2f)
+                        boss = min(stage.resolve.toFloat(), boss + refillRoll)
+                    }
+                }
+                nextSiphon = t + (stage.siphonIntervalSec * rng.nextDouble(0.5, 1.5)).toFloat()
+            }
 
             // ── Spike ─────────────────────────────────────────────────────────
             if (t >= nextSpike) {
