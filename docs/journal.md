@@ -5,13 +5,13 @@
 
 ---
 
-## Current Status — June 29, 2026
+## Current Status — June 30, 2026
 
-**Phase:** App Audit 28JUN2026 3.0 — all confirmed issues addressed across Kitchen, Gathering, Band, and data layers.
-**What's working:** Audit batch complete — methods consolidated to 3 (cook/bake/brew), kilns labeled "Kiln 1/2", recipe list always visible, stat letters on recipe rows (italic for draughts), penalty display for Ferny's Treacle, process→prepare rename, salted pork/hog meat data fix, forage filter excludes process items, starter recipe seeding corrected per band, Captain inspiration description fixed (×1.5 DPS for 10 ticks, not armor bypass), "Send the Band" label removed.
-**What's not wired yet:** Ironroot region move (blocked on 4 Greycloaks recipes that use it — needs substitute ingredient first); Undermarch and Mithlost inspiration names (deferred to wishlist).
-**Next session:** Producer upgrade system, or next round of testing/audit.
-**Open questions:** Ironroot substitute for the 4 Greycloaks recipes that use it (hearth_and_hops, rangers_fare, heartflame_broth, restorative_broth) — needed before ironroot can move to Thorin's Halls.
+**Phase:** Code review bug fixes — all 15 confirmed/plausible issues from the post-Session-49 review resolved.
+**What's working:** Producer workers self-schedule correctly (enqueueUniqueWork, no chain doubling); producer timers count down accurately after collect; JSON decode crashes hardened; startCooking Mutex prevents double-tap; GatheringScreen pager no longer fights swipes; both cooking slots visible on Home screen; EncounterCard warns when any alive member is unfed; dead DAO methods and code removed.
+**What's not wired yet:** Producer upgrade system (no XP from hive/coop/dairy until an upgrade flow is designed); Undermarch and Mithlost inspiration names (deferred — Wes will supply).
+**Next session:** Producer upgrade system, or feature work.
+**Open questions:** Ironroot substitute for the 4 Greycloaks recipes that use it (hearth_and_hops, rangers_fare, heartflame_broth, restorative_broth) — needed before ironroot can move to Thorin's Halls. HP/s display in UI shows baseBuffStrength/10f (0.5 for tier-1) instead of actual combat value (5.0) — pre-existing, not introduced this session.
 
 ---
 
@@ -1854,4 +1854,45 @@ Full audit pass working through all confirmed issues from the 28JUN2026 audit do
 **Coming up:**
 - Next session: Producer upgrade system, or test on device and next audit round
 - Near term: Ironroot region move (needs 4 Greycloaks recipe substitutions first); Undermarch/Mithlost inspiration names
+- Future ideas logged: None this session
+
+---
+
+## Session 50 — June 30, 2026
+**Code Review Bug Fixes — all 15 issues resolved**
+
+Post-Session-49 code review surfaced 9 correctness bugs and 6 cleanup issues. All were fixed across 6 tasks using subagent-driven development.
+
+**What was built:**
+- `data/db/dao/GrowingSlotDao.kt`: new `updatePlantedAt(id, ms)` query
+- `data/repository/GrowingRepository.kt`: `addToPendingResult` now atomic (cap check + write in one DB read, returns Boolean); both collect methods and `addToPendingResult` hardened with `runCatching` on JSON decode; new `updatePlantedAt` delegate
+- `worker/HiveWorker.kt`: `enqueue` → `enqueueUniqueWork(SLOT_ID, KEEP, ...)` prevents chain doubling; calls `updatePlantedAt` at cycle start so timers are accurate after collect; cap check delegated to repository
+- `worker/CoopWorker.kt`: same fixes as HiveWorker
+- `worker/DairyWorker.kt`: same fixes as HiveWorker
+- `ui/viewmodel/KitchenViewModel.kt`: `startCooking` wrapped in `Mutex.withLock` to prevent double-tap ingredient deduction; removed `session` backward-compat alias
+- `ui/screen/GatheringScreen.kt`: pager LaunchedEffects now guard with `if (currentPage != subTab)` before animating — matches KitchenScreen pattern
+- `data/db/dao/CookingSessionDao.kt`: removed three `WHERE id = 0` hardcoded methods (`observe`, `get`, `clear`)
+- `data/repository/SessionRepository.kt`: removed `observeCooking`, `startCooking`, `clearCooking`, `activeCooking` (no callers)
+- `ui/viewmodel/HomeViewModel.kt`: replaced single `cookingSession`/`cookingRecipeName` (slot-0 only) with `cookingSession0`, `cookingSession1`, `cookingRecipeName0`, `cookingRecipeName1`, `anyCookingActive`
+- `ui/screen/HomeScreen.kt`: shows both cooking slots; all five `cSession` references updated
+- `ui/viewmodel/BandViewModel.kt`: added `allAliveProvisioned: StateFlow<Boolean>` (true only when every alive member has food)
+- `ui/screen/MissionsScreen.kt`: `EncounterCard` now uses `allAliveProvisioned` instead of `anyFoodAssigned`
+- `ui/util/TimeFormat.kt`: new shared `formatMs(ms: Long): String` — extracted from 3 duplicate copies
+- `ui/screen/BandScreen.kt`: removed private `formatMs`, imports shared one
+- `ui/screen/KitchenScreen.kt`: removed private `formatMs`; deleted dead `CookingActiveCard` composable
+- `ui/viewmodel/GatheringViewModel.kt`: replaced `producerSlotIds` SLOT_ID set with `selfReschedulingTypes = setOf("hive", "coop", "dairy")` slot-type check
+- `test/.../GrowingRepositoryStockpileTest.kt`: two new tests for JSON hardening and cap logic
+
+**Decisions made:**
+- `addToPendingResult` returns `Boolean` (backward-compatible; default `maxQty = Int.MAX_VALUE`): simplifies workers and eliminates the cap TOCTOU in one move
+- Worker chain safety via `ExistingWorkPolicy.KEEP`: if two workers are somehow already running, the second enqueue is ignored
+- `collectAndClearPendingOnly` uses `runCatching { }.getOrNull() ?: emptyList()`: corrupt JSON returns empty harvest rather than crashing; worker slot stays intact for next cycle
+- HomeScreen NavCard shows slot-0 recipe name when both slots active (slot-0 preference): simple, correct, noted for future polish
+
+**Anything that diverged from design/design.md:**
+- None — all changes are bug fixes, not design decisions
+
+**Coming up:**
+- Next session: Producer upgrade system, or feature work
+- Near term: Ironroot region move; Undermarch/Mithlost inspiration names
 - Future ideas logged: None this session
