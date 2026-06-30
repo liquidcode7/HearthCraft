@@ -152,6 +152,7 @@ function parseArgs() {
     siphon:    num("--siphon",  0),      // siphon damage to party per tick (0 = disabled)
     siphonref: num("--siphonref", 0),    // siphon resolve refill to boss per tick (default = same as siphon)
     siphoniv:  num("--siphoniv",30),     // siphon interval in seconds
+    statbonus: num("--statbonus", 0),    // flat bonus added to all recipe stat outputs (simulates grade step)
     survival:  a.includes("--survival"),
     hunterMight: get("--hunter","agility") === "might",
     burstmul:  num("--burstmul", 1.0),
@@ -182,10 +183,16 @@ function runFight(cfg, verbose) {
   ORDER.forEach(k => {
     const tpl = tpls[k];
     const sb  = (cfg.memberStatBonuses && cfg.memberStatBonuses[k]) || {};
-    const baseMig = statAt(tpl,"mig",lvl) + (sb.mig||0);
-    const baseAgi = statAt(tpl,"agi",lvl) + (sb.agi||0);
-    const baseVit = statAt(tpl,"vit",lvl) + (sb.vit||0);
-    const baseWil = statAt(tpl,"wil",lvl) + (sb.wil||0);
+    // statbonus simulates grade step: adds cfg.statbonus to any stat that already has a bonus > 0
+    const gs = cfg.statbonus || 0;
+    const migBonus = (sb.mig||0) > 0 ? (sb.mig||0) + gs : (sb.mig||0);
+    const agiBonus = (sb.agi||0) > 0 ? (sb.agi||0) + gs : (sb.agi||0);
+    const vitBonus = (sb.vit||0) > 0 ? (sb.vit||0) + gs : (sb.vit||0);
+    const wilBonus = (sb.wil||0) > 0 ? (sb.wil||0) + gs : (sb.wil||0);
+    const baseMig = statAt(tpl,"mig",lvl) + migBonus;
+    const baseAgi = statAt(tpl,"agi",lvl) + agiBonus;
+    const baseVit = statAt(tpl,"vit",lvl) + vitBonus;
+    const baseWil = statAt(tpl,"wil",lvl) + wilBonus;
     const baseFat = statAt(tpl,"fat",lvl) + (sb.fat||0);
     const max = Math.round(30 + baseVit * 16);
     M[k] = {

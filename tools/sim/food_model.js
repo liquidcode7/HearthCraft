@@ -9,7 +9,9 @@ const FOOD_MODEL = (function () {
   // Mirrors Grade.kt ordinals. CRUDE is the zero-point baseline — no bonus, no penalty.
   // gradeStep values are TODO:TUNE placeholders matching QualityUtils.kt.
   const GRADE_NAMES  = ["Crude", "Common", "Fine", "Superb", "Pristine"];
-  const GRADE_STEPS  = [0, 0.5, 1.0, 1.75, 2.5];  // TODO:TUNE — additive stat bonus per grade
+  // Calibrated against Rhudaur Men (recLv6, T1 food, band level 6):
+  // Crude=0%win, Common=~20%, Fine=~40%, Superb=~70%, Pristine=~99%.
+  const GRADE_STEPS  = [0, 1.0, 2.0, 3.5, 5.5];  // additive stat bonus per grade
 
   // Apply grade bonus to an authored stat boost.
   // Only adds a step when the stat is a matching primary or secondary (base > 0).

@@ -27,15 +27,17 @@ private val GATHER_DISTRIBUTION: Array<IntArray> = arrayOf(
 
 /**
  * Grade-step additive bonus applied to a dish's/item's authored stat boost.
- * CRUDE = 0 (baseline, no bonus, no penalty). Values are FRACTIONS of a stat point.
- * TODO:TUNE — placeholder values; Wes/sim to calibrate against encounter curve.
+ * CRUDE = 0 (baseline, no bonus, no penalty).
+ * Calibrated against the Rhudaur Men (recLv6, T1 food, band level 6):
+ *   Crude ~0% win, Common ~20%, Fine ~40%, Superb ~70%, Pristine ~99%.
+ * Steps add to the recipe's authored boost on matching stats only.
  */
 private val GRADE_STEP = floatArrayOf(
-    0f,    // CRUDE   (ordinal 0)
-    0.5f,  // COMMON  (ordinal 1)
-    1.0f,  // FINE    (ordinal 2)
-    1.75f, // SUPERB  (ordinal 3)
-    2.5f,  // PRISTINE(ordinal 4)
+    0f,    // CRUDE   (ordinal 0) — baseline, no bonus
+    1.0f,  // COMMON  (ordinal 1) — ~20% win vs Rhudaur Men
+    2.0f,  // FINE    (ordinal 2) — ~40% win
+    3.5f,  // SUPERB  (ordinal 3) — ~70% win
+    5.5f,  // PRISTINE(ordinal 4) — ~99% win
 )
 
 /**
