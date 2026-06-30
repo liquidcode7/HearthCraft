@@ -200,7 +200,7 @@ private fun FoodRow(food: PreparedFoodDetail, isSelected: Boolean, onClick: () -
             Column(modifier = Modifier.weight(1f)) {
                 Text(food.name, style = MaterialTheme.typography.bodySmall)
                 Text(
-                    "${food.buffType} · %.1f HP/s".format(food.buffStrength / 10f),
+                    food.buffType,
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

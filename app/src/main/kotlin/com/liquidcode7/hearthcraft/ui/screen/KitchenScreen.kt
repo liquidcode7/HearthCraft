@@ -570,8 +570,6 @@ private fun RecipeDetailPanel(
     // Aggregate qty across all grade rows for each ingredient
     val qtyMap = inventoryItems.groupBy { it.ingredientId }
         .mapValues { (_, rows) -> rows.sumOf { it.quantity } }
-    val buffAtLevel = (recipe.baseBuffStrength + (cookingLevel - 1) * recipe.buffStrengthPerLevel).toInt()
-    val hps = buffAtLevel / 10f
 
     val statName: String? = when (recipe.primaryStat) {
         "mig" -> "Might"; "agi" -> "Agility"
@@ -580,7 +578,7 @@ private fun RecipeDetailPanel(
     }
     val effectLine = when {
         recipe.penalty && statName != null -> "$statName ${recipe.primaryBoost}"
-        recipe.primaryStat != null && statName != null -> "$statName +$buffAtLevel"
+        recipe.primaryStat != null && statName != null -> "$statName +${recipe.primaryBoost}"
         recipe.hazardEffect != null -> when (recipe.hazardEffect) {
             "warmth" -> "Warmth (cold resist)"
             "alert" -> "Alert (fatigue resist)"
@@ -604,11 +602,6 @@ private fun RecipeDetailPanel(
                 effectLine,
                 style = MaterialTheme.typography.labelMedium,
                 color = if (recipe.penalty) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
-            )
-            Text(
-                "%.1f HP/s in combat".format(hps),
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
             // Predicted grade row

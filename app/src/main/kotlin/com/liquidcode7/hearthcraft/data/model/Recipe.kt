@@ -42,10 +42,6 @@ data class Recipe(
     // flavorTag is the cooking method — used as a visual tag in the recipe book.
     val flavorTag: String get() = method
 
-    // Buff strength formula: tier * 5 base, +tier per cook level above 1.
-    val baseBuffStrength: Int get() = tier * 5
-    val buffStrengthPerLevel: Double get() = tier * 0.5
-
     // Cooking duration scales with tier. Tier 1 = 5 min; doubles roughly each tier up.
     val durationMs: Long get() = when (tier) {
         1 ->  5L * 60_000

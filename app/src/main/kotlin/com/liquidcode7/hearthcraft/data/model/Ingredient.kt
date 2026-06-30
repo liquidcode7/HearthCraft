@@ -19,5 +19,6 @@ data class Ingredient(
     val primaryStat: String? = null,
     val secondaryStat: String? = null,
     val hazardTendency: String? = null,
+    val cultivatable: Boolean = false,
     val notes: String = ""
 )

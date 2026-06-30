@@ -15,6 +15,7 @@ import com.liquidcode7.hearthcraft.data.db.dao.PlayerStateDao
 import com.liquidcode7.hearthcraft.data.db.dao.PreparedFoodDao
 import com.liquidcode7.hearthcraft.data.db.dao.SeedStockDao
 import com.liquidcode7.hearthcraft.data.db.MIGRATION_10_11
+import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext

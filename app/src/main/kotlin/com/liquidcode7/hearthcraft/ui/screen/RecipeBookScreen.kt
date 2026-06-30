@@ -69,17 +69,15 @@ fun RecipeBookScreen(
 
 @Composable
 private fun RecipeEntry(recipe: Recipe, cookingLevel: Int, kitchenViewModel: KitchenViewModel) {
-    val buffAtLevel = (recipe.baseBuffStrength + (cookingLevel - 1) * recipe.buffStrengthPerLevel).toInt()
-    val hps = buffAtLevel / 10f
     val statName: String? = when (recipe.primaryStat) {
         "mig" -> "Might"; "agi" -> "Agility"; "vit" -> "Vitality"; "wil" -> "Will"
         else  -> recipe.primaryStat
     }
     val effectLine = when {
         recipe.penalty && statName != null ->
-            "$statName ${recipe.primaryBoost} · %.1f HP/s".format(hps)
+            "$statName ${recipe.primaryBoost}"
         recipe.primaryStat != null && statName != null ->
-            "$statName +$buffAtLevel · %.1f HP/s".format(hps)
+            "$statName +${recipe.primaryBoost}"
         recipe.hazardEffect != null -> {
             val hazardLabel = when (recipe.hazardEffect) {
                 "warmth"   -> "Warmth (cold resist)"
@@ -89,9 +87,9 @@ private fun RecipeEntry(recipe: Recipe, cookingLevel: Int, kitchenViewModel: Kit
                 "radiance" -> "Radiance (shadow resist)"
                 else       -> recipe.hazardEffect ?: ""
             }
-            "$hazardLabel · %.1f HP/s".format(hps)
+            hazardLabel
         }
-        else -> "Sustaining · %.1f HP/s".format(hps)
+        else -> "Sustaining"
     }
 
     Card(modifier = Modifier.fillMaxWidth()) {
