@@ -1,6 +1,7 @@
 package com.liquidcode7.hearthcraft.data.quality
 
 import com.liquidcode7.hearthcraft.data.model.Recipe
+import kotlin.math.roundToInt
 
 object CookQuality {
 
@@ -24,28 +25,32 @@ object CookQuality {
     }
 
     // Hero-weighted average of ingredient grades, then clamped by cook ceiling.
-    // If heroIngredient is blank (unassigned recipe), all ingredients count equally.
+    // If heroIngredient is blank or not found in the recipe's ingredient list,
+    // all ingredients count equally (flat average).
+    // playerCookLevel is the player's current cooking skill — distinct from recipe.cookLevel
+    // (the recipe's minimum unlock level). Never pass recipe.cookLevel here.
     fun resolveDishGrade(
         recipe: Recipe,
         ingredientGrades: Map<String, Int>,
-        cookLevel: Int
+        playerCookLevel: Int
     ): Int {
         val heroId = recipe.heroIngredient
-        val weightedSum: Int
-        val divisor: Int
-        if (heroId.isBlank()) {
-            val grades = recipe.ingredients.map { ingredientGrades[it.id] ?: Grade.CRUDE }
-            weightedSum = grades.sum()
-            divisor = grades.size.coerceAtLeast(1)
+        val ingredientIds = recipe.ingredients.map { it.id }.toSet()
+        val useHero = heroId.isNotBlank() && heroId in ingredientIds
+        val (weightedSum, divisor) = if (!useHero) {
+            val sum = recipe.ingredients.sumOf { ingredientGrades[it.id] ?: Grade.CRUDE }
+            sum to recipe.ingredients.size.coerceAtLeast(1)
         } else {
             val heroGrade = ingredientGrades[heroId] ?: Grade.CRUDE
-            val supports = recipe.ingredients.filter { it.id != heroId }
-            weightedSum = heroGrade * 2 + supports.sumOf { ingredientGrades[it.id] ?: Grade.CRUDE }
-            divisor = 2 + supports.size
+            val supportSum = recipe.ingredients.sumOf {
+                if (it.id == heroId) 0 else ingredientGrades[it.id] ?: Grade.CRUDE
+            }
+            val supportCount = recipe.ingredients.count { it.id != heroId }
+            (heroGrade * 2 + supportSum) to (2 + supportCount)
         }
         val raw = (weightedSum.toDouble() / divisor)
-            .let { if (it - it.toInt() >= 0.5) it.toInt() + 1 else it.toInt() }
+            .roundToInt()
             .coerceIn(Grade.CRUDE, Grade.PRISTINE)
-        return minOf(raw, cookCeiling(cookLevel, recipe.cookLevel))
+        return minOf(raw, cookCeiling(playerCookLevel, recipe.cookLevel))
     }
 }

@@ -102,7 +102,7 @@ class QualityTest {
     @Test fun `all Crude inputs resolve to Crude dish`() {
         val r = recipe("herb", "root", "honey")
         val grades = mapOf("herb" to Grade.CRUDE, "root" to Grade.CRUDE, "honey" to Grade.CRUDE)
-        val dish = CookQuality.resolveDishGrade(r, grades, cookLevel = 50)
+        val dish = CookQuality.resolveDishGrade(r, grades, playerCookLevel = 50)
         assertEquals(Grade.CRUDE, dish)
     }
 
@@ -110,7 +110,7 @@ class QualityTest {
         // hero=Pristine(4)*2 + Common(1) + Common(1) = 10; divisor=4; raw=2.5→3=Fine
         val r = recipe("hero", "support1", "support2")
         val grades = mapOf("hero" to Grade.PRISTINE, "support1" to Grade.COMMON, "support2" to Grade.COMMON)
-        val raw = CookQuality.resolveDishGrade(r, grades, cookLevel = 50)
+        val raw = CookQuality.resolveDishGrade(r, grades, playerCookLevel = 50)
         assertTrue("expected Fine or Superb, got ${Grade.name(raw)}", raw in Grade.FINE..Grade.SUPERB)
     }
 
@@ -119,7 +119,7 @@ class QualityTest {
         val grades = mapOf("hero" to Grade.PRISTINE)
         // At unlock level, ceiling is low — dish should be clamped
         val ceiling = CookQuality.cookCeiling(cookLevel = 1, unlockLevel = 1)
-        val dish = CookQuality.resolveDishGrade(r, grades, cookLevel = 1)
+        val dish = CookQuality.resolveDishGrade(r, grades, playerCookLevel = 1)
         assertEquals(ceiling, dish)
     }
 
@@ -127,7 +127,20 @@ class QualityTest {
         val r = recipe("only_ing")
         val grades = mapOf("only_ing" to Grade.FINE)
         // heroGrade*2 + 0 supports / 2 = Fine; ceiling at high cook level should allow it
-        val dish = CookQuality.resolveDishGrade(r, grades, cookLevel = 50)
+        val dish = CookQuality.resolveDishGrade(r, grades, playerCookLevel = 50)
         assertEquals(Grade.FINE, dish)
+    }
+
+    @Test fun `heroIngredient absent from ingredient list falls back to flat average`() {
+        // heroIngredient typo: "truffle" is not in the ingredient list [flour, salt]
+        val r = Recipe(
+            id = "test_recipe", name = "Test",
+            heroIngredient = "truffle",
+            ingredients = listOf(RecipeIngredient("flour", 1), RecipeIngredient("salt", 1))
+        )
+        val grades = mapOf("flour" to Grade.FINE, "salt" to Grade.CRUDE)
+        // flat average: (Fine(2) + Crude(0)) / 2 = 1.0 = Common
+        val dish = CookQuality.resolveDishGrade(r, grades, playerCookLevel = 50)
+        assertEquals(Grade.COMMON, dish)
     }
 }

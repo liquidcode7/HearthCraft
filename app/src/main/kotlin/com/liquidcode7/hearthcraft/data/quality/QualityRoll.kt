@@ -12,6 +12,10 @@ object QualityRoll {
 
     // TODO(tuning): Aid uplift shift is a PLACEHOLDER.
     // This flat +20 applied to Common..Pristine is a stub. Real value from sim.
+    // TUNING HAZARD: AID_SHIFT is applied per-element with coerceAtMost(100).
+    // If AID_SHIFT rises to ~90, Common and Fine both hit the 100 cap and become
+    // equally probable — collapsing the intended gradient. Use a proportional
+    // shift or apply the cap to the total, not individual weights.
     private const val AID_SHIFT = 20
 
     fun roll(gatheringLevel: Int, aidActive: Boolean, rng: Random = Random): Int {
@@ -26,6 +30,6 @@ object QualityRoll {
             pick -= w[i]
             if (pick < 0) return i
         }
-        return Grade.CRUDE
+        error("QualityRoll: weights must be positive and sum > 0")
     }
 }

@@ -549,8 +549,14 @@ tracked in `future/wishlist.md`.
   Full 8-member rosters are in `design/characters.md`.
 - *Three starting bands?* — The Mithlost (elves/forest), The Undermarch
   (dwarves/mountain), The Greycloaks (wardens/borderlands).
-- *Ingredient quality tiers?* — No. Complexity lives in the cook's skill and
-  decisions, not raw materials. Never add quality tiers.
+- *Ingredient quality tiers?* — **Reversed (Session 51).** A five-grade
+  Crude → Common → Fine → Superb → Pristine axis is now a core pillar.
+  Grade is rolled at gather time by `QualityRoll`, carried through `HarvestItem`,
+  and resolved into a dish grade by `CookQuality.resolveDishGrade` — a
+  hero-weighted average clamped by the cook's skill ceiling. Cook skill still
+  governs access and the quality ceiling; raw materials are an *input to* the
+  cook's outcome, not a substitute for skill. Full mechanics in
+  `docs/superpowers/plans/2026-06-29-ingredient-quality-system.md`.
 - *Craft branches (Waybread Fortifier, Miruvor Distiller, Athelas Apothecary)?*
   — Removed from the active design. May return as specialization
   trees at max level (wishlist). GW2 seven-tier linear progression replaces them.
