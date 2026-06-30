@@ -7,64 +7,75 @@
 
 ## Cooking / Quality
 
-- **Dynamic crafting** — goal locked ("more interesting than dump-and-wait — a
-  decision with real depth"); framing locked (front-loaded, idle-safe, a matching
-  problem between cook levers and combat demands). Menu on the table:
-  method-as-trade-off, optional/substitute ingredient slots, hero emphasis,
-  grimoire techniques. NO lever chosen. For now cooking stays
-  pick-ingredients-follow-grimoire-and-wait. Revisit AFTER ingredient quality
-  ships, so depth is designed on something real.
+- **Tuning tables** — gather distribution per level, gathering-aid uplift magnitude,
+  cook-ceiling function, gradeStep magnitudes (s1..s4) for food/draughts/poultices.
+  All currently placeholder in `QualityUtils.kt` and `food_model.js`, marked
+  `TODO:TUNE`. Wes + sim to calibrate against encounter curve.
 
-- **Process-as-quality-upgrade** — initial quality build has Process *preserve*
-  grade (gather is sole source). A later-game mechanic may let Process *lift*
-  grade. Reintroduces a ceiling-clamp problem (grade climbing at both gather and
-  process). Phase-2 deferred per `ingredient_quality_spec.md`.
+- **Gathering-aid acquisition** — the aid data shape and consumption hook are wired;
+  the aid's recipe/acquisition source is not designed. Feeds into the discovery session.
 
-- **Qty-weighting at cook** — currently each recipe ingredient is one "voice"
-  (hero=2, supports=1) regardless of quantity. Revisit only if a design reason
-  appears.
+- **Dynamic crafting** — goal locked ("more interesting than dump-and-wait");
+  framing locked (front-loaded, idle-safe, matching problem). NO lever chosen yet.
+  Revisit AFTER ingredient quality ships and is tuned on real data.
+
+- **Process-as-quality-upgrade** — Process currently preserves grade. A later-game
+  mechanic may let Process *lift* grade. Reintroduces ceiling-clamp problem. Deferred.
+
+- **Qty-weighting at cook** — each ingredient is one voice (hero=2, supports=1)
+  regardless of quantity. Revisit only if a design reason appears.
 
 ---
 
 ## Discovery / Grimoires / Bosses
 
-- **Lone-Lands poison decision** — is spider poison a NEW hazard (Venom +
-  Antivenom counter — gives region bosses a genuine capability-unlock to drop,
-  makes the Lone-Lands "the venom country", costs a new hazard + draught category
-  + recipes + sim wiring) OR a disease/Hale reskin (cheap, no new mechanics, but
-  Hale already exists so the region boss must drop something else)? Gates BOTH the
-  Rhudaur men's grimoire contents AND the Mithlost spider miniboss's answer.
+- **Expedition mechanic** — minibosses are currently on the encounter list as
+  optional fights. A future "expedition" system (time-gated, discoverable,
+  lore/exposition delivery) would make them feel earned rather than listed.
+  Parked until grimoire system is built; expeditions would tie naturally into
+  lore delivery for grimoires too.
 
 - **Starter-region boss grimoire contents** — what the Rhudaur Men / Drakeling /
-  Huorn each drop. Pending each band's SECOND region design (a region boss drops
-  the *next* region's toolkit, so we need to know the next region).
+  Huorn each drop. Pending each band's SECOND region design. The boss drops the
+  *next* region's toolkit; contents can't be pinned without knowing the next region.
+
+- **Basic vs grimoire recipe split** — data pass needed: which recipes are
+  level-gated (auto-unlock at cookLevel) vs grimoire-gated (need a book)?
+  Default: T1 food + entry draughts = level-gated; T2+ = grimoire-gated.
+  Ambiguous cases need Wes review before grimoire code spec is written.
 
 - **Return-vault creatures for Undermarch + Mithlost** — Greycloaks has the
-  Barrow-wight. Each starter region should get one return vault (structural
-  mirror). Creatures TBD.
+  Barrow-wight. Each starter region gets one return vault (structural mirror).
+  Candidates: dwarves — deep-dark Ered Luin hall-guardian behind Shadow or Heat/forge;
+  elves — drowned-west / old-forest thing behind Shadow or Cold. TBD.
 
 - **Barrow-wight final reward** — the planted/forgotten grimoire's actual contents
-  (rare apex recipe / Barrow-blade-flavored thing). Pin when the late-game economy
-  is clearer.
+  (rare apex recipe / Barrow-blade-flavored thing). Pin when late-game economy is clearer.
 
-- **Drakeling fire** — flat Heat hazard (buildable today) vs escalating ramp
-  (build-after-engine).
+- **Miniboss tricks for Dourhand and Large Spider** — currently both are endurance
+  grind. Need distinct tricks. Dourhand: already armored (high physMit) so the
+  puzzle is sustain + potency — works as a race variant. Large Spider: needs its
+  own gimmick distinct from Wolf-Master (spike) and Dourhand. Candidates: fragility
+  trap (web-slows targeting the fragile member), or a poison-flavored endurance
+  that is mechanically just disease/Hale. TBD next design session.
 
 ---
 
 ## Combat Engine Dependencies (blocking some bosses)
 
 The current encounter model runs flat single-stage stats with monotonically
-decreasing resolve. These bosses are design-ready but NOT buildable until the V2
-engine gains the noted behavior:
+decreasing resolve. These bosses are in `encounters.json` but their full tricks
+are NOT active until the V2 engine gains the noted behavior:
 
 - **Self-heal race** (Rhudaur Men) — needs enemy resolve to RISE (self-heal).
+  Currently runs as a high-resolve wall fight.
 - **Escalator** (Huorn) — needs time-varying stage pressure (drain/spike ramps).
+  Currently runs as a high-drain endurance fight.
 - **Two-front / numeric potency** — needs draught potency as a NUMBER, not the
   current string flag.
 
 Bosses using only {hazard exam, race, fragility/spike, endurance grind} are
-buildable on today's engine.
+buildable on today's engine. Drakeling (flat Heat race) is fully functional now.
 
 ---
 

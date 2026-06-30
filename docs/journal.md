@@ -7,11 +7,11 @@
 
 ## Current Status — June 30, 2026
 
-**Phase:** Code review bug fixes — all 15 confirmed/plausible issues from the post-Session-49 review resolved.
-**What's working:** Producer workers self-schedule correctly (enqueueUniqueWork, no chain doubling); producer timers count down accurately after collect; JSON decode crashes hardened; startCooking Mutex prevents double-tap; GatheringScreen pager no longer fights swipes; both cooking slots visible on Home screen; EncounterCard warns when any alive member is unfed; dead DAO methods and code removed.
-**What's not wired yet:** Producer upgrade system (no XP from hive/coop/dairy until an upgrade flow is designed); Undermarch and Mithlost inspiration names (deferred — Wes will supply).
-**Next session:** Producer upgrade system, or feature work.
-**Open questions:** Ironroot substitute for the 4 Greycloaks recipes that use it (hearth_and_hops, rangers_fare, heartflame_broth, restorative_broth) — needed before ironroot can move to Thorin's Halls. HP/s display in UI shows baseBuffStrength/10f (0.5 for tier-1) instead of actual combat value (5.0) — pre-existing, not introduced this session.
+**Phase:** Quality system Phases 1–6 complete; starter region encounter data added.
+**What's working:** Full ingredient quality pipeline — grade rolls at gather, preserves through process, resolves at cook (hero-weighted avg + cook ceiling), scales stat boosts at provisioning. Grade badges in Pantry, Kitchen, Missions, Band screens. 9 new encounters added (miniboss + region boss + return vault per band, minus 2 parked return vaults).
+**What's not wired yet:** Quality tuning tables (all placeholder — TODO:TUNE); grimoire system (design-complete, code deferred until grimoire contents pinned); miniboss tricks for Dourhand and Large Spider (parked); Undermarch/Mithlost return vault creatures (parked); expedition mechanic (parked).
+**Next session:** Grimoire system implementation — requires basic-vs-grimoire recipe data pass first. Or: quality tuning with the sim.
+**Open questions:** Miniboss tricks for Dourhand dwarves and Large Spider need distinct gimmicks (currently both endurance grind — noted as parked). HP/s display in UI shows baseBuffStrength/10f (0.5 for tier-1) instead of actual combat value (5.0) — pre-existing bug, easy fix. Ironroot substitute for 4 Greycloaks recipes still open.
 
 ---
 
@@ -1896,3 +1896,52 @@ Post-Session-49 code review surfaced 9 correctness bugs and 6 cleanup issues. Al
 - Next session: Producer upgrade system, or feature work
 - Near term: Ironroot region move; Undermarch/Mithlost inspiration names
 - Future ideas logged: None this session
+
+---
+
+## Session 51 — June 30, 2026
+**Quality system Phases 1–6 complete; starter region encounters added; design decisions locked**
+
+**What was built:**
+- `Grade.kt`: five-tier ordinal enum (Crude=0…Pristine=4)
+- `QualityUtils.kt`: rollGrade, gradeStep, cookCeiling, resolveDishGrade — placeholder tuning tables marked TODO:TUNE
+- `QualityUtilsTest.kt`: 15 unit tests
+- DB migration 10→11: composite PKs on inventory_items and prepared_food; existing stock defaults to Crude
+- InventoryDao/PreparedFoodDao: grade-aware queries, totalQuantity, deleteIfEmpty
+- InventoryRepository: grade-explicit and grade-agnostic overloads; lowest-grade-first consumption
+- HarvestItem: grade field (serializable)
+- All gather workers (Gathering/Farm/Garden/Hive/Coop/Dairy): roll grade per session via rollGrade(level)
+- ProcessWorker: receives and preserves input grade; carries lowest consumed grade to output
+- Recipe.kt: heroIngredient field; recipes.json data pass — every recipe assigned a hero
+- KitchenViewModel.startCooking: resolves dish grade (hero-weighted avg + cook ceiling) before consuming
+- CookingWorker: stores graded PreparedFood
+- BandRepository.memberInputsForBand: applies gradeStep to stat boosts at provisioning; HP/s untouched
+- PreparedFoodDetail: grade field; InventoryViewModel passes pf.grade through
+- food_model.js: mirrored GRADE_NAMES, GRADE_STEPS, effectiveStatBoost
+- GradeBadge.kt: shared color-coded composable
+- PantryScreen: grade badge on ingredients and prepared food
+- KitchenScreen.RecipeDetailPanel: hero marker (★), predicted dish grade + ceiling hint; qty aggregation fixed
+- MissionsScreen.FoodRow, BandScreen.FoodPickerDialog: grade badges
+- design/ingredient_quality_spec.md, design/starter_region_bosses_spec.md, design/discovery_grimoire_spec.md: filed into repo
+- encounters.json: 7 new encounters — Wolf-Master, Rhudaur Men, Barrow-wight (Greycloaks); Dourhand, Drakeling (Undermarch); Large Spider, Huorn (Mithlost)
+- starter_region_bosses_spec.md: updated to reflect locked decisions
+- parked_topics.md: updated with all new parks and resolutions
+
+**Decisions made:**
+- Poison = disease/Hale reskin. No new Venom hazard. Lone-Lands poison question resolved.
+- Five-slot encounter structure (two ladders → miniboss → malady fight → region boss + return vault)
+- All three bands: first malady = armor (recLv5 goblins). Uniform, simple.
+- Miniboss drops XP reward for now. Potency draught stays level-gated (cookLevel 5).
+- Expedition mechanic parked — minibosses on encounter list as optional fights for now.
+- Drakeling: flat Heat hazard (buildable today), not escalating ramp.
+- Rhudaur Men and Huorn: in encounters.json as wall fights; full tricks need V2 engine.
+
+**Anything that diverged from design:**
+- Boss spec revised: six slots → five slots; miniboss slot moves to recLv4 (before malady); malady unified to armor for all bands.
+- Miniboss tricks for Dourhand and Large Spider left as TBD (endurance placeholder in JSON) — parked.
+
+**Coming up:**
+- Next session: Grimoire system implementation (requires basic-vs-grimoire recipe data pass first), or quality tuning with the sim
+- Near term: Miniboss tricks for Dourhand + Large Spider; Undermarch/Mithlost return vault creatures
+- Future ideas logged: Expedition mechanic (parked in parked_topics.md)
+

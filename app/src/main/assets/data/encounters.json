@@ -286,5 +286,243 @@
         "cold": 0, "heat": 0, "wakefulness": 0
       }
     ]
+  },
+
+  {
+    "id": "greycloaks_wolf_master",
+    "bandId": "greycloaks",
+    "name": "The Wolf-Master of the Chetwood",
+    "region": "Chetwood, east of Bree",
+    "difficulty": "hard",
+    "recLevel": 4,
+    "requiredCookingLevel": 5,
+    "flavorIntro": "The pack is too organized. Someone is running them. A figure at the treeline, and the wolves answer. The Master himself is not large — but the pack does not break until he does.",
+    "flavorLine": "He runs them like a war-band. Every member needs to be able to take a hit.",
+    "rewardMoneyMin": 80,
+    "rewardMoneyMax": 120,
+    "rewardMultiplier": 5,
+    "durationMs": 1500000,
+    "rewardTable": ["ironbark_resin", "cave_truffle", "duskberry", "wolf_moss"],
+    "stages": [
+      {
+        "stageId": "main",
+        "label": "Wolf-Master",
+        "type": "attrition",
+        "objective": "kill",
+        "durationSec": 1500,
+        "resolve": 55000,
+        "drain": 14,
+        "spike": 130,
+        "spikeIntervalSec": 7,
+        "physMitPct": 0,
+        "dread": 0, "shadow": 0, "disease": 0,
+        "cold": 0, "heat": 0, "wakefulness": 0,
+        "stageFlavor": "The pack lands on whoever is most exposed. No one is safe."
+      }
+    ]
+  },
+
+  {
+    "id": "greycloaks_rhudaur_men",
+    "bandId": "greycloaks",
+    "name": "Rhudaur Men of the East Road",
+    "region": "The Lone-lands, east of Weathertop",
+    "difficulty": "hard",
+    "recLevel": 6,
+    "requiredCookingLevel": 8,
+    "flavorIntro": "Hillmen from the east, blood-marked and organized. They have been ranging west along the Road for weeks. Someone is paying them. At their head, a blood-speaker who feeds on the fight itself — his wounds close as yours open.",
+    "flavorLine": "They do not stop. You have to out-damage whatever is keeping their leader standing.",
+    "rewardMoneyMin": 200,
+    "rewardMoneyMax": 280,
+    "rewardMultiplier": 6,
+    "durationMs": 1800000,
+    "rewardTable": ["wolf_moss", "ironbark_resin", "athelas", "cave_truffle"],
+    "stages": [
+      {
+        "stageId": "main",
+        "label": "Rhudaur War-band",
+        "type": "attrition",
+        "objective": "kill",
+        "durationSec": 1800,
+        "resolve": 120000,
+        "drain": 22,
+        "spike": 90,
+        "spikeIntervalSec": 11,
+        "physMitPct": 20,
+        "dread": 0, "shadow": 0, "disease": 0,
+        "cold": 0, "heat": 0, "wakefulness": 0,
+        "stageFlavor": "The blood-speaker drains your band to refill his own resolve. Out-damage the heal."
+      }
+    ]
+  },
+
+  {
+    "id": "greycloaks_barrow_wight",
+    "bandId": "greycloaks",
+    "name": "The Wight of the Barrow-downs",
+    "region": "Barrow-downs, south of the Great East Road",
+    "difficulty": "hard",
+    "recLevel": 8,
+    "requiredCookingLevel": 10,
+    "flavorIntro": "The barrow stands alone on the hill. The band has seen it before and turned back — the cold that comes off it is not natural, and the dread that follows is not fear. Come back when you know what you carry into the dark.",
+    "flavorLine": "Cold and dread. Come back when you are ready for both.",
+    "rewardMoneyMin": 300,
+    "rewardMoneyMax": 400,
+    "rewardMultiplier": 8,
+    "durationMs": 1800000,
+    "rewardTable": ["athelas", "wolf_moss", "meadowsweet", "ironbark_resin"],
+    "stages": [
+      {
+        "stageId": "main",
+        "label": "Barrow-wight",
+        "type": "attrition",
+        "objective": "kill",
+        "durationSec": 1800,
+        "resolve": 95000,
+        "drain": 20,
+        "spike": 110,
+        "spikeIntervalSec": 10,
+        "physMitPct": 15,
+        "dread": 40, "shadow": 0, "disease": 0,
+        "cold": 35, "heat": 0, "wakefulness": 0,
+        "stageFlavor": "Cold seeps through armour. The dread that follows is not fear — it is something older."
+      }
+    ]
+  },
+
+  {
+    "id": "undermarch_dourhand",
+    "bandId": "undermarch",
+    "name": "Dourhand War-band at the Deep Gate",
+    "region": "Blue Mountains, lower halls of Ered Luin",
+    "difficulty": "hard",
+    "recLevel": 4,
+    "requiredCookingLevel": 5,
+    "flavorIntro": "Dourhand dwarves, mail-clad and holding the deep gate. They will not yield. They have been here a long time and they know the ground. The fight will be long — your band needs to outlast them.",
+    "flavorLine": "They will not break. Sustain your band and grind them down.",
+    "rewardMoneyMin": 80,
+    "rewardMoneyMax": 120,
+    "rewardMultiplier": 5,
+    "durationMs": 1500000,
+    "rewardTable": ["cave_truffle", "ironfoot_shroom", "deep_sage", "stone_root"],
+    "stages": [
+      {
+        "stageId": "main",
+        "label": "Dourhand War-band",
+        "type": "attrition",
+        "objective": "kill",
+        "durationSec": 1500,
+        "resolve": 90000,
+        "drain": 22,
+        "spike": 55,
+        "spikeIntervalSec": 18,
+        "physMitPct": 30,
+        "dread": 0, "shadow": 0, "disease": 0,
+        "cold": 0, "heat": 0, "wakefulness": 0,
+        "stageFlavor": "They are armored and they are patient. You need to be more patient."
+      }
+    ]
+  },
+
+  {
+    "id": "undermarch_drakeling",
+    "bandId": "undermarch",
+    "name": "The Drakeling of Ered Luin",
+    "region": "Blue Mountains, deep gold-vein halls",
+    "difficulty": "hard",
+    "recLevel": 6,
+    "requiredCookingLevel": 8,
+    "flavorIntro": "Young, as dragons go — but there is no such thing as a safe dragon. It came for the gold and it found it. The halls it now occupies are impassable. It can be killed, but the fire it breathes does not cool quickly and the scales turn most blades.",
+    "flavorLine": "Burn it down before the fire burns your band. Potency cuts the scales.",
+    "rewardMoneyMin": 200,
+    "rewardMoneyMax": 280,
+    "rewardMultiplier": 6,
+    "durationMs": 1800000,
+    "rewardTable": ["stone_honey", "cave_truffle", "deep_sage", "ironfoot_shroom"],
+    "stages": [
+      {
+        "stageId": "main",
+        "label": "Drakeling",
+        "type": "attrition",
+        "objective": "kill",
+        "durationSec": 1800,
+        "resolve": 130000,
+        "drain": 18,
+        "spike": 85,
+        "spikeIntervalSec": 12,
+        "physMitPct": 45,
+        "dread": 0, "shadow": 0, "disease": 0,
+        "cold": 0, "heat": 50, "wakefulness": 0,
+        "stageFlavor": "The scales are thick. Without potency, you are chipping stone."
+      }
+    ]
+  },
+
+  {
+    "id": "mithlost_large_spider",
+    "bandId": "mithlost",
+    "name": "The Spider of the Forest Margin",
+    "region": "Ered Luin, old-growth forest edge above Celondim",
+    "difficulty": "hard",
+    "recLevel": 4,
+    "requiredCookingLevel": 5,
+    "flavorIntro": "Something large has been taking animals from the forest margin for weeks. Not a wolf. The web-signs are unmistakable to elvish eyes — a spider, old and very large, nested in the deadfall above the tree-line. It will not leave on its own.",
+    "flavorLine": "Ancient and patient. It will outlast a band that is not fed.",
+    "rewardMoneyMin": 80,
+    "rewardMoneyMax": 120,
+    "rewardMultiplier": 5,
+    "durationMs": 1500000,
+    "rewardTable": ["ironbark_resin", "moonpetal", "cave_truffle", "tidal_kelp"],
+    "stages": [
+      {
+        "stageId": "main",
+        "label": "Ancient Spider",
+        "type": "attrition",
+        "objective": "kill",
+        "durationSec": 1500,
+        "resolve": 85000,
+        "drain": 20,
+        "spike": 50,
+        "spikeIntervalSec": 16,
+        "physMitPct": 10,
+        "dread": 0, "shadow": 0, "disease": 0,
+        "cold": 0, "heat": 0, "wakefulness": 0,
+        "stageFlavor": "It does not hurry. Feed your band well and outlast it."
+      }
+    ]
+  },
+
+  {
+    "id": "mithlost_huorn",
+    "bandId": "mithlost",
+    "name": "The Huorn of the Old Wood",
+    "region": "Ered Luin, ancient forest above Celondim",
+    "difficulty": "hard",
+    "recLevel": 6,
+    "requiredCookingLevel": 8,
+    "flavorIntro": "The oldest tree on the ridge has been moving. Not visibly — but the paths shift around it, and the elvish wardens have stopped going near it at dusk. It is not awake, exactly. But it is waking. Kill it before it fully rises.",
+    "flavorLine": "It starts slow. The longer you take, the worse it becomes.",
+    "rewardMoneyMin": 200,
+    "rewardMoneyMax": 280,
+    "rewardMultiplier": 6,
+    "durationMs": 1800000,
+    "rewardTable": ["ironbark_resin", "moonpetal", "sunpetal_herb", "cave_truffle"],
+    "stages": [
+      {
+        "stageId": "main",
+        "label": "The Huorn",
+        "type": "attrition",
+        "objective": "kill",
+        "durationSec": 1800,
+        "resolve": 140000,
+        "drain": 25,
+        "spike": 70,
+        "spikeIntervalSec": 13,
+        "physMitPct": 25,
+        "dread": 0, "shadow": 0, "disease": 0,
+        "cold": 0, "heat": 0, "wakefulness": 0,
+        "stageFlavor": "The roots move. The drain does not stop climbing."
+      }
+    ]
   }
 ]

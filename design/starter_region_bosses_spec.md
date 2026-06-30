@@ -1,37 +1,36 @@
 # Starter Region Bosses — Design Spec
 
-**Date:** 2026-06-29
-**Status:** Approved structure; boss contents partly parked (see §Parked).
-**Companion:** `discovery_grimoire_spec.md` (gate-types, grimoire economy,
-trickie vocabulary), `ingredient_quality_spec.md` (quality axis).
+**Date:** 2026-06-29 (updated 2026-06-30)
+**Status:** Structure locked; miniboss tricks for Dourhand/Spider parked; grimoire contents parked.
+**Companion:** `discovery_grimoire_spec.md`, `ingredient_quality_spec.md`.
 
 ---
 
-## 1. The Mirror Principle
+## 1. The Five-Slot Structure (revised)
 
-All three starter regions share an **identical six-slot structure** in the same
-order. The **structure is mirrored; the flavor and tricks are band-distinct.**
-"Mirror all mechanics" means mirror the *slots*, not the *gimmicks* — identical
-tricks would flatten the three bands into reskins. Each band's miniboss and region
-boss has its own trick true to its identity.
+All three starter regions share an **identical five-slot structure** on the
+critical path. The **structure is mirrored; the flavor and tricks are band-distinct.**
 
-### The six slots (every starter region)
+### The five slots (every starter region)
 
-1. **Ladder fight 1** (recLv1) — intro, no malady.
-2. **Ladder fight 2** (recLv3) — punishing, no malady.
-3. **Miniboss** (mid-region) — tricky-tricky, less power than a region boss,
-   **varied reward** (XP dump for starter regions — no grimoire, since starter
-   regions are "just T1 food" and no new capability is due).
-4. **Malady fight** (recLv5) — first malady = **armor**, answered by the
-   cook-level-5 potency draught (no book).
-5. **Region boss** (region exit) — self-contained trick; drops the **next
-   region's** toolkit grimoire (contents parked).
-6. **Return vault** — early-visible, late-beatable, planted reward (Greycloaks
-   defined; dwarves/elves parked).
+1. **Ladder fight 1** (recLv1) — intro, no malady, no gimmick.
+2. **Ladder fight 2** (recLv3) — harder, no malady, no gimmick.
+3. **Miniboss** (recLv4) — tricky fight, less raw power than a region boss.
+   Drops **XP reward** for now. Potency draught recipe is **level-gated**
+   (auto-unlocks at cookLevel 5) — no grimoire needed. The miniboss is a
+   discoverable encounter; a future **expedition mechanic** will make it feel
+   earned rather than listed. Parked — see `docs/parked_topics.md`.
+4. **Malady fight** (recLv5) — first malady ever = **armor** (all three bands),
+   answered by the band's potency draught (level-gated, should be available by now).
+5. **Region boss** (recLv6) — self-contained trick; drops the **next region's**
+   toolkit grimoire (contents parked — needs second-region design).
+6. **Return vault** — early-visible, late-beatable, planted reward.
+   Greycloaks: Barrow-wight (Cold+Dread). Undermarch/Mithlost: TBD.
 
-The recLv1 / recLv3 / recLv5 ladder fights **already exist** in `encounters.json`
-for all three bands (`*_midges/bats/neekerbreekers`, `*_wargs/wolves`,
-`*_goblins`). The miniboss, region boss, and return vault are **new encounters**.
+> Note: the original spec had six slots with the miniboss before the malady fight
+> and a separate malady slot. This is now collapsed: miniboss (slot 3) → malady
+> fight (slot 4) → region boss (slot 5). The malady fight is the recLv5 goblin
+> encounter that already exists in `encounters.json`.
 
 ---
 
@@ -41,12 +40,21 @@ for all three bands (`*_midges/bats/neekerbreekers`, `*_wargs/wolves`,
 |---|---|---|---|
 | Ladder 1 (recLv1) | Neekerbreekers | Cave Bats | Midges |
 | Ladder 2 (recLv3) | Wolves of the Chetwood | Mountain Wolves | Wargs |
-| **Miniboss** | **Wolf-Master** — spike trap | **Dourhand dwarves** — armor | **Large Spider** — poison |
+| **Miniboss** (recLv4) | **Wolf-Master** — spike trap | **Dourhand dwarves** — TBD trick | **Large Spider** — TBD trick |
 | Malady (recLv5) | Armored Goblin Raiders — armor | Goblin Assault — armor | Goblin Scouts — armor |
-| **Region boss** | **Rhudaur Men** — self-heal race | **Drakeling** — dragon-fire race | **Huorn** — escalator |
+| **Region boss** (recLv6) | **Rhudaur Men** — self-heal race* | **Drakeling** — dragon-fire race | **Huorn** — escalator* |
 | **Return vault** | **Barrow-wight** — Cold+Dread | *TBD* | *TBD* |
 
----
+*engine-blocked — runs as a high-resolve/high-drain wall fight until V2 engine.
+
+### Malady unification decision (2026-06-30)
+All three bands face **armor** as their first malady (recLv5 goblins). Simple,
+consistent, and avoids the complexity of band-specific hazard counters at the
+starter level. Poison for the Mithlost spider was considered; decided it is
+just a flavor of disease (Hale reskin) and the spider miniboss has no malady
+at all (it is pre-encounter-4). The Lone-Lands poison question is likewise
+resolved: poison = disease/Hale, no new Venom hazard.
+
 
 ## 3. Miniboss Detail
 
