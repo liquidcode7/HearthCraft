@@ -83,9 +83,9 @@ function parseArgs() {
 
   const anyRecipe = Object.values(memberRecipes).find(r => r !== null);
   if (anyRecipe && flArg !== null) {
-    // FL given explicitly: derive cooking level from the first found recipe + fl
+    // FL given explicitly — legacy path, still supported
     const r = FM.RECIPES.find(r => r.id === anyRecipe);
-    effectiveRL = r ? r.levelRequired + flArg - 1 : (rLevel || 1);
+    effectiveRL = r ? r.cookLevel + flArg - 1 : (rLevel || 1);
     derivedHps  = FM.recipeLevelToHps(effectiveRL);
     ["warden","hunter","keeper","captain"].forEach(k => {
       if (memberRecipes[k]) memberStatBonuses[k] = FM.statBonusesAt(memberRecipes[k], flArg);
@@ -94,7 +94,14 @@ function parseArgs() {
     effectiveRL = rLevel;
     derivedHps  = FM.recipeLevelToHps(rLevel);
     ["warden","hunter","keeper","captain"].forEach(k => {
-      if (memberRecipes[k]) memberStatBonuses[k] = FM.statBonusesForCookLevel(memberRecipes[k], rLevel);
+      if (memberRecipes[k]) memberStatBonuses[k] = FM.statBonusesFor(memberRecipes[k]);
+    });
+  } else if (anyRecipe) {
+    // Recipe with no level specified — use authored stat bonuses, no HP/s override
+    effectiveRL = rLevel;
+    derivedHps  = rLevel ? FM.recipeLevelToHps(rLevel) : null;
+    ["warden","hunter","keeper","captain"].forEach(k => {
+      if (memberRecipes[k]) memberStatBonuses[k] = FM.statBonusesFor(memberRecipes[k]);
     });
   } else if (rLevel !== null) {
     effectiveRL = rLevel;
