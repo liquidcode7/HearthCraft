@@ -46,6 +46,14 @@ const BREAK_CHECK_INTERVAL = 30;
 const CAPTAIN_STUN_WEIGHT  = 0.3;
 const CAPTAIN_BREAK_WEIGHT = 0.15;
 
+const HOT_DURATION    = 8;    // ticks per HoT application — must match EncounterEngine.kt
+const HOT_HEAL_MUL    = 0.15; // healPerTick = keeper.wil * HOT_HEAL_MUL
+const TRIAGE_HP       = 0.25; // triage fires when target hp < max * TRIAGE_HP
+const TRIAGE_MUL      = 2.0;  // triageHeal = keeper.wil * TRIAGE_MUL
+const TRIAGE_COOLDOWN = 2;    // ticks between triage uses
+const GROUP_HEAL_IV   = 20;   // ticks between group heals
+const GROUP_HEAL_MUL  = 0.5;  // groupHeal per member = keeper.wil * GROUP_HEAL_MUL
+
 const statAt  = (tpl, k, lvl) => tpl.start[k] + tpl.grow[k] * (lvl - 1);
 const moraleOf= (tpl, lvl)    => Math.round(30 + statAt(tpl,"vit",lvl) * 16);
 const fmtT    = s => `${Math.floor(s/60)}:${String(Math.max(0,s)%60).padStart(2,"0")}`;
@@ -156,6 +164,11 @@ function runFight(cfg, verbose) {
     };
   });
 
+  // Keeper HoT state — two independent slots
+  let hot1 = null, hot2 = null; // { targetKey, ticksLeft, healPerTick }
+  let triageCooldown = 0;
+  let groupHealTimer = GROUP_HEAL_IV;
+
   const active    = () => ORDER.filter(k => !M[k].grievous && !M[k].broken);
   const standing  = () => active().filter(k => M[k].hp > 0);
   const inTrouble = () => active().filter(k => M[k].hp / M[k].max < 0.35).length;
@@ -166,7 +179,7 @@ function runFight(cfg, verbose) {
     let raw = 0;
     ORDER.forEach(k => {
       if (M[k].grievous || M[k].hp <= 0 || M[k].stunned || M[k].broken) return;
-      if (k==="keeper")  { if (M[k]._action !== "burst") raw += M[k].wil * 0.9; }
+      if (k==="keeper")  { if (keeperDealtDps) raw += M[k].wil * 0.9; }
       else if (k==="fighter") raw += M[k].agi + M[k].mig * 0.4;
       else if (k==="warden")  raw += M[k].mig * 0.5;
       else if (k==="captain") raw += M[k].mig * 0.3 + M[k].wil * 0.2;
@@ -182,6 +195,7 @@ function runFight(cfg, verbose) {
   }
 
   let t=0, boss=cfg.boss, maxT=cfg.duration;
+  let keeperDealtDps = true; // reset each tick in keeper action block
   let rescuesUsed=0, wardsUsed=0, inspBoost=0, baFired=false;
   // first spike fires after one full interval (with jitter)
   let nextSpikeAt = Math.round(cfg.spikeiv * (0.5 + Math.random()));
@@ -195,6 +209,18 @@ function runFight(cfg, verbose) {
 
   while (true) {
     t++;
+    // ── Keeper HoT ticks ──────────────────────────────────────────────────────
+    if (!M.keeper.grievous && M.keeper.hp > 0 && !M.keeper.stunned) {
+      for (const hot of [hot1, hot2].filter(Boolean)) {
+        const tgt = M[hot.targetKey];
+        if (tgt && !tgt.grievous) {
+          tgt.hp = Math.min(tgt.max, tgt.hp + hot.healPerTick);
+        }
+        hot.ticksLeft--;
+      }
+      if (hot1 && hot1.ticksLeft <= 0) hot1 = null;
+      if (hot2 && hot2.ticksLeft <= 0) hot2 = null;
+    }
     if (windows.dawn > 0) windows.dawn--;
     if (windows.horn > 0) { windows.horn--; }
     // stun countdown
@@ -210,15 +236,66 @@ function runFight(cfg, verbose) {
     const act = active();
     const live = standing();
 
-    // Keeper action
-    let rescue = null;
-    M.keeper._action = "damage";
+    // ── Keeper action ─────────────────────────────────────────────────────────
+    keeperDealtDps = true; // default: keeper contributes DPS this tick
+    if (!M.keeper.grievous && M.keeper.hp > 0 && !M.keeper.stunned) {
+      const healPerTick = M.keeper.wil * HOT_HEAL_MUL;
+      if (triageCooldown > 0) triageCooldown--;
+      groupHealTimer--;
+
+      let actionTaken = false;
+
+      if (groupHealTimer <= 0) {
+        // Group heal — hits all standing members
+        const groupHeal = M.keeper.wil * GROUP_HEAL_MUL;
+        live.forEach(k => { M[k].hp = Math.min(M[k].max, M[k].hp + groupHeal); });
+        groupHealTimer = GROUP_HEAL_IV;
+        actionTaken = true;
+        lg(`Cael group heal +${Math.round(groupHeal)} to all`);
+      } else {
+        // Triage — lowest-health non-keeper below threshold
+        const triageTarget = live
+          .filter(k => k !== "keeper")
+          .find(k => M[k].hp / M[k].max < TRIAGE_HP);
+        if (triageTarget && triageCooldown === 0) {
+          const triageHeal = M.keeper.wil * TRIAGE_MUL;
+          M[triageTarget].hp = Math.min(M[triageTarget].max, M[triageTarget].hp + triageHeal);
+          triageCooldown = TRIAGE_COOLDOWN;
+          actionTaken = true;
+          lg(`Cael triage → ${M[triageTarget].tpl.name} +${Math.round(triageHeal)}`);
+        } else {
+          // Apply HoT to lowest-health member if a slot is free
+          if (!hot1 || !hot2) {
+            const covered = new Set([hot1?.targetKey, hot2?.targetKey].filter(Boolean));
+            const hotTarget = live
+              .filter(k => !covered.has(k))
+              .sort((a,b) => (M[a].hp/M[a].max) - (M[b].hp/M[b].max))[0];
+            if (hotTarget) {
+              const newHot = { targetKey: hotTarget, ticksLeft: HOT_DURATION, healPerTick };
+              if (!hot1) hot1 = newHot; else hot2 = newHot;
+              lg(`Cael applies HoT → ${M[hotTarget].tpl.name}`);
+            }
+          }
+          // HoT application is free — keeper still DPSes
+        }
+      }
+
+      keeperDealtDps = !actionTaken; // keeper DPSes only when no consuming action taken
+    }
+
+    // Rescue burst (existing mechanic — fires even when keeper healed this tick)
     if (!M.keeper.grievous && M.keeper.hp > 0 && !M.keeper.stunned && rescuesUsed < RESCUE_CAP) {
+      let rescue = null;
       for (const k of ORDER) {
-        if (k==="keeper" || M[k].grievous) continue;
+        if (k === "keeper" || M[k].grievous) continue;
         if (M[k].hp <= 0) { rescue = k; break; }
       }
-      if (rescue) M.keeper._action = "burst";
+      if (rescue) {
+        const burst = (40 + M.keeper.wil * 4) * cfg.burstmul;
+        M[rescue].hp = Math.min(M[rescue].max, Math.max(M[rescue].hp, 0) + burst);
+        rescuesUsed++;
+        lg(`Cael bursts ${M[rescue].tpl.name} (+${Math.round(burst)}) rescue ${rescuesUsed}/${RESCUE_CAP}`);
+      }
     }
 
     // steady drain (standing only)
@@ -282,14 +359,6 @@ function runFight(cfg, verbose) {
           if (target) applySpike(target, spikeRoll);
         }
       }
-    }
-
-    // Keeper rescue burst
-    if (rescue) {
-      const burst = (40 + M.keeper.wil*4) * cfg.burstmul;
-      M[rescue].hp = Math.min(M[rescue].max, Math.max(M[rescue].hp,0) + burst);
-      rescuesUsed++;
-      lg(`Cael bursts ${M[rescue].tpl.name} (+${Math.round(burst)}) rescue ${rescuesUsed}/${RESCUE_CAP}`);
     }
 
     // Shadow drain
