@@ -13,6 +13,7 @@ import androidx.work.WorkerParameters
 import com.liquidcode7.hearthcraft.HearthCraftApp
 import com.liquidcode7.hearthcraft.MainActivity
 import com.liquidcode7.hearthcraft.data.model.HarvestItem
+import com.liquidcode7.hearthcraft.data.model.rollGrade
 import com.liquidcode7.hearthcraft.data.repository.GrowingRepository
 import com.liquidcode7.hearthcraft.data.repository.PlayerRepository
 import dagger.assisted.Assisted
@@ -34,11 +35,13 @@ class HiveWorker @AssistedInject constructor(
         growing.updatePlantedAt(SLOT_ID, System.currentTimeMillis())
 
         val bandId = player.get()?.chosenBandId ?: "greycloaks"
+        val gatheringLevel = player.get()?.gatheringLevel ?: 1
         val (honeyId, honeyName) = honeyForBand(bandId)
         val honeyQty = BASE_YIELD + Random.nextInt(3)
+        val sessionGrade = rollGrade(gatheringLevel = gatheringLevel).ordinal
 
         val items = listOf(
-            HarvestItem(ingredientId = honeyId, name = honeyName, quantity = honeyQty, rarity = "common")
+            HarvestItem(ingredientId = honeyId, name = honeyName, quantity = honeyQty, rarity = "common", grade = sessionGrade)
         )
 
         val added = growing.addToPendingResult(SLOT_ID, items, MAX_STOCKPILE_CYCLES * (BASE_YIELD + 1))

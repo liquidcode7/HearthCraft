@@ -263,7 +263,7 @@ class GatheringViewModel @Inject constructor(
             val markedItems = items.map { it.copy(isNew = it.ingredientId in newIds) }
             markedItems.forEach { item ->
                 if (item.rarity == "bonus") inventory.addSeed(item.ingredientId, item.quantity)
-                else inventory.addIngredient(item.ingredientId, item.quantity)
+                else inventory.addIngredient(item.ingredientId, item.grade, item.quantity)
             }
             _lastHarvest.value = HarvestReadout(
                 items = markedItems,
@@ -285,7 +285,7 @@ class GatheringViewModel @Inject constructor(
             }
             items.forEach { item ->
                 if (item.rarity == "bonus") inventory.addSeed(item.ingredientId, item.quantity)
-                else inventory.addIngredient(item.ingredientId, item.quantity)
+                else inventory.addIngredient(item.ingredientId, item.grade, item.quantity)
             }
             _lastHarvest.value = HarvestReadout(
                 items = items,

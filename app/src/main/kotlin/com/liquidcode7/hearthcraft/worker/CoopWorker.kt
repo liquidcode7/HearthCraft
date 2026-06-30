@@ -7,17 +7,19 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
+import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequest
 import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.liquidcode7.hearthcraft.HearthCraftApp
 import com.liquidcode7.hearthcraft.MainActivity
 import com.liquidcode7.hearthcraft.data.model.HarvestItem
+import com.liquidcode7.hearthcraft.data.model.rollGrade
 import com.liquidcode7.hearthcraft.data.repository.GrowingRepository
+import com.liquidcode7.hearthcraft.data.repository.PlayerRepository
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
-import androidx.work.ExistingWorkPolicy
-import androidx.work.WorkManager
 import java.util.concurrent.TimeUnit
 import kotlin.random.Random
 
@@ -25,15 +27,19 @@ import kotlin.random.Random
 class CoopWorker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted params: WorkerParameters,
-    private val growing: GrowingRepository
+    private val growing: GrowingRepository,
+    private val player: PlayerRepository
 ) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
         growing.updatePlantedAt(SLOT_ID, System.currentTimeMillis())
 
+        val gatheringLevel = player.get()?.gatheringLevel ?: 1
         val qty = BASE_YIELD + Random.nextInt(2)
+        val sessionGrade = rollGrade(gatheringLevel = gatheringLevel).ordinal
+
         val items = listOf(
-            HarvestItem(ingredientId = "hens_egg", name = "Hen's Egg", quantity = qty, rarity = "common")
+            HarvestItem(ingredientId = "hens_egg", name = "Hen's Egg", quantity = qty, rarity = "common", grade = sessionGrade)
         )
 
         val added = growing.addToPendingResult(SLOT_ID, items, MAX_STOCKPILE_CYCLES * (BASE_YIELD + 1))

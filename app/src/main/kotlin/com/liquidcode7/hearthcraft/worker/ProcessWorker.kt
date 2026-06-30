@@ -35,12 +35,13 @@ class ProcessWorker @AssistedInject constructor(
     override suspend fun doWork(): Result {
         val slotId = inputData.getString(KEY_SLOT_ID) ?: return Result.failure()
         val ingredientId = inputData.getString(KEY_INGREDIENT_ID) ?: return Result.failure()
+        val outputGrade = inputData.getInt(KEY_OUTPUT_GRADE, 0)
 
         val ingredient = gameData.ingredients.find { it.id == ingredientId }
             ?: return Result.failure()
 
         val items = listOf(
-            HarvestItem(ingredientId = ingredientId, name = ingredient.name, quantity = 1, rarity = ingredient.rarity)
+            HarvestItem(ingredientId = ingredientId, name = ingredient.name, quantity = 1, rarity = ingredient.rarity, grade = outputGrade)
         )
         val json = Json.encodeToString(items)
 
@@ -72,10 +73,11 @@ class ProcessWorker @AssistedInject constructor(
     }
 
     companion object {
-        const val SLOT_ID         = "process_0"
-        const val NOTIFICATION_ID = 40
-        const val KEY_SLOT_ID     = "slotId"
+        const val SLOT_ID           = "process_0"
+        const val NOTIFICATION_ID   = 40
+        const val KEY_SLOT_ID       = "slotId"
         const val KEY_INGREDIENT_ID = "ingredientId"
+        const val KEY_OUTPUT_GRADE  = "outputGrade"
 
         fun durationForType(processType: String): Long = when (processType) {
             "mill"   -> 3 * 60 * 1000L
@@ -88,11 +90,12 @@ class ProcessWorker @AssistedInject constructor(
             else     -> 5 * 60 * 1000L
         }
 
-        fun buildRequest(slotId: String, ingredientId: String, durationMs: Long): OneTimeWorkRequest =
+        fun buildRequest(slotId: String, ingredientId: String, durationMs: Long, outputGrade: Int = 0): OneTimeWorkRequest =
             OneTimeWorkRequestBuilder<ProcessWorker>()
                 .setInputData(workDataOf(
                     KEY_SLOT_ID to slotId,
-                    KEY_INGREDIENT_ID to ingredientId
+                    KEY_INGREDIENT_ID to ingredientId,
+                    KEY_OUTPUT_GRADE to outputGrade
                 ))
                 .setInitialDelay(durationMs, TimeUnit.MILLISECONDS)
                 .build()

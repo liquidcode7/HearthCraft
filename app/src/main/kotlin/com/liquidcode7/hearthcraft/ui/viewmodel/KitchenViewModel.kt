@@ -319,9 +319,16 @@ class KitchenViewModel @Inject constructor(
         viewModelScope.launch {
             if (growing.getSlot(ProcessWorker.SLOT_ID) != null) return@launch
             if (!canProcess(ingredient, inventoryItems.value)) return@launch
+            // Resolve output grade before consuming: lowest grade across all inputs (spec §2.8).
+            val outputGrade = inputs.minOf { input ->
+                inventory.ingredientQtyAtGrade(input.id, 0).let {
+                    // Walk grades 0..4, return the first grade this ingredient has stock at.
+                    (0..4).firstOrNull { g -> inventory.ingredientQtyAtGrade(input.id, g) > 0 } ?: 0
+                }
+            }
             inputs.forEach { input -> inventory.removeIngredient(input.id, input.qty) }
             val durationMs = ProcessWorker.durationForType(processType)
-            val request = ProcessWorker.buildRequest(ProcessWorker.SLOT_ID, ingredient.id, durationMs)
+            val request = ProcessWorker.buildRequest(ProcessWorker.SLOT_ID, ingredient.id, durationMs, outputGrade)
             WorkManager.getInstance(context).enqueue(request)
             growing.plantSlot(
                 id           = ProcessWorker.SLOT_ID,
@@ -338,7 +345,7 @@ class KitchenViewModel @Inject constructor(
     fun collectProcess() {
         viewModelScope.launch {
             val items = growing.collectAndClearSlot(ProcessWorker.SLOT_ID)
-            items.forEach { inventory.addIngredient(it.ingredientId, it.quantity) }
+            items.forEach { inventory.addIngredient(it.ingredientId, it.grade, it.quantity) }
         }
     }
 

@@ -13,6 +13,7 @@ import androidx.work.workDataOf
 import com.liquidcode7.hearthcraft.HearthCraftApp
 import com.liquidcode7.hearthcraft.MainActivity
 import com.liquidcode7.hearthcraft.data.model.HarvestItem
+import com.liquidcode7.hearthcraft.data.model.rollGrade
 import com.liquidcode7.hearthcraft.data.repository.GameDataRepository
 import com.liquidcode7.hearthcraft.data.repository.PlayerRepository
 import com.liquidcode7.hearthcraft.data.repository.SessionRepository
@@ -38,6 +39,9 @@ class GatheringWorker @AssistedInject constructor(
         val bandId = player.get()?.chosenBandId.orEmpty()
         val regions = foragableRegions(bandId)
 
+        // Roll one grade for the whole session — everything gathered together shares one grade.
+        val sessionGrade = rollGrade(gatheringLevel = level).ordinal
+
         val targetId = inputData.getString(KEY_TARGET_ID)
         val pool = gameData.ingredients.filter { ingredient ->
             ingredient.gatheringMode == MODE_FORAGE &&
@@ -50,11 +54,11 @@ class GatheringWorker @AssistedInject constructor(
         val harvestItems = if (targetIngredient != null) {
             val rest = pool.filter { it.id != targetId }.shuffled().take((count - 1).coerceAtLeast(0))
             (listOf(targetIngredient) + rest).map { ingredient ->
-                HarvestItem(ingredientId = ingredient.id, name = ingredient.name, quantity = qty, rarity = ingredient.rarity)
+                HarvestItem(ingredientId = ingredient.id, name = ingredient.name, quantity = qty, rarity = ingredient.rarity, grade = sessionGrade)
             }.toMutableList()
         } else {
             pool.shuffled().take(count).map { ingredient ->
-                HarvestItem(ingredientId = ingredient.id, name = ingredient.name, quantity = qty, rarity = ingredient.rarity)
+                HarvestItem(ingredientId = ingredient.id, name = ingredient.name, quantity = qty, rarity = ingredient.rarity, grade = sessionGrade)
             }.toMutableList()
         }
 
@@ -64,7 +68,7 @@ class GatheringWorker @AssistedInject constructor(
         }
         plantable.randomOrNull()?.let { ingredient ->
             val seedCount = Random.nextInt(1, 3)
-            harvestItems.add(HarvestItem(
+            harvestItems.add(HarvestItem(    // bonus seeds always Crude (grade=0)
                 ingredientId = "${ingredient.id}_seed",
                 name = "${ingredient.name} Seed",
                 quantity = seedCount,

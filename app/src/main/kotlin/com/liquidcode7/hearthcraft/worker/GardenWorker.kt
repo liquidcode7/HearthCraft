@@ -14,6 +14,7 @@ import androidx.work.workDataOf
 import com.liquidcode7.hearthcraft.HearthCraftApp
 import com.liquidcode7.hearthcraft.MainActivity
 import com.liquidcode7.hearthcraft.data.model.HarvestItem
+import com.liquidcode7.hearthcraft.data.model.rollGrade
 import com.liquidcode7.hearthcraft.data.repository.GrowingRepository
 import com.liquidcode7.hearthcraft.data.repository.PlayerRepository
 import com.liquidcode7.hearthcraft.data.repository.GameDataRepository
@@ -41,11 +42,12 @@ class GardenWorker @AssistedInject constructor(
         val ingredient = gameData.ingredients.find { it.id == ingredientId }
             ?: return Result.failure()
         val qty = BASE_YIELD + (level - 1) / 5
+        val sessionGrade = rollGrade(gatheringLevel = level).ordinal
 
         val seedQty = 1 + Random.nextInt(2)
         val items = listOf(
-            HarvestItem(ingredientId, ingredient.name, qty, ingredient.rarity),
-            HarvestItem("${ingredientId}_seed", "${ingredient.name} Seed", seedQty, "bonus")
+            HarvestItem(ingredientId, ingredient.name, qty, ingredient.rarity, grade = sessionGrade),
+            HarvestItem("${ingredientId}_seed", "${ingredient.name} Seed", seedQty, "bonus")  // seeds always Crude
         )
         val json = Json.encodeToString(items)
 
