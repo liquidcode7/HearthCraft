@@ -21,7 +21,7 @@ private const val HOT_DURATION    = 8      // ticks per HoT application
 private const val HOT_HEAL_MUL    = 0.15f  // healPerTick = keeper.will × HOT_HEAL_MUL
 private const val TRIAGE_HP       = 0.25f  // triage fires when target hp < maxHp × TRIAGE_HP
 private const val TRIAGE_MUL      = 2.0f   // triageHeal = keeper.will × TRIAGE_MUL
-private const val TRIAGE_COOLDOWN = 2      // ticks between triage uses
+private const val TRIAGE_COOLDOWN = 2      // 1-tick minimum gap between triage uses (set to 2 → decrements before check)
 private const val GROUP_HEAL_IV   = 20     // ticks between group heals
 private const val GROUP_HEAL_MUL  = 0.5f   // groupHeal per member = keeper.will × GROUP_HEAL_MUL
 
@@ -110,7 +110,7 @@ object EncounterEngine {
             if (keeper != null && !keeper.grievous && keeper.hp > 0) {
                 for (hot in listOfNotNull(hot1, hot2)) {
                     val target = party.find { it.input.id == hot.targetId }
-                    if (target != null && !target.grievous) {
+                    if (target != null && !target.grievous && target.hp > 0) {
                         target.hp = min(target.maxHp, target.hp + hot.healPerTick)
                     }
                     hot.ticksLeft--
