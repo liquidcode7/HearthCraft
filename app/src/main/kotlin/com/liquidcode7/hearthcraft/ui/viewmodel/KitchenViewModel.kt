@@ -36,6 +36,14 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import javax.inject.Inject
 
+fun isRecipeVisible(recipe: Recipe, foundGrimoires: Set<String>, discoveredIds: Set<String>): Boolean {
+    if (recipe.id in discoveredIds) return true
+    if (recipe.tier == 1 && recipe.recipeClass != "hoh") return true
+    // "food" recipes are gated by "cooking" grimoires; all other classes match 1:1.
+    val grimoireClass = if (recipe.recipeClass == "food") "cooking" else recipe.recipeClass
+    return "${grimoireClass}_t${recipe.tier}" in foundGrimoires
+}
+
 data class RecipeTier(val label: String, val minLevel: Int, val recipes: List<Recipe>)
 
 @HiltViewModel
@@ -75,10 +83,13 @@ class KitchenViewModel @Inject constructor(
 
     val bandRecipes: StateFlow<List<Recipe>> = combine(
         player.observe(),
-        player.observeDiscoveredIds()
-    ) { state, discovered ->
+        player.observeDiscoveredIds(),
+        player.observeFoundGrimoireIds()
+    ) { state, discovered, foundGrimoires ->
         val bandId = state?.chosenBandId.orEmpty()
-        gameData.recipes.filter { (it.band == bandId || it.band == "all") && it.id in discovered }
+        gameData.recipes
+            .filter { it.band == bandId || it.band == "all" }
+            .filter { bandId.isNotEmpty() && isRecipeVisible(it, foundGrimoires, discovered) }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     private val tierNames = mapOf(
@@ -88,13 +99,14 @@ class KitchenViewModel @Inject constructor(
     val tieredRecipes: StateFlow<List<RecipeTier>> = combine(
         inventory.observeIngredients(),
         player.observe(),
-        player.observeDiscoveredIds()
-    ) { items, state, discovered ->
+        player.observeDiscoveredIds(),
+        player.observeFoundGrimoireIds()
+    ) { items, state, discovered, foundGrimoires ->
         val bandId = state?.chosenBandId.orEmpty()
         val qtyMap = items.groupBy { it.ingredientId }.mapValues { (_, rows) -> rows.sumOf { it.quantity } }
         gameData.recipes
             .filter { (it.band == bandId || it.band == "all") && bandId.isNotEmpty() }
-            .filter { it.id in discovered }
+            .filter { isRecipeVisible(it, foundGrimoires, discovered) }
             .groupBy { it.tier }
             .entries.sortedBy { it.key }
             .map { (tier, recipes) ->
