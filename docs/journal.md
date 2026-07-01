@@ -7,11 +7,11 @@
 
 ## Current Status — July 1, 2026
 
-**Phase:** Combat engine redesign (Model B) — complete across both sim and Android engine.
-**What's working:** Full Model B combat: food = stat boosts only, Keeper is sole healer (HoT + triage + group heal + rescue burst), universal Fate streak (crit mechanic) in both the JS sim and Android EncounterEngine. All HP/s code stripped. hunter→fighter rename complete.
-**What's not wired yet:** The encounters sim has Inspirations wired; the Android engine does not (by design for now). The `reserve` field on MS is inert — not yet removed.
-**Next session:** Run the sim against current Men encounters to re-validate balance with the new HoT+streak system. Then: ingredient/recipe data pass for Men (Greycloaks) — the JSON still has old-era data.
-**Open questions:** Player title (still TBD). Warden secondary stat. Exact Lone-Lands unlock trigger.
+**Phase:** Men (Greycloaks) — data layer now clean. Combat engine (Model B) complete.
+**What's working:** Full Model B combat in both sim and Android. ingredients.json Men roster is now accurate (regions, sources, stats). recipes.json is clean (brackenroot, Model B stat boosts, no HP/s).
+**What's not wired yet:** Inspirations in the Android engine (sim-only by design). `reserve` field is inert. Non-Men (Elf/Dwarf) ingredient data is old-era and parked.
+**Next session:** Run the sim against the Men encounter list (Wolf-Master, Rhudaur Men, Barrow-wight) to validate balance under HoT+streak. Then: Grimoire system implementation.
+**Open questions:** Player title (still TBD). Warden primary/secondary stats. Exact Lone-Lands unlock trigger. Recipe tier count for full campaign.
 
 ---
 
@@ -2013,4 +2013,37 @@ Streak: STREAK_K=0.002, STREAK_REFRACTORY=20, STREAK_DURATION=5, STREAK_MULT=1.5
 - Next session: Run sim against Men encounters (Wolf-Master, Rhudaur Men, Barrow-wight) to validate balance under new HoT+streak system
 - Near term: Ingredient/recipe data pass for Men (JSON still has old-era data); Grimoire system
 - Future ideas logged: None this session
+
+---
+
+## Session 54 — July 1, 2026
+**Ingredient/Recipe Data Pass — Men (Greycloaks)**
+
+Cleaned ingredients.json to match the new master-design.md Men roster. recipes.json required no structural changes (brackenroot was already wired, HP/s fields already stripped).
+
+**What was built/fixed:**
+- `ingredients.json`: 83 targeted fixes via Python transform
+  - Region "Bree-land & The Shire" → "Bree-land" (all 44 Bree-land core entries)
+  - Region "Bree Wildlands / Lone-Lands" → "Lone-Lands" (9 Lone-Lands entries)
+  - `deer_haunch_dried` region "Celondim / Ered Luin" → "Lone-Lands"; source/gatheringMode → "process"
+  - `river_trout` region "Bree-land / Celondim" → "Bree-land"; source/gatheringMode/gatherType → "fish"
+  - `rabbit`, `hog_meat` → source/gatheringMode/gatherType "hunt"
+  - `deer_haunch`, `eel` → source/gatheringMode/gatherType "hunt"/"fish"
+  - `forest_honey`, `field_honey` → source "husbandry" (gatheringMode/Type were already correct)
+  - `hens_egg` → source/gatheringMode "husbandry"
+  - `deer_haunch` → added primaryStat/secondaryStat (mig/vit) and notes
+  - `river_trout`, `eel` → notes added; `hog_meat` → Shire reference removed from notes
+- `recipes.json`: verified clean — no HP/s fields, no ironroot. All 20 Greycloaks recipes resolve to valid ingredient IDs.
+
+**Decisions made:**
+- Non-Men ingredient regions untouched (Mithlost "Celondim / Ered Luin", Undermarch "Thorin's Halls") — parked content
+- `milk` keeps region "All" — portable husbandry, correct
+
+**Anything that diverged from design:**
+- None.
+
+**Coming up:**
+- Next session: Run sim against Men encounters for balance validation; Grimoire system implementation
+- Near term: Warden stat decisions; recipe tier projection for full campaign
+- Future ideas logged: None
 
