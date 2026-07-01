@@ -1,7 +1,7 @@
 package com.liquidcode7.hearthcraft
 
 import com.liquidcode7.hearthcraft.data.model.Recipe
-import com.liquidcode7.hearthcraft.ui.viewmodel.isRecipeVisible
+import com.liquidcode7.hearthcraft.data.repository.isRecipeVisible
 import org.junit.Assert.*
 import org.junit.Test
 
@@ -77,5 +77,31 @@ class RecipeAvailabilityTest {
     fun `cooking_t2 grimoire does NOT unlock draught_t2 recipes`() {
         val r = recipe("potency_draught", tier = 2, recipeClass = "draught")
         assertFalse(isRecipeVisible(r, setOf("cooking_t2"), emptySet()))
+    }
+
+    // --- hasVisibleRecipeOfClass: used by the HoH-availability softlock check ---
+
+    @Test
+    fun `hasVisibleRecipeOfClass is false when no recipes of that class exist`() {
+        val recipes = listOf(recipe("stew_basic", tier = 1, recipeClass = "food"))
+        assertFalse(com.liquidcode7.hearthcraft.data.repository.hasVisibleRecipeOfClass(
+            recipes, "hoh", emptySet(), emptySet()
+        ))
+    }
+
+    @Test
+    fun `hasVisibleRecipeOfClass is false when hoh recipe exists but is not visible`() {
+        val recipes = listOf(recipe("athelas_prep", tier = 1, recipeClass = "hoh"))
+        assertFalse(com.liquidcode7.hearthcraft.data.repository.hasVisibleRecipeOfClass(
+            recipes, "hoh", emptySet(), emptySet()
+        ))
+    }
+
+    @Test
+    fun `hasVisibleRecipeOfClass is true once a hoh recipe is visible via grimoire`() {
+        val recipes = listOf(recipe("athelas_prep", tier = 1, recipeClass = "hoh"))
+        assertTrue(com.liquidcode7.hearthcraft.data.repository.hasVisibleRecipeOfClass(
+            recipes, "hoh", setOf("hoh_t1"), emptySet()
+        ))
     }
 }
