@@ -7,8 +7,10 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
+import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequest
 import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import com.liquidcode7.hearthcraft.HearthCraftApp
@@ -16,9 +18,11 @@ import com.liquidcode7.hearthcraft.MainActivity
 import com.liquidcode7.hearthcraft.data.repository.BandRepository
 import com.liquidcode7.hearthcraft.data.repository.CombatRepository
 import com.liquidcode7.hearthcraft.data.repository.EncounterRepository
+import com.liquidcode7.hearthcraft.data.repository.GameDataRepository
 import com.liquidcode7.hearthcraft.data.repository.InventoryRepository
 import com.liquidcode7.hearthcraft.data.repository.PlayerRepository
 import com.liquidcode7.hearthcraft.data.repository.SessionRepository
+import com.liquidcode7.hearthcraft.data.repository.hasVisibleRecipeOfClass
 import com.liquidcode7.hearthcraft.engine.EncounterEngine
 import com.liquidcode7.hearthcraft.engine.Outcome
 import com.liquidcode7.hearthcraft.ui.viewmodel.PreparedFoodDetail
@@ -36,7 +40,8 @@ class EncounterWorker @AssistedInject constructor(
     private val player: PlayerRepository,
     private val sessions: SessionRepository,
     private val band: BandRepository,
-    private val combatRepo: CombatRepository
+    private val combatRepo: CombatRepository,
+    private val gameData: GameDataRepository
 ) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
@@ -85,9 +90,20 @@ class EncounterWorker @AssistedInject constructor(
                 notify("No Result", "${encounter.name} — the band held but couldn't finish it.")
             }
             else -> { // DEFEAT
-                applyWounds(wounds)
+                val hohAvailable = hasVisibleRecipeOfClass(
+                    gameData.recipes, "hoh", player.getFoundGrimoireIds(), player.getDiscoveredRecipeIds()
+                )
+                val safetyNetTriggered = applyWounds(wounds, hohAvailable)
                 band.grantMissionStats(bandId, succeeded = false)
-                notify("Mission Failed", "${encounter.name} — your band did not prevail.")
+                if (safetyNetTriggered) {
+                    notify(
+                        "Mission Failed",
+                        "${encounter.name} — the band was nearly overwhelmed. Without a healer's " +
+                            "true craft, they pulled back to recover. It will be a long recovery."
+                    )
+                } else {
+                    notify("Mission Failed", "${encounter.name} — your band did not prevail.")
+                }
             }
         }
     }
@@ -98,14 +114,26 @@ class EncounterWorker @AssistedInject constructor(
             if (parts.size == 2) parts[0] to (parts[1].toIntOrNull() ?: 0) else null
         }.toMap()
 
-    private suspend fun applyWounds(woundsByMember: Map<String, Int>) {
+    // Returns true if the HoH-availability safety net downgraded any member's wound this call.
+    private suspend fun applyWounds(woundsByMember: Map<String, Int>, hohAvailable: Boolean): Boolean {
+        var safetyNetTriggered = false
         woundsByMember.forEach { (memberId, wounds) ->
-            when {
-                wounds >= 5 -> band.killMember(memberId)
-                wounds >= 3 -> band.woundMember(memberId, grievous = true)
-                wounds >= 1 -> band.woundMember(memberId, grievous = false)
+            val outcome = resolveWoundOutcome(wounds, hohAvailable) ?: return@forEach
+            band.woundMember(memberId, outcome.grievous, outcome.durationMs)
+            if (!outcome.grievous) {
+                scheduleRecovery(memberId, outcome.durationMs)
+                if (wounds >= 5) safetyNetTriggered = true
             }
         }
+        return safetyNetTriggered
+    }
+
+    private fun scheduleRecovery(memberId: String, durationMs: Long) {
+        WorkManager.getInstance(applicationContext).enqueueUniqueWork(
+            "wound_recovery_$memberId",
+            ExistingWorkPolicy.REPLACE,
+            WoundRecoveryWorker.buildRequest(memberId, durationMs)
+        )
     }
 
     private fun notify(title: String, text: String) {
@@ -149,4 +177,30 @@ class EncounterWorker @AssistedInject constructor(
                 .setInitialDelay(durationMs, TimeUnit.MILLISECONDS)
                 .build()
     }
+}
+
+// Testing values: short (seconds-scale) durations so Wes can exercise recovery on-device.
+// Strictly increasing by severity band — matches the design intent below (heavy wounds
+// recover slower than light; the safety net is deliberately the longest of all).
+// Target production values (revisit once the sim rebalance pass locks in real numbers):
+//   LIGHT_WOUND_MS = 3_600_000L   (1 hour)
+//   HEAVY_WOUND_MS = 7_200_000L   (2 hours)
+//   SAFETY_NET_WOUND_MS = 21_600_000L (6 hours)
+private const val LIGHT_WOUND_MS       = 15_000L
+private const val HEAVY_WOUND_MS       = 30_000L
+private const val SAFETY_NET_WOUND_MS  = 60_000L
+
+data class WoundOutcome(val grievous: Boolean, val durationMs: Long)
+
+// Pure function extracted from EncounterWorker — testable without Android context.
+// Down-count -> severity. Wounds never kill (death-by-combat-wound was removed).
+// 5+ wounds is genuinely grievous only if the player has a usable HoH recipe;
+// otherwise it's capped at heavy-wounded with a longer safety-net timer so the
+// band never gets permanently stuck before HoH content exists.
+fun resolveWoundOutcome(wounds: Int, hohAvailable: Boolean): WoundOutcome? = when {
+    wounds >= 5 -> if (hohAvailable) WoundOutcome(grievous = true, durationMs = 0L)
+                   else WoundOutcome(grievous = false, durationMs = SAFETY_NET_WOUND_MS)
+    wounds >= 3 -> WoundOutcome(grievous = false, durationMs = HEAVY_WOUND_MS)
+    wounds >= 1 -> WoundOutcome(grievous = false, durationMs = LIGHT_WOUND_MS)
+    else        -> null
 }
