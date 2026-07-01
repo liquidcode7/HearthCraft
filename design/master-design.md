@@ -316,6 +316,8 @@ starter knowledge, always available from the beginning. Only T2+ requires a grim
 | Wolf-Master (miniboss, band level 7) | Draught grimoire T2, HoH grimoire T1 |
 | Rhudaur Men (region boss, band level 9) | Cooking grimoire T2 |
 
+**Implementation note — class naming:** In the data layer the "Cooking grimoire" class identifier is `"cooking"` (IDs: `cooking_t2`, etc.). Food recipes carry `recipeClass = "food"`. The `isRecipeVisible()` function maps `"food"` → `"cooking"` when building the grimoire lookup key. Draught and HoH class names are consistent (`"draught"`, `"hoh"`) between recipes and grimoires and require no mapping.
+
 ### 8.4 Three-Lock Progression
 
 Advancing to a new tier requires **all three** (for T2+ only):
