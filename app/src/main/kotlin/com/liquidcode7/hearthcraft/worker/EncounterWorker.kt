@@ -123,6 +123,13 @@ class EncounterWorker @AssistedInject constructor(
             if (!outcome.grievous) {
                 scheduleRecovery(memberId, outcome.durationMs)
                 if (wounds >= 5) safetyNetTriggered = true
+            } else {
+                // A genuinely grievous wound requires HoH treatment, not a timer. If this
+                // member already had a recovery worker pending from an earlier lighter
+                // wound, it must be cancelled here — otherwise that stale timer would still
+                // fire on its original schedule and silently auto-heal a grievously wounded
+                // member with no HoH treatment ever having happened.
+                cancelRecovery(memberId)
             }
         }
         return safetyNetTriggered
@@ -134,6 +141,10 @@ class EncounterWorker @AssistedInject constructor(
             ExistingWorkPolicy.REPLACE,
             WoundRecoveryWorker.buildRequest(memberId, durationMs)
         )
+    }
+
+    private fun cancelRecovery(memberId: String) {
+        WorkManager.getInstance(applicationContext).cancelUniqueWork("wound_recovery_$memberId")
     }
 
     private fun notify(title: String, text: String) {
