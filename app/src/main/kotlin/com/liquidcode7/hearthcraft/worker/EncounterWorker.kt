@@ -52,7 +52,7 @@ class EncounterWorker @AssistedInject constructor(
             // Fallback: re-run engine fresh (handles old WorkManager tasks in flight during update)
             val draughtPotency = inputData.getFloat(KEY_DRAUGHT_POTENCY, 0f)
             val stage = encounter.stages.firstOrNull() ?: return Result.failure()
-            val members = band.memberInputsForBand(bandId, draughtPotency, emptyMap<String, PreparedFoodDetail?>(), cookLevel = 1)
+            val members = band.memberInputsForBand(bandId, draughtPotency, emptyMap<String, PreparedFoodDetail?>())
             if (members.isEmpty()) return Result.failure()
             val result = EncounterEngine.resolve(stage, members, Random.nextLong())
             applyOutcome(result.outcome.name, result.woundsByMember, encounter)
@@ -128,28 +128,19 @@ class EncounterWorker @AssistedInject constructor(
         const val KEY_ENCOUNTER_ID    = "encounterId"
         const val KEY_BAND_ID         = "bandId"
         const val KEY_DRAUGHT_POTENCY = "draughtPotency"
-        const val KEY_HPS_WARDEN      = "hpsWarden"
-        const val KEY_HPS_HUNTER      = "hpsHunter"
-        const val KEY_HPS_KEEPER      = "hpsKeeper"
-        const val KEY_HPS_CAPTAIN     = "hpsCaptain"
         const val NOTIFICATION_ID     = 3
 
         fun buildRequest(
             encounterId: String,
             bandId: String,
             draughtPotency: Float,
-            hps: List<Float>,  // [warden, hunter, keeper, captain]
             durationMs: Long
         ): OneTimeWorkRequest =
             OneTimeWorkRequestBuilder<EncounterWorker>()
                 .setInputData(workDataOf(
                     KEY_ENCOUNTER_ID    to encounterId,
                     KEY_BAND_ID         to bandId,
-                    KEY_DRAUGHT_POTENCY to draughtPotency,
-                    KEY_HPS_WARDEN      to (hps.getOrElse(0) { 5f }),
-                    KEY_HPS_HUNTER      to (hps.getOrElse(1) { 5f }),
-                    KEY_HPS_KEEPER      to (hps.getOrElse(2) { 5f }),
-                    KEY_HPS_CAPTAIN     to (hps.getOrElse(3) { 5f })
+                    KEY_DRAUGHT_POTENCY to draughtPotency
                 ))
                 .setInitialDelay(durationMs, TimeUnit.MILLISECONDS)
                 .build()

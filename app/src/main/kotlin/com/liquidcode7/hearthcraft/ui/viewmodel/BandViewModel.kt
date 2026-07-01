@@ -229,15 +229,12 @@ class BandViewModel @Inject constructor(
         val foodMap   = _memberFood.value
         viewModelScope.launch {
             if (sessions.activeEncounter(bandId) != null) return@launch
-            val cookLevel = playerState.value?.cookingLevel ?: 1
-
             // Pre-compute fight to find actual end time — band may die early.
             val stage = enc.stages.firstOrNull() ?: return@launch
             val members = band.memberInputsForBand(
                 bandId         = bandId,
                 draughtPotency = _draughtPotency.value,
-                memberFood     = foodMap,
-                cookLevel      = cookLevel
+                memberFood     = foodMap
             )
             if (members.isEmpty()) return@launch
             val result = EncounterEngine.resolve(stage, members)
@@ -266,12 +263,10 @@ class BandViewModel @Inject constructor(
                 repeat(items.size) { inventory.removePreparedFood(recipeId) }
             }
 
-            val hpsList = members.map { it.hps }
             val request = EncounterWorker.buildRequest(
                 encounterId    = encounter.encounterId,
                 bandId         = bandId,
                 draughtPotency = _draughtPotency.value,
-                hps            = hpsList,
                 durationMs     = actualDelayMs
             )
             WorkManager.getInstance(context).enqueue(request)

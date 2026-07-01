@@ -81,10 +81,9 @@ class BandRepository @Inject constructor(
     suspend fun memberInputsForBand(
         bandId: String,
         draughtPotency: Float,
-        memberFood: Map<String, PreparedFoodDetail?>,  // memberId → food detail (null = no food)
-        cookLevel: Int
+        memberFood: Map<String, PreparedFoodDetail?>   // memberId → food detail (null = no food)
     ): List<MemberInput> {
-        val roleOrder = listOf("warden", "hunter", "keeper", "captain")
+        val roleOrder = listOf("warden", "fighter", "keeper", "captain")
         return gameData.bandMembers
             .filter { it.bandId == bandId }
             .sortedBy { roleOrder.indexOf(it.role.lowercase()) }
@@ -108,37 +107,12 @@ class BandRepository @Inject constructor(
                     vitality       = (state?.vitality ?: member.startingVitality).toFloat() + bonus("vit"),
                     will           = (state?.will     ?: member.startingWill).toFloat()     + bonus("wil"),
                     fate           = (state?.fate     ?: member.startingFate).toFloat(),
-                    hps            = if (food != null) hpsForCookLevel(cookLevel) else 0f,
                     draughtPotency = draughtPotency
                 )
             }
     }
 
     companion object {
-        private data class HpsTier(val range: IntRange, val hpsLo: Float, val hpsHi: Float)
-
-        private val TIER_TABLE = listOf(
-            HpsTier(1..4,   5.0f,  5.6f),
-            HpsTier(5..9,   6.0f,  9.0f),
-            HpsTier(10..15, 10.0f, 17.0f),
-            HpsTier(16..22, 18.0f, 30.0f),
-            HpsTier(23..30, 31.0f, 46.0f),
-            HpsTier(31..40, 47.0f, 76.0f),
-            HpsTier(41..50, 77.0f, 120.0f)
-        )
-
-        fun hpsForCookLevel(cookLevel: Int): Float {
-            val level = cookLevel.coerceIn(1, 50)
-            for (t in TIER_TABLE) {
-                if (level in t.range) {
-                    val span = (t.range.last - t.range.first).toFloat().coerceAtLeast(1f)
-                    val frac = (level - t.range.first) / span
-                    return t.hpsLo + frac * (t.hpsHi - t.hpsLo)
-                }
-            }
-            return 5.0f
-        }
-
         fun statBonusFor(
             stat: String,
             primaryStat: String?,

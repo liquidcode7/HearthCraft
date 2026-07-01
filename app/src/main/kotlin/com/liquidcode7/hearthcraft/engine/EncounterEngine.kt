@@ -20,13 +20,12 @@ enum class Outcome { VICTORY, DEFEAT, STALEMATE }
 
 data class MemberInput(
     val id: String,
-    val role: String,       // "warden"|"hunter"|"keeper"|"captain"
+    val role: String,           // "warden"|"fighter"|"keeper"|"captain"
     val might: Float,
     val agility: Float,
     val vitality: Float,
     val will: Float,
     val fate: Float,
-    val hps: Float,         // food HP/s for this member
     val draughtPotency: Float = 0f
 )
 
@@ -91,12 +90,19 @@ object EncounterEngine {
         val keeper = party.find { it.input.role == "keeper" }
 
         for (t in 1..stage.durationSec) {
-            // ── Food healing ──────────────────────────────────────────────────
-            for (m in active()) {
-                val heal = m.input.hps
-                val overflow = max(0f, (m.hp + heal) - m.maxHp)
-                m.hp = min(m.maxHp, m.hp + heal)
-                m.reserve = min(RMAX, m.reserve + overflow)
+            // ── Keeper healing ────────────────────────────────────────────────
+            // Keeper is the sole in-combat healer (Model B). Each tick, if the
+            // Keeper is standing, they heal every active member for will * 0.5.
+            // This replaces the old HP/s food-healing loop.
+            if (keeper != null && !keeper.grievous && keeper.hp > 0) {
+                val healAmt = keeper.input.will * 0.5f
+                for (m in active()) {
+                    if (m.hp > 0) {
+                        val overflow = max(0f, (m.hp + healAmt) - m.maxHp)
+                        m.hp = min(m.maxHp, m.hp + healAmt)
+                        m.reserve = min(RMAX, m.reserve + overflow)
+                    }
+                }
             }
 
             // ── DPS against boss ──────────────────────────────────────────────
@@ -200,7 +206,7 @@ object EncounterEngine {
 
     private fun rawDps(m: MemberInput): Float = when (m.role) {
         "warden"  -> m.might * 0.5f
-        "hunter"  -> m.agility + m.might * 0.4f
+        "fighter" -> m.agility + m.might * 0.4f
         "keeper"  -> m.will * 0.9f
         "captain" -> m.might * 0.3f + m.will * 0.2f
         else      -> 0f

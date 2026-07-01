@@ -6,54 +6,103 @@ import org.junit.Test
 
 class EncounterEngineTest {
 
-    private val neekerbreekerStage = Stage(
+    private fun stage(resolve: Int = 40000, drain: Float = 16f, spike: Float = 75f,
+                      spikeIv: Int = 13, phys: Float = 0f) = Stage(
         stageId = "main", label = "test", type = "attrition",
-        objective = "kill", durationSec = 1500, resolve = 40000,
-        drain = 16f, spike = 75f, spikeIntervalSec = 13, physMitPct = 0f
+        objective = "kill", durationSec = 1500, resolve = resolve,
+        drain = drain, spike = spike, spikeIntervalSec = spikeIv, physMitPct = phys
     )
 
-    private fun party(hps: Float) = listOf(
-        MemberInput("warden",  "warden",  13f, 6f,  15f, 7f,  6f,  hps),
-        MemberInput("hunter",  "hunter",  9f,  15f, 7f,  5f,  9f,  hps),
-        MemberInput("keeper",  "keeper",  5f,  7f,  9f,  15f, 12f, hps),
-        MemberInput("captain", "captain", 8f,  7f,  12f, 13f, 13f, hps)
+    // Band at level 10 starting stats — mirrors sim TPL values
+    private fun party() = listOf(
+        MemberInput("warden",  "warden",  13f, 6f,  15f, 7f,  6f),
+        MemberInput("fighter", "fighter", 9f,  15f, 7f,  5f,  9f),
+        MemberInput("keeper",  "keeper",  5f,  7f,  9f,  15f, 12f),
+        MemberInput("captain", "captain", 8f,  7f,  12f, 13f, 13f)
     )
 
     @Test
-    fun `high food guarantees victory in neekerbreekers`() {
-        // FL4 food (5.6 HP/s) should win ~91% — run 200 times, expect majority wins
+    fun `keeper heals party — band survives easy encounter`() {
+        // Soft encounter: low drain so Keeper healing keeps party standing
+        val easyStage = stage(resolve = 20000, drain = 8f, spike = 40f, spikeIv = 20)
         var wins = 0
         repeat(200) { seed ->
-            val result = EncounterEngine.resolve(neekerbreekerStage, party(5.6f), seed.toLong())
-            if (result.outcome == Outcome.VICTORY) wins++
+            val r = EncounterEngine.resolve(easyStage, party(), seed.toLong())
+            if (r.outcome == Outcome.VICTORY) wins++
         }
-        assert(wins > 150) { "Expected >75% wins at FL4, got ${wins}/200" }
+        assert(wins > 150) { "Expected >75% wins on easy encounter with Keeper healing, got $wins/200" }
     }
 
     @Test
-    fun `no food results in defeat in neekerbreekers`() {
-        // 0 HP/s — band bleeds out every time
+    fun `defeat happens when encounter is overwhelming`() {
+        // Extreme encounter: drain so high Keeper cannot keep up
+        val brutalStage = stage(resolve = 200000, drain = 120f, spike = 300f, spikeIv = 5)
         var defeats = 0
         repeat(50) { seed ->
-            val result = EncounterEngine.resolve(neekerbreekerStage, party(0f), seed.toLong())
-            if (result.outcome == Outcome.DEFEAT) defeats++
+            val r = EncounterEngine.resolve(brutalStage, party(), seed.toLong())
+            if (r.outcome == Outcome.DEFEAT) defeats++
         }
-        assertEquals("Expected all defeats with no food", 50, defeats)
+        assert(defeats > 40) { "Expected >80% defeats on brutal encounter, got $defeats/50" }
     }
 
     @Test
-    fun `goblin armor blocks kill without draught`() {
-        val goblinStage = Stage(
-            stageId = "main", label = "test", type = "attrition",
-            objective = "kill", durationSec = 1500, resolve = 68000,
-            drain = 20f, spike = 60f, spikeIntervalSec = 14, physMitPct = 35f
-        )
-        // FL5 food (6.0 HP/s), no draught — expect stalemate or defeat, never victory
+    fun `armor without draught causes stalemate or defeat`() {
+        // resolve=59000 is reachable with draught penetration but not without
+        val armoredStage = stage(resolve = 59000, drain = 20f, spike = 60f, spikeIv = 14, phys = 35f)
         var victories = 0
         repeat(100) { seed ->
-            val result = EncounterEngine.resolve(goblinStage, party(6.0f), seed.toLong())
-            if (result.outcome == Outcome.VICTORY) victories++
+            val r = EncounterEngine.resolve(armoredStage, party(), seed.toLong())
+            if (r.outcome == Outcome.VICTORY) victories++
         }
-        assert(victories < 10) { "Expected almost no victories without draught, got $victories/100" }
+        assert(victories < 10) { "Expected almost no victories without draught vs armored, got $victories/100" }
+    }
+
+    @Test
+    fun `draught penetration improves armored encounter`() {
+        val armoredStage = stage(resolve = 59000, drain = 20f, spike = 60f, spikeIv = 14, phys = 35f)
+        val partyWithDraught = party().map { it.copy(draughtPotency = 60f) }
+        var victories = 0
+        repeat(100) { seed ->
+            val r = EncounterEngine.resolve(armoredStage, partyWithDraught, seed.toLong())
+            if (r.outcome == Outcome.VICTORY) victories++
+        }
+        assert(victories > 30) { "Expected >30% wins with draught penetration, got $victories/100" }
+    }
+
+    @Test
+    fun `warden guard count never exceeds WARD_CAP`() {
+        val easyStage = stage(resolve = 20000, drain = 8f, spike = 40f, spikeIv = 5)
+        repeat(50) { seed ->
+            val r = EncounterEngine.resolve(easyStage, party(), seed.toLong())
+            assert(r.wardGuardsUsed <= 3) { "wardGuardsUsed ${r.wardGuardsUsed} exceeded WARD_CAP 3" }
+        }
+    }
+
+    @Test
+    fun `food stat boost increases DPS and improves outcome`() {
+        // Mid-difficulty encounter where stat boosts make a measurable difference
+        val midStage = stage(resolve = 35000, drain = 20f, spike = 100f, spikeIv = 12)
+        // No food bonus
+        var winsNoFood = 0
+        repeat(200) { seed ->
+            val r = EncounterEngine.resolve(midStage, party(), seed.toLong())
+            if (r.outcome == Outcome.VICTORY) winsNoFood++
+        }
+        // Might +4 on warden and fighter — expect meaningfully higher win rate
+        val boosted = party().map { m ->
+            when (m.role) {
+                "warden"  -> m.copy(might = m.might + 4f)
+                "fighter" -> m.copy(might = m.might + 4f)
+                else      -> m
+            }
+        }
+        var winsBoosted = 0
+        repeat(200) { seed ->
+            val r = EncounterEngine.resolve(midStage, boosted, seed.toLong())
+            if (r.outcome == Outcome.VICTORY) winsBoosted++
+        }
+        assert(winsBoosted > winsNoFood) {
+            "Expected food-boosted band to win more: no-food=$winsNoFood, boosted=$winsBoosted (out of 200)"
+        }
     }
 }
