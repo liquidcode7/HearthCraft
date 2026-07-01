@@ -2,7 +2,7 @@
   {
     "id": "hearthgrain",
     "name": "Hearthgrain",
-    "region": "Bree-land & The Shire",
+    "region": "Bree-land",
     "rarity": "c",
     "source": "farm",
     "gatheringMode": "farm",
@@ -15,7 +15,7 @@
   {
     "id": "goodmans_taters",
     "name": "Goodman's Taters",
-    "region": "Bree-land & The Shire",
+    "region": "Bree-land",
     "rarity": "c",
     "source": "farm",
     "gatheringMode": "farm",
@@ -27,7 +27,7 @@
   {
     "id": "barleycorn",
     "name": "Barleycorn",
-    "region": "Bree-land & The Shire",
+    "region": "Bree-land",
     "rarity": "c",
     "source": "farm",
     "gatheringMode": "farm",
@@ -40,7 +40,7 @@
   {
     "id": "rye_stalk",
     "name": "Rye Stalk",
-    "region": "Bree-land & The Shire",
+    "region": "Bree-land",
     "rarity": "c",
     "source": "farm",
     "gatheringMode": "farm",
@@ -52,7 +52,7 @@
   {
     "id": "oat_sheaf",
     "name": "Oat-sheaf",
-    "region": "Bree-land & The Shire",
+    "region": "Bree-land",
     "rarity": "c",
     "source": "farm",
     "gatheringMode": "farm",
@@ -65,7 +65,7 @@
   {
     "id": "brackenroot",
     "name": "Brackenroot",
-    "region": "Bree-land & The Shire",
+    "region": "Bree-land",
     "rarity": "c",
     "source": "farm",
     "gatheringMode": "farm",
@@ -78,7 +78,7 @@
   {
     "id": "parsnip",
     "name": "Parsnip",
-    "region": "Bree-land & The Shire",
+    "region": "Bree-land",
     "rarity": "c",
     "source": "farm",
     "gatheringMode": "farm",
@@ -90,7 +90,7 @@
   {
     "id": "turnip",
     "name": "Turnip",
-    "region": "Bree-land & The Shire",
+    "region": "Bree-land",
     "rarity": "c",
     "source": "farm",
     "gatheringMode": "farm",
@@ -102,7 +102,7 @@
   {
     "id": "leek",
     "name": "Leek",
-    "region": "Bree-land & The Shire",
+    "region": "Bree-land",
     "rarity": "c",
     "source": "farm",
     "gatheringMode": "farm",
@@ -115,7 +115,7 @@
   {
     "id": "onion",
     "name": "Onion",
-    "region": "Bree-land & The Shire",
+    "region": "Bree-land",
     "rarity": "c",
     "source": "farm",
     "gatheringMode": "farm",
@@ -127,7 +127,7 @@
   {
     "id": "pipeweed_leaf",
     "name": "Pipeweed Leaf",
-    "region": "Bree-land & The Shire",
+    "region": "Bree-land",
     "rarity": "u",
     "source": "farm",
     "gatheringMode": "farm",
@@ -139,7 +139,7 @@
   {
     "id": "duskberry",
     "name": "Duskberry",
-    "region": "Bree-land & The Shire",
+    "region": "Bree-land",
     "rarity": "c",
     "source": "farm",
     "gatheringMode": "farm",
@@ -151,7 +151,7 @@
   {
     "id": "hedgerow_berry",
     "name": "Hedgerow Berry",
-    "region": "Bree-land & The Shire",
+    "region": "Bree-land",
     "rarity": "c",
     "source": "forage",
     "gatheringMode": "forage",
@@ -164,7 +164,7 @@
   {
     "id": "sloe",
     "name": "Sloe",
-    "region": "Bree-land & The Shire",
+    "region": "Bree-land",
     "rarity": "c",
     "source": "forage",
     "gatheringMode": "forage",
@@ -177,7 +177,7 @@
   {
     "id": "crabapple",
     "name": "Crabapple",
-    "region": "Bree-land & The Shire",
+    "region": "Bree-land",
     "rarity": "c",
     "source": "forage",
     "gatheringMode": "forage",
@@ -190,7 +190,7 @@
   {
     "id": "rosehip",
     "name": "Rosehip",
-    "region": "Bree-land & The Shire",
+    "region": "Bree-land",
     "rarity": "u",
     "source": "forage",
     "gatheringMode": "forage",
@@ -203,7 +203,7 @@
   {
     "id": "wanderer_fig",
     "name": "Wanderer Fig",
-    "region": "Bree-land & The Shire",
+    "region": "Bree-land",
     "rarity": "c",
     "source": "forage",
     "gatheringMode": "forage",
@@ -215,7 +215,7 @@
   {
     "id": "brookcress",
     "name": "Brookcress",
-    "region": "Bree-land & The Shire",
+    "region": "Bree-land",
     "rarity": "c",
     "source": "forage",
     "gatheringMode": "forage",
@@ -229,7 +229,7 @@
   {
     "id": "common_thyme",
     "name": "Common Thyme",
-    "region": "Bree-land & The Shire",
+    "region": "Bree-land",
     "rarity": "c",
     "source": "farm",
     "gatheringMode": "farm",
@@ -242,7 +242,7 @@
   {
     "id": "meadowsweet",
     "name": "Meadowsweet",
-    "region": "Bree-land & The Shire",
+    "region": "Bree-land",
     "rarity": "c",
     "source": "forage",
     "gatheringMode": "forage",
@@ -254,7 +254,7 @@
   {
     "id": "yarrow",
     "name": "Yarrow",
-    "region": "Bree-land & The Shire",
+    "region": "Bree-land",
     "rarity": "u",
     "source": "forage",
     "gatheringMode": "forage",
@@ -267,7 +267,7 @@
   {
     "id": "feverfew",
     "name": "Feverfew",
-    "region": "Bree-land & The Shire",
+    "region": "Bree-land",
     "rarity": "u",
     "source": "forage",
     "gatheringMode": "forage",
@@ -279,7 +279,7 @@
   {
     "id": "sorrel",
     "name": "Sorrel",
-    "region": "Bree-land & The Shire",
+    "region": "Bree-land",
     "rarity": "c",
     "source": "forage",
     "gatheringMode": "forage",
@@ -292,7 +292,7 @@
   {
     "id": "pale_cap",
     "name": "Pale Cap",
-    "region": "Bree-land & The Shire",
+    "region": "Bree-land",
     "rarity": "c",
     "source": "farm",
     "gatheringMode": "farm",
@@ -304,7 +304,7 @@
   {
     "id": "stormcap",
     "name": "Stormcap",
-    "region": "Bree-land & The Shire",
+    "region": "Bree-land",
     "rarity": "c",
     "source": "forage",
     "gatheringMode": "forage",
@@ -316,7 +316,7 @@
   {
     "id": "chetwood_browncap",
     "name": "Chetwood Browncap",
-    "region": "Bree-land & The Shire",
+    "region": "Bree-land",
     "rarity": "c",
     "source": "forage",
     "gatheringMode": "forage",
@@ -329,7 +329,7 @@
   {
     "id": "blushcap",
     "name": "Blushcap",
-    "region": "Bree-land & The Shire",
+    "region": "Bree-land",
     "rarity": "u",
     "source": "forage",
     "gatheringMode": "forage",
@@ -341,9 +341,9 @@
   {
     "id": "forest_honey",
     "name": "Forest Honey",
-    "region": "Bree-land & The Shire",
+    "region": "Bree-land",
     "rarity": "c",
-    "source": "forage",
+    "source": "husbandry",
     "gatheringMode": "husbandry",
     "gatherType": "husbandry",
     "primaryStat": "vit",
@@ -353,9 +353,9 @@
   {
     "id": "field_honey",
     "name": "Field Honey",
-    "region": "Bree-land & The Shire",
+    "region": "Bree-land",
     "rarity": "c",
-    "source": "forage",
+    "source": "husbandry",
     "gatheringMode": "husbandry",
     "gatherType": "husbandry",
     "primaryStat": "vit",
@@ -364,7 +364,7 @@
   {
     "id": "butter",
     "name": "Butter",
-    "region": "Bree-land & The Shire",
+    "region": "Bree-land",
     "rarity": "c",
     "source": "process",
     "gatheringMode": "process",
@@ -383,7 +383,7 @@
   {
     "id": "hard_cheese",
     "name": "Hard Cheese",
-    "region": "Bree-land & The Shire",
+    "region": "Bree-land",
     "rarity": "u",
     "source": "process",
     "gatheringMode": "process",
@@ -402,7 +402,7 @@
   {
     "id": "rendered_fat",
     "name": "Rendered Fat",
-    "region": "Bree-land & The Shire",
+    "region": "Bree-land",
     "rarity": "c",
     "source": "process",
     "gatheringMode": "process",
@@ -421,7 +421,7 @@
   {
     "id": "smoked_river_trout",
     "name": "Smoked River Trout",
-    "region": "Bree-land & The Shire",
+    "region": "Bree-land",
     "rarity": "u",
     "source": "process",
     "gatheringMode": "process",
@@ -440,7 +440,7 @@
   {
     "id": "salted_pork",
     "name": "Salted Pork",
-    "region": "Bree-land & The Shire",
+    "region": "Bree-land",
     "rarity": "c",
     "source": "process",
     "gatheringMode": "process",
@@ -459,11 +459,11 @@
   {
     "id": "rabbit",
     "name": "Rabbit",
-    "region": "Bree-land & The Shire",
+    "region": "Bree-land",
     "rarity": "c",
-    "source": "forage",
-    "gatheringMode": "forage",
-    "gatherType": "hunt_fish",
+    "source": "hunt",
+    "gatheringMode": "hunt",
+    "gatherType": "hunt",
     "primaryStat": "agi",
     "secondaryStat": "vit",
     "notes": "Lean. Quick to cook. The Gaffer's taters would approve."
@@ -471,22 +471,22 @@
   {
     "id": "hog_meat",
     "name": "Hog Meat",
-    "region": "Bree-land & The Shire",
+    "region": "Bree-land",
     "rarity": "c",
-    "source": "forage",
-    "gatheringMode": "forage",
-    "gatherType": "hunt_fish",
+    "source": "hunt",
+    "gatheringMode": "hunt",
+    "gatherType": "hunt",
     "primaryStat": "mig",
     "secondaryStat": "vit",
-    "notes": "Wild pig from Chetwood and the Shire margins. Coarse but filling."
+    "notes": "Wild pig from Chetwood margins. Coarse but filling."
   },
   {
     "id": "hens_egg",
     "name": "Hen's Egg",
-    "region": "Bree-land & The Shire",
+    "region": "Bree-land",
     "rarity": "c",
-    "source": "farm",
-    "gatheringMode": "farm",
+    "source": "husbandry",
+    "gatheringMode": "husbandry",
     "gatherType": "husbandry",
     "primaryStat": "vit",
     "notes": "From a well-kept coop. Good for binding and body."
@@ -494,7 +494,7 @@
   {
     "id": "bilberry",
     "name": "Bilberry",
-    "region": "Bree-land & The Shire",
+    "region": "Bree-land",
     "rarity": "u",
     "source": "forage",
     "gatheringMode": "forage",
@@ -507,7 +507,7 @@
   {
     "id": "heartflame_pepper",
     "name": "Heartflame Pepper",
-    "region": "Bree-land & The Shire",
+    "region": "Bree-land",
     "rarity": "c",
     "source": "forage",
     "gatheringMode": "forage",
@@ -519,7 +519,7 @@
   {
     "id": "athelas",
     "name": "Athelas",
-    "region": "Bree-land & The Shire",
+    "region": "Bree-land",
     "rarity": "u",
     "source": "forage",
     "gatheringMode": "forage",
@@ -543,7 +543,7 @@
   },
   {
     "id": "lhun_flatbread_base",
-    "name": "Lh\u00fbn Flatbread Base",
+    "name": "Lhûn Flatbread Base",
     "region": "Celondim / Ered Luin",
     "rarity": "c",
     "source": "farm",
@@ -625,7 +625,7 @@
   },
   {
     "id": "lhun_plum",
-    "name": "Lh\u00fbn Plum",
+    "name": "Lhûn Plum",
     "region": "Celondim / Ered Luin",
     "rarity": "c",
     "source": "farm",
@@ -701,7 +701,7 @@
   },
   {
     "id": "lhun_sage",
-    "name": "Lh\u00fbn Sage",
+    "name": "Lhûn Sage",
     "region": "Celondim / Ered Luin",
     "rarity": "c",
     "source": "farm",
@@ -804,7 +804,7 @@
   },
   {
     "id": "lhun_olive_oil",
-    "name": "Lh\u00fbn Olive Oil",
+    "name": "Lhûn Olive Oil",
     "region": "Celondim / Ered Luin",
     "rarity": "u",
     "source": "farm",
@@ -841,7 +841,7 @@
   },
   {
     "id": "lhun_saltfish",
-    "name": "Lh\u00fbn Saltfish",
+    "name": "Lhûn Saltfish",
     "region": "Celondim / Ered Luin",
     "rarity": "c",
     "source": "forage",
@@ -856,7 +856,7 @@
     ],
     "primaryStat": "mig",
     "secondaryStat": "vit",
-    "notes": "Preserved sea fish from the Gulf of Lh\u00fbn."
+    "notes": "Preserved sea fish from the Gulf of Lhûn."
   },
   {
     "id": "smoked_eel",
@@ -875,7 +875,7 @@
     ],
     "primaryStat": "mig",
     "secondaryStat": "agi",
-    "notes": "River eel from the Lh\u00fbn estuary. Strong flavor."
+    "notes": "River eel from the Lhûn estuary. Strong flavor."
   },
   {
     "id": "seabird_egg",
@@ -892,10 +892,10 @@
   {
     "id": "deer_haunch_dried",
     "name": "Deer Haunch (dried)",
-    "region": "Celondim / Ered Luin",
+    "region": "Lone-Lands",
     "rarity": "u",
-    "source": "forage",
-    "gatheringMode": "forage",
+    "source": "process",
+    "gatheringMode": "process",
     "gatherType": "process",
     "processType": "cure",
     "processInputs": [
@@ -925,7 +925,7 @@
     ],
     "primaryStat": "vit",
     "secondaryStat": "wil",
-    "notes": "Firm elvish cheese aged with herbs. Not fussy \u2014 good."
+    "notes": "Firm elvish cheese aged with herbs. Not fussy — good."
   },
   {
     "id": "shorewrack_greens",
@@ -955,7 +955,7 @@
   },
   {
     "id": "springwater_lhun",
-    "name": "Springwater of Lh\u00fbn",
+    "name": "Springwater of Lhûn",
     "region": "Celondim / Ered Luin",
     "rarity": "c",
     "source": "forage",
@@ -1389,7 +1389,7 @@
   {
     "id": "thornberry",
     "name": "Thornberry",
-    "region": "Bree Wildlands / Lone-Lands",
+    "region": "Lone-Lands",
     "rarity": "c",
     "source": "forage",
     "gatheringMode": "forage",
@@ -1402,7 +1402,7 @@
   {
     "id": "old_forest_mushroom",
     "name": "Old Forest Mushroom",
-    "region": "Bree Wildlands / Lone-Lands",
+    "region": "Lone-Lands",
     "rarity": "u",
     "source": "forage",
     "gatheringMode": "forage",
@@ -1414,7 +1414,7 @@
   {
     "id": "marshwort",
     "name": "Marshwort",
-    "region": "Bree Wildlands / Lone-Lands",
+    "region": "Lone-Lands",
     "rarity": "u",
     "source": "forage",
     "gatheringMode": "forage",
@@ -1426,7 +1426,7 @@
   {
     "id": "nettleleaf",
     "name": "Nettleleaf",
-    "region": "Bree-land & The Shire",
+    "region": "Bree-land",
     "rarity": "c",
     "source": "forage",
     "gatheringMode": "forage",
@@ -1439,7 +1439,7 @@
   {
     "id": "pale_fen_cap",
     "name": "Pale Fen-cap",
-    "region": "Bree Wildlands / Lone-Lands",
+    "region": "Lone-Lands",
     "rarity": "u",
     "source": "forage",
     "gatheringMode": "forage",
@@ -1451,7 +1451,7 @@
   {
     "id": "road_herb",
     "name": "Road-herb",
-    "region": "Bree Wildlands / Lone-Lands",
+    "region": "Lone-Lands",
     "rarity": "c",
     "source": "forage",
     "gatheringMode": "forage",
@@ -1464,7 +1464,7 @@
   {
     "id": "chetwood_acorn",
     "name": "Chetwood Acorn",
-    "region": "Bree Wildlands / Lone-Lands",
+    "region": "Lone-Lands",
     "rarity": "c",
     "source": "forage",
     "gatheringMode": "forage",
@@ -1477,7 +1477,7 @@
   {
     "id": "wolf_moss",
     "name": "Wolf-moss",
-    "region": "Bree Wildlands / Lone-Lands",
+    "region": "Lone-Lands",
     "rarity": "r",
     "source": "forage",
     "gatheringMode": "forage",
@@ -1776,7 +1776,7 @@
   {
     "id": "willowherb",
     "name": "Willowherb",
-    "region": "Bree-land & The Shire",
+    "region": "Bree-land",
     "rarity": "c",
     "source": "forage",
     "gatheringMode": "forage",
@@ -1789,7 +1789,7 @@
   {
     "id": "bree_well_water",
     "name": "Bree Well-water",
-    "region": "Bree-land & The Shire",
+    "region": "Bree-land",
     "rarity": "c",
     "source": "draw",
     "gatheringMode": "draw",
@@ -1799,7 +1799,7 @@
   {
     "id": "brandywine_water",
     "name": "Brandywine Water",
-    "region": "Bree-land & The Shire",
+    "region": "Bree-land",
     "rarity": "c",
     "source": "draw",
     "gatheringMode": "draw",
@@ -1809,7 +1809,7 @@
   {
     "id": "chetwood_spring",
     "name": "Chetwood Spring Water",
-    "region": "Bree-land & The Shire",
+    "region": "Bree-land",
     "rarity": "u",
     "source": "draw",
     "gatheringMode": "draw",
@@ -1818,13 +1818,13 @@
   },
   {
     "id": "lhun_brine",
-    "name": "Lh\u00fbn Brine",
+    "name": "Lhûn Brine",
     "region": "Celondim / Ered Luin",
     "rarity": "c",
     "source": "draw",
     "gatheringMode": "draw",
     "gatherType": "draw",
-    "notes": "Seawater from the Gulf of Lh\u00fbn. Salt and mineral. Used in curing and preserving."
+    "notes": "Seawater from the Gulf of Lhûn. Salt and mineral. Used in curing and preserving."
   },
   {
     "id": "deep_cistern_water",
@@ -1861,32 +1861,34 @@
   {
     "id": "river_trout",
     "name": "River Trout",
-    "region": "Bree-land / Celondim",
+    "region": "Bree-land",
     "rarity": "c",
-    "source": "forage",
-    "gatheringMode": "forage",
-    "gatherType": "hunt_fish",
-    "notes": ""
+    "source": "fish",
+    "gatheringMode": "fish",
+    "gatherType": "fish",
+    "notes": "Chetwood rivers. Raw input for smoking."
   },
   {
     "id": "eel",
     "name": "Eel",
-    "region": "Bree Wildlands / Lone-Lands",
+    "region": "Lone-Lands",
     "rarity": "c",
-    "source": "forage",
-    "gatheringMode": "forage",
-    "gatherType": "hunt_fish",
-    "notes": ""
+    "source": "fish",
+    "gatheringMode": "fish",
+    "gatherType": "fish",
+    "notes": "Bree Wildlands rivers."
   },
   {
     "id": "deer_haunch",
     "name": "Deer Haunch",
-    "region": "Bree Wildlands / Lone-Lands",
+    "region": "Lone-Lands",
     "rarity": "u",
-    "source": "forage",
-    "gatheringMode": "forage",
-    "gatherType": "hunt_fish",
-    "notes": ""
+    "source": "hunt",
+    "gatheringMode": "hunt",
+    "gatherType": "hunt",
+    "notes": "Old forest hunting.",
+    "primaryStat": "mig",
+    "secondaryStat": "vit"
   },
   {
     "id": "grouse",
