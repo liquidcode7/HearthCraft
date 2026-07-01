@@ -290,27 +290,45 @@ spaced. Design the Men's arc first, then extrapolate.
 
 ### 8.3 Grimoires
 
-Two grimoire classes, fundamentally different purposes:
+Three grimoire classes:
 
 | Class | Source | Unlocks |
 |-------|--------|---------|
-| Cooking grimoire | Region boss drops | Higher cooking tiers |
+| Cooking grimoire | Region boss drops | Food recipes at that tier |
+| Draught grimoire | Miniboss and boss drops | Draught recipes at that tier |
 | HoH grimoire | Miniboss and boss drops | Houses of Healing preparations |
 
-Grimoires are not guaranteed — they are rare drops that gate meaningful
-progression. A player who hasn't found the Tier 3 grimoire cannot cook Tier 3
-recipes, regardless of Cook level or Band level.
+Grimoires are not guaranteed drops — they gate meaningful progression. A player
+who hasn't found the Tier 2 cooking grimoire cannot cook Tier 2 food, regardless
+of Cook level or Band level.
+
+**Individual draught recipe discovery:** Individual draught recipes can also be
+found as drops from minibosses or expedition rewards — bypassing the grimoire
+requirement for that specific recipe only. A found recipe is permanently unlocked.
+
+**T1 recipes never require a grimoire.** Cooking T1 food and T1 draughts are
+starter knowledge, always available from the beginning. Only T2+ requires a grimoire.
+
+**Drop sources for Bree-land arc:**
+
+| Encounter | Drop |
+|-----------|------|
+| Wolf-Master (miniboss, band level 7) | Draught grimoire T2, HoH grimoire T1 |
+| Rhudaur Men (region boss, band level 9) | Cooking grimoire T2 |
 
 ### 8.4 Three-Lock Progression
 
-Advancing to a new cooking tier requires **all three**:
+Advancing to a new tier requires **all three** (for T2+ only):
 
 1. Band level — the band must have reached the threshold
 2. Cook level — the provisioner's skill must be sufficient
-3. Grimoire — the recipe book must have been found
+3. Grimoire — the recipe book for that class and tier must have been found
 
 Missing any one of the three means the tier is locked. This creates meaningful
 pacing and prevents over-preparation.
+
+Individual recipe discovery (draught only) bypasses the grimoire lock for that
+specific recipe, but cook level and band level still apply.
 
 ---
 
