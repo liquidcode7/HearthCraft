@@ -119,6 +119,8 @@ class BandViewModel @Inject constructor(
                     role = member.role,
                     isAlive = state?.isAlive != false,
                     woundStatus = state?.woundStatus ?: "healthy",
+                    woundedSinceMs = state?.woundedSinceMs ?: 0L,
+                    woundedDurationMs = state?.woundedDurationMs ?: 0L,
                     might = state?.might ?: member.startingMight,
                     agility = state?.agility ?: member.startingAgility,
                     vitality = state?.vitality ?: member.startingVitality,
@@ -212,15 +214,6 @@ class BandViewModel @Inject constructor(
     fun clearMemberFood() { _memberFood.value = emptyMap() }
     fun selectEncounter(detail: EncounterDetail?) { _selectedEncounter.value = detail }
     fun setDraught(potency: Float) { _draughtPotency.value = potency }
-
-    fun treatWound(memberId: String, food: PreparedFoodDetail) {
-        viewModelScope.launch {
-            val canTreat = food.buffType == "healing" || food.buffType == "healing_deep"
-            if (!canTreat) return@launch
-            band.healWound(memberId)
-            inventory.removePreparedFood(food.recipeId)
-        }
-    }
 
     fun sendOnEncounter() {
         val encounter = _selectedEncounter.value ?: return

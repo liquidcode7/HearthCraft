@@ -129,40 +129,18 @@ fun BandScreen(
             Spacer(modifier = Modifier.height(4.dp))
         }
 
-        val woundedMembers = members.filter { it.isAlive && it.woundStatus != "healthy" }
-        val healingFood = preparedFood.filter { it.buffType == "healing" || it.buffType == "healing_deep" }
-        if (woundedMembers.isNotEmpty() && healingFood.isNotEmpty()) {
+        val recoveringMembers = members.filter { it.isAlive && it.woundStatus == "wounded" }
+        if (recoveringMembers.isNotEmpty()) {
             Spacer(modifier = Modifier.height(12.dp))
-            Text("Treat Wounds", style = MaterialTheme.typography.titleSmall)
+            Text("Recovering", style = MaterialTheme.typography.titleSmall)
             Spacer(modifier = Modifier.height(8.dp))
-            woundedMembers.forEach { member ->
-                val applicableFood = healingFood.filter { food ->
-                    when (member.woundStatus) {
-                        "wounded" -> true
-                        "grievously_wounded" -> food.buffType == "healing_deep"
-                        else -> false
-                    }
-                }
-                if (applicableFood.isNotEmpty()) {
-                    Card(modifier = Modifier.fillMaxWidth()) {
-                        Column(modifier = Modifier.padding(10.dp)) {
-                            Text(
-                                "${member.name} — ${if (member.woundStatus == "grievously_wounded") "Grievous Wound" else "Wounded"}",
-                                style = MaterialTheme.typography.bodySmall
-                            )
-                            Spacer(modifier = Modifier.height(6.dp))
-                            applicableFood.forEach { food ->
-                                OutlinedButton(
-                                    onClick = { bandViewModel.treatWound(member.memberId, food) },
-                                    modifier = Modifier.fillMaxWidth()
-                                ) {
-                                    Text("Treat with ${food.name}", style = MaterialTheme.typography.labelSmall)
-                                }
-                            }
-                        }
-                    }
-                    Spacer(modifier = Modifier.height(6.dp))
-                }
+            recoveringMembers.forEach { member ->
+                WoundRecoveryRow(
+                    name = member.name,
+                    woundedSinceMs = member.woundedSinceMs,
+                    woundedDurationMs = member.woundedDurationMs
+                )
+                Spacer(modifier = Modifier.height(6.dp))
             }
         }
 
@@ -470,6 +448,35 @@ private fun MissionActiveCard(missionName: String, startedAtMs: Long, durationMs
                 "remaining",
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onPrimaryContainer
+            )
+        }
+    }
+}
+
+@Composable
+private fun WoundRecoveryRow(name: String, woundedSinceMs: Long, woundedDurationMs: Long) {
+    var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
+    LaunchedEffect(woundedSinceMs) {
+        while (true) {
+            now = System.currentTimeMillis()
+            delay(1000L)
+        }
+    }
+    val remainingMs = maxOf(0L, woundedSinceMs + woundedDurationMs - now)
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(10.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                "$name — Wounded",
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.weight(1f)
+            )
+            Text(
+                formatMs(remainingMs),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.primary
             )
         }
     }
