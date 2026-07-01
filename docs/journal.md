@@ -5,13 +5,13 @@
 
 ---
 
-## Current Status — June 30, 2026
+## Current Status — July 1, 2026
 
-**Phase:** Ground-up redesign — god document written, Men ingredient roster finalized, old design docs archived. No code changes this session.
-**What's working:** Existing code is unchanged and still functional. The design direction has been completely reset.
-**What's not wired yet:** Everything in the new design. The combat engine still runs the old HP/s model. Ingredient/recipe JSON still has old data. Code work begins next session.
-**Next session:** Implement the new ingredient and recipe data for Men (Greycloaks) — rename ironroot→brackenroot in ingredients.json and the 4 affected recipes, restructure ingredient regions, update prepared ingredients.
-**Open questions:** Player title (still TBD). Warden's secondary stat. Exact Lone-Lands unlock trigger. Number of cooking tiers needed for full campaign. All captured in design/master-design.md §14.
+**Phase:** Combat engine redesign (Model B) — complete across both sim and Android engine.
+**What's working:** Full Model B combat: food = stat boosts only, Keeper is sole healer (HoT + triage + group heal + rescue burst), universal Fate streak (crit mechanic) in both the JS sim and Android EncounterEngine. All HP/s code stripped. hunter→fighter rename complete.
+**What's not wired yet:** The encounters sim has Inspirations wired; the Android engine does not (by design for now). The `reserve` field on MS is inert — not yet removed.
+**Next session:** Run the sim against current Men encounters to re-validate balance with the new HoT+streak system. Then: ingredient/recipe data pass for Men (Greycloaks) — the JSON still has old-era data.
+**Open questions:** Player title (still TBD). Warden secondary stat. Exact Lone-Lands unlock trigger.
 
 ---
 
@@ -1978,4 +1978,39 @@ Post-Session-49 code review surfaced 9 correctness bugs and 6 cleanup issues. Al
 - Next session: Grimoire system implementation (requires basic-vs-grimoire recipe data pass first), or quality tuning with the sim
 - Near term: Miniboss tricks for Dourhand + Large Spider; Undermarch/Mithlost return vault creatures
 - Future ideas logged: Expedition mechanic (parked in parked_topics.md)
+
+---
+
+## Session 53 — July 1, 2026
+**Combat Engine Redesign (Model B) — full implementation across sim + Android**
+
+Both the JavaScript headless sim (`tools/sim/run_sim.js`) and the Android `EncounterEngine.kt` now implement Model B combat. This session executed a 7-task Subagent-Driven Development plan.
+
+**What was built:**
+- `tools/sim/food_model.js`: stripped HP/s system; kept stat-boost exports only
+- `tools/sim/run_sim.js`: hunter→fighter rename; HP/s food healing removed; Keeper HoT + triage + group heal added; Fate streak (crit mechanic) added alongside existing Inspirations (Horn, Red Dawn, Black Arrow, Laurelin's Grace — all four untouched)
+- `app/.../engine/EncounterEngine.kt`: HP/s stripped from MemberInput; Keeper HoT system added (full priority chain: group heal → triage → HoT slots → conditional keeper DPS); Fate streak added (per-member, all active members, 1.5× DPS+heal mult)
+- `app/.../data/repository/BandRepository.kt`: `hpsForCookLevel()` and TIER_TABLE removed; hunter→fighter
+- `app/.../worker/EncounterWorker.kt`: KEY_HPS_* constants removed
+- `app/.../ui/viewmodel/BandViewModel.kt`: `hps = hpsList` argument removed from buildRequest()
+- `app/.../ui/screen/BandScreen.kt`: roleAbility() "hunter" → "fighter"
+- `app/src/test/.../EncounterEngineTest.kt`: 8 tests covering healing, streak, armor, draught, warden guard
+- `app/src/test/.../MemberInputStatTest.kt`: hpsForCookLevel tests removed
+
+**Decisions made:**
+- Fate streaks are the crit mechanic and coexist with Inspirations — they do NOT replace Inspirations. Both systems run in the sim simultaneously.
+- TRIAGE_COOLDOWN = 2 delivers a 1-tick minimum gap (decrement-before-check). Comment corrected; constant unchanged so sim and Android stay in sync.
+- Test parameters differ between sim and Android: the sim has cascade drain, fate evasion, and Inspirations that the Android engine lacks. Android test values were independently calibrated against the new HoT system balance.
+
+**Anything that diverged from design:**
+- None. All changes align with master-design.md Model B spec.
+
+**Constants (sim ↔ Android identical):**
+HoT: HOT_DURATION=8, HOT_HEAL_MUL=0.15, TRIAGE_HP=0.25, TRIAGE_MUL=2.0, TRIAGE_COOLDOWN=2, GROUP_HEAL_IV=20, GROUP_HEAL_MUL=0.5
+Streak: STREAK_K=0.002, STREAK_REFRACTORY=20, STREAK_DURATION=5, STREAK_MULT=1.5
+
+**Coming up:**
+- Next session: Run sim against Men encounters (Wolf-Master, Rhudaur Men, Barrow-wight) to validate balance under new HoT+streak system
+- Near term: Ingredient/recipe data pass for Men (JSON still has old-era data); Grimoire system
+- Future ideas logged: None this session
 
