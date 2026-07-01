@@ -41,6 +41,11 @@ android {
         compose = true
         buildConfig = true
     }
+    sourceSets {
+        getByName("test") {
+            resources.srcDirs("src/main/assets")
+        }
+    }
 }
 
 ksp {

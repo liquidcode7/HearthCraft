@@ -205,7 +205,7 @@
     "rewardMoneyMax": 25,
     "rewardMultiplier": 1,
     "durationMs": 1500000,
-    "rewardTable": ["moonpetal", "duskberry", "stormcap"],
+    "rewardTable": ["meadowsweet", "stormcap", "duskberry", "nettleleaf"],
     "stages": [
       {
         "stageId": "main",
@@ -237,7 +237,7 @@
     "rewardMoneyMax": 60,
     "rewardMultiplier": 2,
     "durationMs": 1500000,
-    "rewardTable": ["ironbark_resin", "moonpetal", "cave_truffle", "duskberry"],
+    "rewardTable": ["rabbit", "rosehip", "hedgerow_berry", "yarrow"],
     "stages": [
       {
         "stageId": "main",
@@ -269,7 +269,7 @@
     "rewardMoneyMax": 150,
     "rewardMultiplier": 4,
     "durationMs": 1500000,
-    "rewardTable": ["cave_truffle", "ironbark_resin", "moonpetal", "stormcap"],
+    "rewardTable": ["wolf_moss", "marshwort", "thornberry", "road_herb"],
     "stages": [
       {
         "stageId": "main",
@@ -294,7 +294,7 @@
     "name": "The Wolf-Master of the Chetwood",
     "region": "Chetwood, east of Bree",
     "difficulty": "hard",
-    "recLevel": 4,
+    "recLevel": 7,
     "requiredCookingLevel": 5,
     "flavorIntro": "The pack is too organized. Someone is running them. A figure at the treeline, and the wolves answer. The Master himself is not large — but the pack does not break until he does.",
     "flavorLine": "He runs them like a war-band. Every member needs to be able to take a hit.",
@@ -302,7 +302,8 @@
     "rewardMoneyMax": 120,
     "rewardMultiplier": 5,
     "durationMs": 1500000,
-    "rewardTable": ["ironbark_resin", "cave_truffle", "duskberry", "wolf_moss"],
+    "rewardTable": ["hog_meat", "chetwood_browncap", "heartflame_pepper", "athelas"],
+    "grimoireDrops": ["draught_t2", "hoh_t1"],
     "stages": [
       {
         "stageId": "main",
@@ -328,7 +329,7 @@
     "name": "Rhudaur Men of the East Road",
     "region": "The Lone-lands, east of Weathertop",
     "difficulty": "hard",
-    "recLevel": 6,
+    "recLevel": 9,
     "requiredCookingLevel": 8,
     "flavorIntro": "Hillmen from the east, blood-marked and organized. They have been ranging west along the Road for weeks. Someone is paying them. At their head, a blood-speaker who feeds on the fight itself — his wounds close as yours open.",
     "flavorLine": "They do not stop. You have to out-damage whatever is keeping their leader standing.",
@@ -336,7 +337,8 @@
     "rewardMoneyMax": 280,
     "rewardMultiplier": 6,
     "durationMs": 1800000,
-    "rewardTable": ["wolf_moss", "ironbark_resin", "athelas", "cave_truffle"],
+    "rewardTable": ["deer_haunch", "eel", "pale_fen_cap", "road_herb"],
+    "grimoireDrops": ["cooking_t2"],
     "stages": [
       {
         "stageId": "main",
@@ -373,7 +375,7 @@
     "rewardMoneyMax": 400,
     "rewardMultiplier": 8,
     "durationMs": 1800000,
-    "rewardTable": ["athelas", "wolf_moss", "meadowsweet", "ironbark_resin"],
+    "rewardTable": ["athelas", "meadowsweet", "willowherb", "yarrow"],
     "stages": [
       {
         "stageId": "main",

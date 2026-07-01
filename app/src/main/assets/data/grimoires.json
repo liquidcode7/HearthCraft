@@ -1,0 +1,23 @@
+[
+  {
+    "id": "cooking_t2",
+    "class": "cooking",
+    "tier": 2,
+    "name": "The Provisioner's Almanac, Volume II",
+    "description": "A worn collection of Bree-land recipes beyond the basics. Found on the bodies of Rhudaur Men."
+  },
+  {
+    "id": "draught_t2",
+    "class": "draught",
+    "tier": 2,
+    "name": "Wolf-Lore: Draught Preparations",
+    "description": "Notes on compound draughts, in a hand not easily read. Taken from the Wolf-Master's cache."
+  },
+  {
+    "id": "hoh_t1",
+    "class": "hoh",
+    "tier": 1,
+    "name": "The Houses of Healing: First Teachings",
+    "description": "Introductory methods of the healers — athelas, poultices, and the care of wounds. Found with the Wolf-Master."
+  }
+]

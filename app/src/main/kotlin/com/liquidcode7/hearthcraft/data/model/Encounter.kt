@@ -42,5 +42,6 @@ data class Encounter(
     val rewardMultiplier: Int,
     val durationMs: Long,
     val rewardTable: List<String>,
+    val grimoireDrops: List<String> = emptyList(),
     val stages: List<Stage>
 )
