@@ -56,6 +56,7 @@ fun MissionsScreen(
     val activeMission by bandViewModel.activeMission.collectAsState()
     val combatReport by bandViewModel.combatReport.collectAsState()
     val allAliveProvisioned by bandViewModel.allAliveProvisioned.collectAsState()
+    val allAliveHealthy by bandViewModel.allAliveHealthy.collectAsState()
     val members by bandViewModel.members.collectAsState()
 
     // Only show encounters that are actually unlocked — hidden is better than locked/greyed.
@@ -172,8 +173,17 @@ fun MissionsScreen(
                 )
                 Spacer(modifier = Modifier.height(6.dp))
             }
+            if (!allAliveHealthy) {
+                Text(
+                    "A band member is wounded — wait for recovery.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+            }
             Button(
                 onClick = { bandViewModel.sendOnEncounter() },
+                enabled = allAliveHealthy,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Send — ${selectedEncounter!!.name}")

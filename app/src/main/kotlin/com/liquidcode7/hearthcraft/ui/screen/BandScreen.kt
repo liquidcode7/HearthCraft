@@ -60,6 +60,7 @@ fun BandScreen(
     val availableBandsForUnlock by bandViewModel.availableBandsForUnlock.collectAsState()
     val memberFood by bandViewModel.memberFood.collectAsState()
     val selectedEncounter by bandViewModel.selectedEncounter.collectAsState()
+    val allAliveHealthy by bandViewModel.allAliveHealthy.collectAsState()
 
     var selectedMember by remember { mutableStateOf<BandMemberWithState?>(null) }
     var showProvisioningDialog by remember { mutableStateOf(false) }
@@ -165,7 +166,14 @@ fun BandScreen(
             }
         } else if (activeMission == null && activeEncounterSession == null) {
             val unlockedEncounters = encounters.filter { it.isUnlocked }
-            if (unlockedEncounters.isEmpty()) {
+            if (!allAliveHealthy) {
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    "A band member is wounded. Wait for recovery before sending this band out again.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error
+                )
+            } else if (unlockedEncounters.isEmpty()) {
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
                     "No encounters available yet. Level up your band.",

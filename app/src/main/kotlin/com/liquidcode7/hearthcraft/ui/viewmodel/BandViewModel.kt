@@ -202,6 +202,12 @@ class BandViewModel @Inject constructor(
         aliveMembers.isNotEmpty() && aliveMembers.all { food[it.memberId] != null }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
+    // A wounded member (light, heavy, or grievous) can't be sent on a mission until they recover.
+    val allAliveHealthy: StateFlow<Boolean> = members.map { memberList ->
+        val aliveMembers = memberList.filter { it.isAlive }
+        aliveMembers.isNotEmpty() && aliveMembers.all { it.woundStatus == "healthy" }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+
     private val _selectedEncounter = MutableStateFlow<EncounterDetail?>(null)
     val selectedEncounter: StateFlow<EncounterDetail?> = _selectedEncounter.asStateFlow()
 
@@ -222,6 +228,7 @@ class BandViewModel @Inject constructor(
         val foodMap   = _memberFood.value
         viewModelScope.launch {
             if (sessions.activeEncounter(bandId) != null) return@launch
+            if (!allAliveHealthy.value) return@launch
             // Pre-compute fight to find actual end time — band may die early.
             val stage = enc.stages.firstOrNull() ?: return@launch
             val members = band.memberInputsForBand(

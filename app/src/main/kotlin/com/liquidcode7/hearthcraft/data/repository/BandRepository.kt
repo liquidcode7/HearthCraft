@@ -33,11 +33,6 @@ class BandRepository @Inject constructor(
             }
     }
 
-    suspend fun killMember(memberId: String) {
-        val existing = dao.get(memberId) ?: BandMemberState(memberId = memberId)
-        dao.upsert(existing.copy(isAlive = false))
-    }
-
     suspend fun woundMember(memberId: String, grievous: Boolean, durationMs: Long) {
         val existing = dao.get(memberId) ?: BandMemberState(memberId = memberId)
         val status = if (grievous) "grievously_wounded" else "wounded"
@@ -54,15 +49,6 @@ class BandRepository @Inject constructor(
         gameData.bandMembers
             .filter { it.bandId == bandId }
             .filter { dao.get(it.id)?.isAlive != false }
-            .map { it.id }
-
-    suspend fun woundableMemberIds(bandId: String): List<String> =
-        gameData.bandMembers
-            .filter { it.bandId == bandId }
-            .filter {
-                val state = dao.get(it.id)
-                state?.isAlive != false && state?.woundStatus != "grievously_wounded"
-            }
             .map { it.id }
 
     suspend fun grantMissionStats(bandId: String, succeeded: Boolean) {
