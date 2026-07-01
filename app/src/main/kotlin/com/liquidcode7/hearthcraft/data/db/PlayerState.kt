@@ -25,5 +25,7 @@ data class PlayerState(
     @ColumnInfo(defaultValue = "0")
     val hasSeenPostForageNudge: Boolean = false,
     @ColumnInfo(defaultValue = "0")
-    val hasReceivedStarterPantry: Boolean = false
+    val hasReceivedStarterPantry: Boolean = false,
+    @ColumnInfo(defaultValue = "")
+    val foundGrimoireIds: String = "",
 )

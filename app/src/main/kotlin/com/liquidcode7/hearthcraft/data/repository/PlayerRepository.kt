@@ -94,6 +94,33 @@ class PlayerRepository @Inject constructor(
         }
     }
 
+    fun observeFoundGrimoireIds(): Flow<Set<String>> = dao.observe().map { state ->
+        state?.foundGrimoireIds
+            ?.split(",")
+            ?.filter { it.isNotBlank() }
+            ?.toSet()
+            ?: emptySet()
+    }
+
+    suspend fun discoverGrimoire(id: String) {
+        val state = dao.get() ?: return
+        val current = state.foundGrimoireIds
+            .split(",").filter { it.isNotBlank() }.toMutableSet()
+        if (current.add(id)) {
+            dao.upsert(state.copy(foundGrimoireIds = current.joinToString(",")))
+        }
+    }
+
+    suspend fun discoverGrimoires(ids: Collection<String>) {
+        if (ids.isEmpty()) return
+        val state = dao.get() ?: return
+        val current = state.foundGrimoireIds
+            .split(",").filter { it.isNotBlank() }.toMutableSet()
+        if (current.addAll(ids)) {
+            dao.upsert(state.copy(foundGrimoireIds = current.joinToString(",")))
+        }
+    }
+
     suspend fun markHintsSeen() {
         val state = dao.get() ?: return
         if (!state.hasSeenFoodStructureHints) {
