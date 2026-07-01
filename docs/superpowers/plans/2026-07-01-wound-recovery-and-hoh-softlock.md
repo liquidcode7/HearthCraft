@@ -417,18 +417,10 @@ class WoundResolutionTest {
         assertTrue(safetyNet.durationMs > heavy.durationMs)
     }
 
-    @Test
-    fun `there is no death outcome at any wound count`() {
-        for (wounds in 0..10) {
-            val outcome = resolveWoundOutcome(wounds, hohAvailable = true)
-            // grievous=true, durationMs=0 signals "no auto-heal", never "death" — there is no
-            // death branch in the return type at all, so this loop just documents that every
-            // wound count resolves to either null or a WoundOutcome, never a crash/kill signal.
-            assertTrue(outcome == null || outcome is WoundOutcome)
-        }
-    }
 }
 ```
+
+(There is deliberately no "wounds never cause death" test here: `WoundOutcome` has no death case in its shape at all — `grievous: Boolean` plus `durationMs: Long` — so that guarantee is enforced by the type system, not worth a runtime assertion that would just restate what the compiler already proves.)
 
 - [ ] **Step 2: Add the pure functions and constants to `EncounterWorker.kt`**
 
@@ -636,7 +628,7 @@ Expected: BUILD SUCCESSFUL.
 ```bash
 ./gradlew testDebugUnitTest --tests "com.liquidcode7.hearthcraft.worker.WoundResolutionTest"
 ```
-Expected: 6 tests, PASS.
+Expected: 5 tests, PASS.
 
 - [ ] **Step 7: Commit everything together (includes Task 4's held-back change)**
 
