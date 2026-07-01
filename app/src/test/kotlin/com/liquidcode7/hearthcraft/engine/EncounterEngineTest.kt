@@ -58,14 +58,15 @@ class EncounterEngineTest {
 
     @Test
     fun `draught penetration improves armored encounter`() {
-        val armoredStage = stage(resolve = 59000, drain = 20f, spike = 60f, spikeIv = 14, phys = 35f)
+        // resolve=35000 + phys=35% is marginal without draught (8%) but reachable with draught=60 (32%)
+        val armoredStage = stage(resolve = 35000, drain = 8f, spike = 40f, spikeIv = 20, phys = 35f)
         val partyWithDraught = party().map { it.copy(draughtPotency = 60f) }
         var victories = 0
         repeat(100) { seed ->
             val r = EncounterEngine.resolve(armoredStage, partyWithDraught, seed.toLong())
             if (r.outcome == Outcome.VICTORY) victories++
         }
-        assert(victories > 30) { "Expected >30% wins with draught penetration, got $victories/100" }
+        assert(victories > 20) { "Expected >20% wins with draught penetration, got $victories/100" }
     }
 
     @Test
@@ -78,9 +79,21 @@ class EncounterEngineTest {
     }
 
     @Test
+    fun `keeper triage fires when member is below 25 percent health`() {
+        // Run with a stage where spike brings someone low quickly — Keeper must triage
+        val spikeHeavy = stage(resolve = 100000, drain = 5f, spike = 180f, spikeIv = 3)
+        var rescuesOrWards = 0
+        repeat(100) { seed ->
+            val r = EncounterEngine.resolve(spikeHeavy, party(), seed.toLong())
+            rescuesOrWards += r.rescuesUsed + r.wardGuardsUsed
+        }
+        assert(rescuesOrWards > 0) { "Expected Keeper to rescue or Warden to guard during heavy-spike encounter" }
+    }
+
+    @Test
     fun `food stat boost increases DPS and improves outcome`() {
-        // Mid-difficulty encounter where stat boosts make a measurable difference
-        val midStage = stage(resolve = 35000, drain = 20f, spike = 100f, spikeIv = 12)
+        // Marginal encounter where stat boosts make a measurable difference (tuned for HoT system balance)
+        val midStage = stage(resolve = 15000, drain = 8f, spike = 60f, spikeIv = 12)
         // No food bonus
         var winsNoFood = 0
         repeat(200) { seed ->

@@ -16,6 +16,15 @@ private const val JITTER       = 0.10f
 private const val SHADOW_FLOOR = 0.55f   // matches run_sim.js — used when shadow encounters are added (V2)
 private const val SHADOW_RATE  = 0.0011f // per-tick stat drain per point of shadow severity (V2)
 
+// Keeper healing constants — must match tools/sim/run_sim.js exactly
+private const val HOT_DURATION    = 8      // ticks per HoT application
+private const val HOT_HEAL_MUL    = 0.15f  // healPerTick = keeper.will × HOT_HEAL_MUL
+private const val TRIAGE_HP       = 0.25f  // triage fires when target hp < maxHp × TRIAGE_HP
+private const val TRIAGE_MUL      = 2.0f   // triageHeal = keeper.will × TRIAGE_MUL
+private const val TRIAGE_COOLDOWN = 2      // ticks between triage uses
+private const val GROUP_HEAL_IV   = 20     // ticks between group heals
+private const val GROUP_HEAL_MUL  = 0.5f   // groupHeal per member = keeper.will × GROUP_HEAL_MUL
+
 enum class Outcome { VICTORY, DEFEAT, STALEMATE }
 
 data class MemberInput(
@@ -89,33 +98,35 @@ object EncounterEngine {
         val warden = party.find { it.input.role == "warden" }
         val keeper = party.find { it.input.role == "keeper" }
 
+        // Keeper HoT state — two independent slots
+        data class HoT(val targetId: String, var ticksLeft: Int, val healPerTick: Float)
+        var hot1: HoT? = null
+        var hot2: HoT? = null
+        var triageCooldown = 0
+        var groupHealTimer = GROUP_HEAL_IV
+
         for (t in 1..stage.durationSec) {
-            // ── Keeper healing ────────────────────────────────────────────────
-            // Keeper is the sole in-combat healer (Model B). Each tick, if the
-            // Keeper is standing, they heal every active member for will * 0.5.
-            // This replaces the old HP/s food-healing loop.
+            // ── Keeper HoT ticks ──────────────────────────────────────────────────
             if (keeper != null && !keeper.grievous && keeper.hp > 0) {
-                val healAmt = keeper.input.will * 0.5f
-                for (m in active()) {
-                    if (m.hp > 0) {
-                        val overflow = max(0f, (m.hp + healAmt) - m.maxHp)
-                        m.hp = min(m.maxHp, m.hp + healAmt)
-                        m.reserve = min(RMAX, m.reserve + overflow)
+                for (hot in listOfNotNull(hot1, hot2)) {
+                    val target = party.find { it.input.id == hot.targetId }
+                    if (target != null && !target.grievous) {
+                        target.hp = min(target.maxHp, target.hp + hot.healPerTick)
                     }
+                    hot.ticksLeft--
                 }
+                if (hot1?.ticksLeft == 0) hot1 = null
+                if (hot2?.ticksLeft == 0) hot2 = null
             }
 
-            // ── DPS against boss ──────────────────────────────────────────────
-            val rawDps = standing().sumOf { rawDps(it.input).toDouble() }.toFloat()
+            // ── DPS against boss (non-keeper) ────────────────────────────────────
+            val nonKeeperDps = standing().filter { it.input.role != "keeper" }
+                .sumOf { rawDps(it.input).toDouble() }.toFloat()
             val jMul = 1f + rng.nextFloat() * 2 * JITTER - JITTER
-            val effDps = rawDps * (1f - effArmor) * jMul
-            boss -= effDps
+            boss -= nonKeeperDps * (1f - effArmor) * jMul
             if (boss <= 0f) {
-                return EncounterResult(
-                    Outcome.VICTORY,
-                    party.associate { it.input.id to it.wounds },
-                    rescues, wardGuards, 0f, t
-                )
+                return EncounterResult(Outcome.VICTORY,
+                    party.associate { it.input.id to it.wounds }, rescues, wardGuards, 0f, t)
             }
 
             // ── Drain ─────────────────────────────────────────────────────────
@@ -176,6 +187,56 @@ object EncounterEngine {
                     rescued.hp = 40f + keeper.input.will * 4f
                     rescues++
                 }
+            }
+
+            // ── Keeper action ─────────────────────────────────────────────────────
+            if (keeper != null && !keeper.grievous && keeper.hp > 0) {
+                val healPerTick = keeper.input.will * HOT_HEAL_MUL
+                if (triageCooldown > 0) triageCooldown--
+                groupHealTimer--
+
+                val actionTaken: Boolean
+                when {
+                    groupHealTimer <= 0 -> {
+                        val groupHeal = keeper.input.will * GROUP_HEAL_MUL
+                        standing().forEach { m -> m.hp = min(m.maxHp, m.hp + groupHeal) }
+                        groupHealTimer = GROUP_HEAL_IV
+                        actionTaken = true
+                    }
+                    else -> {
+                        val triageTarget = standing()
+                            .filter { it.input.id != keeper.input.id }
+                            .firstOrNull { it.hp < TRIAGE_HP * it.maxHp }
+                        if (triageTarget != null && triageCooldown == 0) {
+                            triageTarget.hp = min(triageTarget.maxHp,
+                                triageTarget.hp + keeper.input.will * TRIAGE_MUL)
+                            triageCooldown = TRIAGE_COOLDOWN
+                            actionTaken = true
+                        } else {
+                            if (hot1 == null || hot2 == null) {
+                                val covered = setOfNotNull(hot1?.targetId, hot2?.targetId)
+                                val hotTarget = standing()
+                                    .filter { it.input.id !in covered }
+                                    .minByOrNull { it.hp / it.maxHp }
+                                if (hotTarget != null) {
+                                    val h = HoT(hotTarget.input.id, HOT_DURATION, healPerTick)
+                                    if (hot1 == null) hot1 = h else hot2 = h
+                                }
+                            }
+                            actionTaken = false
+                        }
+                    }
+                }
+                // Keeper DPS only when no consuming action taken
+                if (!actionTaken) {
+                    boss -= rawDps(keeper.input) * (1f - effArmor) * jMul
+                }
+            }
+
+            // Victory check after keeper DPS
+            if (boss <= 0f) {
+                return EncounterResult(Outcome.VICTORY,
+                    party.associate { it.input.id to it.wounds }, rescues, wardGuards, 0f, t)
             }
 
             // ── Check defeat ──────────────────────────────────────────────────
