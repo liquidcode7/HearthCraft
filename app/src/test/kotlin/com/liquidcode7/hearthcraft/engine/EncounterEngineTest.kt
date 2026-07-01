@@ -91,6 +91,27 @@ class EncounterEngineTest {
     }
 
     @Test
+    fun `high fate band wins more often than low fate band on same encounter`() {
+        // Parameters calibrated for the Kotlin engine (no cascade drain or Inspiration mechanics).
+        // The JS sim brief specified 55000/30/100/12, which requires JS-only mechanics to show
+        // differentiation. resolve=13000 puts this engine at the streak tipping point.
+        val midStage = stage(resolve = 13000, drain = 8f, spike = 60f, spikeIv = 12)
+        // Low fate: all members fate=2
+        val lowFate = party().map { it.copy(fate = 2f) }
+        // High fate: all members fate=20
+        val highFate = party().map { it.copy(fate = 20f) }
+
+        var winsLow = 0; var winsHigh = 0
+        repeat(300) { seed ->
+            if (EncounterEngine.resolve(midStage, lowFate, seed.toLong()).outcome == Outcome.VICTORY) winsLow++
+            if (EncounterEngine.resolve(midStage, highFate, seed.toLong()).outcome == Outcome.VICTORY) winsHigh++
+        }
+        assert(winsHigh > winsLow) {
+            "Expected high-fate band to win more: low=$winsLow, high=$winsHigh (out of 300)"
+        }
+    }
+
+    @Test
     fun `food stat boost increases DPS and improves outcome`() {
         // Marginal encounter where stat boosts make a measurable difference (tuned for HoT system balance)
         val midStage = stage(resolve = 15000, drain = 8f, spike = 60f, spikeIv = 12)

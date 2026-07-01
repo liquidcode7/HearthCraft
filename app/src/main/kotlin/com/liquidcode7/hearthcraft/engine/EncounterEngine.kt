@@ -25,6 +25,12 @@ private const val TRIAGE_COOLDOWN = 2      // 1-tick minimum gap between triage 
 private const val GROUP_HEAL_IV   = 20     // ticks between group heals
 private const val GROUP_HEAL_MUL  = 0.5f   // groupHeal per member = keeper.will × GROUP_HEAL_MUL
 
+// Streak constants — must match tools/sim/run_sim.js exactly
+private const val STREAK_K          = 0.002f // trigger prob per tick = fate × STREAK_K
+private const val STREAK_REFRACTORY = 20     // ticks before streak can re-trigger
+private const val STREAK_DURATION   = 5      // streak active ticks
+private const val STREAK_MULT       = 1.5f   // DPS/heal multiplier during streak
+
 enum class Outcome { VICTORY, DEFEAT, STALEMATE }
 
 data class MemberInput(
@@ -105,13 +111,19 @@ object EncounterEngine {
         var triageCooldown = 0
         var groupHealTimer = GROUP_HEAL_IV
 
+        // Per-member streak state
+        data class Streak(var refractory: Int = 0, var active: Int = 0)
+        val streaks = party.associate { it.input.id to Streak() }.toMutableMap()
+
         for (t in 1..stage.durationSec) {
             // ── Keeper HoT ticks ──────────────────────────────────────────────────
             if (keeper != null && !keeper.grievous && keeper.hp > 0) {
+                val keepStreak = streaks[keeper.input.id]
+                val healMult = if (keepStreak != null && keepStreak.active > 0) STREAK_MULT else 1f
                 for (hot in listOfNotNull(hot1, hot2)) {
                     val target = party.find { it.input.id == hot.targetId }
-                    if (target != null && !target.grievous && target.hp > 0) {
-                        target.hp = min(target.maxHp, target.hp + hot.healPerTick)
+                    if (target != null && !target.grievous) {
+                        target.hp = min(target.maxHp, target.hp + hot.healPerTick * healMult)
                     }
                     hot.ticksLeft--
                 }
@@ -119,9 +131,26 @@ object EncounterEngine {
                 if (hot2?.ticksLeft == 0) hot2 = null
             }
 
+            // ── Streak updates ────────────────────────────────────────────────────
+            for (m in active()) {
+                val s = streaks[m.input.id] ?: continue
+                when {
+                    s.active > 0     -> s.active--
+                    s.refractory > 0 -> s.refractory--
+                    else -> if (rng.nextFloat() < m.input.fate * STREAK_K) {
+                        s.active = STREAK_DURATION
+                        s.refractory = STREAK_REFRACTORY
+                    }
+                }
+            }
+
             // ── DPS against boss (non-keeper) ────────────────────────────────────
             val nonKeeperDps = standing().filter { it.input.role != "keeper" }
-                .sumOf { rawDps(it.input).toDouble() }.toFloat()
+                .sumOf { m ->
+                    val s = streaks[m.input.id]
+                    val mult = if (s != null && s.active > 0) STREAK_MULT.toDouble() else 1.0
+                    rawDps(m.input).toDouble() * mult
+                }.toFloat()
             val jMul = 1f + rng.nextFloat() * 2 * JITTER - JITTER
             boss -= nonKeeperDps * (1f - effArmor) * jMul
             if (boss <= 0f) {
@@ -192,13 +221,15 @@ object EncounterEngine {
             // ── Keeper action ─────────────────────────────────────────────────────
             if (keeper != null && !keeper.grievous && keeper.hp > 0) {
                 val healPerTick = keeper.input.will * HOT_HEAL_MUL
+                val keepStreak = streaks[keeper.input.id]
+                val healMult = if (keepStreak != null && keepStreak.active > 0) STREAK_MULT else 1f
                 if (triageCooldown > 0) triageCooldown--
                 groupHealTimer--
 
                 val actionTaken: Boolean
                 when {
                     groupHealTimer <= 0 -> {
-                        val groupHeal = keeper.input.will * GROUP_HEAL_MUL
+                        val groupHeal = keeper.input.will * GROUP_HEAL_MUL * healMult
                         standing().forEach { m -> m.hp = min(m.maxHp, m.hp + groupHeal) }
                         groupHealTimer = GROUP_HEAL_IV
                         actionTaken = true
@@ -209,7 +240,7 @@ object EncounterEngine {
                             .firstOrNull { it.hp < TRIAGE_HP * it.maxHp }
                         if (triageTarget != null && triageCooldown == 0) {
                             triageTarget.hp = min(triageTarget.maxHp,
-                                triageTarget.hp + keeper.input.will * TRIAGE_MUL)
+                                triageTarget.hp + keeper.input.will * TRIAGE_MUL * healMult)
                             triageCooldown = TRIAGE_COOLDOWN
                             actionTaken = true
                         } else {
@@ -229,7 +260,7 @@ object EncounterEngine {
                 }
                 // Keeper DPS only when no consuming action taken
                 if (!actionTaken) {
-                    boss -= rawDps(keeper.input) * (1f - effArmor) * jMul
+                    boss -= rawDps(keeper.input) * healMult * (1f - effArmor) * jMul
                 }
             }
 
