@@ -1,7 +1,6 @@
 package com.liquidcode7.hearthcraft.engine
 
 import com.liquidcode7.hearthcraft.data.model.Stage
-import org.junit.Assert.assertEquals
 import org.junit.Test
 
 class EncounterEngineTest {
