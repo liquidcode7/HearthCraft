@@ -54,6 +54,11 @@ class PlayerRepository @Inject constructor(
             ?: emptySet()
     }
 
+    suspend fun getDiscoveredRecipeIds(): Set<String> {
+        val state = dao.get() ?: return emptySet()
+        return state.discoveredRecipeIds.split(",").filter { it.isNotBlank() }.toSet()
+    }
+
     suspend fun discoverRecipe(recipeId: String) {
         val state = dao.get() ?: return
         val current = state.discoveredRecipeIds
@@ -100,6 +105,11 @@ class PlayerRepository @Inject constructor(
             ?.filter { it.isNotBlank() }
             ?.toSet()
             ?: emptySet()
+    }
+
+    suspend fun getFoundGrimoireIds(): Set<String> {
+        val state = dao.get() ?: return emptySet()
+        return state.foundGrimoireIds.split(",").filter { it.isNotBlank() }.toSet()
     }
 
     suspend fun discoverGrimoire(id: String) {

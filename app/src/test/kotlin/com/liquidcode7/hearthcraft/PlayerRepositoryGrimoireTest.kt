@@ -62,6 +62,20 @@ class PlayerRepositoryGrimoireTest {
         repo.discoverGrimoires(emptyList())
         assertEquals(0, repo.observeFoundGrimoireIds().first().size)
     }
+
+    @Test
+    fun `getFoundGrimoireIds returns current ids as a one-shot read`() = runBlocking {
+        fakeDao.state = PlayerState(id = 0, foundGrimoireIds = "cooking_t2,hoh_t1")
+        val ids = repo.getFoundGrimoireIds()
+        assertEquals(setOf("cooking_t2", "hoh_t1"), ids)
+    }
+
+    @Test
+    fun `getDiscoveredRecipeIds returns current ids as a one-shot read`() = runBlocking {
+        fakeDao.state = PlayerState(id = 0, discoveredRecipeIds = "potency_draught")
+        val ids = repo.getDiscoveredRecipeIds()
+        assertEquals(setOf("potency_draught"), ids)
+    }
 }
 
 // Minimal fake DAO — only the methods PlayerRepository actually calls.
