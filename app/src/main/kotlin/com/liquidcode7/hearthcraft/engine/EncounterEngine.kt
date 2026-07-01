@@ -122,7 +122,7 @@ object EncounterEngine {
                 val healMult = if (keepStreak != null && keepStreak.active > 0) STREAK_MULT else 1f
                 for (hot in listOfNotNull(hot1, hot2)) {
                     val target = party.find { it.input.id == hot.targetId }
-                    if (target != null && !target.grievous) {
+                    if (target != null && !target.grievous && target.hp > 0) {
                         target.hp = min(target.maxHp, target.hp + hot.healPerTick * healMult)
                     }
                     hot.ticksLeft--
