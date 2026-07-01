@@ -1,5 +1,6 @@
 package com.liquidcode7.hearthcraft.data.db
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
@@ -9,6 +10,8 @@ data class BandMemberState(
     val isAlive: Boolean = true,
     val woundStatus: String = "healthy",
     val woundedSinceMs: Long = 0L,
+    @ColumnInfo(defaultValue = "0")
+    val woundedDurationMs: Long = 0L,
     val might: Int = 0,
     val agility: Int = 0,
     val vitality: Int = 0,

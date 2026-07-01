@@ -29,7 +29,7 @@ import com.liquidcode7.hearthcraft.data.db.dao.SeedStockDao
         GrowingSlot::class,
         CombatReport::class,
     ],
-    version = 12,
+    version = 13,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 5, to = 6),
@@ -38,6 +38,7 @@ import com.liquidcode7.hearthcraft.data.db.dao.SeedStockDao
         AutoMigration(from = 8, to = 9),
         AutoMigration(from = 9, to = 10),
         AutoMigration(from = 11, to = 12),
+        AutoMigration(from = 12, to = 13),
     ]
 )
 abstract class HearthCraftDatabase : RoomDatabase() {
