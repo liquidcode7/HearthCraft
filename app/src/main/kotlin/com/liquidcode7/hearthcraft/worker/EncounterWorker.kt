@@ -71,6 +71,10 @@ class EncounterWorker @AssistedInject constructor(
                 player.addMoney(money)
                 val rewardCount = minOf(3, (1..3).random() + (multiplier - 1))
                 encounter.rewardTable.shuffled().take(rewardCount).forEach { inventory.addIngredient(it, 1) }
+                val grimoires = encounter.grimoireDrops
+                if (grimoires.isNotEmpty()) {
+                    player.discoverGrimoires(grimoires)
+                }
                 player.addCookingXp(PlayerRepository.XP_COOK_WIN)
                 player.addGatheringXp(PlayerRepository.XP_GATHER_WIN)
                 band.grantMissionStats(bandId, succeeded = true)
