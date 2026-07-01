@@ -38,7 +38,9 @@ fun RecipeBookScreen(
 ) {
     val playerState by playerViewModel.state.collectAsState()
     val cookingLevel = playerState?.cookingLevel ?: 1
-    val recipes by kitchenViewModel.bandRecipes.collectAsState()
+    val tiered by kitchenViewModel.tieredRecipes.collectAsState()
+    val foundGrimoires by kitchenViewModel.foundGrimoireIds.collectAsState()
+    val allGrimoires = kitchenViewModel.allGrimoires
 
     Scaffold(
         topBar = {
@@ -59,9 +61,44 @@ fun RecipeBookScreen(
                 .padding(innerPadding)
                 .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
-            recipes.forEach { recipe ->
-                RecipeEntry(recipe = recipe, cookingLevel = cookingLevel, kitchenViewModel = kitchenViewModel)
-                Spacer(modifier = Modifier.height(8.dp))
+            // Show all recipes grouped by tier
+            tiered.forEach { tier ->
+                Text(
+                    text = tier.label,
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(bottom = 4.dp, top = 8.dp)
+                )
+                tier.recipes.forEach { recipe ->
+                    RecipeEntry(recipe = recipe, cookingLevel = cookingLevel, kitchenViewModel = kitchenViewModel)
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+            }
+
+            // Show locked grimoire tiers the player hasn't found yet
+            val lockedGrimoires = allGrimoires.filter { it.id !in foundGrimoires }
+            if (lockedGrimoires.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "Undiscovered",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(bottom = 4.dp)
+                )
+                lockedGrimoires.forEach { grimoire ->
+                    Card(modifier = Modifier.fillMaxWidth()) {
+                        Column(modifier = Modifier.padding(12.dp)) {
+                            Text(
+                                text = grimoire.name,
+                                style = MaterialTheme.typography.titleSmall
+                            )
+                            Text(
+                                text = "Not yet found",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
             }
         }
     }

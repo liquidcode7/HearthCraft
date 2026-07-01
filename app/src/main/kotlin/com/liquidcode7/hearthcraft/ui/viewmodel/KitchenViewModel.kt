@@ -9,6 +9,7 @@ import com.liquidcode7.hearthcraft.data.db.GrowingSlot
 import com.liquidcode7.hearthcraft.data.db.InventoryItem
 import com.liquidcode7.hearthcraft.data.db.PlayerState
 import com.liquidcode7.hearthcraft.data.model.Grade
+import com.liquidcode7.hearthcraft.data.model.Grimoire
 import com.liquidcode7.hearthcraft.data.model.Ingredient
 import com.liquidcode7.hearthcraft.data.model.resolveDishGrade
 import com.liquidcode7.hearthcraft.data.model.Recipe
@@ -72,6 +73,11 @@ class KitchenViewModel @Inject constructor(
 
     val discoveredIds: StateFlow<Set<String>> = player.observeDiscoveredIds()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptySet())
+
+    val foundGrimoireIds: StateFlow<Set<String>> = player.observeFoundGrimoireIds()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptySet())
+
+    val allGrimoires: List<Grimoire> get() = gameData.grimoires
 
     val hintsSeen: StateFlow<Boolean> = player.observe()
         .map { it?.hasSeenFoodStructureHints ?: false }
