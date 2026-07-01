@@ -96,11 +96,11 @@ Feeding Fate would make the streak system untunable. This is a hard rule.
 
 ### 5.2 Warden
 
-- **Primary stat:** Might *(assumed — confirm before implementing)*
-- **Secondary stat:** TBD
+- **Primary stat:** Vitality
+- **Secondary stat:** Might
 - **Damage type:** Physical
 - **Identity:** The wall. Takes hits, deals reliable physical damage. High
-  Might ceiling.
+  Vitality ceiling — harder to kill than anyone else.
 
 ### 5.3 Keeper
 
@@ -588,7 +588,7 @@ the affected systems.
 | Question | Why it matters |
 |----------|----------------|
 | Player title | Every string in the UI waits on this |
-| Warden's primary and secondary stats | Needed before stat system implementation |
+| Warden's primary and secondary stats | ~~Locked: primary Vitality, secondary Might~~ |
 | How many cooking tiers for full campaign | Breadth model may run out at T5 — needs projection |
 | Exact Lone-Lands unlock trigger | On arrival at first Lone-Lands encounter? On completing Bree-land boss? |
 | North Downs / Weather Hills as Men sub-region 3 | Needed before designing that arc |
