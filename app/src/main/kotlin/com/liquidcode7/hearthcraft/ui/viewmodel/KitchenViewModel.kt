@@ -18,6 +18,7 @@ import com.liquidcode7.hearthcraft.data.repository.GrowingRepository
 import com.liquidcode7.hearthcraft.data.repository.InventoryRepository
 import com.liquidcode7.hearthcraft.data.repository.PlayerRepository
 import com.liquidcode7.hearthcraft.data.repository.SessionRepository
+import com.liquidcode7.hearthcraft.data.repository.isRecipeVisible
 import com.liquidcode7.hearthcraft.worker.ProcessWorker
 import com.liquidcode7.hearthcraft.engine.ExperimentAttempt
 import com.liquidcode7.hearthcraft.engine.ExperimentResult
@@ -36,14 +37,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import javax.inject.Inject
-
-fun isRecipeVisible(recipe: Recipe, foundGrimoires: Set<String>, discoveredIds: Set<String>): Boolean {
-    if (recipe.id in discoveredIds) return true
-    if (recipe.tier == 1 && recipe.recipeClass != "hoh") return true
-    // "food" recipes are gated by "cooking" grimoires; all other classes match 1:1.
-    val grimoireClass = if (recipe.recipeClass == "food") "cooking" else recipe.recipeClass
-    return "${grimoireClass}_t${recipe.tier}" in foundGrimoires
-}
 
 data class RecipeTier(val label: String, val minLevel: Int, val recipes: List<Recipe>)
 

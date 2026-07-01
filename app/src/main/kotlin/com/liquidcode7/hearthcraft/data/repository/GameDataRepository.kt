@@ -38,5 +38,20 @@ class GameDataRepository @Inject constructor(
         json.decodeFromString(context.assets.open("data/$filename").bufferedReader().readText())
 }
 
+fun isRecipeVisible(recipe: Recipe, foundGrimoires: Set<String>, discoveredIds: Set<String>): Boolean {
+    if (recipe.id in discoveredIds) return true
+    if (recipe.tier == 1 && recipe.recipeClass != "hoh") return true
+    // "food" recipes are gated by "cooking" grimoires; all other classes match 1:1.
+    val grimoireClass = if (recipe.recipeClass == "food") "cooking" else recipe.recipeClass
+    return "${grimoireClass}_t${recipe.tier}" in foundGrimoires
+}
+
+fun hasVisibleRecipeOfClass(
+    recipes: List<Recipe>,
+    recipeClass: String,
+    foundGrimoires: Set<String>,
+    discoveredIds: Set<String>
+): Boolean = recipes.any { it.recipeClass == recipeClass && isRecipeVisible(it, foundGrimoires, discoveredIds) }
+
 @Serializable
 private data class StarterItem(val id: String, val qty: Int)

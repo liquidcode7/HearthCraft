@@ -733,22 +733,5 @@
       { "id": "yarrow",   "qty": 2 }
     ],
     "hazardEffect": "hale"
-  },
-  {
-    "id": "athelas_infusion",
-    "name": "Athelas Infusion",
-    "band": "greycloaks",
-    "class": "draught",
-    "method": "brew",
-    "tier": 5,
-    "cookLevel": 12,
-    "heroIngredient": "athelas",
-    "description": "The last line between a grievous wound and what comes after.",
-    "ingredients": [
-      { "id": "athelas",      "qty": 2 },
-      { "id": "meadowsweet",  "qty": 1 },
-      { "id": "wolf_moss",    "qty": 1 }
-    ],
-    "hazardEffect": "hale"
   }
 ]
