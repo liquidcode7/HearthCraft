@@ -309,8 +309,8 @@ private fun StatBar(label: String, value: Int, max: Int = 10) {
 private fun roleAbility(role: String): Pair<String, String>? = when (role.lowercase()) {
     "warden" -> "The Horn of Gondor" to
         "Can intercept a killing blow aimed at the Keeper, up to three times per engagement. The Warden steps between the blade and the one who cannot fall."
-    "hunter" -> "Black Arrow" to
-        "Deals damage that scales with both Agility and Might, making the Hunter the party's primary offensive force. Armor reduces effectiveness — bring a potency draught if the enemy is mailed."
+    "fighter" -> "Black Arrow" to
+        "Deals damage that scales with both Agility and Might, making the fighter the party's primary offensive force. Armor reduces effectiveness — bring a potency draught if the enemy is mailed."
     "keeper" -> "Hands of Healing" to
         "When a companion is downed, the Keeper calls them back with a healing burst. Can be used up to five times per engagement. Without the Keeper, fallen members stay fallen."
     "captain" -> "Wrath, Ruin, and the Red Dawn" to

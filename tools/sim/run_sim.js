@@ -270,6 +270,8 @@ function runFight(cfg, verbose) {
     keeperDealtDps = true; // default: keeper contributes DPS this tick
     if (!M.keeper.grievous && M.keeper.hp > 0 && !M.keeper.stunned) {
       const healPerTick = M.keeper.wil * HOT_HEAL_MUL;
+      const keepStreakAct = streak["keeper"];
+      const healMult = (keepStreakAct && keepStreakAct.active > 0) ? STREAK_MULT : 1;
       if (triageCooldown > 0) triageCooldown--;
       groupHealTimer--;
 
@@ -277,7 +279,7 @@ function runFight(cfg, verbose) {
 
       if (groupHealTimer <= 0) {
         // Group heal — hits all standing members
-        const groupHeal = M.keeper.wil * GROUP_HEAL_MUL;
+        const groupHeal = M.keeper.wil * GROUP_HEAL_MUL * healMult;
         live.forEach(k => { M[k].hp = Math.min(M[k].max, M[k].hp + groupHeal); });
         groupHealTimer = GROUP_HEAL_IV;
         actionTaken = true;
@@ -288,7 +290,7 @@ function runFight(cfg, verbose) {
           .filter(k => k !== "keeper")
           .find(k => M[k].hp / M[k].max < TRIAGE_HP);
         if (triageTarget && triageCooldown === 0) {
-          const triageHeal = M.keeper.wil * TRIAGE_MUL;
+          const triageHeal = M.keeper.wil * TRIAGE_MUL * healMult;
           M[triageTarget].hp = Math.min(M[triageTarget].max, M[triageTarget].hp + triageHeal);
           triageCooldown = TRIAGE_COOLDOWN;
           actionTaken = true;
