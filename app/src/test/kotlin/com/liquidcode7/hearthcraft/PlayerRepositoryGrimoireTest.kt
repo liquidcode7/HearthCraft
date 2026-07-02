@@ -99,6 +99,8 @@ class FakePlayerStateDao : PlayerStateDao {
     override suspend fun addMoney(amount: Int) {}
     override suspend fun addGatheringXp(xp: Int) {}
     override suspend fun addCookingXp(xp: Int) {}
+    override suspend fun addHohXp(xp: Int) {}
+    override suspend fun setHohLevel(level: Int) {}
     override suspend fun spendMoney(amount: Int): Int = 0
     override suspend fun setSecondBand(bandId: String) {}
 }
