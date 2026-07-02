@@ -42,4 +42,7 @@ interface BandMemberStateDao {
 
     @Query("UPDATE band_member_state SET recoveryBuffGrade = :grade, recoveryBuffTier = :tier, recoveryBuffPending = :pending WHERE memberId = :id")
     suspend fun setRecoveryBuff(id: String, grade: Int, tier: Int, pending: Boolean)
+
+    @Query("UPDATE band_member_state SET recoveryBuffPending = 0 WHERE memberId = :id")
+    suspend fun consumeRecoveryBuff(id: String)
 }

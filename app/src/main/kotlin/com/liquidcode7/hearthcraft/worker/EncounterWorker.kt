@@ -66,6 +66,9 @@ class EncounterWorker @AssistedInject constructor(
         }
 
         sessions.clearEncounter(bandId)
+        // Consume any pending recovery buffs — they fire once on the first mission
+        // after HoH treatment and are cleared here regardless of encounter outcome.
+        band.consumeRecoveryBuffs(bandId)
         return Result.success()
     }
 

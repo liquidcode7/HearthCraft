@@ -42,7 +42,8 @@ data class MemberInput(
     val vitality: Float,
     val will: Float,
     val fate: Float,
-    val draughtPotency: Float = 0f
+    val draughtPotency: Float = 0f,
+    val recoveryBuffMult: Float = 1.0f  // post-recovery incoming heal multiplier; 1.0 = no buff
 )
 
 data class EncounterResult(
@@ -72,7 +73,8 @@ object EncounterEngine {
             val maxHp: Float = morale(input),
             var reserve: Float = 0f,
             var wounds: Int = 0,
-            var grievous: Boolean = false
+            var grievous: Boolean = false,
+            val recoveryBuffMult: Float = input.recoveryBuffMult
         )
 
         // Local helpers that operate on the inner MS class
@@ -125,7 +127,7 @@ object EncounterEngine {
                 for (hot in listOfNotNull(hot1, hot2)) {
                     val target = party.find { it.input.id == hot.targetId }
                     if (target != null && !target.grievous && target.hp > 0) {
-                        target.hp = min(target.maxHp, target.hp + hot.healPerTick * healMult)
+                        target.hp = min(target.maxHp, target.hp + hot.healPerTick * healMult * target.recoveryBuffMult)
                     }
                     hot.ticksLeft--
                 }
@@ -216,7 +218,7 @@ object EncounterEngine {
                 val downed = active().filter { it.hp <= 0 && it.input.id != keeper.input.id }
                 if (downed.isNotEmpty()) {
                     val rescued = downed.first()
-                    rescued.hp = 40f + keeper.input.will * 4f
+                    rescued.hp = (40f + keeper.input.will * 4f) * rescued.recoveryBuffMult
                     rescues++
                 }
             }
@@ -233,7 +235,7 @@ object EncounterEngine {
                 when {
                     groupHealTimer <= 0 -> {
                         val groupHeal = keeper.input.will * GROUP_HEAL_MUL * healMult
-                        standing().forEach { m -> m.hp = min(m.maxHp, m.hp + groupHeal) }
+                        standing().forEach { m -> m.hp = min(m.maxHp, m.hp + groupHeal * m.recoveryBuffMult) }
                         groupHealTimer = GROUP_HEAL_IV
                         actionTaken = true
                     }
@@ -243,7 +245,7 @@ object EncounterEngine {
                             .firstOrNull { it.hp < TRIAGE_HP * it.maxHp }
                         if (triageTarget != null && triageCooldown == 0) {
                             triageTarget.hp = min(triageTarget.maxHp,
-                                triageTarget.hp + keeper.input.will * TRIAGE_MUL * healMult)
+                                triageTarget.hp + keeper.input.will * TRIAGE_MUL * healMult * triageTarget.recoveryBuffMult)
                             triageCooldown = TRIAGE_COOLDOWN
                             actionTaken = true
                         } else {
@@ -340,4 +342,17 @@ object EncounterEngine {
 
     private fun Random.nextFloat(lo: Float, hi: Float): Float =
         lo + nextFloat() * (hi - lo)
+
+    // Computes the incoming heal multiplier for a member who has a pending recovery buff.
+    // grade × buffStep(tier) added on top of the 1.0 base.
+    fun recoveryBuffMultiplier(grade: Int, tier: Int): Float {
+        val step = when (tier) {
+            1    -> 0.05f
+            2    -> 0.07f
+            3    -> 0.10f
+            4    -> 0.14f
+            else -> 0.05f
+        }
+        return 1.0f + grade * step
+    }
 }

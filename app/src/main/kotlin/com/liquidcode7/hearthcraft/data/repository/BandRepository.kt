@@ -6,6 +6,7 @@ import com.liquidcode7.hearthcraft.data.db.dao.HohSessionDao
 import com.liquidcode7.hearthcraft.data.model.gradeStep
 import com.liquidcode7.hearthcraft.data.model.Grade
 import com.liquidcode7.hearthcraft.data.model.Recipe
+import com.liquidcode7.hearthcraft.engine.EncounterEngine
 import com.liquidcode7.hearthcraft.engine.MemberInput
 import com.liquidcode7.hearthcraft.ui.viewmodel.PreparedFoodDetail
 import kotlinx.coroutines.flow.Flow
@@ -61,6 +62,16 @@ class BandRepository @Inject constructor(
         hohSessionDao.delete(memberId)
     }
 
+    // Clears the pending recovery buff for all members of a band after an encounter.
+    // The buff is one-shot — it fires on the first mission after HoH recovery and is
+    // then consumed regardless of encounter outcome.
+    suspend fun consumeRecoveryBuffs(bandId: String) {
+        aliveMemberIds(bandId).forEach { id ->
+            val state = dao.get(id) ?: return@forEach
+            if (state.recoveryBuffPending) dao.consumeRecoveryBuff(id)
+        }
+    }
+
     suspend fun aliveMemberIds(bandId: String): List<String> =
         gameData.bandMembers
             .filter { it.bandId == bandId }
@@ -113,7 +124,10 @@ class BandRepository @Inject constructor(
                     vitality       = (state?.vitality ?: member.startingVitality).toFloat() + bonus("vit"),
                     will           = (state?.will     ?: member.startingWill).toFloat()     + bonus("wil"),
                     fate           = (state?.fate     ?: member.startingFate).toFloat(),
-                    draughtPotency = draughtPotency
+                    draughtPotency = draughtPotency,
+                    recoveryBuffMult = if (state?.recoveryBuffPending == true)
+                        EncounterEngine.recoveryBuffMultiplier(state.recoveryBuffGrade, state.recoveryBuffTier)
+                    else 1.0f
                 )
             }
     }
