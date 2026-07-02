@@ -196,11 +196,106 @@ Preparation forms (poultice, tincture, salve, etc.) are flavor and creative spac
 
 ---
 
-## 8. Open Questions / TBD
+## 8. Athelas Cultivar Unlock
 
-- Exact story trigger for high-potency athelas cultivar unlock
-- Per-encounter percentage chances for non-Physical wound type infliction
-- Full recipe list (recipes are data, designed separately from this spec)
-- Exact XP values for HoH crafting actions
-- Exact `hohLevel` minimums per recipe tier
-- Recovery buff magnitude and duration formula (grade → buff table)
+The high-potency athelas cultivar unlocks when the player crafts their first T3 HoH recipe. At that point cultivar seeds become available. This reflects the provisioner having developed the skill to draw out athelas's full potential.
+
+---
+
+## 9. Recipe List
+
+### T1 — Single wound type
+
+| Recipe | Treats | Hero ingredient | Support |
+|--------|--------|----------------|---------|
+| Athelas poultice | Physical | Athelas | Kingsfoil, honey |
+| Yarrow compress | Physical | Yarrow | Healing clay, spring water |
+| Wormwood tincture | Poison | Wormwood | Rue, spring water |
+| Blackthorn infusion | Poison | Blackthorn berry | Spring water |
+| Willow bark draught | Disease | Willow bark | Feverfew, spring water |
+| Pipeweed calming | Will | Pipeweed | Linden blossom, spring water |
+| Linden blossom tea | Will | Linden blossom | Spring water |
+
+### T2 — Two wound types
+
+| Recipe | Treats | Hero ingredient | Support |
+|--------|--------|----------------|---------|
+| Athelas and pipeweed salve | Physical + Will | Athelas | Pipeweed, rendered beeswax |
+| Bloodmoss poultice | Physical + Poison | Bloodmoss | Wormwood, healing clay |
+| Yarrow and feverfew compress | Physical + Disease | Yarrow | Feverfew, honey |
+| Wormwood and willow compound | Poison + Disease | Wormwood | Willow bark, spring water |
+| Elderflower remedy | Disease + Will | Elderflower | Linden blossom, spring water |
+| Starflower salve | Corruption (potent) | Starflower | Rendered beeswax, spring water |
+| Shadowbane poultice | Corruption + Physical | Shadowbane moss | Healing clay, kingsfoil |
+
+### T3 — Three wound types
+
+| Recipe | Treats | Hero ingredient | Support |
+|--------|--------|----------------|---------|
+| Athelas compound salve | Physical + Will + Corruption | Athelas (cultivated) | Starflower, pipeweed, rendered beeswax |
+| Bloodmoss and wormwood remedy | Physical + Poison + Disease | Bloodmoss | Wormwood, willow bark, honey |
+| Silver-thread tincture | Corruption + Will + Disease | Silver-thread lichen | Elderflower, spring water |
+| Deep wound remedy | Physical + Poison + Will | Yarrow | Bloodmoss, rue, linden blossom |
+
+### T4 — Four or five wound types
+
+| Recipe | Treats | Hero ingredient | Support |
+|--------|--------|----------------|---------|
+| Master's compound | Physical + Will + Corruption + Poison | Athelas (cultivated) | Shadowbane moss, bloodmoss, silver-thread lichen, rendered beeswax |
+| Full restoration preparation | All five types | Miruvor (dilute) | Athelas (cultivated), starflower, bloodmoss, silver-thread lichen |
+
+---
+
+## 10. XP System
+
+Uses the same `tierWall` curve as cooking with slightly slower parameters — HoH is practiced less often.
+
+**Curve:** `A=22, P=1.2, wallMultiplier=2.0`
+**Tier boundaries:** levels 5, 10, 16, 23, 31, 41 (same as cooking)
+
+| Event | XP |
+|-------|----|
+| First craft of a HoH recipe | 40 |
+| Repeat craft | 25 |
+| Applying a preparation that treats a grievous wound | 35 |
+| Fully clears all wound types on a member (bonus, stacks) | +20 |
+
+The "fully clears" bonus rewards compound recipes and completing treatment.
+
+---
+
+## 11. `hohLevel` Minimums
+
+| Tier | hohLevel range | Notes |
+|------|---------------|-------|
+| T1 | 1–4 | Craftable from the start once grimoire found |
+| T2 | 5–9 | Requires passing the first tier wall |
+| T3 | 10–15 | Mid-game HoH mastery |
+| T4 | 16–22 | Late game — compound masters only |
+
+Within each tier, more complex or rare-ingredient recipes sit at the higher end. Example: T2 Starflower salve (rare ingredient) requires hohLevel 9; T2 Athelas+Pipeweed salve requires hohLevel 5.
+
+---
+
+## 12. Recovery Buff
+
+**Trigger:** Activates on the first mission the member participates in after returning from a grievous wound. Does not carry over to a second mission.
+
+**Effect:** Elevated incoming healing for that member only during the fight — Keeper HoT ticks and rescue heals hit harder for this member.
+
+**Formula:** `incomingHealMultiplier = 1.0 + (grade * buffStep)`
+
+| Tier | buffStep | Crude mult | Pristine mult |
+|------|----------|------------|---------------|
+| T1 | 0.05 | 1.05x | 1.25x |
+| T2 | 0.07 | 1.07x | 1.35x |
+| T3 | 0.10 | 1.10x | 1.50x |
+| T4 | 0.14 | 1.14x | 1.70x |
+
+Grades are 0–4 (Crude through Pristine). A Pristine T4 preparation gives 1.70x incoming healing — meaningful but not overwhelming. All values are placeholder tuning; rebalance after simulation.
+
+---
+
+## 13. Open Questions / TBD
+
+- Per-encounter wound type probabilities (set during encounter validation)
