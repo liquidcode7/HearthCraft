@@ -27,6 +27,8 @@ data class Recipe(
     val description: String = "",
     val ingredients: List<RecipeIngredient> = emptyList(),
     val heroIngredient: String = "",   // id of the hero ingredient (counts double in grade resolution)
+    val hohLevel: Int = 0,             // minimum HoH level to craft (only relevant when recipeClass == "hoh")
+    val treatsWoundTypes: List<String> = emptyList(), // wound type ids this recipe treats, e.g. ["physical", "will"]
     val penalty: Boolean = false
 ) {
     // Derived properties used by existing UI code.

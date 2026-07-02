@@ -3,6 +3,13 @@ package com.liquidcode7.hearthcraft.data.model
 import kotlinx.serialization.Serializable
 
 @Serializable
+data class GrievousWoundSpec(
+    val woundType: String,
+    val guaranteed: Boolean = false,
+    val chance: Float = 0f
+)
+
+@Serializable
 data class Stage(
     val stageId: String,
     val label: String,
@@ -43,5 +50,6 @@ data class Encounter(
     val durationMs: Long,
     val rewardTable: List<String>,
     val grimoireDrops: List<String> = emptyList(),
+    val grievousWoundSpecs: List<GrievousWoundSpec> = emptyList(), // wound infliction config
     val stages: List<Stage>
 )
