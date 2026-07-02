@@ -27,26 +27,35 @@ Removing columns requires a proper `Migration` class (not `AutoMigration`, which
 
 ### 3. Growth rates — per role, not per individual member
 
-One growth curve per role (Warden/Fighter/Keeper/Captain), shared across all three peoples' bands — not per named individual. This matches the legacy sim's `TPL` structure and keeps the number of hand-tuned constants small (4 roles × 5 stats = 20 numbers, not 12+ individuals × 5 stats).
+One growth curve per role, shared across all three peoples' bands — not per named individual. This keeps the number of hand-tuned constants small and matches the primary/secondary stat design already documented per role in `master-design.md` §5.1-5.4.
 
-New data file: `app/src/main/assets/data/growth_curves.json` — one entry per role, each with `migGrowth`/`agiGrowth`/`vitGrowth`/`wilGrowth`/`fatGrowth` (the per-level growth rate for that stat). The `role` key is lowercase (`"warden"`/`"fighter"/`"keeper"`/`"captain"`), matching the casing `BandRepository.memberInputsForBand` already normalizes to via `member.role.lowercase()` — no new casing convention introduced. Loaded via a new `GrowthCurve` data class and a `GameDataRepository.growthCurves: List<GrowthCurve> by lazy { load(...) }` property, following the existing pattern used for `recipes`/`ingredients`/`encounters`/`grimoires`.
+Growth rates below are a **fresh proposal**, not derived from the legacy sim — the legacy formula was calibrated for a different (much larger) stat scale under a design that's since been deliberately superseded, so it isn't a valid starting point here. Instead, each role's growth rate is set directly from its documented stat priority: primary stat grows fastest, secondary stat(s) grow at half that rate, everything else grows slowly. Simple round numbers, explicitly a placeholder — these numbers **will** need rebalancing once real fights can be validated against them (via the follow-on sim rewire), same as the XP curve in §5.
+
+New data file: `app/src/main/assets/data/growth_curves.json` — one entry per role/build key, each with `migGrowth`/`agiGrowth`/`vitGrowth`/`wilGrowth`/`fatGrowth` (the per-level growth rate for that stat). Loaded via a new `GrowthCurve` data class and a `GameDataRepository.growthCurves: List<GrowthCurve> by lazy { load(...) }` property, following the existing pattern used for `recipes`/`ingredients`/`encounters`/`grimoires`.
 
 A member's stat at their current level is:
 ```
-statAtLevel = member.startingX (from band_members.json, unchanged) + growthCurveForRole.xGrowth × (level − 1)
+statAtLevel = member.startingX (from band_members.json, unchanged) + growthCurveForRoleOrBuild.xGrowth × (level − 1)
 ```
 This reuses the existing per-individual starting stats already authored in `band_members.json` (e.g., Hollis the Warden: Mig 4) as the level-1 base, and layers the shared per-role growth rate on top — so named members keep their distinct starting-stat identity, while growth *rate* is shared per role.
 
-**Rescaled growth rate values** (proportionally rescaled from the legacy formula — legacy rates were calibrated against ~13-15-range starting stats; today's real starting stats are ~2-5. Each rate below is `legacy_rate × (real_base / legacy_base)`, preserving the legacy curve's *shape* — which stat grows fastest for which role — while fitting today's actual numbers):
+**Growth rate table** (primary +0.20/level, secondary +0.10/level, other +0.05/level):
 
-| Role | Growth/level: Mig | Agi | Vit | Wil | Fat |
-|---|---|---|---|---|---|
-| Warden | +0.15 | +0.05 | +0.18 | +0.09 | +0.05 |
-| Fighter | +0.10 | +0.18 | +0.09 | +0.12 | +0.16 |
-| Keeper | +0.06 | +0.09 | +0.10 | +0.18 | +0.19 |
-| Captain | +0.10 | +0.09 | +0.17 | +0.14 | +0.07 |
+| Role/build key | Primary / Secondary (per `master-design.md`) | Mig | Agi | Vit | Wil | Fat |
+|---|---|---|---|---|---|---|
+| `warden` | Pri: Vitality, Sec: Might | +0.10 | +0.05 | **+0.20** | +0.05 | +0.05 |
+| `keeper` | Pri: Will, Sec: Vitality | +0.05 | +0.05 | +0.10 | **+0.20** | +0.05 |
+| `captain` | Pri: Will, Sec: Fate + Vitality (two) | +0.05 | +0.05 | +0.10 | **+0.20** | +0.10 |
+| `fighter_ranged` | Pri: Agility, Sec: Fate | +0.05 | **+0.20** | +0.05 | +0.05 | +0.10 |
+| `fighter_melee` | Pri: Might, Sec: Fate | **+0.20** | +0.05 | +0.05 | +0.05 | +0.10 |
 
-These are a computed starting point, explicitly **not** final-balanced numbers — validating them against real fights is exactly what the follow-on sim rewire is for.
+### 3a. Fighter build choice — melee vs. ranged
+
+`master-design.md` §5.4 currently documents a single Fighter (primary Agility, secondary Fate — this is the ranged build). A melee build (primary Might, secondary Fate) is a new addition. For Men (Greycloaks — the only band being built right now), the player picks melee or ranged for their Fighter **once, at character creation**, permanent for that save. This is a new `PlayerState.fighterBuild: String` field (default `"ranged"`, set once during band setup), not a per-mission or re-selectable choice. The Fighter's `growth_curves.json` lookup key becomes `"fighter_${fighterBuild}"` rather than a bare `"fighter"`.
+
+Elves and Dwarves potentially having a fixed build each (rather than a choice) is out of scope here — both bands are parked pending redesign per §3, so nothing needs deciding for them yet.
+
+`PlayerState.fighterBuild` is purely additive, so its column-add SQL just rides along inside the one manual `Migration` this version bump already requires (per §2, for the `BandMemberState` column removal) — it doesn't need a separate migration step. Where exactly the player picks a build (band/character creation flow) is left to implementation to slot into the existing band-selection UI — no new screen design needed for this spec.
 
 ### 4. Fractional stats, whole-number display
 
@@ -74,13 +83,17 @@ This replaces `BandRepository.grantMissionStats(bandId, succeeded: Boolean)` (th
 
 ### 7. Consuming the computed stats
 
-`BandRepository.memberInputsForBand()` currently reads `state?.might ?: member.startingMight` etc. directly from stored columns. This changes to: derive the member's current level from `state?.combatXp ?: 0`, then compute each stat via the formula in §3, with food/grade bonuses layered on top exactly as today (unchanged).
+`BandRepository.memberInputsForBand()` currently reads `state?.might ?: member.startingMight` etc. directly from stored columns. This changes to: derive the member's current level from `state?.combatXp ?: 0`, then compute each stat via the formula in §3, with food/grade bonuses layered on top exactly as today (unchanged). The growth-curve lookup key is `member.role.lowercase()` for Warden/Keeper/Captain, or `"fighter_${playerState.fighterBuild}"` when the role is Fighter (per §3a).
 
 `BandViewModel.members` (producing `BandMemberWithState` for the UI) needs the same treatment, plus a new `level: Int` field on `BandMemberWithState` so the UI can display it (e.g. in `MemberDetailDialog`, next to the role label).
 
 ## Design doc updates required
 
-`design/master-design.md` §4 ("Stats") currently just says stats "grow over time" with no defined curve. Per this project's convention (code and docs must agree), this needs a concrete addition documenting: the per-role growth-rate model (§3 above), that growth rates are shared per role rather than per individual member, the level cap (50), and that combat leveling is driven by mission XP (§5-6 above) rather than flat per-mission stat grants. This will be done as part of implementation, alongside the code changes.
+`design/master-design.md` §4 ("Stats") currently just says stats "grow over time" with no defined curve. Per this project's convention (code and docs must agree), this needs a concrete addition documenting: the per-role growth-rate model (§3 above), that growth rates are shared per role rather than per individual member, the level cap (50), and that combat leveling is driven by mission XP (§5-6 above) rather than flat per-mission stat grants.
+
+`design/master-design.md` §5.4 ("Fighter") needs updating to document the melee/ranged split (§3a above): two builds sharing the same primary/secondary-stat *shape* documented today (ranged: Agility primary; melee: Might primary; both: Fate secondary), and the one-time character-creation choice for Men.
+
+Both will be done as part of implementation, alongside the code changes.
 
 ## Out of scope (explicitly deferred)
 
