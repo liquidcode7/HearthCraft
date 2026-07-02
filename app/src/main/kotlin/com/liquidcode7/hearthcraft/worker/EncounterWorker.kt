@@ -52,22 +52,24 @@ class EncounterWorker @AssistedInject constructor(
         val report = combatRepo.get(bandId)
         if (report != null) {
             val wounds = parseWounds(report.woundsJson)
-            applyOutcome(report.outcome, wounds, encounter)
+            applyOutcome(report.outcome, wounds, encounter, grievousWoundTypes = emptyMap())
         } else {
             // Fallback: re-run engine fresh (handles old WorkManager tasks in flight during update)
             val draughtPotency = inputData.getFloat(KEY_DRAUGHT_POTENCY, 0f)
             val stage = encounter.stages.firstOrNull() ?: return Result.failure()
             val members = band.memberInputsForBand(bandId, draughtPotency, emptyMap<String, PreparedFoodDetail?>())
             if (members.isEmpty()) return Result.failure()
-            val result = EncounterEngine.resolve(stage, members, Random.nextLong())
-            applyOutcome(result.outcome.name, result.woundsByMember, encounter)
+            val result = EncounterEngine.resolve(stage, members, Random.nextLong(),
+                grievousWoundSpecs = encounter.grievousWoundSpecs)
+            applyOutcome(result.outcome.name, result.woundsByMember, encounter,
+                grievousWoundTypes = result.grievousWoundTypes)
         }
 
         sessions.clearEncounter(bandId)
         return Result.success()
     }
 
-    private suspend fun applyOutcome(outcome: String, wounds: Map<String, Int>, encounter: com.liquidcode7.hearthcraft.data.model.Encounter) {
+    private suspend fun applyOutcome(outcome: String, wounds: Map<String, Int>, encounter: com.liquidcode7.hearthcraft.data.model.Encounter, grievousWoundTypes: Map<String, List<String>>) {
         val bandId = inputData.getString(KEY_BAND_ID) ?: return
         when (outcome) {
             "VICTORY" -> {
@@ -93,7 +95,7 @@ class EncounterWorker @AssistedInject constructor(
                 val hohAvailable = hasVisibleRecipeOfClass(
                     gameData.recipes, "hoh", player.getFoundGrimoireIds(), player.getDiscoveredRecipeIds()
                 )
-                val safetyNetTriggered = applyWounds(wounds, hohAvailable)
+                val safetyNetTriggered = applyWounds(wounds, hohAvailable, grievousWoundTypes)
                 band.grantMissionStats(bandId, succeeded = false)
                 if (safetyNetTriggered) {
                     notify(
@@ -115,11 +117,12 @@ class EncounterWorker @AssistedInject constructor(
         }.toMap()
 
     // Returns true if the HoH-availability safety net downgraded any member's wound this call.
-    private suspend fun applyWounds(woundsByMember: Map<String, Int>, hohAvailable: Boolean): Boolean {
+    private suspend fun applyWounds(woundsByMember: Map<String, Int>, hohAvailable: Boolean, grievousWoundTypes: Map<String, List<String>>): Boolean {
         var safetyNetTriggered = false
         woundsByMember.forEach { (memberId, wounds) ->
             val outcome = resolveWoundOutcome(wounds, hohAvailable) ?: return@forEach
-            band.woundMember(memberId, outcome.grievous, outcome.durationMs)
+            val woundTypes = if (outcome.grievous) grievousWoundTypes[memberId] ?: emptyList() else emptyList()
+            band.woundMember(memberId, outcome.grievous, outcome.durationMs, woundTypes)
             if (!outcome.grievous) {
                 scheduleRecovery(memberId, outcome.durationMs)
                 if (wounds >= 5) safetyNetTriggered = true

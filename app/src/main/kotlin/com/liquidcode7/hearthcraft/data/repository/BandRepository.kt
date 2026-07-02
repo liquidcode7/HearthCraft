@@ -33,7 +33,12 @@ class BandRepository @Inject constructor(
             }
     }
 
-    suspend fun woundMember(memberId: String, grievous: Boolean, durationMs: Long) {
+    suspend fun woundMember(
+        memberId: String,
+        grievous: Boolean,
+        durationMs: Long,
+        woundTypes: List<String> = emptyList()
+    ) {
         val existing = dao.get(memberId) ?: BandMemberState(memberId = memberId)
         val status = if (grievous) "grievously_wounded" else "wounded"
         dao.upsert(existing.copy(
@@ -41,6 +46,9 @@ class BandRepository @Inject constructor(
             woundedSinceMs = System.currentTimeMillis(),
             woundedDurationMs = durationMs
         ))
+        if (grievous && woundTypes.isNotEmpty()) {
+            dao.setWoundTypes(memberId, woundTypes.joinToString(","))
+        }
     }
 
     suspend fun healWound(memberId: String) = dao.healWound(memberId)
