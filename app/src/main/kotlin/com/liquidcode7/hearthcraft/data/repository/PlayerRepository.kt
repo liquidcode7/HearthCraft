@@ -14,7 +14,7 @@ class PlayerRepository @Inject constructor(
     private val dao: PlayerStateDao
 ) {
 
-    enum class Track { COOKING, GATHERING }
+    enum class Track { COOKING, GATHERING, HOH }
     fun observe(): Flow<PlayerState?> = dao.observe()
 
     suspend fun get(): PlayerState? = dao.get()
@@ -37,6 +37,13 @@ class PlayerRepository @Inject constructor(
         val state = dao.get() ?: return
         val newLevel = levelForTotalXp(state.cookingXp, track = Track.COOKING)
         if (newLevel != state.cookingLevel) dao.upsert(state.copy(cookingLevel = newLevel))
+    }
+
+    suspend fun addHohXp(xp: Int) {
+        dao.addHohXp(xp)
+        val state = dao.get() ?: return
+        val newLevel = levelForTotalXp(state.hohXp, track = Track.HOH)
+        if (newLevel != state.hohLevel) dao.setHohLevel(newLevel)
     }
 
     suspend fun setSecondBand(bandId: String) = dao.setSecondBand(bandId)
@@ -167,6 +174,9 @@ class PlayerRepository @Inject constructor(
         // Tier boundaries for cooking — these match TIER_TABLE in the sim/food_model.js
         private val COOK_TIER_BOUNDARIES = setOf(5, 10, 16, 23, 31, 41)
 
+        // Tier boundaries for Houses of Healing — curveType=tierWall, A=22, P=1.2, wallMultiplier=2.0
+        private val HOH_TIER_BOUNDARIES = setOf(5, 10, 16, 23, 31, 41)
+
         // XP required to advance from `level` to `level+1`.
         // Matches xp_lab.js: curveType=tierWall, A=25, P=1.2, wallMultiplier=1.8 (cooking)
         //                     curveType=power,    A=20, P=1.35                   (gathering)
@@ -181,6 +191,11 @@ class PlayerRepository @Inject constructor(
                 Track.GATHERING -> {
                     maxOf(1, (20.0 * level.toDouble().pow(1.35)).roundToInt())
                 }
+                Track.HOH -> {
+                    val base = (22.0 * level.toDouble().pow(1.2)).roundToInt()
+                    val wall = if (level > 1 && HOH_TIER_BOUNDARIES.contains(level)) 2.0 else 1.0
+                    maxOf(1, (base * wall).roundToInt())
+                }
             }
         }
 
@@ -192,6 +207,9 @@ class PlayerRepository @Inject constructor(
         private val GATHER_THRESHOLDS: IntArray = IntArray(MAX_LEVEL) { i ->
             var total = 0; for (l in 1..i) total += xpToNext(l, Track.GATHERING); total
         }
+        private val HOH_THRESHOLDS: IntArray = IntArray(MAX_LEVEL) { i ->
+            var total = 0; for (l in 1..i) total += xpToNext(l, Track.HOH); total
+        }
 
         // Total XP needed to reach a given level from level 1.
         fun totalXpForLevel(targetLevel: Int, track: Track): Int {
@@ -199,6 +217,7 @@ class PlayerRepository @Inject constructor(
             return when (track) {
                 Track.COOKING   -> COOK_THRESHOLDS[idx]
                 Track.GATHERING -> GATHER_THRESHOLDS[idx]
+                Track.HOH       -> HOH_THRESHOLDS[idx]
             }
         }
 
@@ -207,6 +226,7 @@ class PlayerRepository @Inject constructor(
             val thresholds = when (track) {
                 Track.COOKING   -> COOK_THRESHOLDS
                 Track.GATHERING -> GATHER_THRESHOLDS
+                Track.HOH       -> HOH_THRESHOLDS
             }
             // Binary search for the highest level whose threshold is ≤ xp.
             var lo = 0; var hi = MAX_LEVEL - 1
@@ -224,6 +244,12 @@ class PlayerRepository @Inject constructor(
         const val XP_GATHER_SESSION    = 15   // one forage or farm/garden session
         const val XP_GATHER_WIN        = 65   // your ingredient fed a winning mission
         const val XP_GATHER_DISCOVERY  = 20   // per newly discovered ingredient in a forage haul
+
+        // XP awarded for Houses of Healing actions
+        const val XP_HOH_FIRST       = 40   // first time applying a HoH recipe to a patient
+        const val XP_HOH_REPEAT      = 25   // repeat application of a known HoH recipe
+        const val XP_HOH_APPLY       = 35   // base XP for any successful HoH treatment
+        const val XP_HOH_CLEAR_BONUS = 20   // bonus XP when a wound is fully cleared
 
         const val MAX_LEVEL = 50
 
