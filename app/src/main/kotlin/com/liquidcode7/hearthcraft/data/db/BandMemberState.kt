@@ -16,5 +16,17 @@ data class BandMemberState(
     val agility: Int = 0,
     val vitality: Int = 0,
     val will: Int = 0,
-    val fate: Int = 0
+    val fate: Int = 0,
+    @ColumnInfo(defaultValue = "")
+    val woundTypes: String = "",
+    @ColumnInfo(defaultValue = "0")
+    val hohTimerStartMs: Long = 0L,
+    @ColumnInfo(defaultValue = "0")
+    val hohTimerDurationMs: Long = 0L,
+    @ColumnInfo(defaultValue = "0")
+    val recoveryBuffGrade: Int = 0,
+    @ColumnInfo(defaultValue = "0")
+    val recoveryBuffTier: Int = 0,
+    @ColumnInfo(defaultValue = "0")
+    val recoveryBuffPending: Boolean = false
 )
