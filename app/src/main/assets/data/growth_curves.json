@@ -1,0 +1,7 @@
+[
+  { "role": "warden",         "migGrowth": 0.10, "agiGrowth": 0.05, "vitGrowth": 0.20, "wilGrowth": 0.05, "fatGrowth": 0.05 },
+  { "role": "keeper",         "migGrowth": 0.05, "agiGrowth": 0.05, "vitGrowth": 0.10, "wilGrowth": 0.20, "fatGrowth": 0.05 },
+  { "role": "captain",        "migGrowth": 0.05, "agiGrowth": 0.05, "vitGrowth": 0.10, "wilGrowth": 0.20, "fatGrowth": 0.10 },
+  { "role": "fighter_ranged", "migGrowth": 0.05, "agiGrowth": 0.20, "vitGrowth": 0.05, "wilGrowth": 0.05, "fatGrowth": 0.10 },
+  { "role": "fighter_melee",  "migGrowth": 0.20, "agiGrowth": 0.05, "vitGrowth": 0.05, "wilGrowth": 0.05, "fatGrowth": 0.10 }
+]

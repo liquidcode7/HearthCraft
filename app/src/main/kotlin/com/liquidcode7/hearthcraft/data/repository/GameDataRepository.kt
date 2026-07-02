@@ -5,6 +5,7 @@ import com.liquidcode7.hearthcraft.data.model.Band
 import com.liquidcode7.hearthcraft.data.model.BandMember
 import com.liquidcode7.hearthcraft.data.model.Encounter
 import com.liquidcode7.hearthcraft.data.model.Grimoire
+import com.liquidcode7.hearthcraft.data.model.GrowthCurve
 import com.liquidcode7.hearthcraft.data.model.Ingredient
 import com.liquidcode7.hearthcraft.data.model.Recipe
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -25,6 +26,7 @@ class GameDataRepository @Inject constructor(
     val recipes: List<Recipe> by lazy { load("recipes.json") }
     val encounters: List<Encounter> by lazy { load("encounters.json") }
     val grimoires: List<Grimoire> by lazy { load("grimoires.json") }
+    val growthCurves: List<GrowthCurve> by lazy { load("growth_curves.json") }
 
     private val starterInventory: Map<String, List<StarterItem>> by lazy {
         val raw = context.assets.open("data/starter_inventory.json").bufferedReader().readText()
