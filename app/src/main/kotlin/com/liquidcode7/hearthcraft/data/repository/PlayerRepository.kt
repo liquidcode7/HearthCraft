@@ -19,8 +19,8 @@ class PlayerRepository @Inject constructor(
 
     suspend fun get(): PlayerState? = dao.get()
 
-    suspend fun init(bandId: String) {
-        dao.upsert(PlayerState(chosenBandId = bandId))
+    suspend fun init(bandId: String, fighterBuild: String = "ranged") {
+        dao.upsert(PlayerState(chosenBandId = bandId, fighterBuild = fighterBuild))
     }
 
     suspend fun addMoney(amount: Int) = dao.addMoney(amount)

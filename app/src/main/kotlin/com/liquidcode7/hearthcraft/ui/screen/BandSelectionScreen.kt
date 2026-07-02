@@ -2,6 +2,7 @@ package com.liquidcode7.hearthcraft.ui.screen
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -9,11 +10,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -56,6 +59,8 @@ fun BandSelectionScreen(
         2 -> WelcomePage(
             firstBandId = firstBandId ?: "",
             firstName = viewModel.bands.find { it.id == firstBandId }?.name ?: "",
+            fighterBuild = viewModel.fighterBuild.collectAsState().value,
+            onFighterBuildSelected = { viewModel.selectFighterBuild(it) },
             onEnter = { viewModel.confirmSelection() }
         )
     }
@@ -161,6 +166,8 @@ private fun SelectionPage(
 private fun WelcomePage(
     firstBandId: String,
     firstName: String,
+    fighterBuild: String,
+    onFighterBuildSelected: (String) -> Unit,
     onEnter: () -> Unit
 ) {
     val (quote, speaker) = welcomeFor(firstBandId)
@@ -193,6 +200,24 @@ private fun WelcomePage(
                     "— $speaker",
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+        if (firstBandId == "greycloaks") {
+            Spacer(modifier = Modifier.height(24.dp))
+            Text("How does your Fighter fight?", style = MaterialTheme.typography.titleSmall)
+            Spacer(modifier = Modifier.height(8.dp))
+            Row {
+                FilterChip(
+                    selected = fighterBuild == "ranged",
+                    onClick = { onFighterBuildSelected("ranged") },
+                    label = { Text("Ranged") }
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                FilterChip(
+                    selected = fighterBuild == "melee",
+                    onClick = { onFighterBuildSelected("melee") },
+                    label = { Text("Melee") }
                 )
             }
         }

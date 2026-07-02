@@ -31,15 +31,20 @@ class BandSelectionViewModel @Inject constructor(
     private val _firstBandId = MutableStateFlow<String?>(null)
     val firstBandId: StateFlow<String?> = _firstBandId.asStateFlow()
 
+    private val _fighterBuild = MutableStateFlow("ranged")
+    val fighterBuild: StateFlow<String> = _fighterBuild.asStateFlow()
+
     private val _navigateToMain = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
     val navigateToMain: SharedFlow<Unit> = _navigateToMain.asSharedFlow()
 
     fun selectFirst(id: String) { _firstBandId.value = id }
 
+    fun selectFighterBuild(build: String) { _fighterBuild.value = build }
+
     fun confirmSelection() {
         val first = _firstBandId.value ?: return
         viewModelScope.launch {
-            player.init(first)
+            player.init(first, _fighterBuild.value)
             band.initMembers(first)
             giveStarterSeeds()
             _navigateToMain.emit(Unit)
