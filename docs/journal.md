@@ -5,13 +5,13 @@
 
 ---
 
-## Current Status — July 1, 2026
+## Current Status — July 2, 2026
 
-**Phase:** Men (Greycloaks) — Grimoire system complete. Combat engine (Model B) complete. Data layer clean.
-**What's working:** Full Grimoire system: three classes (cooking/draught/HoH), encounter drops, PlayerState persistence, three-lock recipe gate, RecipeBook tier display with locked grimoire section. All Greycloaks encounter data correct (reward tables, recLevel, grimoireDrops). T1 food/draught always visible; T2+ gated by grimoire or individual discovery; HoH at any tier requires HoH grimoire.
-**What's not wired yet:** HoH recipe content (grimoire drops but no HoH recipes exist yet — future track). `reserve` field is inert. Non-Men ingredient data parked. Balance sim vs. Men encounters not yet run.
-**Next session:** Run sim against Men encounters (Wolf-Master, Rhudaur Men, Barrow-wight) under HoT+streak system. Then begin HoH recipe track or continue Greycloaks campaign structure.
-**Open questions:** Player title (still TBD). Exact Lone-Lands unlock trigger. Recipe tier count for full campaign.
+**Phase:** Men (Greycloaks) — HoH mechanics fully implemented. Grimoire system complete. Combat engine (Model B) complete. Data layer clean.
+**What's working:** Full HoH system: five wound types (physical/will/corruption/poison/disease), guaranteed+chance infliction per encounter, combined recovery timers with time-credit for partial treatment, HoH XP/leveling (Track.HOH), 20 T1–T4 recipes with ingredient list, HohRepository timer logic, HohWorker recovery completion, post-recovery incoming-heal buff, HohCookingWorker for craft XP. Full Grimoire system also complete.
+**What's not wired yet:** HoH UI (no screens to apply preparations or view wound state yet). No encounter has `grievousWoundSpecs` populated yet — wound type infliction is wired but data needs filling during encounter validation. `reserve` field is inert. Non-Men ingredient data parked. Balance sim vs. Men encounters not yet run.
+**Next session:** Add `grievousWoundSpecs` to existing Greycloaks encounters during encounter validation. Then run balance sim against Men encounters (Wolf-Master, Rhudaur Men, Barrow-wight). Then begin HoH UI.
+**Open questions:** Player title (still TBD). Exact Lone-Lands unlock trigger. HoH UI design (how the provisioner sees wounded members and applies preparations).
 
 ---
 
@@ -2080,6 +2080,48 @@ Designed and built the complete three-class Grimoire system via SDD (5 tasks, 5 
 - No other divergences.
 
 **Coming up:**
-- Next session: Run sim against Men encounters (Wolf-Master, Rhudaur Men, Barrow-wight) for balance validation under HoT+streak
-- Near term: HoH recipe content (the grimoire drops but nothing uses it yet); Lone-Lands unlock trigger; player title decision
+- Next session: Add `grievousWoundSpecs` to existing Greycloaks encounters; run balance sim against Men encounters
+- Near term: HoH UI (wound state display, preparation application); Lone-Lands unlock trigger; player title decision
 - Future ideas logged: None this session
+
+---
+
+## Session 27 — July 2, 2026
+**HoH Full Mechanics Design and Implementation**
+
+**What was built:**
+- Design session: full HoH mechanics spec (`docs/superpowers/specs/2026-07-02-hoh-mechanics-design.md`) — five wound types, guaranteed+chance infliction model, combined timer with time-credit, recipe structure, athelas design, ingredient list, XP system, recovery buff
+- `BandMemberState.kt`: added `woundTypes`, `hohTimerStartMs`, `hohTimerDurationMs`, `recoveryBuffGrade`, `recoveryBuffTier`, `recoveryBuffPending` fields
+- `PlayerState.kt`: added `hohLevel`, `hohXp` fields
+- `HohSession.kt` + `HohSessionDao.kt`: new entity tracking active HoH treatments per member
+- `Migration14To15.kt`: manual Room migration 13→15, all new columns and `hoh_sessions` table
+- `HearthCraftDatabase.kt`: bumped to version 15, registered `HohSession`, added `hohSessionDao()`
+- `DatabaseModule.kt`: added `provideHohSessionDao`, registered `Migration14To15`
+- `PlayerRepository.kt`: added `Track.HOH`, HOH XP curve (A=22, P=1.2, wall=2.0), `addHohXp()`, `XP_HOH_*` constants
+- `Recipe.kt`: added `hohLevel`, `treatsWoundTypes` fields
+- `Encounter.kt`: added `GrievousWoundSpec` data class, `grievousWoundSpecs` field
+- `EncounterEngine.kt`: added `rollWoundTypes()`, `buildGrievousWoundMap()`, `grievousWoundTypes` in `EncounterResult`, `recoveryBuffMult` in `MemberInput`, buff multiplier at all four heal sites, `recoveryBuffMultiplier()` helper
+- `BandRepository.kt`: extended `woundMember()` to accept wound types, added `completeHohRecovery()`, `consumeRecoveryBuffs()`, `HohSessionDao` injection
+- `EncounterWorker.kt`: passes `grievousWoundSpecs` to engine, propagates `grievousWoundTypes` to `applyOutcome` on both primary and fallback paths
+- `HohRepository.kt`: new — `applyPreparation()` with elapsed time-credit, `calcTimer()`, WorkManager enqueue for `HohWorker`
+- `HohWorker.kt`: new — fires on recovery completion, calls `completeHohRecovery`, posts notification with channel registration
+- `HohCookingWorker.kt`: new — fires on HoH craft completion, grants XP, stores preparation in inventory
+- `ingredients.json`: added 15 new ingredients including 7 HoH-exclusives (`silver_thread_lichen`, `bloodmoss`, `healing_clay`, `rendered_beeswax`, `shadowbane_moss`, `sandflower`, `miruvor_dilute`)
+- `recipes.json`: added 20 HoH recipes T1–T4
+
+**Decisions made:**
+- Five wound types: Physical (4h floor), Will (3h), Corruption (6h), Poison (4h), Disease (5h)
+- Wound infliction: each encounter has `guaranteed` and `chance` wound specs — always produces at least one type
+- Recovery timer only starts on treatment; partial treatment credits elapsed time on subsequent applications
+- Compound recipes more efficient than separate T1 applications
+- Athelas cultivar unlocks when first T3 recipe is crafted (TODO: implement trigger)
+- `sandflower` added as Lone-Lands rare forage ingredient for Corruption healing (existing `starflower` is a cooking ingredient — kept separate)
+- Grade ceiling fix: `CookQuality.resolveDishGrade` accepts `overrideUnlockLevel` param; HoH passes `recipe.hohLevel` not `recipe.cookLevel`
+
+**Anything that diverged from design/master-design.md:**
+- None — spec was written first this session, implementation follows it exactly
+
+**Coming up:**
+- Next session: Add `grievousWoundSpecs` to Greycloaks encounters; run balance sim; begin HoH UI
+- Near term: HoH UI screens; Lone-Lands unlock trigger; athelas cultivar unlock trigger implementation
+- Future ideas logged: None
