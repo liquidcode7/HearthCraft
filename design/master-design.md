@@ -77,6 +77,20 @@ Five stats apply to all band members. They grow over time and are boosted by foo
 **Fate food does not exist and will never exist.** Fate is a character stat only.
 Feeding Fate would make the streak system untunable. This is a hard rule.
 
+### 4.1 Leveling
+
+Each band member has their own combat level (cap **50**), driven by combat XP
+earned per mission: Victory grants XP, Stalemate grants a smaller amount,
+Defeat grants none — the same "no reward on defeat" shape already used for
+mission rewards.
+
+A member's stat at their current level is `startingStat + growthRate ×
+(level − 1)`. Growth rates are **per role**, not per named individual, and
+follow each role's documented primary/secondary stats above: the primary
+stat grows fastest, secondary stat(s) grow at half that rate, other stats
+grow slowly. These are placeholder magnitudes pending balance validation via
+the sim, not locked numbers.
+
 ---
 
 ## 5. Band Roles — Mechanical Design
@@ -130,12 +144,18 @@ damage action. There are no idle ticks.
 
 ### 5.4 Fighter
 
-- **Primary stat:** Agility
-- **Secondary stat:** Fate
-- **Damage type:** Physical
+Two builds, same secondary stat:
+
+- **Ranged** — Primary: Agility. Secondary: Fate.
+- **Melee** — Primary: Might. Secondary: Fate.
+- **Damage type:** Physical (both builds)
 - **Identity:** Pure DPS. High Fate secondary means they trigger streaks often —
   but so would any member with equivalent Fate. High Fate is a character trait,
   not a role privilege.
+
+For Men (Greycloaks), the player chooses melee or ranged once, at character
+creation — permanent for that save. Elves and Dwarves are pending redesign
+(§3); their Fighter build, if any, isn't decided yet.
 
 ---
 
