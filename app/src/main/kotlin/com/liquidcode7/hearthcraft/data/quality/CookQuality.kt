@@ -29,10 +29,14 @@ object CookQuality {
     // all ingredients count equally (flat average).
     // playerCookLevel is the player's current cooking skill — distinct from recipe.cookLevel
     // (the recipe's minimum unlock level). Never pass recipe.cookLevel here.
+    // overrideUnlockLevel: when non-null, used instead of recipe.cookLevel for the ceiling
+    // calculation. Pass recipe.hohLevel for HoH recipes so the ceiling is relative to the
+    // correct skill, not cookLevel (which is always 1 on HoH recipes).
     fun resolveDishGrade(
         recipe: Recipe,
         ingredientGrades: Map<String, Int>,
-        playerCookLevel: Int
+        playerCookLevel: Int,
+        overrideUnlockLevel: Int? = null
     ): Int {
         val heroId = recipe.heroIngredient
         val ingredientIds = recipe.ingredients.map { it.id }.toSet()
@@ -51,6 +55,7 @@ object CookQuality {
         val raw = (weightedSum.toDouble() / divisor)
             .roundToInt()
             .coerceIn(Grade.CRUDE, Grade.PRISTINE)
-        return minOf(raw, cookCeiling(playerCookLevel, recipe.cookLevel))
+        val unlockLevel = overrideUnlockLevel ?: recipe.cookLevel
+        return minOf(raw, cookCeiling(playerCookLevel, unlockLevel))
     }
 }

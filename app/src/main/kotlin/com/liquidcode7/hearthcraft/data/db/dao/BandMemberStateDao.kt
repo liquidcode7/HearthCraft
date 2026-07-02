@@ -37,7 +37,7 @@ interface BandMemberStateDao {
     @Query("UPDATE band_member_state SET hohTimerStartMs = :startMs, hohTimerDurationMs = :durationMs WHERE memberId = :id")
     suspend fun setHohTimer(id: String, startMs: Long, durationMs: Long)
 
-    @Query("UPDATE band_member_state SET woundTypes = '', hohTimerStartMs = 0, hohTimerDurationMs = 0, recoveryBuffPending = 0 WHERE memberId = :id")
+    @Query("UPDATE band_member_state SET woundTypes = '', hohTimerStartMs = 0, hohTimerDurationMs = 0 WHERE memberId = :id")
     suspend fun clearHohState(id: String)
 
     @Query("UPDATE band_member_state SET recoveryBuffGrade = :grade, recoveryBuffTier = :tier, recoveryBuffPending = :pending WHERE memberId = :id")

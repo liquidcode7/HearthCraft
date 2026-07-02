@@ -949,8 +949,8 @@
     ]
   },
   {
-    "id": "starflower_salve",
-    "name": "Starflower Salve",
+    "id": "sandflower_salve",
+    "name": "Sandflower Salve",
     "band": "all",
     "class": "hoh",
     "method": "prepare",

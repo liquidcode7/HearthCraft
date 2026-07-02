@@ -1,9 +1,13 @@
 package com.liquidcode7.hearthcraft.data.repository
 
+import android.content.Context
+import androidx.work.WorkManager
 import com.liquidcode7.hearthcraft.data.db.HohSession
 import com.liquidcode7.hearthcraft.data.db.dao.BandMemberStateDao
 import com.liquidcode7.hearthcraft.data.db.dao.HohSessionDao
 import com.liquidcode7.hearthcraft.data.quality.CookQuality
+import com.liquidcode7.hearthcraft.worker.HohWorker
+import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -18,7 +22,8 @@ class HohRepository @Inject constructor(
     private val memberDao: BandMemberStateDao,
     private val hohSessionDao: HohSessionDao,
     private val player: PlayerRepository,
-    private val gameData: GameDataRepository
+    private val gameData: GameDataRepository,
+    @ApplicationContext private val context: Context
 ) {
 
     private val WOUND_FLOOR_MS = mapOf(
@@ -46,7 +51,8 @@ class HohRepository @Inject constructor(
             ?: error("Recipe $recipeId not found")
         val playerState = player.get() ?: error("PlayerState not found")
 
-        val grade = CookQuality.resolveDishGrade(recipe, ingredientGrades, playerState.hohLevel)
+        val grade = CookQuality.resolveDishGrade(recipe, ingredientGrades, playerState.hohLevel,
+            overrideUnlockLevel = recipe.hohLevel)
         val tier = recipe.tier.coerceIn(1, 4)
 
         // Load or create session
@@ -96,6 +102,12 @@ class HohRepository @Inject constructor(
         val xp = PlayerRepository.XP_HOH_APPLY +
             if (allWoundsCleared) PlayerRepository.XP_HOH_CLEAR_BONUS else 0
         player.addHohXp(xp)
+
+        // Schedule HohWorker — cancel any prior timer for this member first so a
+        // second preparation restarts the clock correctly, then enqueue the new one.
+        val workManager = WorkManager.getInstance(context)
+        workManager.cancelAllWorkByTag("hoh_$memberId")
+        workManager.enqueue(HohWorker.buildRequest(memberId, creditedTimer))
 
         return ApplyResult(timerMs = creditedTimer, grade = grade, allWoundsCleared = allWoundsCleared)
     }

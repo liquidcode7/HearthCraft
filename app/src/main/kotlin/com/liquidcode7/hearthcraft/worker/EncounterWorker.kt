@@ -52,7 +52,23 @@ class EncounterWorker @AssistedInject constructor(
         val report = combatRepo.get(bandId)
         if (report != null) {
             val wounds = parseWounds(report.woundsJson)
-            applyOutcome(report.outcome, wounds, encounter, grievousWoundTypes = emptyMap())
+            // Re-run the engine to recover grievousWoundTypes — they aren't persisted in CombatReport.
+            // We only need the wound type map, not the outcome (the report is authoritative for that).
+            // Use a deterministic seed so the wound-type rolls are stable across retries.
+            val grievousWoundTypes = if (encounter.grievousWoundSpecs.isNotEmpty()) {
+                val draughtPotency = inputData.getFloat(KEY_DRAUGHT_POTENCY, 0f)
+                val stage = encounter.stages.firstOrNull()
+                val members = stage?.let {
+                    band.memberInputsForBand(bandId, draughtPotency, emptyMap<String, PreparedFoodDetail?>())
+                }
+                if (stage != null && members != null && members.isNotEmpty()) {
+                    val seed = report.encounterId.hashCode().toLong()
+                    val result = EncounterEngine.resolve(stage, members, seed,
+                        grievousWoundSpecs = encounter.grievousWoundSpecs)
+                    result.grievousWoundTypes
+                } else emptyMap()
+            } else emptyMap()
+            applyOutcome(report.outcome, wounds, encounter, grievousWoundTypes)
         } else {
             // Fallback: re-run engine fresh (handles old WorkManager tasks in flight during update)
             val draughtPotency = inputData.getFloat(KEY_DRAUGHT_POTENCY, 0f)
