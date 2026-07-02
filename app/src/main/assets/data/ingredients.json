@@ -2053,6 +2053,16 @@
     "cultivatable": false
   },
   {
+    "id": "sandflower",
+    "name": "Sandflower",
+    "region": "lone-lands",
+    "rarity": "r",
+    "source": "forage",
+    "gatheringMode": "forage",
+    "cultivatable": false,
+    "notes": "A pale flower that grows in the dry Lone-lands wastes. Rare."
+  },
+  {
     "id": "miruvor_dilute",
     "name": "Miruvor (Dilute)",
     "region": "Rivendell",

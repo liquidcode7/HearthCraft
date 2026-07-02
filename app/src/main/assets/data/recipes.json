@@ -957,11 +957,11 @@
     "tier": 2,
     "cookLevel": 1,
     "hohLevel": 9,
-    "heroIngredient": "starflower",
+    "heroIngredient": "sandflower",
     "treatsWoundTypes": ["corruption"],
     "description": "A potent salve drawn from an Elvish flower. One of the few remedies that touches Morgul-taint.",
     "ingredients": [
-      { "id": "starflower",       "qty": 2 },
+      { "id": "sandflower",       "qty": 2 },
       { "id": "rendered_beeswax", "qty": 1 },
       { "id": "spring_water",     "qty": 1 }
     ]
@@ -998,7 +998,7 @@
     "description": "Cultivated athelas in full compound. The definitive counter to wound-shadow, broken will, and Morgul-taint.",
     "ingredients": [
       { "id": "athelas",          "qty": 2 },
-      { "id": "starflower",       "qty": 1 },
+      { "id": "sandflower",       "qty": 1 },
       { "id": "pipeweed",         "qty": 1 },
       { "id": "rendered_beeswax", "qty": 1 }
     ]
@@ -1094,7 +1094,7 @@
     "ingredients": [
       { "id": "miruvor_dilute",        "qty": 1 },
       { "id": "athelas",               "qty": 2 },
-      { "id": "starflower",            "qty": 1 },
+      { "id": "sandflower",            "qty": 1 },
       { "id": "bloodmoss",             "qty": 1 },
       { "id": "silver_thread_lichen",  "qty": 1 }
     ]
