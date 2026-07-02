@@ -2059,6 +2059,7 @@
     "rarity": "r",
     "source": "forage",
     "gatheringMode": "forage",
+    "gatherType": "forage",
     "cultivatable": false,
     "notes": "A pale flower that grows in the dry Lone-lands wastes. Rare."
   },

@@ -959,7 +959,7 @@
     "hohLevel": 9,
     "heroIngredient": "sandflower",
     "treatsWoundTypes": ["corruption"],
-    "description": "A potent salve drawn from an Elvish flower. One of the few remedies that touches Morgul-taint.",
+    "description": "A salve drawn from the hardy sandflower of the Lone-lands wastes. One of the few remedies that touches Morgul-taint.",
     "ingredients": [
       { "id": "sandflower",       "qty": 2 },
       { "id": "rendered_beeswax", "qty": 1 },
