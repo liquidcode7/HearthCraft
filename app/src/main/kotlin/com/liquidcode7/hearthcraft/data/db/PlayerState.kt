@@ -13,6 +13,10 @@ data class PlayerState(
     val gatheringXp: Int = 0,
     val cookingLevel: Int = 1,
     val cookingXp: Int = 0,
+    @ColumnInfo(defaultValue = "1")
+    val hohLevel: Int = 1,
+    @ColumnInfo(defaultValue = "0")
+    val hohXp: Int = 0,
     val money: Int = 0,
     @ColumnInfo(defaultValue = "")
     val discoveredRecipeIds: String = "",

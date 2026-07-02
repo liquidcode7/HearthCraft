@@ -28,6 +28,12 @@ interface PlayerStateDao {
     @Query("UPDATE player_state SET cookingXp = cookingXp + :xp WHERE id = 0")
     suspend fun addCookingXp(xp: Int)
 
+    @Query("UPDATE player_state SET hohXp = hohXp + :xp WHERE id = 0")
+    suspend fun addHohXp(xp: Int)
+
+    @Query("UPDATE player_state SET hohLevel = :level WHERE id = 0")
+    suspend fun setHohLevel(level: Int)
+
     @Query("UPDATE player_state SET money = money - :amount WHERE id = 0 AND money >= :amount")
     suspend fun spendMoney(amount: Int): Int
 
