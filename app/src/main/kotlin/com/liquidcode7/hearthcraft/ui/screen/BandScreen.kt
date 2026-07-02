@@ -220,7 +220,7 @@ private fun MemberDetailDialog(member: BandMemberWithState, onDismiss: () -> Uni
                 Text(member.name, style = MaterialTheme.typography.titleMedium)
                 if (member.role.isNotEmpty()) {
                     Text(
-                        member.role,
+                        "${member.role} — Level ${member.level}",
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.tertiary
                     )

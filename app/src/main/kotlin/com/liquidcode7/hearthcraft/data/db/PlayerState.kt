@@ -32,4 +32,6 @@ data class PlayerState(
     val hasReceivedStarterPantry: Boolean = false,
     @ColumnInfo(defaultValue = "")
     val foundGrimoireIds: String = "",
+    @ColumnInfo(defaultValue = "ranged")
+    val fighterBuild: String = "ranged",
 )

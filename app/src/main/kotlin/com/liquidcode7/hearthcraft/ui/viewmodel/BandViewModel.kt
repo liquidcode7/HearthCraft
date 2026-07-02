@@ -8,6 +8,9 @@ import com.liquidcode7.hearthcraft.data.db.CombatReport
 import com.liquidcode7.hearthcraft.data.db.EncounterSession
 import com.liquidcode7.hearthcraft.data.db.MissionSession
 import com.liquidcode7.hearthcraft.data.model.Band
+import com.liquidcode7.hearthcraft.data.model.growthCurveKeyForRole
+import com.liquidcode7.hearthcraft.data.model.levelForCombatXp
+import com.liquidcode7.hearthcraft.data.model.statAtLevel
 import com.liquidcode7.hearthcraft.data.repository.BandRepository
 import com.liquidcode7.hearthcraft.data.repository.CombatRepository
 import com.liquidcode7.hearthcraft.data.repository.EncounterRepository
@@ -32,6 +35,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.math.roundToInt
 
 private const val SECOND_BAND_UNLOCK_COOKING_LEVEL = 10
 
@@ -103,13 +107,18 @@ class BandViewModel @Inject constructor(
 
     val members: StateFlow<List<BandMemberWithState>> = combine(
         band.observeMemberStates(),
-        activeBandId
-    ) { states, bandId ->
+        activeBandId,
+        playerState
+    ) { states, bandId, pState ->
         if (bandId == null) return@combine emptyList()
+        val fighterBuild = pState?.fighterBuild ?: "ranged"
         gameData.bandMembers
             .filter { it.bandId == bandId }
             .map { member ->
                 val state = states.find { it.memberId == member.id }
+                val level = levelForCombatXp(state?.combatXp ?: 0)
+                val curveKey = growthCurveKeyForRole(member.role, fighterBuild)
+                val curve = gameData.growthCurves.find { it.role == curveKey }
                 BandMemberWithState(
                     memberId = member.id,
                     name = member.name,
@@ -119,13 +128,14 @@ class BandViewModel @Inject constructor(
                     role = member.role,
                     isAlive = state?.isAlive != false,
                     woundStatus = state?.woundStatus ?: "healthy",
+                    level = level,
                     woundedSinceMs = state?.woundedSinceMs ?: 0L,
                     woundedDurationMs = state?.woundedDurationMs ?: 0L,
-                    might = state?.might ?: member.startingMight,
-                    agility = state?.agility ?: member.startingAgility,
-                    vitality = state?.vitality ?: member.startingVitality,
-                    will = state?.will ?: member.startingWill,
-                    fate = state?.fate ?: member.startingFate
+                    might = curve?.let { statAtLevel(member.startingMight, it.migGrowth, level) }?.roundToInt() ?: member.startingMight,
+                    agility = curve?.let { statAtLevel(member.startingAgility, it.agiGrowth, level) }?.roundToInt() ?: member.startingAgility,
+                    vitality = curve?.let { statAtLevel(member.startingVitality, it.vitGrowth, level) }?.roundToInt() ?: member.startingVitality,
+                    will = curve?.let { statAtLevel(member.startingWill, it.wilGrowth, level) }?.roundToInt() ?: member.startingWill,
+                    fate = curve?.let { statAtLevel(member.startingFate, it.fatGrowth, level) }?.roundToInt() ?: member.startingFate
                 )
             }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())

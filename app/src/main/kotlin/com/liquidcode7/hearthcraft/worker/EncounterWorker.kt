@@ -103,11 +103,11 @@ class EncounterWorker @AssistedInject constructor(
                 }
                 player.addCookingXp(PlayerRepository.XP_COOK_WIN)
                 player.addGatheringXp(PlayerRepository.XP_GATHER_WIN)
-                band.grantMissionStats(bandId, succeeded = true)
+                band.grantCombatXp(bandId, xp = 40)
                 notify("Mission Complete", "${encounter.name} — your band has returned.")
             }
             "STALEMATE" -> {
-                band.grantMissionStats(bandId, succeeded = false)
+                band.grantCombatXp(bandId, xp = 15)
                 notify("No Result", "${encounter.name} — the band held but couldn't finish it.")
             }
             else -> { // DEFEAT
@@ -115,7 +115,6 @@ class EncounterWorker @AssistedInject constructor(
                     gameData.recipes, "hoh", player.getFoundGrimoireIds(), player.getDiscoveredRecipeIds()
                 )
                 val safetyNetTriggered = applyWounds(wounds, hohAvailable, grievousWoundTypes)
-                band.grantMissionStats(bandId, succeeded = false)
                 if (safetyNetTriggered) {
                     notify(
                         "Mission Failed",

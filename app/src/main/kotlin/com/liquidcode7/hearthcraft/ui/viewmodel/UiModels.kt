@@ -30,6 +30,7 @@ data class BandMemberWithState(
     val role: String = "",
     val isAlive: Boolean,
     val woundStatus: String = "healthy",
+    val level: Int = 1,
     val woundedSinceMs: Long = 0L,
     val woundedDurationMs: Long = 0L,
     val might: Int = 0,

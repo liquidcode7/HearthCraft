@@ -31,7 +31,7 @@ import com.liquidcode7.hearthcraft.data.db.dao.SeedStockDao
         CombatReport::class,
         HohSession::class,
     ],
-    version = 15,
+    version = 16,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 5, to = 6),

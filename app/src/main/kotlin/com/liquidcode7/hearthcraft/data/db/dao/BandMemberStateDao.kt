@@ -28,8 +28,8 @@ interface BandMemberStateDao {
     @Query("UPDATE band_member_state SET woundStatus = 'healthy', woundedSinceMs = 0, woundedDurationMs = 0 WHERE memberId = :id")
     suspend fun healWound(id: String)
 
-    @Query("UPDATE band_member_state SET vitality = vitality + :vitality, might = might + :might WHERE memberId = :memberId AND isAlive = 1")
-    suspend fun grantStats(memberId: String, vitality: Int, might: Int)
+    @Query("UPDATE band_member_state SET combatXp = combatXp + :xp WHERE memberId = :memberId AND isAlive = 1")
+    suspend fun addCombatXp(memberId: String, xp: Int)
 
     @Query("UPDATE band_member_state SET woundTypes = :types WHERE memberId = :id")
     suspend fun setWoundTypes(id: String, types: String)

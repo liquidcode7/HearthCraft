@@ -12,11 +12,6 @@ data class BandMemberState(
     val woundedSinceMs: Long = 0L,
     @ColumnInfo(defaultValue = "0")
     val woundedDurationMs: Long = 0L,
-    val might: Int = 0,
-    val agility: Int = 0,
-    val vitality: Int = 0,
-    val will: Int = 0,
-    val fate: Int = 0,
     @ColumnInfo(defaultValue = "")
     val woundTypes: String = "",
     @ColumnInfo(defaultValue = "0")
@@ -28,5 +23,7 @@ data class BandMemberState(
     @ColumnInfo(defaultValue = "0")
     val recoveryBuffTier: Int = 0,
     @ColumnInfo(defaultValue = "0")
-    val recoveryBuffPending: Boolean = false
+    val recoveryBuffPending: Boolean = false,
+    @ColumnInfo(defaultValue = "0")
+    val combatXp: Int = 0
 )

@@ -6,6 +6,11 @@ import com.liquidcode7.hearthcraft.data.db.dao.HohSessionDao
 import com.liquidcode7.hearthcraft.data.model.gradeStep
 import com.liquidcode7.hearthcraft.data.model.Grade
 import com.liquidcode7.hearthcraft.data.model.Recipe
+import com.liquidcode7.hearthcraft.data.model.GrowthCurve
+import com.liquidcode7.hearthcraft.data.model.growthCurveKeyForRole
+import com.liquidcode7.hearthcraft.data.model.levelForCombatXp
+import com.liquidcode7.hearthcraft.data.model.statAtLevel
+import com.liquidcode7.hearthcraft.data.model.BandMember
 import com.liquidcode7.hearthcraft.engine.EncounterEngine
 import com.liquidcode7.hearthcraft.engine.MemberInput
 import com.liquidcode7.hearthcraft.ui.viewmodel.PreparedFoodDetail
@@ -17,7 +22,8 @@ import javax.inject.Singleton
 class BandRepository @Inject constructor(
     private val dao: BandMemberStateDao,
     private val hohSessionDao: HohSessionDao,
-    private val gameData: GameDataRepository
+    private val gameData: GameDataRepository,
+    private val player: PlayerRepository
 ) {
     fun observeMemberStates(): Flow<List<BandMemberState>> = dao.observeAll()
 
@@ -25,14 +31,7 @@ class BandRepository @Inject constructor(
         gameData.bandMembers
             .filter { it.bandId == bandId }
             .forEach { member ->
-                dao.upsert(BandMemberState(
-                    memberId = member.id,
-                    might = member.startingMight,
-                    agility = member.startingAgility,
-                    vitality = member.startingVitality,
-                    will = member.startingWill,
-                    fate = member.startingFate
-                ))
+                dao.upsert(BandMemberState(memberId = member.id))
             }
     }
 
@@ -78,22 +77,39 @@ class BandRepository @Inject constructor(
             .filter { dao.get(it.id)?.isAlive != false }
             .map { it.id }
 
-    suspend fun grantMissionStats(bandId: String, succeeded: Boolean) {
+    suspend fun grantCombatXp(bandId: String, xp: Int) {
         aliveMemberIds(bandId).forEach { id ->
-            dao.grantStats(
-                memberId = id,
-                vitality = 1,
-                might = if (succeeded) 1 else 0
-            )
+            dao.addCombatXp(memberId = id, xp = xp)
         }
+    }
+
+    private suspend fun growthCurveFor(member: BandMember): GrowthCurve {
+        val fighterBuild = player.get()?.fighterBuild ?: "ranged"
+        val key = growthCurveKeyForRole(member.role, fighterBuild)
+        return gameData.growthCurves.find { it.role == key }
+            ?: error("No growth curve found for role/build key '$key'")
+    }
+
+    private suspend fun currentStats(member: BandMember, state: BandMemberState?): FloatArray {
+        val curve = growthCurveFor(member)
+        val level = levelForCombatXp(state?.combatXp ?: 0)
+        return floatArrayOf(
+            statAtLevel(member.startingMight,    curve.migGrowth, level),
+            statAtLevel(member.startingAgility,  curve.agiGrowth, level),
+            statAtLevel(member.startingVitality, curve.vitGrowth, level),
+            statAtLevel(member.startingWill,     curve.wilGrowth, level),
+            statAtLevel(member.startingFate,     curve.fatGrowth, level)
+        )
     }
 
     suspend fun maxVitality(bandId: String): Int =
         gameData.bandMembers
             .filter { it.bandId == bandId }
-            .mapNotNull { dao.get(it.id) }
-            .filter { it.isAlive }
-            .maxOfOrNull { it.vitality } ?: 0
+            .mapNotNull { member ->
+                val state = dao.get(member.id)
+                if (state?.isAlive == false) null else currentStats(member, state)[2].toInt()
+            }
+            .maxOrNull() ?: 0
 
     suspend fun memberInputsForBand(
         bandId: String,
@@ -106,6 +122,7 @@ class BandRepository @Inject constructor(
             .sortedBy { roleOrder.indexOf(it.role.lowercase()) }
             .map { member ->
                 val state  = dao.get(member.id)
+                val stats  = currentStats(member, state)
                 val food   = memberFood[member.id]
                 val bonus  = { stat: String ->
                     if (food != null) {
@@ -119,11 +136,11 @@ class BandRepository @Inject constructor(
                 MemberInput(
                     id             = member.id,
                     role           = member.role.lowercase(),
-                    might          = (state?.might    ?: member.startingMight).toFloat()    + bonus("mig"),
-                    agility        = (state?.agility  ?: member.startingAgility).toFloat()  + bonus("agi"),
-                    vitality       = (state?.vitality ?: member.startingVitality).toFloat() + bonus("vit"),
-                    will           = (state?.will     ?: member.startingWill).toFloat()     + bonus("wil"),
-                    fate           = (state?.fate     ?: member.startingFate).toFloat(),
+                    might          = stats[0] + bonus("mig"),
+                    agility        = stats[1] + bonus("agi"),
+                    vitality       = stats[2] + bonus("vit"),
+                    will           = stats[3] + bonus("wil"),
+                    fate           = stats[4],
                     draughtPotency = draughtPotency,
                     recoveryBuffMult = if (state?.recoveryBuffPending == true)
                         EncounterEngine.recoveryBuffMultiplier(state.recoveryBuffGrade, state.recoveryBuffTier)
