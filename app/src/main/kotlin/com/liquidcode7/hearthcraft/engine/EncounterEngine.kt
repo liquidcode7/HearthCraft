@@ -1,5 +1,6 @@
 package com.liquidcode7.hearthcraft.engine
 
+import com.liquidcode7.hearthcraft.data.model.GrievousWoundSpec
 import com.liquidcode7.hearthcraft.data.model.Stage
 import kotlin.math.max
 import kotlin.math.min
@@ -50,12 +51,13 @@ data class EncounterResult(
     val rescuesUsed: Int,
     val wardGuardsUsed: Int,
     val resolveRemainingFraction: Float,  // 0.0 = killed, 1.0 = untouched
-    val endedAtSec: Int                   // game-time tick when fight concluded
+    val endedAtSec: Int,                  // game-time tick when fight concluded
+    val grievousWoundTypes: Map<String, List<String>> = emptyMap() // memberId → resolved wound type ids
 )
 
 object EncounterEngine {
 
-    fun resolve(stage: Stage, members: List<MemberInput>, seed: Long = System.nanoTime()): EncounterResult {
+    fun resolve(stage: Stage, members: List<MemberInput>, seed: Long = System.nanoTime(), grievousWoundSpecs: List<GrievousWoundSpec> = emptyList()): EncounterResult {
         val rng = Random(seed)
         val physMit = stage.physMitPct / 100f
         // Draught is party-wide (docs/combat-model.md: "one draught choice per encounter, applied to all party members").
@@ -155,7 +157,8 @@ object EncounterEngine {
             boss -= nonKeeperDps * (1f - effArmor) * jMul
             if (boss <= 0f) {
                 return EncounterResult(Outcome.VICTORY,
-                    party.associate { it.input.id to it.wounds }, rescues, wardGuards, 0f, t)
+                    party.associate { it.input.id to it.wounds }, rescues, wardGuards, 0f, t,
+                    buildGrievousWoundMap(party.filter { it.grievous }.map { it.input.id }, grievousWoundSpecs, rng))
             }
 
             // ── Drain ─────────────────────────────────────────────────────────
@@ -267,7 +270,8 @@ object EncounterEngine {
             // Victory check after keeper DPS
             if (boss <= 0f) {
                 return EncounterResult(Outcome.VICTORY,
-                    party.associate { it.input.id to it.wounds }, rescues, wardGuards, 0f, t)
+                    party.associate { it.input.id to it.wounds }, rescues, wardGuards, 0f, t,
+                    buildGrievousWoundMap(party.filter { it.grievous }.map { it.input.id }, grievousWoundSpecs, rng))
             }
 
             // ── Check defeat ──────────────────────────────────────────────────
@@ -276,7 +280,8 @@ object EncounterEngine {
                     Outcome.DEFEAT,
                     party.associate { it.input.id to it.wounds },
                     rescues, wardGuards,
-                    boss / stage.resolve, t
+                    boss / stage.resolve, t,
+                    buildGrievousWoundMap(party.filter { it.grievous }.map { it.input.id }, grievousWoundSpecs, rng)
                 )
             }
         }
@@ -288,8 +293,37 @@ object EncounterEngine {
             party.associate { it.input.id to it.wounds },
             rescues, wardGuards,
             max(0f, boss / stage.resolve),
-            stage.durationSec
+            stage.durationSec,
+            buildGrievousWoundMap(party.filter { it.grievous }.map { it.input.id }, grievousWoundSpecs, rng)
         )
+    }
+
+    // ── Wound type rolling ────────────────────────────────────────────────────
+
+    // Rolls which wound types apply when a member reaches the grievous threshold.
+    // Guaranteed types always apply; chance types are rolled independently.
+    // Safety net: if all chance rolls miss and specs is non-empty, the first spec
+    // is used as a fallback so the result is never empty.
+    internal fun rollWoundTypes(specs: List<GrievousWoundSpec>, rng: Random): List<String> {
+        val result = mutableListOf<String>()
+        for (spec in specs) {
+            if (spec.guaranteed || rng.nextFloat() < spec.chance) {
+                result += spec.woundType
+            }
+        }
+        if (result.isEmpty() && specs.isNotEmpty()) result += specs.first().woundType
+        return result
+    }
+
+    // Builds the per-member wound-type map from the list of grievous member ids.
+    // All grievous members share the same encounter-level specs (one roll per member).
+    private fun buildGrievousWoundMap(
+        grievousIds: List<String>,
+        specs: List<GrievousWoundSpec>,
+        rng: Random
+    ): Map<String, List<String>> {
+        if (specs.isEmpty()) return emptyMap()
+        return grievousIds.associateWith { rollWoundTypes(specs, rng) }
     }
 
     // ── Top-level helpers (no MS dependency) ─────────────────────────────────
