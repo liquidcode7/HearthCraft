@@ -733,5 +733,370 @@
       { "id": "yarrow",   "qty": 2 }
     ],
     "hazardEffect": "hale"
+  },
+  {
+    "id": "athelas_poultice",
+    "name": "Athelas Poultice",
+    "band": "all",
+    "class": "hoh",
+    "method": "prepare",
+    "tier": 1,
+    "cookLevel": 1,
+    "hohLevel": 1,
+    "heroIngredient": "athelas",
+    "treatsWoundTypes": ["physical"],
+    "description": "A simple athelas compress that begins the healing of a physical wound.",
+    "ingredients": [
+      { "id": "athelas",   "qty": 2 },
+      { "id": "kingsfoil", "qty": 1 },
+      { "id": "honey",     "qty": 1 }
+    ]
+  },
+  {
+    "id": "yarrow_compress",
+    "name": "Yarrow Compress",
+    "band": "all",
+    "class": "hoh",
+    "method": "prepare",
+    "tier": 1,
+    "cookLevel": 1,
+    "hohLevel": 2,
+    "heroIngredient": "yarrow",
+    "treatsWoundTypes": ["physical"],
+    "description": "Yarrow bound with healing clay draws out wound fever.",
+    "ingredients": [
+      { "id": "yarrow",       "qty": 2 },
+      { "id": "healing_clay", "qty": 1 },
+      { "id": "spring_water", "qty": 1 }
+    ]
+  },
+  {
+    "id": "wormwood_tincture",
+    "name": "Wormwood Tincture",
+    "band": "all",
+    "class": "hoh",
+    "method": "prepare",
+    "tier": 1,
+    "cookLevel": 1,
+    "hohLevel": 1,
+    "heroIngredient": "wormwood",
+    "treatsWoundTypes": ["poison"],
+    "description": "Sharp and bitter. Drives poison from the blood.",
+    "ingredients": [
+      { "id": "wormwood",     "qty": 2 },
+      { "id": "rue",          "qty": 1 },
+      { "id": "spring_water", "qty": 1 }
+    ]
+  },
+  {
+    "id": "blackthorn_infusion",
+    "name": "Blackthorn Infusion",
+    "band": "all",
+    "class": "hoh",
+    "method": "prepare",
+    "tier": 1,
+    "cookLevel": 1,
+    "hohLevel": 2,
+    "heroIngredient": "blackthorn_berry",
+    "treatsWoundTypes": ["poison"],
+    "description": "Dark berry infusion that purges venom. Crude but effective.",
+    "ingredients": [
+      { "id": "blackthorn_berry", "qty": 2 },
+      { "id": "spring_water",     "qty": 1 }
+    ]
+  },
+  {
+    "id": "willow_bark_draught",
+    "name": "Willow Bark Draught",
+    "band": "all",
+    "class": "hoh",
+    "method": "prepare",
+    "tier": 1,
+    "cookLevel": 1,
+    "hohLevel": 1,
+    "heroIngredient": "willow_bark",
+    "treatsWoundTypes": ["disease"],
+    "description": "Old remedy against wasting and fever. Bitter and reliable.",
+    "ingredients": [
+      { "id": "willow_bark",  "qty": 2 },
+      { "id": "feverfew",     "qty": 1 },
+      { "id": "spring_water", "qty": 1 }
+    ]
+  },
+  {
+    "id": "pipeweed_calming",
+    "name": "Pipeweed Calming",
+    "band": "all",
+    "class": "hoh",
+    "method": "prepare",
+    "tier": 1,
+    "cookLevel": 1,
+    "hohLevel": 3,
+    "heroIngredient": "pipeweed",
+    "treatsWoundTypes": ["will"],
+    "description": "An infusion that stills the trembling mind of a will-broken warrior.",
+    "ingredients": [
+      { "id": "pipeweed",       "qty": 2 },
+      { "id": "linden_blossom", "qty": 1 },
+      { "id": "spring_water",   "qty": 1 }
+    ]
+  },
+  {
+    "id": "linden_blossom_tea",
+    "name": "Linden Blossom Tea",
+    "band": "all",
+    "class": "hoh",
+    "method": "prepare",
+    "tier": 1,
+    "cookLevel": 1,
+    "hohLevel": 2,
+    "heroIngredient": "linden_blossom",
+    "treatsWoundTypes": ["will"],
+    "description": "Gentle and warm. Draws the shadow-fear from a wounded mind.",
+    "ingredients": [
+      { "id": "linden_blossom", "qty": 2 },
+      { "id": "spring_water",   "qty": 1 }
+    ]
+  },
+  {
+    "id": "athelas_pipeweed_salve",
+    "name": "Athelas and Pipeweed Salve",
+    "band": "all",
+    "class": "hoh",
+    "method": "prepare",
+    "tier": 2,
+    "cookLevel": 1,
+    "hohLevel": 5,
+    "heroIngredient": "athelas",
+    "treatsWoundTypes": ["physical", "will"],
+    "description": "Athelas draws out wound-shadow while pipeweed settles the fractured will.",
+    "ingredients": [
+      { "id": "athelas",          "qty": 2 },
+      { "id": "pipeweed",         "qty": 1 },
+      { "id": "rendered_beeswax", "qty": 1 }
+    ]
+  },
+  {
+    "id": "bloodmoss_poultice",
+    "name": "Bloodmoss Poultice",
+    "band": "all",
+    "class": "hoh",
+    "method": "prepare",
+    "tier": 2,
+    "cookLevel": 1,
+    "hohLevel": 6,
+    "heroIngredient": "bloodmoss",
+    "treatsWoundTypes": ["physical", "poison"],
+    "description": "Bloodmoss packed into the wound with wormwood. Draws out venom and seals raw flesh.",
+    "ingredients": [
+      { "id": "bloodmoss",    "qty": 2 },
+      { "id": "wormwood",     "qty": 1 },
+      { "id": "healing_clay", "qty": 1 }
+    ]
+  },
+  {
+    "id": "yarrow_feverfew_compress",
+    "name": "Yarrow and Feverfew Compress",
+    "band": "all",
+    "class": "hoh",
+    "method": "prepare",
+    "tier": 2,
+    "cookLevel": 1,
+    "hohLevel": 5,
+    "heroIngredient": "yarrow",
+    "treatsWoundTypes": ["physical", "disease"],
+    "description": "Yarrow halts the bleeding while feverfew fights the wasting sickness.",
+    "ingredients": [
+      { "id": "yarrow",   "qty": 2 },
+      { "id": "feverfew", "qty": 1 },
+      { "id": "honey",    "qty": 1 }
+    ]
+  },
+  {
+    "id": "wormwood_willow_compound",
+    "name": "Wormwood and Willow Compound",
+    "band": "all",
+    "class": "hoh",
+    "method": "prepare",
+    "tier": 2,
+    "cookLevel": 1,
+    "hohLevel": 7,
+    "heroIngredient": "wormwood",
+    "treatsWoundTypes": ["poison", "disease"],
+    "description": "A compound remedy against venom and wasting. Unpleasant to take; effective.",
+    "ingredients": [
+      { "id": "wormwood",     "qty": 2 },
+      { "id": "willow_bark",  "qty": 1 },
+      { "id": "spring_water", "qty": 1 }
+    ]
+  },
+  {
+    "id": "elderflower_remedy",
+    "name": "Elderflower Remedy",
+    "band": "all",
+    "class": "hoh",
+    "method": "prepare",
+    "tier": 2,
+    "cookLevel": 1,
+    "hohLevel": 6,
+    "heroIngredient": "elderflower",
+    "treatsWoundTypes": ["disease", "will"],
+    "description": "Elderflower lifts both body and spirit. Disease and will-wound in one preparation.",
+    "ingredients": [
+      { "id": "elderflower",    "qty": 2 },
+      { "id": "linden_blossom", "qty": 1 },
+      { "id": "spring_water",   "qty": 1 }
+    ]
+  },
+  {
+    "id": "starflower_salve",
+    "name": "Starflower Salve",
+    "band": "all",
+    "class": "hoh",
+    "method": "prepare",
+    "tier": 2,
+    "cookLevel": 1,
+    "hohLevel": 9,
+    "heroIngredient": "starflower",
+    "treatsWoundTypes": ["corruption"],
+    "description": "A potent salve drawn from an Elvish flower. One of the few remedies that touches Morgul-taint.",
+    "ingredients": [
+      { "id": "starflower",       "qty": 2 },
+      { "id": "rendered_beeswax", "qty": 1 },
+      { "id": "spring_water",     "qty": 1 }
+    ]
+  },
+  {
+    "id": "shadowbane_poultice",
+    "name": "Shadowbane Poultice",
+    "band": "all",
+    "class": "hoh",
+    "method": "prepare",
+    "tier": 2,
+    "cookLevel": 1,
+    "hohLevel": 8,
+    "heroIngredient": "shadowbane_moss",
+    "treatsWoundTypes": ["corruption", "physical"],
+    "description": "Dark moss pressed into the wound with clay and kingsfoil. Drives out corruption from raw flesh.",
+    "ingredients": [
+      { "id": "shadowbane_moss", "qty": 2 },
+      { "id": "healing_clay",    "qty": 1 },
+      { "id": "kingsfoil",       "qty": 1 }
+    ]
+  },
+  {
+    "id": "athelas_compound_salve",
+    "name": "Athelas Compound Salve",
+    "band": "all",
+    "class": "hoh",
+    "method": "prepare",
+    "tier": 3,
+    "cookLevel": 1,
+    "hohLevel": 10,
+    "heroIngredient": "athelas",
+    "treatsWoundTypes": ["physical", "will", "corruption"],
+    "description": "Cultivated athelas in full compound. The definitive counter to wound-shadow, broken will, and Morgul-taint.",
+    "ingredients": [
+      { "id": "athelas",          "qty": 2 },
+      { "id": "starflower",       "qty": 1 },
+      { "id": "pipeweed",         "qty": 1 },
+      { "id": "rendered_beeswax", "qty": 1 }
+    ]
+  },
+  {
+    "id": "bloodmoss_wormwood_remedy",
+    "name": "Bloodmoss and Wormwood Remedy",
+    "band": "all",
+    "class": "hoh",
+    "method": "prepare",
+    "tier": 3,
+    "cookLevel": 1,
+    "hohLevel": 11,
+    "heroIngredient": "bloodmoss",
+    "treatsWoundTypes": ["physical", "poison", "disease"],
+    "description": "A three-front remedy for the worst field wounds. Seals, purges, and fights wasting in one preparation.",
+    "ingredients": [
+      { "id": "bloodmoss",   "qty": 2 },
+      { "id": "wormwood",    "qty": 1 },
+      { "id": "willow_bark", "qty": 1 },
+      { "id": "honey",       "qty": 1 }
+    ]
+  },
+  {
+    "id": "silver_thread_tincture",
+    "name": "Silver-thread Tincture",
+    "band": "all",
+    "class": "hoh",
+    "method": "prepare",
+    "tier": 3,
+    "cookLevel": 1,
+    "hohLevel": 13,
+    "heroIngredient": "silver_thread_lichen",
+    "treatsWoundTypes": ["corruption", "will", "disease"],
+    "description": "A precise and rare tincture. Silver-thread lichen pulls out corruption, will-shadow, and creeping illness together.",
+    "ingredients": [
+      { "id": "silver_thread_lichen", "qty": 2 },
+      { "id": "elderflower",          "qty": 1 },
+      { "id": "spring_water",         "qty": 1 }
+    ]
+  },
+  {
+    "id": "deep_wound_remedy",
+    "name": "Deep Wound Remedy",
+    "band": "all",
+    "class": "hoh",
+    "method": "prepare",
+    "tier": 3,
+    "cookLevel": 1,
+    "hohLevel": 12,
+    "heroIngredient": "yarrow",
+    "treatsWoundTypes": ["physical", "poison", "will"],
+    "description": "For the wound that breaks both body and resolve. Yarrow, bloodmoss, and rue seal the flesh while linden blossom draws out the will-shadow.",
+    "ingredients": [
+      { "id": "yarrow",         "qty": 2 },
+      { "id": "bloodmoss",      "qty": 1 },
+      { "id": "rue",            "qty": 1 },
+      { "id": "linden_blossom", "qty": 1 }
+    ]
+  },
+  {
+    "id": "masters_compound",
+    "name": "Master's Compound",
+    "band": "all",
+    "class": "hoh",
+    "method": "prepare",
+    "tier": 4,
+    "cookLevel": 1,
+    "hohLevel": 16,
+    "heroIngredient": "athelas",
+    "treatsWoundTypes": ["physical", "will", "corruption", "poison"],
+    "description": "A compound for grievous wounds of war. Only the most skilled provisioner can prepare it.",
+    "ingredients": [
+      { "id": "athelas",               "qty": 2 },
+      { "id": "shadowbane_moss",       "qty": 1 },
+      { "id": "bloodmoss",             "qty": 1 },
+      { "id": "silver_thread_lichen",  "qty": 1 },
+      { "id": "rendered_beeswax",      "qty": 1 }
+    ]
+  },
+  {
+    "id": "full_restoration_preparation",
+    "name": "Full Restoration Preparation",
+    "band": "all",
+    "class": "hoh",
+    "method": "prepare",
+    "tier": 4,
+    "cookLevel": 1,
+    "hohLevel": 20,
+    "heroIngredient": "miruvor_dilute",
+    "treatsWoundTypes": ["physical", "will", "corruption", "poison", "disease"],
+    "description": "The pinnacle of the healer's art. Miruvor dilute draws all wound-shadows at once. Rarely made; never forgotten.",
+    "ingredients": [
+      { "id": "miruvor_dilute",        "qty": 1 },
+      { "id": "athelas",               "qty": 2 },
+      { "id": "starflower",            "qty": 1 },
+      { "id": "bloodmoss",             "qty": 1 },
+      { "id": "silver_thread_lichen",  "qty": 1 }
+    ]
   }
 ]

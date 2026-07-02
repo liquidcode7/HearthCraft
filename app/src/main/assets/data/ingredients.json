@@ -1899,5 +1899,168 @@
     "gatheringMode": "forage",
     "gatherType": "hunt_fish",
     "notes": ""
+  },
+  {
+    "id": "kingsfoil",
+    "name": "Kingsfoil",
+    "region": "Bree-land",
+    "rarity": "c",
+    "source": "forage",
+    "gatheringMode": "forage",
+    "gatherType": "forage",
+    "notes": "Looks like a common weed. Support herb for athelas preparations.",
+    "cultivatable": false
+  },
+  {
+    "id": "honey",
+    "name": "Honey",
+    "region": "Bree-land",
+    "rarity": "c",
+    "source": "husbandry",
+    "gatheringMode": "husbandry",
+    "gatherType": "husbandry",
+    "notes": "Common hive honey. Antiseptic binder for HoH preparations."
+  },
+  {
+    "id": "spring_water",
+    "name": "Spring Water",
+    "region": "Bree-land",
+    "rarity": "c",
+    "source": "draw",
+    "gatheringMode": "draw",
+    "gatherType": "draw",
+    "notes": "Clean spring water. Purifying carrier for tinctures and remedies."
+  },
+  {
+    "id": "wormwood",
+    "name": "Wormwood",
+    "region": "Bree-land",
+    "rarity": "u",
+    "source": "forage",
+    "gatheringMode": "forage",
+    "gatherType": "forage",
+    "notes": "Bitter anti-toxin herb. Classic poison-counter base.",
+    "cultivatable": false
+  },
+  {
+    "id": "rue",
+    "name": "Rue",
+    "region": "Bree-land",
+    "rarity": "c",
+    "source": "forage",
+    "gatheringMode": "forage",
+    "gatherType": "forage",
+    "notes": "Old herb of field-edges. Poison-counter support in HoH preparations.",
+    "cultivatable": false
+  },
+  {
+    "id": "blackthorn_berry",
+    "name": "Blackthorn Berry",
+    "region": "Bree-land",
+    "rarity": "c",
+    "source": "forage",
+    "gatheringMode": "forage",
+    "gatherType": "forage",
+    "notes": "Dark berry from thorned bushes. Poison and disease counter.",
+    "cultivatable": false
+  },
+  {
+    "id": "willow_bark",
+    "name": "Willow Bark",
+    "region": "Bree-land",
+    "rarity": "c",
+    "source": "forage",
+    "gatheringMode": "forage",
+    "gatherType": "forage",
+    "notes": "Stripped from riverside willows. Disease and fever remedy.",
+    "cultivatable": false
+  },
+  {
+    "id": "linden_blossom",
+    "name": "Linden Blossom",
+    "region": "Bree-land",
+    "rarity": "u",
+    "source": "forage",
+    "gatheringMode": "forage",
+    "gatherType": "forage",
+    "notes": "Calming flower. Will-counter ingredient in HoH preparations.",
+    "cultivatable": false
+  },
+  {
+    "id": "pipeweed",
+    "name": "Pipeweed",
+    "region": "Bree-land",
+    "rarity": "u",
+    "source": "farm",
+    "gatheringMode": "farm",
+    "gatherType": "cultivate",
+    "notes": "Used here as infusion, not smoked. Calming. Will-counter in HoH preparations.",
+    "cultivatable": true
+  },
+  {
+    "id": "silver_thread_lichen",
+    "name": "Silver-thread Lichen",
+    "region": "Bree-land",
+    "rarity": "r",
+    "source": "forage",
+    "gatheringMode": "forage",
+    "gatherType": "forage",
+    "notes": "Cave-growing lichen threaded with silver. HoH-exclusive. Corruption and Will affinity.",
+    "cultivatable": false
+  },
+  {
+    "id": "bloodmoss",
+    "name": "Bloodmoss",
+    "region": "Bree-land",
+    "rarity": "u",
+    "source": "forage",
+    "gatheringMode": "forage",
+    "gatherType": "forage",
+    "notes": "Red-tipped moss from forest floors. HoH-exclusive. Physical and Poison affinity.",
+    "cultivatable": false
+  },
+  {
+    "id": "healing_clay",
+    "name": "Healing Clay",
+    "region": "Bree-land",
+    "rarity": "c",
+    "source": "gather",
+    "gatheringMode": "gather",
+    "gatherType": "gather",
+    "notes": "Dug from stream banks. HoH-exclusive poultice base.",
+    "cultivatable": false
+  },
+  {
+    "id": "rendered_beeswax",
+    "name": "Rendered Beeswax",
+    "region": "Bree-land",
+    "rarity": "c",
+    "source": "husbandry",
+    "gatheringMode": "husbandry",
+    "gatherType": "husbandry",
+    "notes": "Clarified wax from managed hives. HoH-exclusive salve carrier.",
+    "cultivatable": false
+  },
+  {
+    "id": "shadowbane_moss",
+    "name": "Shadowbane Moss",
+    "region": "Lone-Lands",
+    "rarity": "r",
+    "source": "forage",
+    "gatheringMode": "forage",
+    "gatherType": "forage",
+    "notes": "Dark moss from shadowed gullies. HoH-exclusive. Corruption and Physical affinity.",
+    "cultivatable": false
+  },
+  {
+    "id": "miruvor_dilute",
+    "name": "Miruvor (Dilute)",
+    "region": "Rivendell",
+    "rarity": "l",
+    "source": "found",
+    "gatheringMode": "found",
+    "gatherType": "found",
+    "notes": "A weakened measure of the Elvish cordial. Story-gated. Will and Corruption affinity.",
+    "cultivatable": false
   }
 ]
