@@ -83,22 +83,21 @@ class BandRepository @Inject constructor(
         }
     }
 
-    private suspend fun growthCurveFor(member: BandMember): GrowthCurve {
+    private suspend fun growthCurveFor(member: BandMember): GrowthCurve? {
         val fighterBuild = player.get()?.fighterBuild ?: "ranged"
         val key = growthCurveKeyForRole(member.role, fighterBuild)
         return gameData.growthCurves.find { it.role == key }
-            ?: error("No growth curve found for role/build key '$key'")
     }
 
     private suspend fun currentStats(member: BandMember, state: BandMemberState?): FloatArray {
         val curve = growthCurveFor(member)
         val level = levelForCombatXp(state?.combatXp ?: 0)
         return floatArrayOf(
-            statAtLevel(member.startingMight,    curve.migGrowth, level),
-            statAtLevel(member.startingAgility,  curve.agiGrowth, level),
-            statAtLevel(member.startingVitality, curve.vitGrowth, level),
-            statAtLevel(member.startingWill,     curve.wilGrowth, level),
-            statAtLevel(member.startingFate,     curve.fatGrowth, level)
+            curve?.let { statAtLevel(member.startingMight,    it.migGrowth, level) } ?: member.startingMight.toFloat(),
+            curve?.let { statAtLevel(member.startingAgility,  it.agiGrowth, level) } ?: member.startingAgility.toFloat(),
+            curve?.let { statAtLevel(member.startingVitality, it.vitGrowth, level) } ?: member.startingVitality.toFloat(),
+            curve?.let { statAtLevel(member.startingWill,     it.wilGrowth, level) } ?: member.startingWill.toFloat(),
+            curve?.let { statAtLevel(member.startingFate,     it.fatGrowth, level) } ?: member.startingFate.toFloat()
         )
     }
 
