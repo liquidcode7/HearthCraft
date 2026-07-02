@@ -534,13 +534,19 @@ Leave `observeMemberStates`, `woundMember`, `healWound`, `completeHohRecovery`, 
 - [ ] **Step 2: Build**
 
 ```bash
-./gradlew build
+./gradlew clean build
 ```
-Expected: BUILD FAILS — `EncounterWorker.kt` still calls the now-removed `grantMissionStats`. Confirm the failure is specifically that, not anything else. This is expected; Task 4 fixes it.
+Use `clean build`, not just `build` — a plain incremental build can sometimes report a stale success here due to Gradle build-cache reuse across the different worktrees/checkouts on this machine, even though the module genuinely doesn't compile. `clean build` forces a real recompile so the failure (or success) you see is trustworthy.
+
+Expected: BUILD FAILS, with unresolved-reference errors in **two** files, not one:
+- `app/src/main/kotlin/com/liquidcode7/hearthcraft/worker/EncounterWorker.kt` — still calls the now-removed `grantMissionStats`.
+- `app/src/main/kotlin/com/liquidcode7/hearthcraft/ui/viewmodel/BandViewModel.kt` — its `members` property still reads `state?.might`/`state?.agility`/`state?.vitality`/`state?.will`/`state?.fate` directly, which no longer exist on `BandMemberState`.
+
+Confirm both are present in the error output. Neither is your job to fix — `EncounterWorker.kt` is Task 4, `BandViewModel.kt` is Task 5 (in this plan's execution order, Task 5 is the UI task — see its header, which explains the reordering).
 
 - [ ] **Step 3: Do NOT commit yet — hold this change uncommitted**
 
-Task 4 will commit this together with its own change.
+The module will not compile again until Task 5 (the UI task) also lands. Do not attempt to fix `BandViewModel.kt` yourself — that's Task 5's job, with its own brief.
 
 ---
 
@@ -552,7 +558,7 @@ Task 4 will commit this together with its own change.
 **Interfaces:**
 - Consumes: `BandRepository.grantCombatXp(bandId: String, xp: Int)` (Task 3).
 
-This task fixes the compile break Task 3 left behind, and completes the loop back to a compiling, committable state.
+This task fixes one of the two compile breaks Task 3 left behind. The module still won't compile after this task — `BandViewModel.kt` (Task 5, the UI task, next in this plan's execution order) is the other one. Do not attempt to fix `BandViewModel.kt` yourself.
 
 - [ ] **Step 1: Update the outcome branches**
 
@@ -582,21 +588,132 @@ Replace the third occurrence of:
 ```
 (inside the `else` / DEFEAT branch) — **delete this line entirely** (no `grantCombatXp` call at all; defeat grants zero combat XP per the spec's "no reward on defeat" pattern, so there's nothing to call).
 
-- [ ] **Step 2: Build — this is the first point the module compiles again**
+- [ ] **Step 2: Build — confirm the remaining failure is exactly `BandViewModel.kt`**
 
 ```bash
-./gradlew build
+./gradlew clean build
+```
+(Use `clean build`, not just `build` — see Task 3 Step 2's note on why.)
+
+Expected: BUILD FAILS, now with unresolved-reference errors **only** in `app/src/main/kotlin/com/liquidcode7/hearthcraft/ui/viewmodel/BandViewModel.kt` (the `might`/`agility`/`vitality`/`will`/`fate` references described in Task 3's brief). If `EncounterWorker.kt` still shows an error too, your change in Step 1 didn't take — check it before continuing. If some entirely different error appears, STOP and report BLOCKED.
+
+- [ ] **Step 3: Do NOT commit yet — hold this change uncommitted**
+
+Task 5 (the UI task, next in this plan's execution order — see its header for why it's out of numeric order) will fix the remaining `BandViewModel.kt` break and commit everything from Tasks 2-5 together.
+
+---
+
+### Task 5: UI — show member level, compute stats via the new system
+
+**Out-of-numeric-order note:** this task runs before Task 6 (Fighter build choice) even though it's numbered after it in the original design pass, because this task is what actually resolves the compile break Tasks 2-4 left in `BandViewModel.kt`. Task 6 doesn't depend on this task or vice versa — it's independent — but doing the UI fix first means the module compiles again as early as possible, and Task 6 can then be a normal, cleanly-buildable task on its own.
+
+**Files:**
+- Modify: `app/src/main/kotlin/com/liquidcode7/hearthcraft/ui/viewmodel/UiModels.kt`
+- Modify: `app/src/main/kotlin/com/liquidcode7/hearthcraft/ui/viewmodel/BandViewModel.kt`
+- Modify: `app/src/main/kotlin/com/liquidcode7/hearthcraft/ui/screen/BandScreen.kt`
+
+**Interfaces:**
+- Consumes: `statAtLevel`, `growthCurveKeyForRole`, `levelForCombatXp` (Task 1).
+- Produces: `BandMemberWithState.level: Int` (new field).
+
+- [ ] **Step 1: Add `level` to `BandMemberWithState`**
+
+Read `app/src/main/kotlin/com/liquidcode7/hearthcraft/ui/viewmodel/UiModels.kt` first.
+
+Add `val level: Int = 1,` to the `BandMemberWithState` data class, directly after `val woundStatus: String = "healthy",` and before `val woundedSinceMs: Long = 0L,`.
+
+- [ ] **Step 2: Compute stats and level in `BandViewModel.members`**
+
+Read `app/src/main/kotlin/com/liquidcode7/hearthcraft/ui/viewmodel/BandViewModel.kt` in full first — find the `members` `StateFlow` block (the `combine(band.observeMemberStates(), activeBandId) { states, bandId -> ... }` block).
+
+Add these imports (none are currently present in this file):
+```kotlin
+import com.liquidcode7.hearthcraft.data.model.growthCurveKeyForRole
+import com.liquidcode7.hearthcraft.data.model.levelForCombatXp
+import com.liquidcode7.hearthcraft.data.model.statAtLevel
+import kotlin.math.roundToInt
+```
+
+Replace the `members` block's body. The `combine` needs `playerState` added as a third source so it can read `fighterBuild`, and each member's stats are now computed rather than read from stored columns:
+```kotlin
+    val members: StateFlow<List<BandMemberWithState>> = combine(
+        band.observeMemberStates(),
+        activeBandId,
+        playerState
+    ) { states, bandId, pState ->
+        if (bandId == null) return@combine emptyList()
+        val fighterBuild = pState?.fighterBuild ?: "ranged"
+        gameData.bandMembers
+            .filter { it.bandId == bandId }
+            .map { member ->
+                val state = states.find { it.memberId == member.id }
+                val level = levelForCombatXp(state?.combatXp ?: 0)
+                val curveKey = growthCurveKeyForRole(member.role, fighterBuild)
+                val curve = gameData.growthCurves.find { it.role == curveKey }
+                BandMemberWithState(
+                    memberId = member.id,
+                    name = member.name,
+                    personality = member.personality,
+                    foodPreference = member.foodPreference,
+                    quirkNote = member.quirkNote,
+                    role = member.role,
+                    isAlive = state?.isAlive != false,
+                    woundStatus = state?.woundStatus ?: "healthy",
+                    level = level,
+                    woundedSinceMs = state?.woundedSinceMs ?: 0L,
+                    woundedDurationMs = state?.woundedDurationMs ?: 0L,
+                    might = curve?.let { statAtLevel(member.startingMight, it.migGrowth, level) }?.roundToInt() ?: member.startingMight,
+                    agility = curve?.let { statAtLevel(member.startingAgility, it.agiGrowth, level) }?.roundToInt() ?: member.startingAgility,
+                    vitality = curve?.let { statAtLevel(member.startingVitality, it.vitGrowth, level) }?.roundToInt() ?: member.startingVitality,
+                    will = curve?.let { statAtLevel(member.startingWill, it.wilGrowth, level) }?.roundToInt() ?: member.startingWill,
+                    fate = curve?.let { statAtLevel(member.startingFate, it.fatGrowth, level) }?.roundToInt() ?: member.startingFate
+                )
+            }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+```
+
+Note: `playerState` is already defined earlier in this file (`private val playerState = player.observe().stateIn(...)`) — it's used as-is here, not redefined.
+
+- [ ] **Step 3: Show level in `MemberDetailDialog`**
+
+Read `app/src/main/kotlin/com/liquidcode7/hearthcraft/ui/screen/BandScreen.kt` first — find `MemberDetailDialog`.
+
+Replace:
+```kotlin
+                if (member.role.isNotEmpty()) {
+                    Text(
+                        member.role,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.tertiary
+                    )
+                }
+```
+with:
+```kotlin
+                if (member.role.isNotEmpty()) {
+                    Text(
+                        "${member.role} — Level ${member.level}",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.tertiary
+                    )
+                }
+```
+
+- [ ] **Step 4: Build — this is the first point the module compiles again**
+
+```bash
+./gradlew clean build
 ```
 Expected: BUILD SUCCESSFUL.
 
-- [ ] **Step 3: Run the full test suite**
+- [ ] **Step 5: Run the full test suite**
 
 ```bash
 ./gradlew test
 ```
 Expected: BUILD SUCCESSFUL, all tests pass (including the new `CombatLevelingTest` from Task 1).
 
-- [ ] **Step 4: Commit everything from Tasks 2-4 together**
+- [ ] **Step 6: Commit everything from Tasks 2-5 together**
 
 ```bash
 git add app/src/main/kotlin/com/liquidcode7/hearthcraft/data/db/BandMemberState.kt
@@ -607,13 +724,16 @@ git add app/src/main/kotlin/com/liquidcode7/hearthcraft/data/db/HearthCraftDatab
 git add app/src/main/kotlin/com/liquidcode7/hearthcraft/di/DatabaseModule.kt
 git add app/src/main/kotlin/com/liquidcode7/hearthcraft/data/repository/BandRepository.kt
 git add app/src/main/kotlin/com/liquidcode7/hearthcraft/worker/EncounterWorker.kt
+git add app/src/main/kotlin/com/liquidcode7/hearthcraft/ui/viewmodel/UiModels.kt
+git add app/src/main/kotlin/com/liquidcode7/hearthcraft/ui/viewmodel/BandViewModel.kt
+git add app/src/main/kotlin/com/liquidcode7/hearthcraft/ui/screen/BandScreen.kt
 git add "app/schemas/com.liquidcode7.hearthcraft.data.db.HearthCraftDatabase/16.json"
 git commit -m "[hc] Replace flat stat grants with combat XP/level system (schema 15->16)"
 ```
 
 ---
 
-### Task 5: Fighter build choice at character creation
+### Task 6: Fighter build choice at character creation
 
 **Files:**
 - Modify: `app/src/main/kotlin/com/liquidcode7/hearthcraft/data/repository/PlayerRepository.kt`
@@ -622,6 +742,8 @@ git commit -m "[hc] Replace flat stat grants with combat XP/level system (schema
 
 **Interfaces:**
 - Produces: `PlayerRepository.init(bandId: String, fighterBuild: String)` — signature change (was `init(bandId: String)`).
+
+This task is independent of Tasks 2-5 and runs after them only because the module needs to compile cleanly first (Task 5 restored that) — none of this task's files were part of the earlier compile break.
 
 - [ ] **Step 1: Update `PlayerRepository.init`**
 
@@ -770,118 +892,6 @@ git add app/src/main/kotlin/com/liquidcode7/hearthcraft/data/repository/PlayerRe
 git add app/src/main/kotlin/com/liquidcode7/hearthcraft/ui/viewmodel/BandSelectionViewModel.kt
 git add app/src/main/kotlin/com/liquidcode7/hearthcraft/ui/screen/BandSelectionScreen.kt
 git commit -m "[hc] Add Fighter melee/ranged build choice at character creation"
-```
-
----
-
-### Task 6: UI — show member level, compute stats via the new system
-
-**Files:**
-- Modify: `app/src/main/kotlin/com/liquidcode7/hearthcraft/ui/viewmodel/UiModels.kt`
-- Modify: `app/src/main/kotlin/com/liquidcode7/hearthcraft/ui/viewmodel/BandViewModel.kt`
-- Modify: `app/src/main/kotlin/com/liquidcode7/hearthcraft/ui/screen/BandScreen.kt`
-
-**Interfaces:**
-- Consumes: `statAtLevel`, `growthCurveKeyForRole`, `levelForCombatXp` (Task 1).
-- Produces: `BandMemberWithState.level: Int` (new field).
-
-- [ ] **Step 1: Add `level` to `BandMemberWithState`**
-
-Read `app/src/main/kotlin/com/liquidcode7/hearthcraft/ui/viewmodel/UiModels.kt` first.
-
-Add `val level: Int = 1,` to the `BandMemberWithState` data class, directly after `val woundStatus: String = "healthy",` and before `val woundedSinceMs: Long = 0L,`.
-
-- [ ] **Step 2: Compute stats and level in `BandViewModel.members`**
-
-Read `app/src/main/kotlin/com/liquidcode7/hearthcraft/ui/viewmodel/BandViewModel.kt` in full first — find the `members` `StateFlow` block (the `combine(band.observeMemberStates(), activeBandId) { states, bandId -> ... }` block).
-
-Add these imports (none are currently present in this file):
-```kotlin
-import com.liquidcode7.hearthcraft.data.model.growthCurveKeyForRole
-import com.liquidcode7.hearthcraft.data.model.levelForCombatXp
-import com.liquidcode7.hearthcraft.data.model.statAtLevel
-import kotlin.math.roundToInt
-```
-
-Replace the `members` block's body. The `combine` needs `playerState` added as a third source so it can read `fighterBuild`, and each member's stats are now computed rather than read from stored columns:
-```kotlin
-    val members: StateFlow<List<BandMemberWithState>> = combine(
-        band.observeMemberStates(),
-        activeBandId,
-        playerState
-    ) { states, bandId, pState ->
-        if (bandId == null) return@combine emptyList()
-        val fighterBuild = pState?.fighterBuild ?: "ranged"
-        gameData.bandMembers
-            .filter { it.bandId == bandId }
-            .map { member ->
-                val state = states.find { it.memberId == member.id }
-                val level = levelForCombatXp(state?.combatXp ?: 0)
-                val curveKey = growthCurveKeyForRole(member.role, fighterBuild)
-                val curve = gameData.growthCurves.find { it.role == curveKey }
-                BandMemberWithState(
-                    memberId = member.id,
-                    name = member.name,
-                    personality = member.personality,
-                    foodPreference = member.foodPreference,
-                    quirkNote = member.quirkNote,
-                    role = member.role,
-                    isAlive = state?.isAlive != false,
-                    woundStatus = state?.woundStatus ?: "healthy",
-                    level = level,
-                    woundedSinceMs = state?.woundedSinceMs ?: 0L,
-                    woundedDurationMs = state?.woundedDurationMs ?: 0L,
-                    might = curve?.let { statAtLevel(member.startingMight, it.migGrowth, level) }?.roundToInt() ?: member.startingMight,
-                    agility = curve?.let { statAtLevel(member.startingAgility, it.agiGrowth, level) }?.roundToInt() ?: member.startingAgility,
-                    vitality = curve?.let { statAtLevel(member.startingVitality, it.vitGrowth, level) }?.roundToInt() ?: member.startingVitality,
-                    will = curve?.let { statAtLevel(member.startingWill, it.wilGrowth, level) }?.roundToInt() ?: member.startingWill,
-                    fate = curve?.let { statAtLevel(member.startingFate, it.fatGrowth, level) }?.roundToInt() ?: member.startingFate
-                )
-            }
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
-```
-
-Note: `playerState` is already defined earlier in this file (`private val playerState = player.observe().stateIn(...)`) — it's used as-is here, not redefined.
-
-- [ ] **Step 3: Show level in `MemberDetailDialog`**
-
-Read `app/src/main/kotlin/com/liquidcode7/hearthcraft/ui/screen/BandScreen.kt` first — find `MemberDetailDialog`.
-
-Replace:
-```kotlin
-                if (member.role.isNotEmpty()) {
-                    Text(
-                        member.role,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.tertiary
-                    )
-                }
-```
-with:
-```kotlin
-                if (member.role.isNotEmpty()) {
-                    Text(
-                        "${member.role} — Level ${member.level}",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.tertiary
-                    )
-                }
-```
-
-- [ ] **Step 4: Build**
-
-```bash
-./gradlew build
-```
-Expected: BUILD SUCCESSFUL.
-
-- [ ] **Step 5: Commit**
-
-```bash
-git add app/src/main/kotlin/com/liquidcode7/hearthcraft/ui/viewmodel/UiModels.kt
-git add app/src/main/kotlin/com/liquidcode7/hearthcraft/ui/viewmodel/BandViewModel.kt
-git add app/src/main/kotlin/com/liquidcode7/hearthcraft/ui/screen/BandScreen.kt
-git commit -m "[hc] Show computed level/stats in Band UI"
 ```
 
 ---
