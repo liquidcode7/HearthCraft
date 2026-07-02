@@ -2,6 +2,7 @@ package com.liquidcode7.hearthcraft.data.repository
 
 import com.liquidcode7.hearthcraft.data.db.BandMemberState
 import com.liquidcode7.hearthcraft.data.db.dao.BandMemberStateDao
+import com.liquidcode7.hearthcraft.data.db.dao.HohSessionDao
 import com.liquidcode7.hearthcraft.data.model.gradeStep
 import com.liquidcode7.hearthcraft.data.model.Grade
 import com.liquidcode7.hearthcraft.data.model.Recipe
@@ -14,6 +15,7 @@ import javax.inject.Singleton
 @Singleton
 class BandRepository @Inject constructor(
     private val dao: BandMemberStateDao,
+    private val hohSessionDao: HohSessionDao,
     private val gameData: GameDataRepository
 ) {
     fun observeMemberStates(): Flow<List<BandMemberState>> = dao.observeAll()
@@ -52,6 +54,12 @@ class BandRepository @Inject constructor(
     }
 
     suspend fun healWound(memberId: String) = dao.healWound(memberId)
+
+    suspend fun completeHohRecovery(memberId: String) {
+        dao.healWound(memberId)
+        dao.clearHohState(memberId)
+        hohSessionDao.delete(memberId)
+    }
 
     suspend fun aliveMemberIds(bandId: String): List<String> =
         gameData.bandMembers
