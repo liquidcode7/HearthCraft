@@ -24,9 +24,22 @@ Five wound types can stack on a single band member. Physical is the most common 
 | Poison | Orcs, spiders, venomous creatures | 4h |
 | Disease/Wasting | Dark places, cursed wounds, lingering illness | 5h |
 
-**Encounter infliction:** Each encounter that can produce a grievous wound has a percentage chance per non-Physical wound type to stack additional types. These chances are set per-encounter in the encounter JSON.
+**Encounter infliction:** Each encounter specifies its wound types in two buckets, validated by Wes per encounter:
 
-**Stacking:** All applicable types are present simultaneously on the member. They combine into one recovery timer. A member with Physical + Corruption has a combined floor of 10h before treatment.
+- **Guaranteed:** wound types that always apply when a grievous wound result occurs. Defines the encounter's identity. At least one type must be guaranteed — this ensures a grievous wound always has a type.
+- **Chance:** wound types that roll independently at a specified probability (0–100%). These add variance and texture on top of the guaranteed types.
+
+Physical is not automatically guaranteed on any grievous wound — it is just another type that can be guaranteed or chance-rolled like the rest. A Morgul blade encounter might guarantee Will and Corruption with Physical as a low-probability chance roll. A Barrow-wight might guarantee Will with no Physical at all.
+
+Example encounter definitions:
+| Encounter | Guaranteed | Chance |
+|-----------|-----------|--------|
+| Cargul | Corruption | Physical 60%, Will 40% |
+| Barrow-wight | Will | Disease 30% |
+| Spider | Poison | Physical 50% |
+| Witchking | Will, Corruption | Physical 20% |
+
+**Stacking:** All types that resolve (guaranteed + successful chance rolls) are present simultaneously on the member. They combine into one recovery timer. A member with Physical + Corruption has a combined floor of 10h before treatment.
 
 **Wounds never kill.** No permadeath from wounds. Permadeath, if designed later, is a separate system.
 
