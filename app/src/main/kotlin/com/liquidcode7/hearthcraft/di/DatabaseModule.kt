@@ -9,12 +9,14 @@ import com.liquidcode7.hearthcraft.data.db.dao.CookingSessionDao
 import com.liquidcode7.hearthcraft.data.db.dao.EncounterSessionDao
 import com.liquidcode7.hearthcraft.data.db.dao.GatheringSessionDao
 import com.liquidcode7.hearthcraft.data.db.dao.GrowingSlotDao
+import com.liquidcode7.hearthcraft.data.db.dao.HohSessionDao
 import com.liquidcode7.hearthcraft.data.db.dao.InventoryDao
 import com.liquidcode7.hearthcraft.data.db.dao.MissionSessionDao
 import com.liquidcode7.hearthcraft.data.db.dao.PlayerStateDao
 import com.liquidcode7.hearthcraft.data.db.dao.PreparedFoodDao
 import com.liquidcode7.hearthcraft.data.db.dao.SeedStockDao
 import com.liquidcode7.hearthcraft.data.db.MIGRATION_10_11
+import com.liquidcode7.hearthcraft.data.db.Migration14To15
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -30,7 +32,7 @@ object DatabaseModule {
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): HearthCraftDatabase =
         Room.databaseBuilder(context, HearthCraftDatabase::class.java, "hearthcraft.db")
-            .addMigrations(MIGRATION_10_11)
+            .addMigrations(MIGRATION_10_11, Migration14To15)
             .fallbackToDestructiveMigration(true)
             .build()
 
@@ -45,4 +47,5 @@ object DatabaseModule {
     @Provides fun provideGrowingSlotDao(db: HearthCraftDatabase): GrowingSlotDao = db.growingSlotDao()
     @Provides fun provideEncounterSessionDao(db: HearthCraftDatabase): EncounterSessionDao = db.encounterSessionDao()
     @Provides fun provideCombatReportDao(db: HearthCraftDatabase): CombatReportDao = db.combatReportDao()
+    @Provides fun provideHohSessionDao(db: HearthCraftDatabase): HohSessionDao = db.hohSessionDao()
 }
