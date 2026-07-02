@@ -56,6 +56,11 @@ Example encounter definitions:
 - Applied recipe(s) reduce the timer based on grade and whether the recipe is a single-type or compound preparation
 - Multiple separate recipes applied to address different wound types combine their reductions — but the result is always worse than a single tier-appropriate compound recipe that covers the same types
 
+**Partial treatment and time credit:**
+A member cannot return until ALL wound types have been treated. However, applying a partial treatment (e.g. treating Physical but not yet Will) starts the recovery clock immediately for the treated types. When the remaining wound type is eventually treated, the timer recalculates for the full wound state — but credits elapsed time already served. Acting quickly on the first treatment is rewarded even if the second cure isn't ready yet.
+
+Example: Physical + Will wound. Provisioner treats Physical immediately (Fine grade → 2h timer starts). Four hours later they treat Will (Common grade). The recalculated combined timer accounts for time already served on the Physical treatment — the member is not back to square one.
+
 **Grade-to-timer table (Physical wound only, for reference):**
 
 | Grade | Timer |
@@ -124,10 +129,11 @@ A newly unlocked recipe (HoH level exactly at minimum) produces Crude output. Ma
 
 ### 4.4 Applying a Preparation
 
-- Starts the recovery timer
+- Starts the recovery timer for the wound types it addresses
 - Clears the wound types that recipe addresses from the member's wound state
 - Remaining wound types stay until treated separately or a compound recipe covers them
-- A second preparation applied to the same member replaces the current timer with a newly calculated one based on all wound types treated so far — it does not stack on top of the existing countdown but recalculates from the full wound state
+- When a subsequent preparation treats remaining wound types, the timer recalculates for the full wound state and **credits elapsed time already served** — the member is not reset to the beginning
+- A member cannot return until all wound types have been treated
 - Pre-crafted preparations can be stockpiled and applied when needed
 
 ### 4.5 Recovery Buff
