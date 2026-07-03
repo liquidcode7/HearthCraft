@@ -12,18 +12,23 @@ class EncounterEngineTest {
         drain = drain, spike = spike, spikeIntervalSec = spikeIv, physMitPct = phys
     )
 
-    // Band at level 10 starting stats — mirrors sim TPL values
+    // Band stats — matches real Greycloaks level-1 starting stats (see
+    // band_members.json), the current small stat scale post-redesign. These
+    // used to be legacy-scale (Might 13, Vitality 15, etc.) — rescaled down
+    // after Task 1/2's compound growth + multiplicative grade curve and the
+    // subsequent DPS/morale/healing coefficient retuning made the old bigger
+    // synthetic stats trivialize every scenario in this file.
     private fun party() = listOf(
-        MemberInput("warden",  "warden",  13f, 6f,  15f, 7f,  6f),
-        MemberInput("fighter", "fighter", 9f,  15f, 7f,  5f,  9f),
-        MemberInput("keeper",  "keeper",  5f,  7f,  9f,  15f, 12f),
-        MemberInput("captain", "captain", 8f,  7f,  12f, 13f, 13f)
+        MemberInput("warden",  "warden",  4f, 2f, 5f, 3f, 2f),
+        MemberInput("fighter", "fighter", 3f, 5f, 3f, 4f, 4f),
+        MemberInput("keeper",  "keeper",  2f, 3f, 3f, 5f, 4f),
+        MemberInput("captain", "captain", 3f, 2f, 4f, 5f, 4f)
     )
 
     @Test
     fun `keeper heals party — band survives easy encounter`() {
         // Soft encounter: low drain so Keeper healing keeps party standing
-        val easyStage = stage(resolve = 20000, drain = 8f, spike = 40f, spikeIv = 20)
+        val easyStage = stage(resolve = 15000, drain = 2f, spike = 30f, spikeIv = 20)
         var wins = 0
         repeat(200) { seed ->
             val r = EncounterEngine.resolve(easyStage, party(), seed.toLong())
@@ -58,8 +63,8 @@ class EncounterEngineTest {
 
     @Test
     fun `draught penetration improves armored encounter`() {
-        // resolve=35000 + phys=35% is marginal without draught (8%) but reachable with draught=60 (32%)
-        val armoredStage = stage(resolve = 35000, drain = 8f, spike = 40f, spikeIv = 20, phys = 35f)
+        // Marginal without draught, reachable with draught=60 penetrating physMitPct=35
+        val armoredStage = stage(resolve = 15000, drain = 2f, spike = 30f, spikeIv = 20, phys = 35f)
         val partyWithDraught = party().map { it.copy(draughtPotency = 60f) }
         var victories = 0
         repeat(100) { seed ->
@@ -92,10 +97,9 @@ class EncounterEngineTest {
 
     @Test
     fun `high fate band wins more often than low fate band on same encounter`() {
-        // Parameters calibrated for the Kotlin engine (no cascade drain or Inspiration mechanics).
-        // The JS sim brief specified 55000/30/100/12, which requires JS-only mechanics to show
-        // differentiation. resolve=13000 puts this engine at the streak tipping point.
-        val midStage = stage(resolve = 13000, drain = 8f, spike = 60f, spikeIv = 12)
+        // Marginal encounter at the current small stat scale, tuned so streak/
+        // Inspiration Fate effects show real differentiation.
+        val midStage = stage(resolve = 70000, drain = 4f, spike = 25f, spikeIv = 12)
         // Low fate: all members fate=2
         val lowFate = party().map { it.copy(fate = 2f) }
         // High fate: all members fate=20
@@ -113,8 +117,8 @@ class EncounterEngineTest {
 
     @Test
     fun `food stat boost increases DPS and improves outcome`() {
-        // Marginal encounter where stat boosts make a measurable difference (tuned for HoT system balance)
-        val midStage = stage(resolve = 15000, drain = 8f, spike = 60f, spikeIv = 12)
+        // Marginal encounter where stat boosts make a measurable difference
+        val midStage = stage(resolve = 78000, drain = 4f, spike = 25f, spikeIv = 12)
         // No food bonus
         var winsNoFood = 0
         repeat(200) { seed ->

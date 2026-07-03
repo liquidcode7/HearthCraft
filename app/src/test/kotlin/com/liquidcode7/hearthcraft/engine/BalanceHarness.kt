@@ -82,6 +82,12 @@ class BalanceHarness {
         }
     }
 
+    // Real draught potency tiers from MissionsScreen.kt's selector: None/Entry(45)/Mid(65).
+    // Only relevant against armored encounters (physMitPct > 0) -- PEN_SCALE=80 in
+    // EncounterEngine.kt means potency 80 would fully negate armor.
+    private fun applyDraught(members: List<MemberInput>, potency: Float): List<MemberInput> =
+        members.map { it.copy(draughtPotency = potency) }
+
     private fun winRate(encounterId: String, members: List<MemberInput>, trials: Int = 300): Float {
         val encounter = encounters.find { it.id == encounterId } ?: error("Unknown encounter: $encounterId")
         val stage = encounter.stages.first()
@@ -133,7 +139,7 @@ class BalanceHarness {
 
     @Test
     fun `goblins win rate increases monotonically from Crude to Pristine at level 5`() {
-        println("=== greycloaks_goblins (hard) @ band level 5 ===")
+        println("=== greycloaks_goblins (hard) @ band level 5, no draught ===")
         val noFoodRate = winRate("greycloaks_goblins", buildParty(level = 5))
         println("  No food: ${(noFoodRate * 100).toInt()}%")
         val rates = Grade.entries.map { grade ->
@@ -145,6 +151,34 @@ class BalanceHarness {
         for (i in 1..rates.lastIndex) {
             assertTrue(
                 "Win rate at ${Grade.entries[i]} (${rates[i]}) should be >= ${Grade.entries[i - 1]} (${rates[i - 1]})",
+                rates[i] >= rates[i - 1]
+            )
+        }
+    }
+
+    @Test
+    fun `goblins win rate increases monotonically with draught potency, holding food constant`() {
+        // Goblins is the only tested encounter with nonzero physMitPct (35, armor).
+        // Real players facing an armored fight can bring a Potency draught -- our
+        // other tests never modeled this (draughtPotency defaulted to 0 = worst case).
+        println("=== greycloaks_goblins (hard) @ band level 5, by grade x draught tier ===")
+        val draughtTiers = listOf(0f to "None", 45f to "Entry", 65f to "Mid")
+        Grade.entries.forEach { grade ->
+            println("  Food: ${grade.displayName}")
+            draughtTiers.forEach { (potency, label) ->
+                val party = applyDraught(applyFood(buildParty(level = 5), grade), potency)
+                val rate = winRate("greycloaks_goblins", party)
+                println("    $label draught: ${(rate * 100).toInt()}%")
+            }
+        }
+        val rates = draughtTiers.map { (potency, label) ->
+            val party = applyDraught(applyFood(buildParty(level = 5), Grade.COMMON), potency)
+            val rate = winRate("greycloaks_goblins", party)
+            rate
+        }
+        for (i in 1..rates.lastIndex) {
+            assertTrue(
+                "Win rate at draught tier ${draughtTiers[i].second} (${rates[i]}) should be >= ${draughtTiers[i - 1].second} (${rates[i - 1]})",
                 rates[i] >= rates[i - 1]
             )
         }
