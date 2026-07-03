@@ -11,9 +11,15 @@ class CombatLevelingTest {
     }
 
     @Test
-    fun `statAtLevel grows linearly with level`() {
-        // level 11: 10 levels above 1, growth 0.20/level -> +2.0
-        assertEquals(7.0f, statAtLevel(startingStat = 5, growthRate = 0.20f, level = 11), 0.0001f)
+    fun `statAtLevel compounds by the growth rate each level, not adds`() {
+        // level 11: 10 levels above 1, growth 0.20/level compounding -> 5 * 1.20^10
+        val expected = 5.0 * Math.pow(1.20, 10.0)
+        assertEquals(expected.toFloat(), statAtLevel(startingStat = 5, growthRate = 0.20f, level = 11), 0.01f)
+    }
+
+    @Test
+    fun `statAtLevel with zero growth rate never changes`() {
+        assertEquals(5.0f, statAtLevel(startingStat = 5, growthRate = 0f, level = 50), 0.0001f)
     }
 
     @Test

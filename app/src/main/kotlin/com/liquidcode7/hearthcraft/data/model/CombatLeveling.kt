@@ -5,10 +5,13 @@ import kotlin.math.roundToInt
 
 const val COMBAT_MAX_LEVEL = 50
 
-// A member's stat at a given level: starting value plus a flat per-level growth rate.
-// Growth rates are per-role placeholders (see growth_curves.json) — not final-balanced.
+// A member's stat at a given level: starting value compounding by a fixed
+// percentage each level (not flat-linear) — this is what makes a level-50
+// veteran dramatically stronger than a fresh recruit, per the stat-growth-
+// and-food-power design doc. Growth rates are per-role/per-stat placeholders
+// (see growth_curves.json) — not final-balanced; tuned via the balance harness.
 fun statAtLevel(startingStat: Int, growthRate: Float, level: Int): Float =
-    startingStat + growthRate * (level - 1)
+    startingStat * (1f + growthRate).pow(level - 1)
 
 // Fighter has two growth-curve variants (melee/ranged); every other role has one.
 fun growthCurveKeyForRole(role: String, fighterBuild: String): String {
