@@ -199,7 +199,72 @@ Every role participates equally. No naming, no role-specific treatment.
 A Warden with high Fate food would streak as often as a Fighter with high Fate.
 Fate is the lever; the role is not.
 
-### 6.3 Dread
+### 6.3 The Inspiration System
+
+Separate from Streak (§6.2) and role-specific. Where Streak is a small,
+universal, no-narrative crit, Inspiration is rare, powerful, and named per
+role — the moment a fight turns. Trigger chance is Fate-driven and low by
+design; these should feel earned, not routine.
+
+**Shared trigger formula:** `min(0.35, base + ownFate × 0.003)`, evaluated
+per-tick against the role's own trigger condition (below). Each member's own
+Fate feeds their own Inspiration only. The cap is raised from an earlier
+0.25 now that Fate cannot be boosted by food (§6.1, §7.2) — a high-Fate
+veteran earning a better shot via leveling is a legitimate payoff, not a
+food-stacking exploit, so the cap can sit a little higher without the
+mechanic feeling scripted. All base rates and this cap are placeholders
+pending balance-harness validation, same as everything else in this
+document.
+
+**Warden — Horn of Gondor.** Trigger: a "crisis edge" — the tick where the
+count of standing members below 35% HP rises from under 2 to 2 or more.
+Effect: for an 8-tick window, all incoming spike damage redirects to the
+Warden regardless of normal targeting, and the Warden's HP is floored at 1
+for the duration — he cannot be downed or take a wound from it.
+
+**Fighter — Black Arrow (ranged build) / Bullroarer's Five-Iron (melee
+build).** Same mechanical effect, different flavor per build. Trigger is
+the literal embodiment of "forecast of defeat, not accumulated death":
+evaluated only after 40% of the fight's duration has elapsed, chance rises
+linearly from 0 toward a low cap as the fight drags on, only while the
+party's current DPS pace would not kill the boss before time runs out.
+Effect: burns 18% of the boss's remaining resolve directly against a
+killable target; against an unkillable target, burns 15% off the survival
+clock instead. (Originally 35% resolve burn — deliberately cut to 18%
+because 35% was rescuing fights that should have been lost to bad
+provisioning, which breaks the "preparation must matter" rule.)
+
+**Keeper — Hands of Healing.** Trigger: fires when a member's wound count
+reaches the grievous threshold (5 wounds). Effect: fully resets that
+member's wounds and restores them to 40% of max HP. Capped at **2 uses per
+fight** — a hard resource limit, not "uncapped but rare."
+
+**Captain — Wrath, Ruin, and the Red Dawn.** Trigger: the same crisis-edge
+condition as Horn of Gondor. Two effects, both active every time it fires:
+
+1. Direct: heals all active members 15% of max HP (can revive someone
+   downed) and grants the whole party a ×1.5 DPS multiplier for 10 ticks.
+   This is the Captain's core identity — making the whole party better at
+   what they already do, not doing it for them.
+2. Unlocks each other role's use-condition for a window, rather than
+   raising their trigger chance: the Warden's horn can fire without needing
+   its own crisis-edge to be true; the Fighter's inspiration can fire the
+   moment its roll succeeds without waiting past the 40%-elapsed gate; the
+   Keeper's heal can target whichever standing member has the most wounds,
+   even if they haven't reached grievous yet, instead of requiring someone
+   already at the brink. A minor, deliberately weak boost to the other
+   three's raw trigger chance also applies — kept small because making
+   defensive/healing tools fire *more often* would undercut the tension
+   these mechanics exist to create; loosening *when* they're allowed to
+   fire is the real lever.
+
+**Status:** documented and implemented (see `EncounterEngine.kt`). This
+mechanic existed in an earlier form before the 30 June 2026 redesign
+(different name conventions, different numeric scale) and was rebuilt fresh
+for the current stat scale and four-role structure rather than ported
+as-is.
+
+### 6.4 Dread
 
 Dread suppresses all healing by a percentage (multiplicative). Raw healing food
 cannot outmuscle it — 45% of extra healing is still lost. Only Hope preparations
@@ -209,12 +274,12 @@ The Captain's Will reduces Dread's effect on the party: `willCut = captainWil / 
 The Captain is the sole anchor for this. A band without a functioning Captain
 in a Dread encounter is fighting uphill.
 
-### 6.4 Despair (formerly Shadow)
+### 6.5 Despair (formerly Shadow)
 
 Shadow is renamed **Despair**. Drains Will and Fate over time. Radiance
 preparations counter it.
 
-### 6.5 Maladies
+### 6.6 Maladies
 
 | Malady | Effect | Counter |
 |--------|--------|---------|
@@ -225,7 +290,7 @@ Cold is a double-bind: it punishes both the damage dealers and the Keeper at
 the same time. It cannot be outrun by raw stat investment alone. Warmth is the
 answer.
 
-### 6.6 Fight Structure
+### 6.7 Fight Structure
 
 Three fight shapes:
 
@@ -237,7 +302,7 @@ Three fight shapes:
 
 Encounter JSON tags which shape applies.
 
-### 6.7 Wound Severity & Recovery
+### 6.8 Wound Severity & Recovery
 
 A lost encounter (DEFEAT) assigns each member a wound severity based on how
 many times they went down during the fight:
@@ -414,7 +479,7 @@ the member returns. The buff magnitude and duration scale with preparation quali
 The recovery buff is elevated incoming healing only — **not** damage reduction.
 Damage reduction was judged too powerful and excluded.
 
-See §6.7 for the current wound severity thresholds and the pre-HoH softlock
+See §6.8 for the current wound severity thresholds and the pre-HoH softlock
 safety net that applies before any HoH recipe exists.
 
 ### 9.2 Separate System
