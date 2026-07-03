@@ -62,11 +62,18 @@ class GatheringWorker @AssistedInject constructor(
             }.toMutableList()
         }
 
-        val plantable = gameData.ingredients.filter { ingredient ->
-            ingredient.gatheringMode == MODE_FARM &&
-            (regions.isEmpty() || regions.any { ingredient.region.contains(it) })
-        }
-        plantable.randomOrNull()?.let { ingredient ->
+        // Seed bonus: pick a random cultivatable ingredient from what was actually foraged this
+        // session. Fall back to the broader regional cultivatable pool only if nothing in the
+        // harvest is cultivatable (shouldn't happen in normal play, but guards edge cases).
+        val harvestedIds = harvestItems.map { it.ingredientId }.toSet()
+        val seedSource = gameData.ingredients
+            .filter { it.cultivatable && harvestedIds.contains(it.id) }
+            .randomOrNull()
+            ?: gameData.ingredients.filter { ingredient ->
+                ingredient.cultivatable &&
+                (regions.isEmpty() || regions.any { ingredient.region.contains(it) })
+            }.randomOrNull()
+        seedSource?.let { ingredient ->
             val seedCount = Random.nextInt(1, 3)
             harvestItems.add(HarvestItem(    // bonus seeds always Crude (grade=0)
                 ingredientId = "${ingredient.id}_seed",
@@ -116,7 +123,9 @@ class GatheringWorker @AssistedInject constructor(
         // "Special" catches "Special / Craft-Branch" universals for all bands.
         // Empty set (unknown band) falls back to unfiltered — safe default.
         fun foragableRegions(bandId: String): Set<String> = when (bandId) {
-            "greycloaks" -> setOf("Bree", "North Downs", "Weather Hills", "Lone-Lands", "Cardolan", "Wildwood", "Special")
+            // Greycloaks start in Bree-land only. Lone-Lands and North Downs unlock on band
+            // progression — exact trigger is an open design question; expand this set then.
+            "greycloaks" -> setOf("Bree", "Special")
             "mithlost"   -> setOf("Celondim", "Ered Luin", "Special")
             "undermarch" -> setOf("Thorin", "Misty Mountains", "Special")
             else         -> emptySet()

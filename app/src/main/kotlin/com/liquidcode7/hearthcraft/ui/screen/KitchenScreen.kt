@@ -567,9 +567,7 @@ private fun RecipeDetailPanel(
     predictedGrade: Pair<Grade, Boolean>?,
     viewModel: KitchenViewModel
 ) {
-    // Aggregate qty across all grade rows for each ingredient
-    val qtyMap = inventoryItems.groupBy { it.ingredientId }
-        .mapValues { (_, rows) -> rows.sumOf { it.quantity } }
+    val selectedGrades by viewModel.selectedIngredientGrades.collectAsState()
 
     val statName: String? = when (recipe.primaryStat) {
         "mig" -> "Might"; "agi" -> "Agility"
@@ -628,9 +626,16 @@ private fun RecipeDetailPanel(
             Spacer(modifier = Modifier.height(8.dp))
             Text("Ingredients:", style = MaterialTheme.typography.labelMedium)
             recipe.ingredients.forEach { ing ->
-                val have = qtyMap[ing.id] ?: 0
                 val name = viewModel.ingredientName(ing.id)
                 val isHero = ing.id == recipe.heroIngredient
+                val chosenGrade = selectedGrades[ing.id] ?: 0
+                // Grades that have enough stock to satisfy the required qty.
+                val availableGrades = Grade.entries.filter { g ->
+                    (inventoryItems.find { it.ingredientId == ing.id && it.grade == g.ordinal }?.quantity ?: 0) >= ing.qty
+                }
+                val have = inventoryItems.filter { it.ingredientId == ing.id }.sumOf { it.quantity }
+
+                Spacer(modifier = Modifier.height(4.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         if (isHero) "★ $name  $have/${ing.qty}"
@@ -647,6 +652,21 @@ private fun RecipeDetailPanel(
                             color = MaterialTheme.colorScheme.primary
                         )
                     }
+                }
+                // Grade picker — only shown when more than one grade is in stock
+                if (availableGrades.size > 1) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                        availableGrades.forEach { g ->
+                            FilterChip(
+                                selected = chosenGrade == g.ordinal,
+                                onClick = { viewModel.setIngredientGrade(ing.id, g.ordinal) },
+                                label = { Text(g.displayName, style = MaterialTheme.typography.labelSmall) }
+                            )
+                        }
+                    }
+                } else if (availableGrades.size == 1) {
+                    // Only one grade available — show it as a static badge, no choice needed
+                    GradeBadge(availableGrades.first().ordinal)
                 }
             }
         }

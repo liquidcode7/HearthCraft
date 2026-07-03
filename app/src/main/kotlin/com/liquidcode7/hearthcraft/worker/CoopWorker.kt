@@ -32,8 +32,6 @@ class CoopWorker @AssistedInject constructor(
 ) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
-        growing.updatePlantedAt(SLOT_ID, System.currentTimeMillis())
-
         val gatheringLevel = player.get()?.gatheringLevel ?: 1
         val qty = BASE_YIELD + Random.nextInt(2)
         val sessionGrade = rollGrade(gatheringLevel = gatheringLevel).ordinal
@@ -45,6 +43,7 @@ class CoopWorker @AssistedInject constructor(
         val added = growing.addToPendingResult(SLOT_ID, items, MAX_STOCKPILE_CYCLES * (BASE_YIELD + 1))
         if (added) notify("Coop ready — tap to collect", "Your hens have laid eggs.")
 
+        growing.updatePlantedAt(SLOT_ID, System.currentTimeMillis())
         WorkManager.getInstance(applicationContext)
             .enqueueUniqueWork(SLOT_ID, ExistingWorkPolicy.KEEP, buildRequest(DURATION_COOP_MS))
         return Result.success()

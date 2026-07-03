@@ -32,8 +32,6 @@ class HiveWorker @AssistedInject constructor(
 ) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
-        growing.updatePlantedAt(SLOT_ID, System.currentTimeMillis())
-
         val bandId = player.get()?.chosenBandId ?: "greycloaks"
         val gatheringLevel = player.get()?.gatheringLevel ?: 1
         val (honeyId, honeyName) = honeyForBand(bandId)
@@ -47,6 +45,9 @@ class HiveWorker @AssistedInject constructor(
         val added = growing.addToPendingResult(SLOT_ID, items, MAX_STOCKPILE_CYCLES * (BASE_YIELD + 1))
         if (added) notify("Hive ready — tap to collect", "$honeyName is ready to harvest.")
 
+        // Stamp the cycle start just before scheduling the next run so the UI timer
+        // counts down from now rather than from whenever the previous cycle fired.
+        growing.updatePlantedAt(SLOT_ID, System.currentTimeMillis())
         WorkManager.getInstance(applicationContext)
             .enqueueUniqueWork(SLOT_ID, ExistingWorkPolicy.KEEP, buildRequest(DURATION_HIVE_MS))
         return Result.success()

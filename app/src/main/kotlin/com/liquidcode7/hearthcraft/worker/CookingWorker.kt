@@ -56,6 +56,7 @@ class CookingWorker @AssistedInject constructor(
                 ?.split(",")?.filter { it.isNotBlank() }?.toSet() ?: emptySet()
             val toDiscover = gameData.recipes.filter { recipe ->
                 recipe.cookLevel <= newLevel
+                    && recipe.recipeClass != "hoh"
                     && recipe.id !in currentDiscovered
                     && (recipe.band == bandId || recipe.band == "all")
             }.map { it.id }

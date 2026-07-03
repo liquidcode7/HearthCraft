@@ -136,6 +136,15 @@ class KitchenViewModel @Inject constructor(
     private val _selectedRecipe = MutableStateFlow<Recipe?>(null)
     val selectedRecipe: StateFlow<Recipe?> = _selectedRecipe.asStateFlow()
 
+    // Player-chosen grade (ordinal) per ingredient id for the current recipe.
+    // Keyed by ingredientId; defaults to lowest available grade on recipe select.
+    private val _selectedIngredientGrades = MutableStateFlow<Map<String, Int>>(emptyMap())
+    val selectedIngredientGrades: StateFlow<Map<String, Int>> = _selectedIngredientGrades.asStateFlow()
+
+    fun setIngredientGrade(ingredientId: String, gradeOrdinal: Int) {
+        _selectedIngredientGrades.value = _selectedIngredientGrades.value + (ingredientId to gradeOrdinal)
+    }
+
     /**
      * Live predicted dish grade for the currently selected recipe.
      * null when no recipe is selected or ingredients are missing.
@@ -144,21 +153,21 @@ class KitchenViewModel @Inject constructor(
     val predictedDishGrade: StateFlow<Pair<Grade, Boolean>?> = combine(
         _selectedRecipe,
         inventory.observeIngredients(),
-        playerState
-    ) { recipe, items, state ->
+        playerState,
+        _selectedIngredientGrades
+    ) { recipe, items, state, chosenGrades ->
         if (recipe == null) return@combine null
         val cookLevel = state?.cookingLevel ?: 1
         val heroId = recipe.heroIngredient.ifBlank { recipe.ingredients.firstOrNull()?.id.orEmpty() }
-        val heroRow = items.filter { it.ingredientId == heroId && it.quantity > 0 }
-            .minByOrNull { it.grade }
-        val heroGrade = Grade.fromOrdinal(heroRow?.grade ?: 0)
-        val supportGrades = recipe.ingredients
-            .filter { it.id != heroId }
-            .map { ing ->
-                val row = items.filter { it.ingredientId == ing.id && it.quantity > 0 }
-                    .minByOrNull { it.grade }
-                Grade.fromOrdinal(row?.grade ?: 0)
-            }
+        fun gradeFor(id: String): Grade {
+            val chosen = chosenGrades[id]
+            if (chosen != null) return Grade.fromOrdinal(chosen)
+            return Grade.fromOrdinal(
+                items.filter { it.ingredientId == id && it.quantity > 0 }.minOfOrNull { it.grade } ?: 0
+            )
+        }
+        val heroGrade = gradeFor(heroId)
+        val supportGrades = recipe.ingredients.filter { it.id != heroId }.map { gradeFor(it.id) }
         val unclamped = resolveDishGrade(heroGrade, supportGrades, cookLevel = 99, recipeUnlockLevel = recipe.cookLevel)
         val actual    = resolveDishGrade(heroGrade, supportGrades, cookLevel, recipe.cookLevel)
         actual to (actual < unclamped)
@@ -240,14 +249,35 @@ class KitchenViewModel @Inject constructor(
 
     private val cookingMutex = Mutex()
 
-    fun selectRecipe(recipe: Recipe) { _selectedRecipe.value = recipe }
-
-    fun ingredientName(id: String): String = gameData.ingredients.find { it.id == id }?.name ?: id
+    fun selectRecipe(recipe: Recipe) {
+        _selectedRecipe.value = recipe
+        // Default each ingredient to its lowest available grade so the prediction
+        // is correct immediately and the player only needs to change grades they care about.
+        viewModelScope.launch {
+            val defaults = recipe.ingredients.associate { ing ->
+                val lowest = inventoryItems.value
+                    .filter { it.ingredientId == ing.id && it.quantity > 0 }
+                    .minOfOrNull { it.grade } ?: 0
+                ing.id to lowest
+            }
+            _selectedIngredientGrades.value = defaults
+        }
+    }
 
     fun canCook(recipe: Recipe, items: List<InventoryItem>): Boolean {
-        val qtyMap = items.groupBy { it.ingredientId }.mapValues { (_, rows) -> rows.sumOf { it.quantity } }
-        return recipe.ingredients.all { needed -> (qtyMap[needed.id] ?: 0) >= needed.qty }
+        val chosenGrades = _selectedIngredientGrades.value
+        return recipe.ingredients.all { needed ->
+            val grade = chosenGrades[needed.id]
+            if (grade != null) {
+                // Check the player has enough of the specifically chosen grade.
+                (items.find { it.ingredientId == needed.id && it.grade == grade }?.quantity ?: 0) >= needed.qty
+            } else {
+                items.filter { it.ingredientId == needed.id }.sumOf { it.quantity } >= needed.qty
+            }
+        }
     }
+
+    fun ingredientName(id: String): String = gameData.ingredients.find { it.id == id }?.name ?: id
 
     fun startCooking(preferredSlot: Int = -1) {
         val recipe = _selectedRecipe.value ?: return
@@ -262,22 +292,20 @@ class KitchenViewModel @Inject constructor(
                 if (sessions.activeCookingSlot(freeSlot) != null) return@withLock
                 if (!canCook(recipe, inventoryItems.value)) return@withLock
 
-                // Resolve dish grade before consuming (we need the stock to read grades).
+                // Resolve dish grade from player's chosen grades, then consume at those grades.
                 val cookLevel = player.get()?.cookingLevel ?: 1
+                val chosenGrades = _selectedIngredientGrades.value
                 val heroId = recipe.heroIngredient.ifBlank { recipe.ingredients.firstOrNull()?.id.orEmpty() }
-                val heroGrade = Grade.fromOrdinal(
-                    (0..4).firstOrNull { g -> inventory.ingredientQtyAtGrade(heroId, g) > 0 } ?: 0
-                )
-                val supportingGrades = recipe.ingredients
-                    .filter { it.id != heroId }
-                    .map { ing ->
-                        Grade.fromOrdinal(
-                            (0..4).firstOrNull { g -> inventory.ingredientQtyAtGrade(ing.id, g) > 0 } ?: 0
-                        )
-                    }
+                fun gradeFor(id: String) = Grade.fromOrdinal(chosenGrades[id] ?: 0)
+                val heroGrade = gradeFor(heroId)
+                val supportingGrades = recipe.ingredients.filter { it.id != heroId }.map { gradeFor(it.id) }
                 val dishGrade = resolveDishGrade(heroGrade, supportingGrades, cookLevel, recipe.cookLevel)
 
-                recipe.ingredients.forEach { inventory.removeIngredient(it.id, it.qty) }
+                recipe.ingredients.forEach { ing ->
+                    val grade = chosenGrades[ing.id]
+                    if (grade != null) inventory.removeIngredient(ing.id, grade, ing.qty)
+                    else inventory.removeIngredient(ing.id, ing.qty)
+                }
 
                 val request = CookingWorker.buildRequest(recipe.id, recipe.durationMs, freeSlot, dishGrade.ordinal)
                 WorkManager.getInstance(context).enqueue(request)
