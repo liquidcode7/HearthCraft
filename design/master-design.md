@@ -84,12 +84,18 @@ earned per mission: Victory grants XP, Stalemate grants a smaller amount,
 Defeat grants none — the same "no reward on defeat" shape already used for
 mission rewards.
 
-A member's stat at their current level is `startingStat + growthRate ×
-(level − 1)`. Growth rates are **per role**, not per named individual, and
-follow each role's documented primary/secondary stats above: the primary
-stat grows fastest, secondary stat(s) grow at half that rate, other stats
-grow slowly. These are placeholder magnitudes pending balance validation via
-the sim, not locked numbers.
+A member's stat at their current level is `startingStat × (1 + growthRate) ^
+(level − 1)` — compound growth, not flat-linear, so a level-50 veteran is
+dramatically stronger than a level-1 recruit rather than only modestly so.
+Growth rates are **per role**, not per named individual, and follow each
+role's documented primary/secondary stats above: the primary stat grows
+fastest (3.5%/level), a single secondary stat grows at roughly half that
+(2.0%/level), other stats grow slowly (1.0%/level). The Captain is a special
+case: its two secondaries (Fate and Vitality) each grow at 1.0%/level so
+their combined elevated growth matches every other role's single-secondary
+budget, rather than each getting the full secondary rate. These are
+placeholder magnitudes pending balance validation via the harness, not
+locked numbers.
 
 ---
 
