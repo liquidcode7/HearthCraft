@@ -121,8 +121,8 @@
     "quirkNote": "Food that grounds you. He eats the same way he leads — nothing wasted, everything deliberate.",
     "startingMight": 4,
     "startingAgility": 3,
-    "startingVitality": 5,
-    "startingWill": 4,
+    "startingVitality": 4,
+    "startingWill": 5,
     "startingFate": 2
   },
   {
@@ -151,7 +151,7 @@
     "startingAgility": 3,
     "startingVitality": 3,
     "startingWill": 5,
-    "startingFate": 5
+    "startingFate": 4
   },
   {
     "id": "hollis",

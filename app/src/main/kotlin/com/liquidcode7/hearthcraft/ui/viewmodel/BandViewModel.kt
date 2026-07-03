@@ -119,6 +119,12 @@ class BandViewModel @Inject constructor(
                 val level = levelForCombatXp(state?.combatXp ?: 0)
                 val curveKey = growthCurveKeyForRole(member.role, fighterBuild)
                 val curve = gameData.growthCurves.find { it.role == curveKey }
+                // For a melee Fighter the primary stat is Might, not Agility. The JSON stores
+                // ranged-biased starting stats (AGI high, MIG low). Swap them so the starting
+                // numbers reflect the player's build choice at level 1.
+                val isMeleeFighter = member.role.lowercase() == "fighter" && fighterBuild == "melee"
+                val startMig = if (isMeleeFighter) member.startingAgility else member.startingMight
+                val startAgi = if (isMeleeFighter) member.startingMight  else member.startingAgility
                 BandMemberWithState(
                     memberId = member.id,
                     name = member.name,
@@ -131,8 +137,8 @@ class BandViewModel @Inject constructor(
                     level = level,
                     woundedSinceMs = state?.woundedSinceMs ?: 0L,
                     woundedDurationMs = state?.woundedDurationMs ?: 0L,
-                    might = curve?.let { statAtLevel(member.startingMight, it.migGrowth, level) }?.roundToInt() ?: member.startingMight,
-                    agility = curve?.let { statAtLevel(member.startingAgility, it.agiGrowth, level) }?.roundToInt() ?: member.startingAgility,
+                    might = curve?.let { statAtLevel(startMig, it.migGrowth, level) }?.roundToInt() ?: startMig,
+                    agility = curve?.let { statAtLevel(startAgi, it.agiGrowth, level) }?.roundToInt() ?: startAgi,
                     vitality = curve?.let { statAtLevel(member.startingVitality, it.vitGrowth, level) }?.roundToInt() ?: member.startingVitality,
                     will = curve?.let { statAtLevel(member.startingWill, it.wilGrowth, level) }?.roundToInt() ?: member.startingWill,
                     fate = curve?.let { statAtLevel(member.startingFate, it.fatGrowth, level) }?.roundToInt() ?: member.startingFate
