@@ -26,18 +26,19 @@ private val GATHER_DISTRIBUTION: Array<IntArray> = arrayOf(
 )
 
 /**
- * Grade-step additive bonus applied to a dish's/item's authored stat boost.
- * CRUDE = 0 (baseline, no bonus, no penalty).
- * Calibrated against the Rhudaur Men (recLv6, T1 food, band level 6):
- *   Crude ~0% win, Common ~20%, Fine ~40%, Superb ~70%, Pristine ~99%.
- * Steps add to the recipe's authored boost on matching stats only.
+ * Grade multiplier applied to a dish's authored stat boost.
+ * CRUDE softly reduces the authored boost; PRISTINE amplifies it well
+ * beyond it. FINE is the 1.0x baseline ("tier-appropriate" reference
+ * point). Multiplies the recipe's authored boost on matching stats only.
+ * Placeholder values — see stat-growth-and-food-power design doc §3;
+ * tuned via the balance harness.
  */
-private val GRADE_STEP = floatArrayOf(
-    0f,    // CRUDE   (ordinal 0) — baseline, no bonus
-    1.0f,  // COMMON  (ordinal 1) — ~20% win vs Rhudaur Men
-    2.0f,  // FINE    (ordinal 2) — ~40% win
-    3.5f,  // SUPERB  (ordinal 3) — ~70% win
-    5.5f,  // PRISTINE(ordinal 4) — ~99% win
+private val GRADE_MULTIPLIER = floatArrayOf(
+    0.7f,  // CRUDE    (ordinal 0)
+    0.85f, // COMMON   (ordinal 1)
+    1.0f,  // FINE     (ordinal 2) — baseline
+    1.3f,  // SUPERB   (ordinal 3)
+    1.7f,  // PRISTINE (ordinal 4)
 )
 
 /**
@@ -83,10 +84,10 @@ fun rollGrade(
 }
 
 /**
- * Additive stat-boost step for a given grade.
- * CRUDE = 0f (no bonus, no penalty). Add this to the recipe's authored boost.
+ * Multiplicative grade bonus for a given grade.
+ * Multiply this by the recipe's authored boost — do not add it.
  */
-fun gradeStep(grade: Grade): Float = GRADE_STEP[grade.ordinal]
+fun gradeMultiplier(grade: Grade): Float = GRADE_MULTIPLIER[grade.ordinal]
 
 /**
  * The highest grade a cooked dish can resolve to, given how far the cook's

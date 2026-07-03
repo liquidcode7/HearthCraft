@@ -1,7 +1,7 @@
 package com.liquidcode7.hearthcraft.data.repository
 
 import com.liquidcode7.hearthcraft.data.model.Grade
-import com.liquidcode7.hearthcraft.data.model.gradeStep
+import com.liquidcode7.hearthcraft.data.model.gradeMultiplier
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -30,22 +30,23 @@ class MemberInputStatTest {
     }
 
     @Test
-    fun `Crude grade adds zero to any stat boost`() {
-        val step = gradeStep(Grade.CRUDE)
-        assertEquals(0f, step, 0.001f)
+    fun `Crude grade softly reduces stat boost, never zeroes it`() {
+        val multiplier = gradeMultiplier(Grade.CRUDE)
+        assertTrue("Crude multiplier should be positive", multiplier > 0f)
+        assertTrue("Crude multiplier should be below the Fine baseline of 1.0", multiplier < 1.0f)
     }
 
     @Test
-    fun `grade bonus is additive on top of authored boost`() {
+    fun `grade bonus multiplies the authored boost`() {
         val authoredBoost = 3f
-        val effectiveBoost = authoredBoost + gradeStep(Grade.FINE)
-        assertTrue("Fine grade should increase stat above authored boost", effectiveBoost > authoredBoost)
+        val effectiveBoost = authoredBoost * gradeMultiplier(Grade.SUPERB)
+        assertTrue("Superb grade should increase stat above authored boost", effectiveBoost > authoredBoost)
     }
 
     @Test
     fun `grade bonus does not apply when stat does not match`() {
         val base = BandRepository.statBonusFor("wil", "mig", 3, null, 0)
         assertEquals(0f, base, 0.001f)
-        assertTrue(gradeStep(Grade.PRISTINE) >= 0f)
+        assertTrue(gradeMultiplier(Grade.PRISTINE) >= 0f)
     }
 }

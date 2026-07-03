@@ -95,22 +95,23 @@ class CookResolutionTest {
         assertTrue(result.ordinal >= Grade.CRUDE.ordinal)
     }
 
-    // ── gradeStep: additive scaling ─────────────────────────────────────────
+    // ── gradeMultiplier: multiplicative scaling ──────────────────────────────
 
     @Test
-    fun `Crude adds zero bonus to stat boost`() {
+    fun `Crude multiplies boost down but never to zero`() {
         val authoredBoost = 3f
-        val effectiveBoost = authoredBoost + gradeStep(Grade.CRUDE)
-        assertEquals(3f, effectiveBoost)
+        val effectiveBoost = authoredBoost * gradeMultiplier(Grade.CRUDE)
+        assertTrue(effectiveBoost > 0f)
+        assertTrue(effectiveBoost < authoredBoost)
     }
 
     @Test
-    fun `higher grades always add a positive bonus`() {
+    fun `grades above Fine always amplify the authored boost`() {
         val authoredBoost = 3f
-        listOf(Grade.COMMON, Grade.FINE, Grade.SUPERB, Grade.PRISTINE).forEach { grade ->
-            val bonus = gradeStep(grade)
-            assertTrue("gradeStep($grade) should be positive", bonus > 0f)
-            assertTrue("effective boost should exceed authored", authoredBoost + bonus > authoredBoost)
+        listOf(Grade.SUPERB, Grade.PRISTINE).forEach { grade ->
+            val multiplier = gradeMultiplier(grade)
+            assertTrue("gradeMultiplier($grade) should exceed 1.0", multiplier > 1.0f)
+            assertTrue("effective boost should exceed authored", authoredBoost * multiplier > authoredBoost)
         }
     }
 }

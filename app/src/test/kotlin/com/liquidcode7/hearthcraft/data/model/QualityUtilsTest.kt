@@ -35,28 +35,35 @@ class QualityUtilsTest {
         assertEquals(Grade.PRISTINE, Grade.fromOrdinal(99))
     }
 
-    // --- gradeStep ---
+    // --- gradeMultiplier ---
 
     @Test
-    fun `gradeStep for CRUDE is exactly zero`() {
-        assertEquals(0f, gradeStep(Grade.CRUDE))
+    fun `gradeMultiplier for CRUDE softly reduces the authored boost, never to zero`() {
+        val multiplier = gradeMultiplier(Grade.CRUDE)
+        assertTrue("Crude multiplier must be positive", multiplier > 0f)
+        assertTrue("Crude multiplier must be below the Fine baseline of 1.0", multiplier < 1.0f)
     }
 
     @Test
-    fun `gradeStep increases monotonically with grade`() {
-        val steps = Grade.entries.map { gradeStep(it) }
-        for (i in 1..steps.lastIndex) {
+    fun `gradeMultiplier at FINE is exactly the baseline 1x`() {
+        assertEquals(1.0f, gradeMultiplier(Grade.FINE), 0.0001f)
+    }
+
+    @Test
+    fun `gradeMultiplier increases monotonically with grade`() {
+        val multipliers = Grade.entries.map { gradeMultiplier(it) }
+        for (i in 1..multipliers.lastIndex) {
             assertTrue(
-                "gradeStep(${Grade.entries[i]}) should exceed gradeStep(${Grade.entries[i - 1]})",
-                steps[i] > steps[i - 1]
+                "gradeMultiplier(${Grade.entries[i]}) should exceed gradeMultiplier(${Grade.entries[i - 1]})",
+                multipliers[i] > multipliers[i - 1]
             )
         }
     }
 
     @Test
-    fun `gradeStep is never negative`() {
+    fun `gradeMultiplier is never negative`() {
         Grade.entries.forEach { grade ->
-            assertTrue("gradeStep($grade) must not be negative", gradeStep(grade) >= 0f)
+            assertTrue("gradeMultiplier($grade) must not be negative", gradeMultiplier(grade) >= 0f)
         }
     }
 

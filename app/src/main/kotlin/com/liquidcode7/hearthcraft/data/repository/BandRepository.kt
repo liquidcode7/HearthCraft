@@ -3,7 +3,7 @@ package com.liquidcode7.hearthcraft.data.repository
 import com.liquidcode7.hearthcraft.data.db.BandMemberState
 import com.liquidcode7.hearthcraft.data.db.dao.BandMemberStateDao
 import com.liquidcode7.hearthcraft.data.db.dao.HohSessionDao
-import com.liquidcode7.hearthcraft.data.model.gradeStep
+import com.liquidcode7.hearthcraft.data.model.gradeMultiplier
 import com.liquidcode7.hearthcraft.data.model.Grade
 import com.liquidcode7.hearthcraft.data.model.Recipe
 import com.liquidcode7.hearthcraft.data.model.GrowthCurve
@@ -127,9 +127,9 @@ class BandRepository @Inject constructor(
                     if (food != null) {
                         val base = statBonusFor(stat, food.primaryStat, food.primaryBoost,
                                                 food.secondaryStat, food.secondaryBoost)
-                        // Grade adds a flat step on top of the authored boost, on matching stats only.
-                        val step = if (base > 0f) gradeStep(Grade.fromOrdinal(food.grade)) else 0f
-                        base + step
+                        // Grade multiplies the authored boost — Crude softly reduces it,
+                        // Pristine amplifies it well beyond it. Zero base stays zero.
+                        base * gradeMultiplier(Grade.fromOrdinal(food.grade))
                     } else 0f
                 }
                 MemberInput(
