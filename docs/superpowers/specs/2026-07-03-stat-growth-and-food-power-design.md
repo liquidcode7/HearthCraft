@@ -59,13 +59,14 @@ in `growth_curves.json`):
 | Secondary stat | 2.0% | 5 → ~13.4 (~2.7x) |
 | Off-stat (no growth emphasis) | 1.0% | 5 → ~8.2 (~1.6x) |
 
-**Captain's two secondaries** (Fate + Vitality, per master-design.md §5.1):
-recommend splitting the secondary budget so Captain's total elevated growth
-matches every other role's — each of Captain's two secondaries grows at
-**1.0%/level** (half of the standard 2.0% single-secondary rate) rather than
-each getting the full secondary rate, which would make Captain snowball past
-every other role by endgame. Flagged for your confirmation since it wasn't
-explicitly re-confirmed after the compound-growth pivot.
+**Captain's two secondaries: confirmed as Fate + Vitality** (per
+master-design.md §5.1), not Might — Will/Fate/Vitality keeps Captain's
+identity as the band's leadership/destiny class distinct from Fighter and
+Warden, who already own Might. Splitting the secondary budget so Captain's
+total elevated growth matches every other role's: each of Captain's two
+secondaries grows at **1.0%/level** (half of the standard 2.0%
+single-secondary rate) rather than each getting the full secondary rate,
+which would make Captain snowball past every other role by endgame.
 
 Cap remains level 50 (`COMBAT_MAX_LEVEL`, unchanged).
 
