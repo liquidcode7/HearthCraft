@@ -280,6 +280,22 @@ mission. These are not party-wide. The Captain's food is the Captain's food.
 - Any recipe can be given to any member — no food is locked to a role
 - No Fate food. Ever.
 
+Quality **multiplies** a dish's authored stat boost — Crude softly reduces
+it below the authored value, Fine is the 1.0x baseline ("tier-appropriate"
+reference point), Pristine amplifies it well beyond authored. Placeholder
+values, tuned via the balance harness:
+
+| Grade | Multiplier |
+|-------|-----------|
+| Crude | 0.7x |
+| Common | 0.85x |
+| Fine | 1.0x (baseline) |
+| Superb | 1.3x |
+| Pristine | 1.7x |
+
+No food at all is worse than any grade of food — going into an on-level
+fight unprovisioned should be a clear loss.
+
 ### 7.3 Draughts
 
 Per-member. Not party-wide.
@@ -621,6 +637,15 @@ to be farmed at the home base.
 | — | Barrow-wight | Return vault encounter. Optional. High difficulty. |
 
 Starter regions cap at band level 10. The Lone-Lands arc follows.
+
+Encounters also carry a **difficulty** tag — easy, medium, hard, or
+**boss** — independent of the campaign table above. Difficulty scales how
+much a dish's Quality matters: easy encounters are winnable on Common (and
+forgiving even on Crude, so a new player is never hard-blocked by lack of
+access to rare ingredients); boss encounters are the one category where
+even Pristine, tier-appropriate food doesn't guarantee a win — they're
+meant to be a real test. (Barrow-wight, above, is a natural fit for this
+category.)
 
 ### 12.1 Progression Locks
 
