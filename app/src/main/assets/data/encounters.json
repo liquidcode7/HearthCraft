@@ -206,6 +206,9 @@
     "rewardMultiplier": 1,
     "durationMs": 1500000,
     "rewardTable": ["meadowsweet", "stormcap", "duskberry", "nettleleaf"],
+    "grievousWoundSpecs": [
+      { "woundType": "physical", "guaranteed": true }
+    ],
     "stages": [
       {
         "stageId": "main",
@@ -238,6 +241,9 @@
     "rewardMultiplier": 2,
     "durationMs": 1500000,
     "rewardTable": ["rabbit", "rosehip", "hedgerow_berry", "yarrow"],
+    "grievousWoundSpecs": [
+      { "woundType": "physical", "guaranteed": true }
+    ],
     "stages": [
       {
         "stageId": "main",
@@ -270,6 +276,10 @@
     "rewardMultiplier": 4,
     "durationMs": 1500000,
     "rewardTable": ["wolf_moss", "marshwort", "thornberry", "road_herb"],
+    "grievousWoundSpecs": [
+      { "woundType": "physical", "guaranteed": true },
+      { "woundType": "poison", "chance": 0.2 }
+    ],
     "stages": [
       {
         "stageId": "main",
@@ -304,6 +314,10 @@
     "durationMs": 1500000,
     "rewardTable": ["hog_meat", "chetwood_browncap", "heartflame_pepper", "athelas"],
     "grimoireDrops": ["draught_t2", "hoh_t1"],
+    "grievousWoundSpecs": [
+      { "woundType": "physical", "guaranteed": true },
+      { "woundType": "will", "chance": 0.25 }
+    ],
     "stages": [
       {
         "stageId": "main",
@@ -339,6 +353,10 @@
     "durationMs": 1800000,
     "rewardTable": ["deer_haunch", "eel", "pale_fen_cap", "road_herb"],
     "grimoireDrops": ["cooking_t2"],
+    "grievousWoundSpecs": [
+      { "woundType": "physical", "guaranteed": true },
+      { "woundType": "corruption", "chance": 0.3 }
+    ],
     "stages": [
       {
         "stageId": "main",
@@ -376,6 +394,10 @@
     "rewardMultiplier": 8,
     "durationMs": 1800000,
     "rewardTable": ["athelas", "meadowsweet", "willowherb", "yarrow"],
+    "grievousWoundSpecs": [
+      { "woundType": "corruption", "guaranteed": true },
+      { "woundType": "will", "chance": 0.3 }
+    ],
     "stages": [
       {
         "stageId": "main",
