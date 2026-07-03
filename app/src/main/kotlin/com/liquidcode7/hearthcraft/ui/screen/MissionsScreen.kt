@@ -248,6 +248,7 @@ private fun EncounterCard(
         "easy"   -> "Routine"     to Color(0xFF4CAF50)
         "medium" -> "Challenging" to Color(0xFFFF9800)
         "hard"   -> "Dangerous"   to MaterialTheme.colorScheme.error
+        "boss"   -> "Boss"        to Color(0xFF6A1B9A)
         else     -> encounter.difficulty to MaterialTheme.colorScheme.onSurfaceVariant
     }
 

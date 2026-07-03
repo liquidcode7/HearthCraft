@@ -39,7 +39,7 @@ data class Encounter(
     val bandId: String,
     val name: String,
     val region: String,
-    val difficulty: String,         // "easy" | "medium" | "hard"
+    val difficulty: String,         // "easy" | "medium" | "hard" | "boss"
     val recLevel: Int,
     val requiredCookingLevel: Int,
     val flavorIntro: String,
