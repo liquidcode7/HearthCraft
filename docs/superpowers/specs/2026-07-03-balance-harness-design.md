@@ -55,11 +55,22 @@ fun gradeMultiplier(grade: Grade): Float = GRADE_MULTIPLIER[grade.ordinal]
 `BandRepository.kt:131` changes from `base + gradeStep(...)` to
 `base * gradeMultiplier(...)`.
 
-**Cleanup, same change:** `data/quality/CookQuality.kt` is an orphaned
-duplicate of this exact logic (`GRADE_STEPS = [0,1,2,3,5]`, zero callers
-anywhere in the codebase). Delete it as part of this task — it's dead code
-that will only confuse the next person who greps for "grade step" and finds
-two different, disagreeing implementations.
+**Correction from an earlier (wrong) research pass:** `data/quality/CookQuality.kt`
+is *not* dead code — `HohRepository.kt` calls its `resolveDishGrade()` for
+HoH dish-grade resolution, a real, separate use case (which grade a prepared
+HoH dish comes out as, not the stat-bonus curve). Only `CookQuality`'s own
+`gradeStep()` — the additive stat-bonus function, distinct from
+`resolveDishGrade()` — has zero callers anywhere and is genuinely unused;
+leave the rest of the file alone. **Do not delete `CookQuality.kt`.**
+
+Worth flagging to Wes, but explicitly out of scope for this task:
+`QualityUtils.resolveDishGrade()` (used by `KitchenViewModel` for regular
+food/draught) and `CookQuality.resolveDishGrade()` (used by `HohRepository`
+for HoH) are two independent, already-diverged implementations of "resolve
+a dish's grade from its ingredients" — their `cookCeiling` delta tables
+don't even match each other. This is real duplication risk, but touching
+the HoH resolution path is out of scope for a combat-stat-bonus change;
+note it, don't fix it here.
 
 ### 2.3 Boss Difficulty Tier
 
