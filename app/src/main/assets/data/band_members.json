@@ -8,10 +8,10 @@
     "foodPreference": "earthy",
     "quirkNote": "Deeply rooted. She wants food that comes from the ground — earthy, unadorned, honest.",
     "startingMight": 2,
-    "startingAgility": 2,
+    "startingAgility": 1,
     "startingVitality": 4,
     "startingWill": 5,
-    "startingFate": 3
+    "startingFate": 4
   },
   {
     "id": "thalindel",
@@ -92,10 +92,10 @@
     "foodPreference": "spicy",
     "quirkNote": "Bold flavors for a bold dwarf. She lights up with something spicy.",
     "startingMight": 3,
-    "startingAgility": 4,
-    "startingVitality": 3,
-    "startingWill": 3,
-    "startingFate": 5
+    "startingAgility": 2,
+    "startingVitality": 4,
+    "startingWill": 5,
+    "startingFate": 4
   },
   {
     "id": "thrain_deepvein",
@@ -119,11 +119,11 @@
     "personality": "Descended from the old chieftains. Has led this company for twenty years and knows every one of them the way you know kin — their tells, their limits, what they need before they know they need it. Speaks little among strangers. Among his own, he is warmer than he appears.",
     "foodPreference": "earthy",
     "quirkNote": "Food that grounds you. He eats the same way he leads — nothing wasted, everything deliberate.",
-    "startingMight": 4,
-    "startingAgility": 3,
+    "startingMight": 3,
+    "startingAgility": 2,
     "startingVitality": 4,
     "startingWill": 5,
-    "startingFate": 2
+    "startingFate": 4
   },
   {
     "id": "mira",
