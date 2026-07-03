@@ -53,7 +53,13 @@ data class EncounterResult(
     val wardGuardsUsed: Int,
     val resolveRemainingFraction: Float,  // 0.0 = killed, 1.0 = untouched
     val endedAtSec: Int,                  // game-time tick when fight concluded
-    val grievousWoundTypes: Map<String, List<String>> = emptyMap() // memberId → resolved wound type ids
+    val grievousWoundTypes: Map<String, List<String>> = emptyMap(), // memberId → resolved wound type ids
+    val damageByMember: Map<String, Float> = emptyMap(), // total damage dealt to boss per member
+    val healingByMember: Map<String, Float> = emptyMap(), // total healing output per member (keeper)
+    val keeperHealTicks: Int = 0,  // ticks keeper spent on a healing action
+    val keeperDpsTicks: Int = 0,   // ticks keeper spent on DPS
+    val memberMaxHp: Map<String, Float> = emptyMap(), // memberId → maxHp (static; used by replay UI)
+    val snapshots: List<TickSnapshot> = emptyList()   // per-tick state for in-progress replay
 )
 
 object EncounterEngine {
@@ -102,6 +108,13 @@ object EncounterEngine {
         var boss = stage.resolve.toFloat()
         var rescues = 0
         var wardGuards = 0
+
+        // Per-member combat accumulators — surfaced on EncounterResult for the recap UI.
+        val damageAcc   = party.associate { it.input.id to 0f }.toMutableMap()
+        val healingAcc  = party.associate { it.input.id to 0f }.toMutableMap()
+        var keeperHealTicksCount = 0
+        var keeperDpsTicksCount  = 0
+        val snapshots = mutableListOf<TickSnapshot>()
         var nextSpike = (stage.spikeIntervalSec * rng.nextDouble(0.5, 1.5)).toFloat()
         var nextSiphon = if (stage.siphonIntervalSec > 0)
             (stage.siphonIntervalSec * rng.nextDouble(0.5, 1.5)).toFloat() else Float.MAX_VALUE
@@ -127,7 +140,9 @@ object EncounterEngine {
                 for (hot in listOfNotNull(hot1, hot2)) {
                     val target = party.find { it.input.id == hot.targetId }
                     if (target != null && !target.grievous && target.hp > 0) {
+                        val before = target.hp
                         target.hp = min(target.maxHp, target.hp + hot.healPerTick * healMult * target.recoveryBuffMult)
+                        healingAcc[keeper.input.id] = (healingAcc[keeper.input.id] ?: 0f) + (target.hp - before)
                     }
                     hot.ticksLeft--
                 }
@@ -149,18 +164,31 @@ object EncounterEngine {
             }
 
             // ── DPS against boss (non-keeper) ────────────────────────────────────
-            val nonKeeperDps = standing().filter { it.input.role != "keeper" }
-                .sumOf { m ->
-                    val s = streaks[m.input.id]
-                    val mult = if (s != null && s.active > 0) STREAK_MULT.toDouble() else 1.0
-                    rawDps(m.input).toDouble() * mult
-                }.toFloat()
             val jMul = 1f + rng.nextFloat() * 2 * JITTER - JITTER
-            boss -= nonKeeperDps * (1f - effArmor) * jMul
+            var nonKeeperDps = 0f
+            for (m in standing().filter { it.input.role != "keeper" }) {
+                val s = streaks[m.input.id]
+                val mult = if (s != null && s.active > 0) STREAK_MULT else 1f
+                val dmg = rawDps(m.input).toFloat() * mult * (1f - effArmor) * jMul
+                nonKeeperDps += dmg
+                damageAcc[m.input.id] = (damageAcc[m.input.id] ?: 0f) + dmg
+            }
+            boss -= nonKeeperDps
             if (boss <= 0f) {
-                return EncounterResult(Outcome.VICTORY,
-                    party.associate { it.input.id to it.wounds }, rescues, wardGuards, 0f, t,
-                    buildGrievousWoundMap(party.filter { it.grievous }.map { it.input.id }, grievousWoundSpecs, rng))
+                snapshots.add(TickSnapshot(tick = t, bossResolve = 0f, memberHp = party.associate { it.input.id to maxOf(0f, it.hp) }))
+                return EncounterResult(
+                    outcome = Outcome.VICTORY,
+                    woundsByMember = party.associate { it.input.id to it.wounds },
+                    rescuesUsed = rescues, wardGuardsUsed = wardGuards,
+                    resolveRemainingFraction = 0f, endedAtSec = t,
+                    grievousWoundTypes = buildGrievousWoundMap(party.filter { it.grievous }.map { it.input.id }, grievousWoundSpecs, rng),
+                    damageByMember = damageAcc.toMap(),
+                    healingByMember = healingAcc.toMap(),
+                    keeperHealTicks = keeperHealTicksCount,
+                    keeperDpsTicks = keeperDpsTicksCount,
+                    memberMaxHp = party.associate { it.input.id to it.maxHp },
+                    snapshots = snapshots
+                )
             }
 
             // ── Drain ─────────────────────────────────────────────────────────
@@ -235,19 +263,29 @@ object EncounterEngine {
                 when {
                     groupHealTimer <= 0 -> {
                         val groupHeal = keeper.input.will * GROUP_HEAL_MUL * healMult
-                        standing().forEach { m -> m.hp = min(m.maxHp, m.hp + groupHeal * m.recoveryBuffMult) }
+                        var totalGroupHeal = 0f
+                        standing().forEach { m ->
+                            val h = min(m.maxHp, m.hp + groupHeal * m.recoveryBuffMult) - m.hp
+                            m.hp += h
+                            totalGroupHeal += h
+                        }
+                        healingAcc[keeper.input.id] = (healingAcc[keeper.input.id] ?: 0f) + totalGroupHeal
                         groupHealTimer = GROUP_HEAL_IV
                         actionTaken = true
+                        keeperHealTicksCount++
                     }
                     else -> {
                         val triageTarget = standing()
                             .filter { it.input.id != keeper.input.id }
                             .firstOrNull { it.hp < TRIAGE_HP * it.maxHp }
                         if (triageTarget != null && triageCooldown == 0) {
+                            val before = triageTarget.hp
                             triageTarget.hp = min(triageTarget.maxHp,
                                 triageTarget.hp + keeper.input.will * TRIAGE_MUL * healMult * triageTarget.recoveryBuffMult)
+                            healingAcc[keeper.input.id] = (healingAcc[keeper.input.id] ?: 0f) + (triageTarget.hp - before)
                             triageCooldown = TRIAGE_COOLDOWN
                             actionTaken = true
+                            keeperHealTicksCount++
                         } else {
                             if (hot1 == null || hot2 == null) {
                                 val covered = setOfNotNull(hot1?.targetId, hot2?.targetId)
@@ -265,25 +303,52 @@ object EncounterEngine {
                 }
                 // Keeper DPS only when no consuming action taken
                 if (!actionTaken) {
-                    boss -= rawDps(keeper.input) * healMult * (1f - effArmor) * jMul
+                    val keeperDmg = rawDps(keeper.input) * healMult * (1f - effArmor) * jMul
+                    boss -= keeperDmg
+                    damageAcc[keeper.input.id] = (damageAcc[keeper.input.id] ?: 0f) + keeperDmg
+                    keeperDpsTicksCount++
                 }
             }
 
             // Victory check after keeper DPS
             if (boss <= 0f) {
-                return EncounterResult(Outcome.VICTORY,
-                    party.associate { it.input.id to it.wounds }, rescues, wardGuards, 0f, t,
-                    buildGrievousWoundMap(party.filter { it.grievous }.map { it.input.id }, grievousWoundSpecs, rng))
+                snapshots.add(TickSnapshot(tick = t, bossResolve = 0f, memberHp = party.associate { it.input.id to maxOf(0f, it.hp) }))
+                return EncounterResult(
+                    outcome = Outcome.VICTORY,
+                    woundsByMember = party.associate { it.input.id to it.wounds },
+                    rescuesUsed = rescues, wardGuardsUsed = wardGuards,
+                    resolveRemainingFraction = 0f, endedAtSec = t,
+                    grievousWoundTypes = buildGrievousWoundMap(party.filter { it.grievous }.map { it.input.id }, grievousWoundSpecs, rng),
+                    damageByMember = damageAcc.toMap(),
+                    healingByMember = healingAcc.toMap(),
+                    keeperHealTicks = keeperHealTicksCount,
+                    keeperDpsTicks = keeperDpsTicksCount,
+                    memberMaxHp = party.associate { it.input.id to it.maxHp },
+                    snapshots = snapshots
+                )
             }
+
+            // ── Tick snapshot for in-progress replay ─────────────────────────
+            snapshots.add(TickSnapshot(
+                tick = t,
+                bossResolve = maxOf(0f, boss),
+                memberHp = party.associate { it.input.id to maxOf(0f, it.hp) }
+            ))
 
             // ── Check defeat ──────────────────────────────────────────────────
             if (standing().isEmpty()) {
                 return EncounterResult(
-                    Outcome.DEFEAT,
-                    party.associate { it.input.id to it.wounds },
-                    rescues, wardGuards,
-                    boss / stage.resolve, t,
-                    buildGrievousWoundMap(party.filter { it.grievous }.map { it.input.id }, grievousWoundSpecs, rng)
+                    outcome = Outcome.DEFEAT,
+                    woundsByMember = party.associate { it.input.id to it.wounds },
+                    rescuesUsed = rescues, wardGuardsUsed = wardGuards,
+                    resolveRemainingFraction = boss / stage.resolve, endedAtSec = t,
+                    grievousWoundTypes = buildGrievousWoundMap(party.filter { it.grievous }.map { it.input.id }, grievousWoundSpecs, rng),
+                    damageByMember = damageAcc.toMap(),
+                    healingByMember = healingAcc.toMap(),
+                    keeperHealTicks = keeperHealTicksCount,
+                    keeperDpsTicks = keeperDpsTicksCount,
+                    memberMaxHp = party.associate { it.input.id to it.maxHp },
+                    snapshots = snapshots
                 )
             }
         }
@@ -291,12 +356,17 @@ object EncounterEngine {
         // Duration expired
         val finalOutcome = if (boss <= 0f) Outcome.VICTORY else Outcome.STALEMATE
         return EncounterResult(
-            finalOutcome,
-            party.associate { it.input.id to it.wounds },
-            rescues, wardGuards,
-            max(0f, boss / stage.resolve),
-            stage.durationSec,
-            buildGrievousWoundMap(party.filter { it.grievous }.map { it.input.id }, grievousWoundSpecs, rng)
+            outcome = finalOutcome,
+            woundsByMember = party.associate { it.input.id to it.wounds },
+            rescuesUsed = rescues, wardGuardsUsed = wardGuards,
+            resolveRemainingFraction = max(0f, boss / stage.resolve), endedAtSec = stage.durationSec,
+            grievousWoundTypes = buildGrievousWoundMap(party.filter { it.grievous }.map { it.input.id }, grievousWoundSpecs, rng),
+            damageByMember = damageAcc.toMap(),
+            healingByMember = healingAcc.toMap(),
+            keeperHealTicks = keeperHealTicksCount,
+            keeperDpsTicks = keeperDpsTicksCount,
+            memberMaxHp = party.associate { it.input.id to it.maxHp },
+            snapshots = snapshots
         )
     }
 

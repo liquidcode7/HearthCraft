@@ -2,7 +2,9 @@ package com.liquidcode7.hearthcraft.ui.screen
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -13,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -31,16 +34,20 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.liquidcode7.hearthcraft.data.db.CombatReport
+import com.liquidcode7.hearthcraft.data.db.EncounterTicks
+import com.liquidcode7.hearthcraft.engine.TickSnapshot
 import com.liquidcode7.hearthcraft.ui.viewmodel.BandMemberWithState
 import com.liquidcode7.hearthcraft.ui.viewmodel.BandViewModel
 import com.liquidcode7.hearthcraft.ui.viewmodel.EncounterDetail
 import com.liquidcode7.hearthcraft.ui.viewmodel.InventoryViewModel
 import com.liquidcode7.hearthcraft.ui.viewmodel.PreparedFoodDetail
 import kotlinx.coroutines.delay
+import kotlinx.serialization.json.Json
 
 @Composable
 fun MissionsScreen(
@@ -55,6 +62,7 @@ fun MissionsScreen(
     val activeEncounterSession by bandViewModel.activeEncounterSession.collectAsState()
     val activeMission by bandViewModel.activeMission.collectAsState()
     val combatReport by bandViewModel.combatReport.collectAsState()
+    val encounterTicks by bandViewModel.encounterTicks.collectAsState()
     val allAliveProvisioned by bandViewModel.allAliveProvisioned.collectAsState()
     val allAliveHealthy by bandViewModel.allAliveHealthy.collectAsState()
     val members by bandViewModel.members.collectAsState()
@@ -80,7 +88,14 @@ fun MissionsScreen(
             } ?: ""
             val startedAt = activeEncounterSession?.startedAtMs ?: activeMission!!.startedAtMs
             val duration  = activeEncounterSession?.durationMs  ?: activeMission!!.durationMs
-            MissionActiveCard(missionName = name, startedAtMs = startedAt, durationMs = duration)
+            BattleInProgressCard(
+                missionName  = name,
+                startedAtMs  = startedAt,
+                durationMs   = duration,
+                ticks        = encounterTicks,
+                combatReport = combatReport,
+                members      = members
+            )
             return@Column
         }
 
@@ -329,7 +344,14 @@ private fun BandReadyPanel(
 }
 
 @Composable
-private fun MissionActiveCard(missionName: String, startedAtMs: Long, durationMs: Long) {
+private fun BattleInProgressCard(
+    missionName: String,
+    startedAtMs: Long,
+    durationMs: Long,
+    ticks: EncounterTicks?,
+    combatReport: CombatReport?,
+    members: List<BandMemberWithState>
+) {
     var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
     LaunchedEffect(startedAtMs) {
         while (true) {
@@ -338,6 +360,36 @@ private fun MissionActiveCard(missionName: String, startedAtMs: Long, durationMs
         }
     }
     val remainingMs = maxOf(0L, startedAtMs + durationMs - now)
+
+    // Derive current game tick from elapsed real time.
+    val elapsedMs = (now - startedAtMs).coerceAtLeast(0L)
+    val currentTick: Int = if (ticks != null && durationMs > 0) {
+        val msPerTick = durationMs.toFloat() / ticks.totalTicks.toFloat()
+        (elapsedMs / msPerTick).toInt().coerceIn(0, ticks.totalTicks - 1)
+    } else 0
+
+    // Parse the tick snapshots once (expensive — memoized by the ticks reference).
+    val snapshots: List<TickSnapshot>? = remember(ticks?.ticksJson) {
+        ticks?.ticksJson?.let { json ->
+            try { Json.decodeFromString<List<TickSnapshot>>(json) } catch (_: Exception) { null }
+        }
+    }
+    val memberMaxHp: Map<String, Float> = remember(ticks?.memberMaxHpJson) {
+        ticks?.memberMaxHpJson?.split(",")?.mapNotNull { entry ->
+            val parts = entry.split(":")
+            if (parts.size == 2) parts[0] to (parts[1].toFloatOrNull() ?: 1f) else null
+        }?.toMap() ?: emptyMap()
+    }
+    val snapshot: TickSnapshot? = snapshots?.getOrNull(currentTick)
+
+    // Wound counts from the pre-computed report.
+    val woundsByMember: Map<String, Int> = remember(combatReport?.woundsJson) {
+        combatReport?.woundsJson?.split(",")?.mapNotNull { entry ->
+            val parts = entry.split(":")
+            if (parts.size == 2) parts[0] to (parts[1].toIntOrNull() ?: 0) else null
+        }?.toMap() ?: emptyMap()
+    }
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
@@ -345,7 +397,53 @@ private fun MissionActiveCard(missionName: String, startedAtMs: Long, durationMs
         Column(modifier = Modifier.padding(16.dp)) {
             Text("Mission in progress", style = MaterialTheme.typography.titleSmall)
             Text(missionName, style = MaterialTheme.typography.bodyMedium)
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Boss resolve bar
+            if (ticks != null && snapshot != null) {
+                val bossFraction = (snapshot.bossResolve / ticks.bossMaxResolve).coerceIn(0f, 1f)
+                Text("Enemy", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onPrimaryContainer)
+                Spacer(modifier = Modifier.height(2.dp))
+                HpBar(fraction = bossFraction, color = MaterialTheme.colorScheme.error, modifier = Modifier.fillMaxWidth())
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Per-member HP bars
+                Text("Band", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onPrimaryContainer)
+                Spacer(modifier = Modifier.height(4.dp))
+                members.filter { it.isAlive }.forEach { member ->
+                    val hp = snapshot.memberHp[member.memberId] ?: 0f
+                    val maxHp = memberMaxHp[member.memberId] ?: 1f
+                    val hpFraction = (hp / maxHp).coerceIn(0f, 1f)
+                    val hpColor = when {
+                        hpFraction > 0.5f -> Color(0xFF4CAF50)
+                        hpFraction > 0.25f -> Color(0xFFFF9800)
+                        else -> MaterialTheme.colorScheme.error
+                    }
+                    val wounds = woundsByMember[member.memberId] ?: 0
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            member.name,
+                            style = MaterialTheme.typography.labelSmall,
+                            modifier = Modifier.width(64.dp),
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                        HpBar(fraction = hpFraction, color = hpColor, modifier = Modifier.weight(1f))
+                        if (wounds > 0) {
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                "↓$wounds",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.height(12.dp))
+            }
+
             Text(
                 formatMissionMs(remainingMs),
                 style = MaterialTheme.typography.headlineSmall,
@@ -357,6 +455,24 @@ private fun MissionActiveCard(missionName: String, startedAtMs: Long, durationMs
                 color = MaterialTheme.colorScheme.onPrimaryContainer
             )
         }
+    }
+}
+
+@Composable
+private fun HpBar(fraction: Float, color: Color, modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier
+            .height(8.dp)
+            .clip(RoundedCornerShape(4.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth(fraction.coerceIn(0f, 1f))
+                .height(8.dp)
+                .clip(RoundedCornerShape(4.dp))
+                .background(color)
+        )
     }
 }
 
@@ -379,15 +495,34 @@ private fun CombatReportCard(report: CombatReport, onDismiss: () -> Unit) {
     val secondsFought = report.endedAtSec % 60
     val fightDuration = if (minutesFought > 0) "${minutesFought}m ${secondsFought}s" else "${secondsFought}s"
 
+    // Parse DPS and heal maps for the bar chart.
+    val dpsMap: Map<String, Float> = remember(report.dpsJson) {
+        report.dpsJson.split(",").mapNotNull { entry ->
+            val parts = entry.split(":")
+            if (parts.size == 2) parts[0] to (parts[1].toFloatOrNull() ?: 0f) else null
+        }.toMap()
+    }
+    val healMap: Map<String, Float> = remember(report.healJson) {
+        report.healJson.split(",").mapNotNull { entry ->
+            val parts = entry.split(":")
+            if (parts.size == 2) parts[0] to (parts[1].toFloatOrNull() ?: 0f) else null
+        }.toMap()
+    }
+    val woundsMap: Map<String, Int> = remember(report.woundsJson) {
+        report.woundsJson.split(",").mapNotNull { entry ->
+            val parts = entry.split(":")
+            if (parts.size == 2) parts[0] to (parts[1].toIntOrNull() ?: 0) else null
+        }.toMap()
+    }
+    val maxDamage = dpsMap.values.maxOrNull()?.takeIf { it > 0f } ?: 1f
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = containerColor)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                "${report.encounterName} — $headerText",
-                style = MaterialTheme.typography.titleSmall
-            )
+            // ── Header + narrative ────────────────────────────────────────────
+            Text("${report.encounterName} — $headerText", style = MaterialTheme.typography.titleSmall)
             Spacer(modifier = Modifier.height(8.dp))
             Text(narrative, style = MaterialTheme.typography.bodySmall)
             Spacer(modifier = Modifier.height(10.dp))
@@ -398,7 +533,75 @@ private fun CombatReportCard(report: CombatReport, onDismiss: () -> Unit) {
                 if (report.wardGuardsUsed > 0)
                     Text("Shields: ${report.wardGuardsUsed}", style = MaterialTheme.typography.labelSmall)
             }
-            Spacer(modifier = Modifier.height(10.dp))
+
+            // ── DPS breakdown ─────────────────────────────────────────────────
+            if (dpsMap.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(14.dp))
+                HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.15f))
+                Spacer(modifier = Modifier.height(10.dp))
+                Text("Damage dealt", style = MaterialTheme.typography.labelMedium)
+                Spacer(modifier = Modifier.height(6.dp))
+                dpsMap.entries.sortedByDescending { it.value }.forEach { (memberId, dmg) ->
+                    val fraction = (dmg / maxDamage).coerceIn(0f, 1f)
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            memberId.substringAfterLast("_").replaceFirstChar { it.titlecase() },
+                            style = MaterialTheme.typography.labelSmall,
+                            modifier = Modifier.width(64.dp)
+                        )
+                        HpBar(fraction = fraction, color = MaterialTheme.colorScheme.primary, modifier = Modifier.weight(1f))
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(dmg.toInt().toString(), style = MaterialTheme.typography.labelSmall)
+                    }
+                }
+            }
+
+            // ── Keeper healing uptime ─────────────────────────────────────────
+            if (report.keeperHealUptime > 0 && healMap.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(10.dp))
+                val keeperHeal = healMap.values.sum()
+                Text(
+                    "Keeper: ${report.keeperHealUptime}% healing / ${100 - report.keeperHealUptime}% DPS  •  ${keeperHeal.toInt()} total healed",
+                    style = MaterialTheme.typography.labelSmall
+                )
+            }
+
+            // ── Wound recap ───────────────────────────────────────────────────
+            val woundedMembers = woundsMap.filter { it.value > 0 }
+            if (woundedMembers.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(10.dp))
+                HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.15f))
+                Spacer(modifier = Modifier.height(8.dp))
+                Text("Wounds", style = MaterialTheme.typography.labelMedium)
+                Spacer(modifier = Modifier.height(4.dp))
+                woundedMembers.entries.sortedByDescending { it.value }.forEach { (memberId, count) ->
+                    val severity = when {
+                        count >= 5 -> "Grievous" to MaterialTheme.colorScheme.error
+                        count >= 3 -> "Heavy" to Color(0xFFFF9800)
+                        else       -> "Light" to Color(0xFF4CAF50)
+                    }
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 1.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            memberId.substringAfterLast("_").replaceFirstChar { it.titlecase() },
+                            style = MaterialTheme.typography.labelSmall,
+                            modifier = Modifier.weight(1f)
+                        )
+                        Text(
+                            "${severity.first} ($count×)",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = severity.second
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
             OutlinedButton(onClick = onDismiss, modifier = Modifier.fillMaxWidth()) {
                 Text("Dismiss")
             }
@@ -417,13 +620,13 @@ private fun buildCombatNarrative(report: CombatReport): String {
             "$timeNote The $enc could not withstand them."
         }
         "DEFEAT" -> {
-            val foodNote = if (report.endedAtSec < 60)
-                "Without provisions, the band had nothing to sustain them. They were overwhelmed almost at once."
+            val timeNote = if (report.endedAtSec < report.durationSec / 4)
+                "The band collapsed quickly — the enemy overwhelmed them before they found their footing."
             else "The $enc wore them down, wound by wound, until there was no one left standing."
             val rescueNote = if (report.rescuesUsed > 0)
                 " The Keeper fought to the last, pulling ${report.rescuesUsed} from the edge — but it was not enough."
             else ""
-            "$foodNote$rescueNote"
+            "$timeNote$rescueNote"
         }
         else -> {
             "The band fought the full engagement but could not break through. The $enc endures — ${

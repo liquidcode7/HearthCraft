@@ -5,15 +5,67 @@
 
 ---
 
-## Current Status — July 2, 2026
+## Current Status — July 3, 2026
 
-**Phase:** Men (Greycloaks) — HoH mechanics fully implemented. Grimoire system complete. Combat engine (Model B) complete. Data layer clean.
-**What's working:** Full HoH system: five wound types (physical/will/corruption/poison/disease), guaranteed+chance infliction per encounter, combined recovery timers with time-credit for partial treatment, HoH XP/leveling (Track.HOH), 20 T1–T4 recipes with ingredient list, HohRepository timer logic, HohWorker recovery completion, post-recovery incoming-heal buff, HohCookingWorker for craft XP. Full Grimoire system also complete.
-**What's not wired yet:** HoH UI (no screens to apply preparations or view wound state yet). No encounter has `grievousWoundSpecs` populated yet — wound type infliction is wired but data needs filling during encounter validation. `reserve` field is inert. Non-Men ingredient data parked. Balance sim vs. Men encounters not yet run.
-**Next session:** Add `grievousWoundSpecs` to existing Greycloaks encounters during encounter validation. Then run balance sim against Men encounters (Wolf-Master, Rhudaur Men, Barrow-wight). Then begin HoH UI.
-**Open questions:** Player title (still TBD). Exact Lone-Lands unlock trigger. HoH UI design (how the provisioner sees wounded members and applies preparations).
+**Phase:** Men (Greycloaks) — battle in-progress screen and post-fight recap built.
+**What's working:** Missions tab now shows live health bars (boss + per-member) driven by pre-computed tick replay while the fight is in progress. Post-fight recap shows per-member DPS bars, Keeper heal-vs-DPS uptime %, total healing, and wound recap per member. False "no provisions" starvation narrative removed. DB migrated to v17.
+**What's not wired yet:** HoH UI. No encounter has `grievousWoundSpecs` populated yet. Lone-Lands region unlock trigger not yet wired. Balance sim vs. Men encounters not yet run.
+**Next session:** Build must be verified in Android Studio (SDK path issue prevented `./gradlew build` from CLI). Then add `grievousWoundSpecs` to Greycloaks encounters and run balance sim.
+**Open questions:** Player title (still TBD). Exact Lone-Lands unlock trigger. HoH UI design.
 
 ---
+
+## Session 19 — July 3, 2026
+**Battle in-progress screen, post-fight recap, starvation narrative fix**
+
+**What was built:**
+- `engine/TickSnapshot.kt`: new serializable data class — one snapshot per game-tick (boss resolve + per-member HP)
+- `engine/EncounterEngine.kt`: per-member damage and healing accumulators; Keeper heal-tick vs. DPS-tick counters; tick snapshot emission inside the main loop; all five fields added to `EncounterResult`
+- `data/db/CombatReport.kt`: three new Room columns — `dpsJson`, `healJson`, `keeperHealUptime`
+- `data/db/EncounterTicks.kt`: new Room entity storing the tick snapshot list for in-progress replay
+- `data/db/dao/EncounterTicksDao.kt`: DAO (upsert/observe/delete)
+- `data/db/Migration16To17.kt`: additive columns on `combat_reports` + new `encounter_ticks` table
+- `data/db/HearthCraftDatabase.kt`: version → 17, `EncounterTicks::class` registered
+- `di/DatabaseModule.kt`: `Migration16To17` and `EncounterTicksDao` wired up
+- `data/repository/SessionRepository.kt`: `saveTicks()`/`clearTicks()` methods added; `EncounterTicksDao` injected
+- `ui/viewmodel/BandViewModel.kt`: `encounterTicks` StateFlow; `sendOnEncounter()` populates all new `CombatReport` fields and serializes tick snapshots to DB; `dismissCombatReport()` also clears ticks
+- `ui/screen/MissionsScreen.kt`: `MissionActiveCard` replaced by `BattleInProgressCard` showing live boss HP bar + per-member HP bars driven by tick replay; `CombatReportCard` expanded with DPS bars, Keeper uptime %, wound recap; false starvation narrative removed
+
+**Decisions made:**
+- Tick snapshots stored in a new `encounter_ticks` table rather than bloating `EncounterSession` or `CombatReport` — cleaner lifecycle, clears independently on dismiss
+- Member name display in DPS/wound recap uses the raw member ID (which is the first name) rather than a separate lookup — acceptable since all IDs are plain first names
+- `BandScreen.kt` retains its simple countdown card (`MissionActiveCard`) — full battle view lives on Missions tab only
+
+**Anything that diverged from design/master-design.md:**
+- None
+
+**Coming up:**
+- Next session: Verify build in Android Studio. Then add `grievousWoundSpecs` to Greycloaks encounters; run balance sim against Men encounters
+- Near term: HoH UI; Lone-Lands unlock trigger
+- Future ideas logged: none
+
+## Session 18 — July 3, 2026
+**Bug fixes: gathering, HoH gating, producer timers, kitchen grade picking**
+
+**What was built:**
+- `GatheringWorker.kt`: Greycloaks forage region narrowed to Bree-land only — Lone-Lands/North Downs were leaking in from start
+- `GatheringWorker.kt`: seed bonus now picks from cultivatable ingredients actually in the forage haul, not a random regional pool
+- `CookingWorker.kt`: HoH recipes excluded from level-up auto-discovery — they were all unlocking on first level-up, bypassing the grimoire gate
+- `HiveWorker/CoopWorker/DairyWorker`: `updatePlantedAt` moved to just before `enqueueUniqueWork` so the timer stamps the start of the next waiting period, not the moment the worker ran — fixes timers sitting at 0 after collect
+- `KitchenViewModel`: added `selectedIngredientGrades` state; `selectRecipe` auto-defaults to lowest available grade; `setIngredientGrade` lets player override; `canCook` and `startCooking` check and consume the chosen grade; `predictedDishGrade` reacts live
+- `KitchenScreen` — `RecipeDetailPanel`: per-ingredient `FilterChip` grade pickers appear when multiple grades are in stock; single-grade stock shows a static badge
+
+**Decisions made:**
+- Lone-Lands region unlock: leaving `foragableRegions` as `setOf("Bree", "Special")` until the unlock trigger design question is resolved — code comment marks the expansion point
+- Grade picker only shows when ≥2 grades have enough stock to satisfy the recipe qty — avoids UI noise when there's no real choice
+
+**Anything that diverged from design/master-design.md:**
+- None
+
+**Coming up:**
+- Next session: Add `grievousWoundSpecs` to Greycloaks encounters; run balance sim; begin HoH UI
+- Near term: Lone-Lands unlock trigger; encounter validation pass
+- Future ideas logged: none this session
 
 ## Session 1 — June 8, 2026
 **Phase 0 started: Project Setup**

@@ -15,5 +15,8 @@ data class CombatReport(
     val rescuesUsed: Int,
     val wardGuardsUsed: Int,
     val resolveRemainingFraction: Float,
-    val createdAtMs: Long
+    val createdAtMs: Long,
+    val dpsJson: String = "",     // "memberId:damage,..." for all members
+    val healJson: String = "",    // "memberId:healing,..." (keeper only populated)
+    val keeperHealUptime: Int = 0 // keeperHealTicks / totalTicks * 100 as Int
 )

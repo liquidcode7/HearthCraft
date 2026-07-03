@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
 import com.liquidcode7.hearthcraft.data.db.CombatReport
 import com.liquidcode7.hearthcraft.data.db.EncounterSession
+import com.liquidcode7.hearthcraft.data.db.EncounterTicks
 import com.liquidcode7.hearthcraft.data.db.MissionSession
 import com.liquidcode7.hearthcraft.data.model.Band
 import com.liquidcode7.hearthcraft.data.model.growthCurveKeyForRole
@@ -19,6 +20,7 @@ import com.liquidcode7.hearthcraft.data.repository.InventoryRepository
 import com.liquidcode7.hearthcraft.data.repository.PlayerRepository
 import com.liquidcode7.hearthcraft.data.repository.SessionRepository
 import com.liquidcode7.hearthcraft.engine.EncounterEngine
+import com.liquidcode7.hearthcraft.engine.TickSnapshot
 import com.liquidcode7.hearthcraft.worker.EncounterWorker
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -34,6 +36,8 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import javax.inject.Inject
 import kotlin.math.roundToInt
 
@@ -201,9 +205,20 @@ class BandViewModel @Inject constructor(
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val encounterTicks: StateFlow<EncounterTicks?> = activeBandId
+        .flatMapLatest { bandId ->
+            if (bandId == null) flowOf(null)
+            else sessions.observeEncounterTicks(bandId)
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
+
     fun dismissCombatReport() {
         val bandId = activeBandId.value ?: return
-        viewModelScope.launch { combatRepo.clear(bandId) }
+        viewModelScope.launch {
+            combatRepo.clear(bandId)
+            sessions.clearTicks(bandId)
+        }
     }
 
     private val _memberFood = MutableStateFlow<Map<String, PreparedFoodDetail?>>(emptyMap())
@@ -260,6 +275,9 @@ class BandViewModel @Inject constructor(
             val actualDelayMs = result.endedAtSec.toLong() * msPerGameSec
 
             // Store combat report so EncounterWorker can apply results and UI can show them.
+            val keeperUptime = if (result.keeperHealTicks + result.keeperDpsTicks > 0)
+                (result.keeperHealTicks * 100) / (result.keeperHealTicks + result.keeperDpsTicks)
+            else 0
             combatRepo.save(CombatReport(
                 bandId                   = bandId,
                 encounterId              = enc.id,
@@ -271,7 +289,20 @@ class BandViewModel @Inject constructor(
                 rescuesUsed              = result.rescuesUsed,
                 wardGuardsUsed           = result.wardGuardsUsed,
                 resolveRemainingFraction = result.resolveRemainingFraction,
-                createdAtMs              = System.currentTimeMillis()
+                createdAtMs              = System.currentTimeMillis(),
+                dpsJson                  = result.damageByMember.entries.joinToString(",") { "${it.key}:${it.value}" },
+                healJson                 = result.healingByMember.entries.joinToString(",") { "${it.key}:${it.value}" },
+                keeperHealUptime         = keeperUptime
+            ))
+
+            // Persist tick snapshots for in-progress health bar replay.
+            val memberMaxHpEncoded = result.memberMaxHp.entries.joinToString(",") { "${it.key}:${it.value}" }
+            sessions.saveTicks(EncounterTicks(
+                bandId           = bandId,
+                ticksJson        = Json.encodeToString<List<TickSnapshot>>(result.snapshots),
+                totalTicks       = result.endedAtSec,
+                bossMaxResolve   = enc.stages.firstOrNull()?.resolve?.toFloat() ?: 1f,
+                memberMaxHpJson  = memberMaxHpEncoded
             ))
 
             // Consume one food item per member that had food assigned.
