@@ -45,3 +45,8 @@ test('formatEffect formats a draught-class recipe whose actual data is stats, no
   const recipe = { class: 'draught', primaryStat: 'wil', primaryBoost: 2, secondaryStat: 'agi', secondaryBoost: 1 };
   assert.equal(formatEffect(recipe), '+2 Will, +1 Agility');
 });
+
+test('formatEffect renders a negative primary boost with a single minus sign, not a garbled plus-minus', () => {
+  const recipe = { class: 'food', primaryStat: 'vit', primaryBoost: -2 };
+  assert.equal(formatEffect(recipe), '-2 Vitality');
+});
