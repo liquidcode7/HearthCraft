@@ -46,7 +46,7 @@ class InventoryViewModel @Inject constructor(
         player.observe()
     ) { foods, state ->
         foods.mapNotNull { pf ->
-            val recipe = gameData.recipes.find { it.id == pf.recipeId && it.recipeClass == "food" } ?: return@mapNotNull null
+            val recipe = gameData.recipes.find { it.id == pf.recipeId && it.recipeClass != "hoh" } ?: return@mapNotNull null
             PreparedFoodDetail(
                 recipeId      = pf.recipeId,
                 name          = recipe.name,
