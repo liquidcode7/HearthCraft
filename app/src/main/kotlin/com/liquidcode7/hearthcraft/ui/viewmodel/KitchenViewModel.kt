@@ -87,7 +87,7 @@ class KitchenViewModel @Inject constructor(
     ) { state, discovered, foundGrimoires ->
         val bandId = state?.chosenBandId.orEmpty()
         gameData.recipes
-            .filter { it.band == bandId || it.band == "all" }
+            .filter { (it.band == bandId || it.band == "all") && it.recipeClass != "hoh" }
             .filter { bandId.isNotEmpty() && isRecipeVisible(it, foundGrimoires, discovered) }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
@@ -104,7 +104,7 @@ class KitchenViewModel @Inject constructor(
         val bandId = state?.chosenBandId.orEmpty()
         val qtyMap = items.groupBy { it.ingredientId }.mapValues { (_, rows) -> rows.sumOf { it.quantity } }
         gameData.recipes
-            .filter { (it.band == bandId || it.band == "all") && bandId.isNotEmpty() }
+            .filter { (it.band == bandId || it.band == "all") && bandId.isNotEmpty() && it.recipeClass != "hoh" }
             .filter { isRecipeVisible(it, foundGrimoires, discovered) }
             .groupBy { it.tier }
             .entries.sortedBy { it.key }
@@ -126,7 +126,7 @@ class KitchenViewModel @Inject constructor(
     ) { items, state ->
         val bandId = state?.chosenBandId.orEmpty()
         val qtyMap = items.associate { it.ingredientId to it.quantity }
-        val filtered = gameData.recipes.filter { it.band == bandId || it.band == "all" }
+        val filtered = gameData.recipes.filter { (it.band == bandId || it.band == "all") && it.recipeClass != "hoh" }
         val (can, cannot) = filtered.partition { recipe ->
             recipe.ingredients.all { needed -> (qtyMap[needed.id] ?: 0) >= needed.qty }
         }
