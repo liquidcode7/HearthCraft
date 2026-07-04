@@ -44,3 +44,22 @@ test('each tab contains only its matching recipes', () => {
   assert.equal(breeFood.recipes.length, 1);
   assert.equal(breeFood.recipes[0].id, 'a');
 });
+
+test('merges two bands sharing a short region into a single tab', () => {
+  const bandsWithDuplicate = [
+    { id: 'band1', name: 'Band One', region: 'Bree-land' },
+    { id: 'band2', name: 'Band Two', region: 'Bree-land, somewhere else' },
+  ];
+  const recipesWithDuplicate = [
+    { id: 'r1', band: 'band1', class: 'food' },
+    { id: 'r2', band: 'band2', class: 'food' },
+  ];
+  const tabs = groupRecipesIntoTabs(recipesWithDuplicate, bandsWithDuplicate);
+  const breeLandTabs = tabs.filter(t => t.tabName === 'Bree-land — Food');
+  assert.equal(breeLandTabs.length, 1);
+  assert.equal(breeLandTabs[0].recipes.length, 2);
+  assert.deepEqual(
+    breeLandTabs[0].recipes.map(r => r.id).sort(),
+    ['r1', 'r2']
+  );
+});

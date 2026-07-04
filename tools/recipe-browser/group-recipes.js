@@ -12,12 +12,21 @@ function shortRegion(region) {
 function groupRecipesIntoTabs(recipes, bands) {
   const tabs = [];
 
-  const orderedBands = [...bands].sort((a, b) => shortRegion(a.region).localeCompare(shortRegion(b.region)));
-  for (const band of orderedBands) {
+  const regionToBandIds = new Map();
+  for (const band of bands) {
+    const region = shortRegion(band.region);
+    const ids = regionToBandIds.get(region) || [];
+    ids.push(band.id);
+    regionToBandIds.set(region, ids);
+  }
+  const orderedRegions = [...regionToBandIds.keys()].sort((a, b) => a.localeCompare(b));
+
+  for (const region of orderedRegions) {
+    const bandIds = regionToBandIds.get(region);
     for (const cls of CLASS_ORDER) {
-      const rows = recipes.filter(r => r.band === band.id && r.class === cls.key);
+      const rows = recipes.filter(r => bandIds.includes(r.band) && r.class === cls.key);
       if (rows.length > 0) {
-        tabs.push({ tabName: `${shortRegion(band.region)} — ${cls.label}`, recipes: rows });
+        tabs.push({ tabName: `${region} — ${cls.label}`, recipes: rows });
       }
     }
   }
