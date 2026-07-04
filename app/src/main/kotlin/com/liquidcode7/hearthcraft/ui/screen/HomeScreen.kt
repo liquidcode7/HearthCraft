@@ -20,7 +20,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -256,10 +255,23 @@ fun HomeScreen(
         Spacer(modifier = Modifier.height(8.dp))
         SkillCard(label = "Cooking", progress = cProgress)
 
-        // ── Journal link ──────────────────────────────────────────────────
+        // ── Journal & House of Healing ──────────────────────────────────────
         Spacer(modifier = Modifier.height(20.dp))
-        OutlinedButton(onClick = onOpenJournal, modifier = Modifier.fillMaxWidth()) {
-            Text("Journal")
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            NavCard(
+                label = "Journal",
+                icon = Icons.Filled.Groups,
+                statusLine = "Characters & recipes",
+                onClick = onOpenJournal,
+                modifier = Modifier.weight(1f)
+            )
+            NavCard(
+                label = "House of Healing",
+                icon = Icons.Filled.LocalDining,
+                statusLine = if (woundedCount > 0) "$woundedCount recovering" else "All well",
+                onClick = { onNavigate("hoh") },
+                modifier = Modifier.weight(1f)
+            )
         }
 
         Spacer(modifier = Modifier.height(16.dp))

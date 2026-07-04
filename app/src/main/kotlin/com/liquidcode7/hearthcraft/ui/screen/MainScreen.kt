@@ -95,6 +95,7 @@ fun MainScreen() {
             composable("band")     { BandScreen(onOpenJournal = { navController.navigate("journal") }) }
             composable("missions") { MissionsScreen() }
             composable("market")   { MarketScreen() }
+            composable("hoh") { HouseOfHealingScreen() }
         }
     }
 }
