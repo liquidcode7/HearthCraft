@@ -16,6 +16,9 @@ interface HohCookingSessionDao {
     @Query("SELECT * FROM hoh_cooking_session WHERE id = 0 LIMIT 1")
     fun observe(): Flow<HohCookingSession?>
 
+    @Query("SELECT * FROM hoh_cooking_session WHERE id = 0 LIMIT 1")
+    suspend fun get(): HohCookingSession?
+
     @Query("DELETE FROM hoh_cooking_session WHERE id = 0")
     suspend fun clear()
 }

@@ -25,6 +25,8 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import javax.inject.Inject
 
 @HiltViewModel
@@ -65,6 +67,8 @@ class HohViewModel @Inject constructor(
     private val _selectedIngredientGrades = MutableStateFlow<Map<String, Int>>(emptyMap())
     val selectedIngredientGrades: StateFlow<Map<String, Int>> = _selectedIngredientGrades.asStateFlow()
 
+    private val craftingMutex = Mutex()
+
     fun selectRecipe(recipe: Recipe) {
         _selectedRecipe.value = recipe
         viewModelScope.launch {
@@ -99,32 +103,35 @@ class HohViewModel @Inject constructor(
 
     fun startCrafting() {
         val recipe = _selectedRecipe.value ?: return
-        if (!canCraft(recipe)) return
-        if (hohCookingSession.value != null) return
         val chosen = _selectedIngredientGrades.value
         viewModelScope.launch {
-            val hohLevel = player.get()?.hohLevel ?: 1
-            val dishGrade = CookQuality.resolveDishGrade(recipe, chosen, hohLevel, overrideUnlockLevel = recipe.hohLevel)
+            craftingMutex.withLock {
+                if (sessions.activeHohCookingSession() != null) return@withLock
+                if (!canCraft(recipe)) return@withLock
 
-            recipe.ingredients.forEach { needed ->
-                val grade = chosen[needed.id]
-                if (grade != null) inventory.removeIngredient(needed.id, grade, needed.qty)
-                else inventory.removeIngredient(needed.id, needed.qty)
-            }
+                val hohLevel = player.get()?.hohLevel ?: 1
+                val dishGrade = CookQuality.resolveDishGrade(recipe, chosen, hohLevel, overrideUnlockLevel = recipe.hohLevel)
 
-            val durationMs = recipe.durationMs
-            val request = HohCookingWorker.buildRequest(recipe.id, durationMs, dishGrade)
-            WorkManager.getInstance(context).enqueue(request)
-            sessions.startHohCooking(
-                HohCookingSession(
-                    recipeId = recipe.id,
-                    startedAtMs = System.currentTimeMillis(),
-                    durationMs = durationMs,
-                    workRequestId = request.id.toString()
+                recipe.ingredients.forEach { needed ->
+                    val grade = chosen[needed.id]
+                    if (grade != null) inventory.removeIngredient(needed.id, grade, needed.qty)
+                    else inventory.removeIngredient(needed.id, needed.qty)
+                }
+
+                val durationMs = recipe.durationMs
+                val request = HohCookingWorker.buildRequest(recipe.id, durationMs, dishGrade)
+                WorkManager.getInstance(context).enqueue(request)
+                sessions.startHohCooking(
+                    HohCookingSession(
+                        recipeId = recipe.id,
+                        startedAtMs = System.currentTimeMillis(),
+                        durationMs = durationMs,
+                        workRequestId = request.id.toString()
+                    )
                 )
-            )
-            _selectedRecipe.value = null
-            _selectedIngredientGrades.value = emptyMap()
+                _selectedRecipe.value = null
+                _selectedIngredientGrades.value = emptyMap()
+            }
         }
     }
 

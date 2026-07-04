@@ -54,6 +54,7 @@ class SessionRepository @Inject constructor(
     suspend fun clearTicks(bandId: String) = ticksDao.delete(bandId)
 
     fun observeHohCookingSession(): Flow<HohCookingSession?> = hohCookingDao.observe()
+    suspend fun activeHohCookingSession(): HohCookingSession? = hohCookingDao.get()
     suspend fun startHohCooking(session: HohCookingSession) = hohCookingDao.start(session)
     suspend fun clearHohCookingSession() = hohCookingDao.clear()
 
