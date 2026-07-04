@@ -48,8 +48,13 @@ class HiveWorker @AssistedInject constructor(
         // Stamp the cycle start just before scheduling the next run so the UI timer
         // counts down from now rather than from whenever the previous cycle fired.
         growing.updatePlantedAt(SLOT_ID, System.currentTimeMillis())
+        // REPLACE, not KEEP: this call re-registers work under SLOT_ID while the
+        // currently-running instance is itself still registered under that same
+        // name (non-terminal/RUNNING). KEEP treats that as "already exists" and
+        // silently drops every self-reschedule after the first — REPLACE always
+        // supersedes the (about-to-finish) current instance with the next cycle.
         WorkManager.getInstance(applicationContext)
-            .enqueueUniqueWork(SLOT_ID, ExistingWorkPolicy.KEEP, buildRequest(DURATION_HIVE_MS))
+            .enqueueUniqueWork(SLOT_ID, ExistingWorkPolicy.REPLACE, buildRequest(DURATION_HIVE_MS))
         return Result.success()
     }
 

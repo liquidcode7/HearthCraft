@@ -44,8 +44,11 @@ class DairyWorker @AssistedInject constructor(
         if (added) notify("Dairy ready — tap to collect", "Milk is ready.")
 
         growing.updatePlantedAt(SLOT_ID, System.currentTimeMillis())
+        // REPLACE, not KEEP: see HiveWorker for why KEEP silently drops every
+        // self-reschedule after the first (the running instance itself already
+        // holds SLOT_ID as non-terminal work).
         WorkManager.getInstance(applicationContext)
-            .enqueueUniqueWork(SLOT_ID, ExistingWorkPolicy.KEEP, buildRequest(DURATION_DAIRY_MS))
+            .enqueueUniqueWork(SLOT_ID, ExistingWorkPolicy.REPLACE, buildRequest(DURATION_DAIRY_MS))
         return Result.success()
     }
 

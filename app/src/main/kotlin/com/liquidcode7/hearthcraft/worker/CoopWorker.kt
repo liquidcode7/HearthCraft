@@ -44,8 +44,11 @@ class CoopWorker @AssistedInject constructor(
         if (added) notify("Coop ready — tap to collect", "Your hens have laid eggs.")
 
         growing.updatePlantedAt(SLOT_ID, System.currentTimeMillis())
+        // REPLACE, not KEEP: see HiveWorker for why KEEP silently drops every
+        // self-reschedule after the first (the running instance itself already
+        // holds SLOT_ID as non-terminal work).
         WorkManager.getInstance(applicationContext)
-            .enqueueUniqueWork(SLOT_ID, ExistingWorkPolicy.KEEP, buildRequest(DURATION_COOP_MS))
+            .enqueueUniqueWork(SLOT_ID, ExistingWorkPolicy.REPLACE, buildRequest(DURATION_COOP_MS))
         return Result.success()
     }
 

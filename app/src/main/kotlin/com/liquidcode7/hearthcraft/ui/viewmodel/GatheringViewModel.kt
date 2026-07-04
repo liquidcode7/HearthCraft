@@ -3,6 +3,7 @@ package com.liquidcode7.hearthcraft.ui.viewmodel
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.work.ExistingWorkPolicy
 import androidx.work.WorkManager
 import com.liquidcode7.hearthcraft.data.db.GatheringSession
 import com.liquidcode7.hearthcraft.data.db.GrowingSlot
@@ -185,7 +186,8 @@ class GatheringViewModel @Inject constructor(
             val state = player.get() ?: return@launch
             val (honeyId, _) = HiveWorker.honeyForBand(state.chosenBandId)
             val request = HiveWorker.buildRequest(DURATION_HIVE_MS)
-            WorkManager.getInstance(context).enqueue(request)
+            WorkManager.getInstance(context)
+                .enqueueUniqueWork(HiveWorker.SLOT_ID, ExistingWorkPolicy.KEEP, request)
             growing.plantSlot(
                 id            = HiveWorker.SLOT_ID,
                 type          = "hive",
@@ -201,7 +203,8 @@ class GatheringViewModel @Inject constructor(
         viewModelScope.launch {
             if (growing.getSlot(CoopWorker.SLOT_ID) != null) return@launch
             val request = CoopWorker.buildRequest(DURATION_COOP_MS)
-            WorkManager.getInstance(context).enqueue(request)
+            WorkManager.getInstance(context)
+                .enqueueUniqueWork(CoopWorker.SLOT_ID, ExistingWorkPolicy.KEEP, request)
             growing.plantSlot(
                 id            = CoopWorker.SLOT_ID,
                 type          = "coop",
@@ -217,7 +220,8 @@ class GatheringViewModel @Inject constructor(
         viewModelScope.launch {
             if (growing.getSlot(DairyWorker.SLOT_ID) != null) return@launch
             val request = DairyWorker.buildRequest(DURATION_DAIRY_MS)
-            WorkManager.getInstance(context).enqueue(request)
+            WorkManager.getInstance(context)
+                .enqueueUniqueWork(DairyWorker.SLOT_ID, ExistingWorkPolicy.KEEP, request)
             growing.plantSlot(
                 id            = DairyWorker.SLOT_ID,
                 type          = "dairy",
