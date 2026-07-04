@@ -20,15 +20,19 @@ import com.liquidcode7.hearthcraft.data.repository.InventoryRepository
 import com.liquidcode7.hearthcraft.data.repository.PlayerRepository
 import com.liquidcode7.hearthcraft.data.repository.SessionRepository
 import com.liquidcode7.hearthcraft.engine.EncounterEngine
+import com.liquidcode7.hearthcraft.engine.OddsLabel
+import com.liquidcode7.hearthcraft.engine.OddsEstimator
 import com.liquidcode7.hearthcraft.engine.TickSnapshot
 import com.liquidcode7.hearthcraft.worker.EncounterWorker
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
@@ -36,6 +40,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import javax.inject.Inject
@@ -54,6 +59,13 @@ class BandViewModel @Inject constructor(
     private val player: PlayerRepository,
     private val combatRepo: CombatRepository
 ) : ViewModel() {
+
+    private data class OddsQuery(
+        val encounter: EncounterDetail?,
+        val foodMap: Map<String, PreparedFoodDetail?>,
+        val draught: Float,
+        val bandId: String?
+    )
 
     private val playerState = player.observe()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
@@ -330,6 +342,30 @@ class BandViewModel @Inject constructor(
             )
             clearMemberFood()
             _selectedEncounter.value = null
+        }
+    }
+
+    private val _oddsLabel = MutableStateFlow<OddsLabel?>(null)
+    val oddsLabel: StateFlow<OddsLabel?> = _oddsLabel.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            combine(_selectedEncounter, _memberFood, _draughtPotency, activeBandId) { encounter, foodMap, draught, bandId ->
+                OddsQuery(encounter, foodMap, draught, bandId)
+            }.collectLatest { query ->
+                _oddsLabel.value = null
+                val encounter = query.encounter ?: return@collectLatest
+                val bandId = query.bandId ?: return@collectLatest
+                val enc = encounterRepo.get(encounter.encounterId) ?: return@collectLatest
+                val stage = enc.stages.firstOrNull() ?: return@collectLatest
+                val members = withContext(Dispatchers.Default) {
+                    band.memberInputsForBand(bandId, query.draught, query.foodMap)
+                }
+                if (members.isEmpty()) return@collectLatest
+                _oddsLabel.value = withContext(Dispatchers.Default) {
+                    OddsEstimator.estimate(stage, members)
+                }
+            }
         }
     }
 }

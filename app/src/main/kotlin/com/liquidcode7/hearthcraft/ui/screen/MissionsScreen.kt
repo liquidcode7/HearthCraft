@@ -66,6 +66,7 @@ fun MissionsScreen(
     val allAliveProvisioned by bandViewModel.allAliveProvisioned.collectAsState()
     val allAliveHealthy by bandViewModel.allAliveHealthy.collectAsState()
     val members by bandViewModel.members.collectAsState()
+    val oddsLabel by bandViewModel.oddsLabel.collectAsState()
 
     // Only show encounters that are actually unlocked — hidden is better than locked/greyed.
     val unlockedEncounters = encounters.filter { it.isUnlocked }
@@ -147,6 +148,7 @@ fun MissionsScreen(
                     encounter = enc,
                     isSelected = enc.encounterId == selectedEncounter?.encounterId,
                     provisioned = allAliveProvisioned,
+                    oddsLabel = if (enc.encounterId == selectedEncounter?.encounterId) oddsLabel else null,
                     onClick = { bandViewModel.selectEncounter(enc) }
                 )
                 Spacer(modifier = Modifier.height(8.dp))
@@ -242,6 +244,7 @@ private fun EncounterCard(
     encounter: EncounterDetail,
     isSelected: Boolean,
     provisioned: Boolean,
+    oddsLabel: com.liquidcode7.hearthcraft.engine.OddsLabel?,
     onClick: () -> Unit
 ) {
     val (difficultyLabel, difficultyColor) = when (encounter.difficulty) {
@@ -280,6 +283,17 @@ private fun EncounterCard(
                 color = MaterialTheme.colorScheme.error,
                 modifier = Modifier.fillMaxWidth().height(4.dp)
             )
+            if (isSelected) {
+                Spacer(modifier = Modifier.height(4.dp))
+                val (oddsText, oddsColor) = when (oddsLabel) {
+                    com.liquidcode7.hearthcraft.engine.OddsLabel.OUTMATCHED -> "Outmatched" to MaterialTheme.colorScheme.error
+                    com.liquidcode7.hearthcraft.engine.OddsLabel.EVEN_FIGHT -> "Even Fight" to MaterialTheme.colorScheme.onSurfaceVariant
+                    com.liquidcode7.hearthcraft.engine.OddsLabel.FAVORED    -> "Favored" to MaterialTheme.colorScheme.primary
+                    com.liquidcode7.hearthcraft.engine.OddsLabel.CRUSHING   -> "Crushing" to Color(0xFF4CAF50)
+                    null -> "Calculating odds…" to MaterialTheme.colorScheme.onSurfaceVariant
+                }
+                Text(oddsText, style = MaterialTheme.typography.labelMedium, color = oddsColor)
+            }
             if (!provisioned) {
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
