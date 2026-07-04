@@ -10,6 +10,7 @@ import com.liquidcode7.hearthcraft.data.db.dao.EncounterSessionDao
 import com.liquidcode7.hearthcraft.data.db.dao.GatheringSessionDao
 import com.liquidcode7.hearthcraft.data.db.dao.GrowingSlotDao
 import com.liquidcode7.hearthcraft.data.db.dao.EncounterTicksDao
+import com.liquidcode7.hearthcraft.data.db.dao.HohCookingSessionDao
 import com.liquidcode7.hearthcraft.data.db.dao.HohSessionDao
 import com.liquidcode7.hearthcraft.data.db.dao.InventoryDao
 import com.liquidcode7.hearthcraft.data.db.dao.MissionSessionDao
@@ -32,8 +33,9 @@ import com.liquidcode7.hearthcraft.data.db.dao.SeedStockDao
         CombatReport::class,
         HohSession::class,
         EncounterTicks::class,
+        HohCookingSession::class,
     ],
-    version = 18,
+    version = 19,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 5, to = 6),
@@ -59,4 +61,5 @@ abstract class HearthCraftDatabase : RoomDatabase() {
     abstract fun combatReportDao(): CombatReportDao
     abstract fun hohSessionDao(): HohSessionDao
     abstract fun encounterTicksDao(): EncounterTicksDao
+    abstract fun hohCookingSessionDao(): HohCookingSessionDao
 }

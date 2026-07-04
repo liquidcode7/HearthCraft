@@ -4,11 +4,13 @@ import com.liquidcode7.hearthcraft.data.db.CookingSession
 import com.liquidcode7.hearthcraft.data.db.EncounterSession
 import com.liquidcode7.hearthcraft.data.db.EncounterTicks
 import com.liquidcode7.hearthcraft.data.db.GatheringSession
+import com.liquidcode7.hearthcraft.data.db.HohCookingSession
 import com.liquidcode7.hearthcraft.data.db.MissionSession
 import com.liquidcode7.hearthcraft.data.db.dao.CookingSessionDao
 import com.liquidcode7.hearthcraft.data.db.dao.EncounterSessionDao
 import com.liquidcode7.hearthcraft.data.db.dao.EncounterTicksDao
 import com.liquidcode7.hearthcraft.data.db.dao.GatheringSessionDao
+import com.liquidcode7.hearthcraft.data.db.dao.HohCookingSessionDao
 import com.liquidcode7.hearthcraft.data.db.dao.MissionSessionDao
 import com.liquidcode7.hearthcraft.data.model.HarvestItem
 import kotlinx.coroutines.flow.Flow
@@ -22,7 +24,8 @@ class SessionRepository @Inject constructor(
     private val cookingDao: CookingSessionDao,
     private val missionDao: MissionSessionDao,
     private val encounterDao: EncounterSessionDao,
-    private val ticksDao: EncounterTicksDao
+    private val ticksDao: EncounterTicksDao,
+    private val hohCookingDao: HohCookingSessionDao,
 ) {
     fun observeGathering(): Flow<GatheringSession?> = gatheringDao.observe()
     fun observeMission(bandId: String): Flow<MissionSession?> = missionDao.observe(bandId)
@@ -49,6 +52,10 @@ class SessionRepository @Inject constructor(
 
     suspend fun saveTicks(ticks: EncounterTicks) = ticksDao.upsert(ticks)
     suspend fun clearTicks(bandId: String) = ticksDao.delete(bandId)
+
+    fun observeHohCookingSession(): Flow<HohCookingSession?> = hohCookingDao.observe()
+    suspend fun startHohCooking(session: HohCookingSession) = hohCookingDao.start(session)
+    suspend fun clearHohCookingSession() = hohCookingDao.clear()
 
     suspend fun setPendingForageResult(json: String) = gatheringDao.setPendingResult(json)
 

@@ -5,6 +5,7 @@ import androidx.hilt.work.HiltWorker
 import androidx.work.*
 import com.liquidcode7.hearthcraft.data.repository.InventoryRepository
 import com.liquidcode7.hearthcraft.data.repository.PlayerRepository
+import com.liquidcode7.hearthcraft.data.repository.SessionRepository
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import java.util.concurrent.TimeUnit
@@ -14,7 +15,8 @@ class HohCookingWorker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted params: WorkerParameters,
     private val inventory: InventoryRepository,
-    private val player: PlayerRepository
+    private val player: PlayerRepository,
+    private val sessions: SessionRepository
 ) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
@@ -24,6 +26,7 @@ class HohCookingWorker @AssistedInject constructor(
         inventory.addPreparedFood(recipeId, grade)
         val xp = if (isFirst) PlayerRepository.XP_HOH_FIRST else PlayerRepository.XP_HOH_REPEAT
         player.addHohXp(xp)
+        sessions.clearHohCookingSession()
         return Result.success()
     }
 
