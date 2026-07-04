@@ -92,7 +92,7 @@ fun MainScreen() {
             composable("pantry") {
                 PantryScreen(onBack = { navController.popBackStack() })
             }
-            composable("band")     { BandScreen() }
+            composable("band")     { BandScreen(onOpenJournal = { navController.navigate("journal") }) }
             composable("missions") { MissionsScreen() }
             composable("market")   { MarketScreen() }
         }

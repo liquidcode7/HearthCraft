@@ -10,22 +10,18 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilterChip
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import com.liquidcode7.hearthcraft.data.model.Band
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -41,6 +37,7 @@ import kotlinx.coroutines.delay
 
 @Composable
 fun BandScreen(
+    onOpenJournal: () -> Unit = {},
     bandViewModel: BandViewModel = hiltViewModel()
 ) {
     val activeMission by bandViewModel.activeMission.collectAsState()
@@ -53,12 +50,6 @@ fun BandScreen(
     val firstBandId by bandViewModel.firstBandId.collectAsState()
     val secondBandId by bandViewModel.secondBandId.collectAsState()
     val availableBandsForUnlock by bandViewModel.availableBandsForUnlock.collectAsState()
-
-    var selectedMember by remember { mutableStateOf<BandMemberWithState?>(null) }
-
-    selectedMember?.let { member ->
-        MemberDetailDialog(member = member, onDismiss = { selectedMember = null })
-    }
 
     Column(
         modifier = Modifier
@@ -99,7 +90,7 @@ fun BandScreen(
         Text("Members", style = MaterialTheme.typography.titleSmall)
         Spacer(modifier = Modifier.height(8.dp))
         members.forEach { member ->
-            MemberRow(member = member, onClick = { selectedMember = member })
+            MemberRow(member = member, onClick = onOpenJournal)
             Spacer(modifier = Modifier.height(4.dp))
         }
 
@@ -147,105 +138,6 @@ fun BandScreen(
             )
         }
     }
-}
-
-@Composable
-private fun MemberDetailDialog(member: BandMemberWithState, onDismiss: () -> Unit) {
-    val (statusLabel, statusColor) = when {
-        !member.isAlive -> "Fallen" to MaterialTheme.colorScheme.error
-        member.woundStatus == "grievously_wounded" -> "Grievous Wound" to MaterialTheme.colorScheme.error
-        member.woundStatus == "wounded" -> "Wounded" to Color(0xFFFF9800)
-        else -> "Active" to MaterialTheme.colorScheme.primary
-    }
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = {
-            Column {
-                Text(member.name, style = MaterialTheme.typography.titleMedium)
-                if (member.role.isNotEmpty()) {
-                    Text(
-                        "${member.role} — Level ${member.level}",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.tertiary
-                    )
-                }
-            }
-        },
-        text = {
-            Column {
-                Text(
-                    member.personality,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Spacer(modifier = Modifier.height(6.dp))
-                Text(statusLabel, style = MaterialTheme.typography.labelMedium, color = statusColor)
-                if (member.isAlive) {
-                    Spacer(modifier = Modifier.height(16.dp))
-                    StatBar(label = "VIT", value = member.vitality)
-                    Spacer(modifier = Modifier.height(6.dp))
-                    StatBar(label = "MGT", value = member.might)
-                    Spacer(modifier = Modifier.height(6.dp))
-                    StatBar(label = "AGI", value = member.agility)
-                    Spacer(modifier = Modifier.height(6.dp))
-                    StatBar(label = "WIL", value = member.will)
-                    Spacer(modifier = Modifier.height(6.dp))
-                    StatBar(label = "FAT", value = member.fate)
-                    roleAbility(member.role)?.let { (abilityName, abilityDesc) ->
-                        Spacer(modifier = Modifier.height(14.dp))
-                        Text(
-                            abilityName,
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                        Text(
-                            abilityDesc,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-            }
-        },
-        confirmButton = {
-            TextButton(onClick = onDismiss) { Text("Close") }
-        }
-    )
-}
-
-@Composable
-private fun StatBar(label: String, value: Int, max: Int = 10) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Text(
-            label,
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.width(30.dp)
-        )
-        LinearProgressIndicator(
-            progress = { value.toFloat() / max.coerceAtLeast(value) },
-            modifier = Modifier
-                .weight(1f)
-                .height(8.dp)
-        )
-        Text(
-            " $value",
-            style = MaterialTheme.typography.labelSmall,
-            modifier = Modifier.width(28.dp)
-        )
-    }
-}
-
-private fun roleAbility(role: String): Pair<String, String>? = when (role.lowercase()) {
-    "warden" -> "The Horn of Gondor" to
-        "Can intercept a killing blow aimed at the Keeper, up to three times per engagement. The Warden steps between the blade and the one who cannot fall."
-    "fighter" -> "Black Arrow" to
-        "Deals damage that scales with both Agility and Might, making the fighter the party's primary offensive force. Armor reduces effectiveness — bring a potency draught if the enemy is mailed."
-    "keeper" -> "Hands of Healing" to
-        "When a companion is downed, the Keeper calls them back with a healing burst. Can be used up to five times per engagement. Without the Keeper, fallen members stay fallen."
-    "captain" -> "Wrath, Ruin, and the Red Dawn" to
-        "When the Captain calls, the entire company fights with renewed fury — all damage output rises by half again for ten strikes. Once per engagement."
-    else -> null
 }
 
 @Composable
