@@ -35,3 +35,13 @@ test('formatIngredientList falls back to the raw id if an ingredient is not foun
   const recipe = { ingredients: [{ id: 'mystery_root', qty: 1 }] };
   assert.equal(formatIngredientList(recipe, byId), 'mystery_root ×1');
 });
+
+test('formatEffect formats a food-class recipe whose actual data is a hazard effect, not a stat', () => {
+  const recipe = { class: 'food', hazardEffect: 'warmth' };
+  assert.equal(formatEffect(recipe), 'Warmth');
+});
+
+test('formatEffect formats a draught-class recipe whose actual data is stats, not a hazard effect', () => {
+  const recipe = { class: 'draught', primaryStat: 'wil', primaryBoost: 2, secondaryStat: 'agi', secondaryBoost: 1 };
+  assert.equal(formatEffect(recipe), '+2 Will, +1 Agility');
+});
