@@ -767,8 +767,10 @@ git commit -m "[hc] Recipe browser: wire entry point, generate initial output"
 
 - [ ] **Step 6: Full test suite sanity check**
 
-Run: `node --test tools/recipe-browser/`
-Expected: PASS (all tests across all six files, 23 total)
+Run: `node --test tools/recipe-browser/*.test.js`
+Expected: PASS (all tests across all six files, 26 total)
+
+(Note: a bare `node --test tools/recipe-browser/` fails on Node v26 — it treats the directory as a module path instead of discovering `*.test.js` files within it. The glob form above is the one that actually works.)
 
 ---
 
