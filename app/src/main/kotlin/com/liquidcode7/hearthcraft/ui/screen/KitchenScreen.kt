@@ -5,8 +5,6 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -25,9 +23,6 @@ import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LinearProgressIndicator
@@ -47,6 +42,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -59,8 +55,6 @@ import com.liquidcode7.hearthcraft.data.db.InventoryItem
 import com.liquidcode7.hearthcraft.data.model.Grade
 import com.liquidcode7.hearthcraft.data.model.Ingredient
 import com.liquidcode7.hearthcraft.data.model.Recipe
-import com.liquidcode7.hearthcraft.engine.ExperimentResult
-import com.liquidcode7.hearthcraft.engine.ProximityTier
 import com.liquidcode7.hearthcraft.ui.viewmodel.KitchenViewModel
 import com.liquidcode7.hearthcraft.ui.viewmodel.RecipeTier
 import com.liquidcode7.hearthcraft.ui.util.formatMs
@@ -98,17 +92,19 @@ fun KitchenScreen(
 
             TabRow(selectedTabIndex = selectedTab) {
                 Tab(selected = selectedTab == 0, onClick = { viewModel.selectTab(0) }, text = { Text("Recipes") })
-                Tab(selected = selectedTab == 1, onClick = { viewModel.selectTab(1) }, text = { Text("Discover") })
-                Tab(selected = selectedTab == 2, onClick = { viewModel.selectTab(2) }, text = { Text("Prepare") })
+                Tab(selected = selectedTab == 1, onClick = { viewModel.selectTab(1) }, text = { Text("Prepare") })
             }
         }
 
         HorizontalDivider()
 
         // ── Paged content (each page scrolls independently) ────────────────
-        val pagerState = rememberPagerState(pageCount = { 3 })
+        val pagerState = rememberPagerState(pageCount = { 2 })
         LaunchedEffect(selectedTab) { if (pagerState.currentPage != selectedTab) pagerState.animateScrollToPage(selectedTab) }
-        LaunchedEffect(pagerState.currentPage) { if (pagerState.currentPage != selectedTab) viewModel.selectTab(pagerState.currentPage) }
+        LaunchedEffect(pagerState) {
+            snapshotFlow { pagerState.settledPage }
+                .collect { settled -> if (settled != selectedTab) viewModel.selectTab(settled) }
+        }
 
         // Hoist scroll state for Recipes page so we can auto-scroll to detail on selection
         val recipesScrollState = rememberScrollState()
@@ -176,7 +172,7 @@ fun KitchenScreen(
                         Spacer(modifier = Modifier.height(8.dp))
                         if (tieredRecipes.isEmpty()) {
                             Text(
-                                "No recipes discovered yet. Head to the Discover tab to find them.",
+                                "No recipes unlocked yet. Find a Grimoire to unlock the next tier.",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -216,28 +212,6 @@ fun KitchenScreen(
                         }
                     }
                     1 -> {
-                        // Discover tab
-                        val experimentIngredients by viewModel.experimentIngredients.collectAsState()
-                        val experimentMethod by viewModel.experimentMethod.collectAsState()
-                        val lastResult by viewModel.lastExperimentResult.collectAsState()
-                        val hintsSeen by viewModel.hintsSeen.collectAsState()
-                        val liveResult by viewModel.liveResult.collectAsState()
-                        val canCommit by viewModel.canCommit.collectAsState()
-                        val experimentHintSeen by viewModel.experimentHintSeen.collectAsState()
-                        ExperimentPanel(
-                            viewModel = viewModel,
-                            inventoryItems = inventoryItems,
-                            experimentIngredients = experimentIngredients,
-                            experimentMethod = experimentMethod,
-                            lastResult = lastResult,
-                            cookingLevel = cookingLevel,
-                            hintsSeen = hintsSeen,
-                            liveResult = liveResult,
-                            canCommit = canCommit,
-                            experimentHintSeen = experimentHintSeen
-                        )
-                    }
-                    2 -> {
                         // Process tab
                         ProcessPanel(
                             viewModel = viewModel,
@@ -250,198 +224,6 @@ fun KitchenScreen(
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
-@Composable
-private fun ExperimentPanel(
-    viewModel: KitchenViewModel,
-    inventoryItems: List<InventoryItem>,
-    experimentIngredients: Map<String, Int>,
-    experimentMethod: String,
-    lastResult: ExperimentResult?,
-    cookingLevel: Int,
-    hintsSeen: Boolean,
-    liveResult: ExperimentResult?,
-    canCommit: Boolean,
-    experimentHintSeen: Boolean
-) {
-    val methods = listOf("cook", "bake", "brew")
-
-    if (!experimentHintSeen) {
-        Card(modifier = Modifier.fillMaxWidth()) {
-            Column(modifier = Modifier.padding(12.dp)) {
-                Text(
-                    "Combine ingredients with a method. Assembly is free — you only spend ingredients when you find something.",
-                    style = MaterialTheme.typography.bodySmall
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                TextButton(onClick = { viewModel.markExperimentHintSeen() }) {
-                    Text("Got it")
-                }
-            }
-        }
-        Spacer(modifier = Modifier.height(8.dp))
-    }
-
-    if (cookingLevel >= 3) {
-        FoodHintsCard(
-            initiallyExpanded = !hintsSeen,
-            onCollapse = { viewModel.markHintsSeen() }
-        )
-        Spacer(modifier = Modifier.height(12.dp))
-    }
-
-    Text("Method", style = MaterialTheme.typography.labelMedium)
-    Spacer(modifier = Modifier.height(4.dp))
-    FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-        methods.forEach { method ->
-            FilterChip(
-                selected = experimentMethod == method,
-                onClick = { viewModel.setExperimentMethod(method) },
-                label = { Text(method.replaceFirstChar { it.uppercase() }) }
-            )
-        }
-    }
-
-    Spacer(modifier = Modifier.height(12.dp))
-    Text("Ingredients  (up to 4)", style = MaterialTheme.typography.labelMedium)
-    Spacer(modifier = Modifier.height(4.dp))
-
-    experimentIngredients.entries.forEachIndexed { _, (id, qty) ->
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                viewModel.ingredientName(id),
-                style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier.weight(1f)
-            )
-            IconButton(onClick = { viewModel.updateExperimentQty(id, qty - 1) }) {
-                Text("−", style = MaterialTheme.typography.bodyMedium)
-            }
-            Text("×$qty", style = MaterialTheme.typography.bodySmall)
-            IconButton(onClick = { viewModel.updateExperimentQty(id, qty + 1) }) {
-                Text("+", style = MaterialTheme.typography.bodyMedium)
-            }
-            IconButton(onClick = { viewModel.removeExperimentIngredient(id) }) {
-                Icon(Icons.Filled.Close, contentDescription = "Remove")
-            }
-        }
-    }
-
-    if (experimentIngredients.size < 4) {
-        val available = inventoryItems.filter {
-            it.quantity > 0 && it.ingredientId !in experimentIngredients.keys
-        }
-        if (available.isNotEmpty()) {
-            Spacer(modifier = Modifier.height(4.dp))
-            IngredientDropdown(available = available, viewModel = viewModel)
-        }
-    }
-
-    Spacer(modifier = Modifier.height(16.dp))
-
-    // Live proximity feedback — shown as the player assembles ingredients
-    liveResult?.let { result ->
-        val feedbackText = when (result) {
-            is ExperimentResult.Discovered   -> "Something can be made here."
-            is ExperimentResult.AlreadyKnown -> "You already know this recipe."
-            is ExperimentResult.Failure -> when (result.proximity) {
-                ProximityTier.NEAR_MISS -> "Almost — just out of reach."
-                ProximityTier.CLOSE     -> "You're close to something real."
-                ProximityTier.SOME      -> "Something about this feels promising."
-                ProximityTier.NONE      -> "Nothing here."
-            }
-        }
-        Text(
-            feedbackText,
-            style = MaterialTheme.typography.bodySmall,
-            color = if (canCommit) MaterialTheme.colorScheme.primary
-                    else MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-    }
-
-    Button(
-        onClick = { viewModel.commitDiscovery() },
-        enabled = canCommit,
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Text("Cook it")
-    }
-
-    lastResult?.let { result ->
-        Spacer(modifier = Modifier.height(12.dp))
-        ExperimentResultCard(result = result, onDismiss = { viewModel.clearExperimentResult() })
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun IngredientDropdown(available: List<InventoryItem>, viewModel: KitchenViewModel) {
-    var expanded by remember { mutableStateOf(false) }
-    ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
-        OutlinedButton(
-            onClick = {},
-            modifier = Modifier
-                .menuAnchor()
-                .fillMaxWidth()
-        ) {
-            Text("+ Add ingredient")
-        }
-        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-            available.forEach { item ->
-                DropdownMenuItem(
-                    text = {
-                        Text("${viewModel.ingredientName(item.ingredientId)}  ×${item.quantity}")
-                    },
-                    onClick = {
-                        viewModel.addExperimentIngredient(item.ingredientId)
-                        expanded = false
-                    }
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun ExperimentResultCard(result: ExperimentResult, onDismiss: () -> Unit) {
-    val (title, body, isGood) = when (result) {
-        is ExperimentResult.Discovered ->
-            Triple("Discovered: ${result.recipe.name}", "You've found something new!", true)
-        is ExperimentResult.AlreadyKnown ->
-            Triple(result.recipe.name, "You already know this one.", false)
-        is ExperimentResult.Failure -> when (result.proximity) {
-            ProximityTier.NEAR_MISS ->
-                Triple("Almost", "The balance is nearly right — one thing is off.", false)
-            ProximityTier.CLOSE ->
-                Triple("Close", "Something is missing from this combination.", false)
-            ProximityTier.SOME ->
-                Triple("Familiar", "A few of these feel right, but not together.", false)
-            ProximityTier.NONE ->
-                Triple("Nothing", "These ingredients don't belong together.", false)
-        }
-    }
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = if (isGood) MaterialTheme.colorScheme.primaryContainer
-                            else MaterialTheme.colorScheme.surfaceVariant
-        )
-    ) {
-        Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.Top) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(title, style = MaterialTheme.typography.titleSmall)
-                Text(body, style = MaterialTheme.typography.bodySmall)
-            }
-            IconButton(onClick = onDismiss) {
-                Icon(Icons.Filled.Close, contentDescription = "Dismiss")
             }
         }
     }

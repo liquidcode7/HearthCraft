@@ -20,9 +20,6 @@ import com.liquidcode7.hearthcraft.data.repository.PlayerRepository
 import com.liquidcode7.hearthcraft.data.repository.SessionRepository
 import com.liquidcode7.hearthcraft.data.repository.isRecipeVisible
 import com.liquidcode7.hearthcraft.worker.ProcessWorker
-import com.liquidcode7.hearthcraft.engine.ExperimentAttempt
-import com.liquidcode7.hearthcraft.engine.ExperimentResult
-import com.liquidcode7.hearthcraft.engine.RecipeDiscoveryEngine
 import com.liquidcode7.hearthcraft.worker.CookingWorker
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -175,30 +172,8 @@ class KitchenViewModel @Inject constructor(
 
     // ── Tab selection ─────────────────────────────────────────────────────────
 
-    private val _selectedTab = MutableStateFlow(0)   // 0=Recipes 1=Discover 2=Process
+    private val _selectedTab = MutableStateFlow(0)   // 0=Recipes 1=Prepare
     val selectedTab: StateFlow<Int> = _selectedTab.asStateFlow()
-
-    // ── Experiment state ──────────────────────────────────────────────────────
-
-    private val _experimentIngredients = MutableStateFlow<Map<String, Int>>(emptyMap())
-    val experimentIngredients: StateFlow<Map<String, Int>> = _experimentIngredients.asStateFlow()
-
-    private val _experimentMethod = MutableStateFlow("cook")
-    val experimentMethod: StateFlow<String> = _experimentMethod.asStateFlow()
-
-    private val _lastExperimentResult = MutableStateFlow<ExperimentResult?>(null)
-    val lastExperimentResult: StateFlow<ExperimentResult?> = _lastExperimentResult.asStateFlow()
-
-    private val _liveResult = MutableStateFlow<ExperimentResult?>(null)
-    val liveResult: StateFlow<ExperimentResult?> = _liveResult.asStateFlow()
-
-    val canCommit: StateFlow<Boolean> = _liveResult.map { result ->
-        result is ExperimentResult.Discovered
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
-
-    val experimentHintSeen: StateFlow<Boolean> = player.observe()
-        .map { it?.hasSeenExperimentHint ?: false }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
     // ── Process station state ─────────────────────────────────────────────────
 
@@ -322,67 +297,10 @@ class KitchenViewModel @Inject constructor(
         }
     }
 
-    // ── Tab and experiment functions ──────────────────────────────────────────
+    // ── Tab functions ──────────────────────────────────────────────────────────
 
     fun selectTab(index: Int) {
         _selectedTab.value = index
-        if (index != 1) {
-            _lastExperimentResult.value = null
-            _liveResult.value = null
-        }
-    }
-
-    fun addExperimentIngredient(id: String) {
-        if (id !in _experimentIngredients.value && _experimentIngredients.value.size < 4) {
-            _experimentIngredients.value = _experimentIngredients.value + (id to 1)
-        }
-        evaluateLive()
-    }
-
-    fun removeExperimentIngredient(id: String) {
-        _experimentIngredients.value = _experimentIngredients.value - id
-        evaluateLive()
-    }
-
-    fun updateExperimentQty(id: String, qty: Int) {
-        if (qty <= 0) removeExperimentIngredient(id)
-        else _experimentIngredients.value = _experimentIngredients.value + (id to qty.coerceAtMost(5))
-        evaluateLive()
-    }
-
-    fun setExperimentMethod(method: String) {
-        _experimentMethod.value = method
-        evaluateLive()
-    }
-
-    fun clearExperimentResult() { _lastExperimentResult.value = null }
-
-    fun evaluateLive() {
-        val ingredients = _experimentIngredients.value
-        if (ingredients.isEmpty()) { _liveResult.value = null; return }
-        val attempt = ExperimentAttempt(
-            ingredientIds = ingredients.keys.toList(),
-            quantities    = ingredients,
-            method        = _experimentMethod.value
-        )
-        _liveResult.value = RecipeDiscoveryEngine.evaluate(attempt, gameData.recipes, discoveredIds.value)
-    }
-
-    fun commitDiscovery() {
-        val result = _liveResult.value
-        if (result !is ExperimentResult.Discovered) return
-        val ingredients = _experimentIngredients.value
-        viewModelScope.launch {
-            ingredients.forEach { (id, qty) -> inventory.removeIngredient(id, qty) }
-            player.discoverRecipe(result.recipe.id)
-            _lastExperimentResult.value = result
-            _liveResult.value = null
-            _experimentIngredients.value = emptyMap()
-        }
-    }
-
-    fun markExperimentHintSeen() {
-        viewModelScope.launch { player.markExperimentHintSeen() }
     }
 
     fun markHintsSeen() {
