@@ -18,7 +18,8 @@
 //
 // Food gives stat bonuses only (Model B — HP/s removed).
 //
-// Runs N fights and prints aggregate stats + Inspiration fire rates.
+// Runs N fights and prints aggregate stats + Inspiration fire rates + full
+// DPS/healing/streak/Inspiration-contribution breakdowns.
 
 const FM = require('./food_model');
 
@@ -184,27 +185,52 @@ function runFight(cfg, verbose) {
   const inTrouble = () => active().filter(k => M[k].hp / M[k].max < 0.35).length;
   const inspRoll  = (base, boost) => Math.random() < (base + boost);
 
+  // ── metrics accumulators (Task: sim metrics overhaul — observation only) ──
+  const dmgByMember       = { warden:0, fighter:0, keeper:0, captain:0 };
+  const healByType        = { hot:0, triage:0, group:0, rescue:0 };
+  const streakCount       = { warden:0, fighter:0, keeper:0, captain:0 };
+  let streakBonusDmg      = 0;   // extra damage attributable to the streak 1.5x multiplier
+  let streakBonusHeal     = 0;   // extra healing attributable to the streak 1.5x multiplier
+  let hotActiveTicks      = 0;   // ticks with at least one HoT slot active (for uptime %)
+  let inspGraceHeal       = 0;   // HP restored by Laurelin's Grace
+  let inspHornRedirect    = 0;   // spike damage redirected to the Warden by Horn of Gondor
+  let inspDawnHeal        = 0;   // HP restored by Wrath, Ruin, and the Red Dawn
+  let inspDawnBonusDps    = 0;   // bonus effective damage from Red Dawn's DPS window
+  let inspBlackArrowAmount= 0;   // resolve burned (kill fights) or seconds cut (survival fights)
+
   function dpsBreakdown() {
-    if (cfg.survival) return { raw:0, eff:0, physAfter:0, layerADrag:0, potency:0 };
+    if (cfg.survival) return { raw:0, eff:0, physAfter:0, layerADrag:0, potency:0, rawBy:{warden:0,fighter:0,keeper:0,captain:0}, streakBonus:0, dawnBonus:0 };
     let raw = 0;
+    let streakBonus = 0;
+    const rawBy = { warden:0, fighter:0, keeper:0, captain:0 };
     ORDER.forEach(k => {
       if (M[k].grievous || M[k].hp <= 0 || M[k].stunned || M[k].broken) return;
-      const mult = (streak[k] && streak[k].active > 0) ? STREAK_MULT : 1;
+      const isStreaking = streak[k] && streak[k].active > 0;
+      const mult = isStreaking ? STREAK_MULT : 1;
       let base = 0;
       if (k==="keeper")        { if (keeperDealtDps) base = M[k].wil * 0.9; }
       else if (k==="fighter")  base = M[k].agi + M[k].mig * 0.4;
       else if (k==="warden")   base = M[k].mig * 0.5;
       else if (k==="captain")  base = M[k].mig * 0.3 + M[k].wil * 0.2;
-      raw += base * mult;
+      const contribution = base * mult;
+      rawBy[k] += contribution;
+      raw += contribution;
+      if (isStreaking) streakBonus += base * (STREAK_MULT - 1);
     });
-    if (windows.dawn > 0) raw *= 1.5;
+    let dawnBonus = 0;
+    if (windows.dawn > 0) {
+      dawnBonus = raw * 0.5; // the extra half of the 1.5x Red Dawn multiplier
+      raw *= 1.5;
+      streakBonus *= 1.5; // Dawn's multiplier stacks on top of whatever streak already added
+      ORDER.forEach(k => { rawBy[k] *= 1.5; });
+    }
     const physAfter = Math.max(0, cfg.phys * (1 - Math.min(1, cfg.potency/PEN_SCALE)));
     const capWil = (!M.captain.grievous && !M.captain.stunned) ? M.captain.wil : 0;
     const willCut = Math.min(1, capWil/100), hopeCut = Math.min(1, cfg.hope/100);
     const effectiveDread = cfg.dread * (1 - Math.min(1, willCut + hopeCut));
     const layerADrag = Math.min(1, effectiveDread * DREAD_VAR_COEF + cfg.dread * DREAD_FLOOR_COEF);
     const eff = Math.max(0, raw * (1-physAfter) * (1-layerADrag));
-    return { raw, eff, physAfter, layerADrag, potency: cfg.potency };
+    return { raw, eff, physAfter, layerADrag, potency: cfg.potency, rawBy, streakBonus, dawnBonus };
   }
 
   let t=0, boss=cfg.boss, maxT=cfg.duration;
@@ -226,10 +252,14 @@ function runFight(cfg, verbose) {
     if (!M.keeper.grievous && M.keeper.hp > 0 && !M.keeper.stunned) {
       const keepStreak = streak["keeper"];
       const healMult = (keepStreak && keepStreak.active > 0) ? STREAK_MULT : 1;
+      if (hot1 || hot2) hotActiveTicks++;
       for (const hot of [hot1, hot2].filter(Boolean)) {
         const tgt = M[hot.targetKey];
         if (tgt && !tgt.grievous) {
-          tgt.hp = Math.min(tgt.max, tgt.hp + hot.healPerTick * healMult);
+          const healAmt = hot.healPerTick * healMult;
+          tgt.hp = Math.min(tgt.max, tgt.hp + healAmt);
+          healByType.hot += healAmt;
+          if (healMult > 1) streakBonusHeal += hot.healPerTick * (STREAK_MULT - 1);
         }
         hot.ticksLeft--;
       }
@@ -262,6 +292,7 @@ function runFight(cfg, verbose) {
       } else if (Math.random() < M[k].fat * STREAK_K) {
         s.active = STREAK_DURATION;
         s.refractory = STREAK_REFRACTORY;
+        streakCount[k]++;
         lg(`★ STREAK — ${M[k].tpl.name}`);
       }
     });
@@ -281,6 +312,8 @@ function runFight(cfg, verbose) {
         // Group heal — hits all standing members
         const groupHeal = M.keeper.wil * GROUP_HEAL_MUL * healMult;
         live.forEach(k => { M[k].hp = Math.min(M[k].max, M[k].hp + groupHeal); });
+        healByType.group += groupHeal * live.length;
+        if (healMult > 1) streakBonusHeal += (M.keeper.wil * GROUP_HEAL_MUL) * (STREAK_MULT - 1) * live.length;
         groupHealTimer = GROUP_HEAL_IV;
         actionTaken = true;
         lg(`Cael group heal +${Math.round(groupHeal)} to all`);
@@ -292,6 +325,8 @@ function runFight(cfg, verbose) {
         if (triageTarget && triageCooldown === 0) {
           const triageHeal = M.keeper.wil * TRIAGE_MUL * healMult;
           M[triageTarget].hp = Math.min(M[triageTarget].max, M[triageTarget].hp + triageHeal);
+          healByType.triage += triageHeal;
+          if (healMult > 1) streakBonusHeal += (M.keeper.wil * TRIAGE_MUL) * (STREAK_MULT - 1);
           triageCooldown = TRIAGE_COOLDOWN;
           actionTaken = true;
           lg(`Cael triage → ${M[triageTarget].tpl.name} +${Math.round(triageHeal)}`);
@@ -325,6 +360,7 @@ function runFight(cfg, verbose) {
       if (rescue) {
         const burst = (40 + M.keeper.wil * 4) * cfg.burstmul;
         M[rescue].hp = Math.min(M[rescue].max, Math.max(M[rescue].hp, 0) + burst);
+        healByType.rescue += burst;
         rescuesUsed++;
         lg(`Cael bursts ${M[rescue].tpl.name} (+${Math.round(burst)}) rescue ${rescuesUsed}/${RESCUE_CAP}`);
       }
@@ -338,7 +374,7 @@ function runFight(cfg, verbose) {
     }
 
     // spike application — shared by both global and decouple modes
-    function applySpike(target, dmg) {
+    function applySpike(target, dmg, hornRedirected) {
       // Fate evasion
       if (Math.random() < M[target].fat * cfg.fateEvadeCoef) {
         lg(`${M[target].tpl.name} slips the blow — Fate ${Math.round(M[target].fat)} (near miss)`);
@@ -352,6 +388,7 @@ function runFight(cfg, verbose) {
       }
       if (dmg > 0) {
         M[target].hp -= dmg;
+        if (hornRedirected) inspHornRedirect += dmg;
         lg(`spike → ${M[target].tpl.name} (${Math.round(dmg)})`);
       }
     }
@@ -364,12 +401,13 @@ function runFight(cfg, verbose) {
         for (const k of live) {
           if (Math.random() < pPerTick) {
             const spikeRoll = cfg.spike * (0.7 + Math.random() * 0.6);
-            let tgt = (windows.horn > 0 && !M.warden.grievous && M.warden.hp > 0) ? "warden" : k;
+            const hornActive = windows.horn > 0 && !M.warden.grievous && M.warden.hp > 0;
+            let tgt = hornActive ? "warden" : k;
             if (tgt === "keeper" && (M.keeper.hp - spikeRoll) <= 0 && M.warden.hp > 0 && !M.warden.grievous && wardsUsed < WARD_CAP) {
               tgt = "warden"; wardsUsed++;
               lg(`${M.warden.tpl.name} guards Cael from killing blow (guard ${wardsUsed}/${WARD_CAP})`);
             }
-            applySpike(tgt, spikeRoll);
+            applySpike(tgt, spikeRoll, hornActive && tgt === "warden" && k !== "warden");
           }
         }
       } else {
@@ -379,8 +417,10 @@ function runFight(cfg, verbose) {
           nextSpikeAt = t + Math.round(cfg.spikeiv * (0.5 + Math.random()));
           const spikeRoll = cfg.spike * (0.7 + Math.random() * 0.6);
           let target = null;
+          let hornRedirected = false;
           if (windows.horn > 0 && !M.warden.grievous && M.warden.hp > 0) {
             target = "warden";
+            hornRedirected = true;
           } else {
             target = live.length ? live[Math.floor(Math.random() * live.length)] : null;
             if (target === "keeper" && (M.keeper.hp - spikeRoll) <= 0 && M.warden.hp > 0 && !M.warden.grievous && wardsUsed < WARD_CAP) {
@@ -388,7 +428,7 @@ function runFight(cfg, verbose) {
               lg(`${M.warden.tpl.name} guards Cael from killing blow (guard ${wardsUsed}/${WARD_CAP})`);
             }
           }
-          if (target) applySpike(target, spikeRoll);
+          if (target) applySpike(target, spikeRoll, hornRedirected && target === "warden");
         }
       }
     }
@@ -463,7 +503,9 @@ function runFight(cfg, verbose) {
         lg(`${M[k].tpl.name} hits zero — wound ${M[k].wounds}/${GRIEVOUS}`);
         if (M[k].wounds >= GRIEVOUS) {
           if (!M.keeper.grievous && !M.keeper.stunned && M.keeper.hp>0 && inspRoll(Math.min(0.25, cfg.graceBase + M.keeper.fat*cfg.fateInspCoef), inspBoost)) {
-            M[k].wounds=0; M[k].hp=Math.round(M[k].max*0.4); M[k].atZero=false;
+            const restored = M[k].max*0.4;
+            M[k].wounds=0; M[k].hp=Math.round(restored); M[k].atZero=false;
+            inspGraceHeal += restored;
             events.push({t, kind:"Laurelin's Grace", who:M[k].tpl.name});
             lg(`★ LAURELIN'S GRACE — ${M[k].tpl.name} pulled back`);
           } else {
@@ -489,7 +531,7 @@ function runFight(cfg, verbose) {
     // Inspiration: Wrath, Ruin, and the Red Dawn (Captain) — same rising-edge gate
     if (!fired.dawn && crisisEdge && !M.captain.grievous && !M.captain.stunned && !M.captain.broken && M.captain.hp>0 && inspRoll(Math.min(0.25, cfg.dawnBase + M.captain.fat*cfg.fateInspCoef), 0)) {
       fired.dawn=true; windows.dawn=10;
-      act.forEach(k => { M[k].hp = Math.min(M[k].max, M[k].hp + M[k].max*0.15); });
+      act.forEach(k => { const before = M[k].hp; M[k].hp = Math.min(M[k].max, M[k].hp + M[k].max*0.15); inspDawnHeal += (M[k].hp - before); });
       inspBoost = 0.15;
       events.push({t, kind:"Wrath, Ruin, and the Red Dawn", who:M.captain.tpl.name});
       lg(`★ RED DAWN — ${M.captain.tpl.name} (inspBoost +0.15 for ~30s)`);
@@ -498,7 +540,17 @@ function runFight(cfg, verbose) {
 
     // DPS tick
     const bd = dpsBreakdown();
-    if (!cfg.survival) boss = Math.max(0, boss - bd.eff * (1 + (Math.random()*2-1)*cfg.jitter));
+    if (!cfg.survival) {
+      const jitterFactor = 1 + (Math.random()*2-1)*cfg.jitter;
+      const appliedDmg = bd.eff * jitterFactor;
+      boss = Math.max(0, boss - appliedDmg);
+      const mitFactor = (1-bd.physAfter) * (1-bd.layerADrag);
+      if (bd.raw > 0) {
+        ORDER.forEach(k => { dmgByMember[k] += (bd.rawBy[k] / bd.raw) * appliedDmg; });
+      }
+      streakBonusDmg   += bd.streakBonus * mitFactor * jitterFactor;
+      inspDawnBonusDps += bd.dawnBonus   * mitFactor * jitterFactor;
+    }
 
     // Inspiration: Black Arrow (Fighter)
     if (!baFired && !M.fighter.grievous && !M.fighter.stunned && !M.fighter.broken && M.fighter.hp>0) {
@@ -510,20 +562,29 @@ function runFight(cfg, verbose) {
         const rise = Math.min(cfg.blackArrowCap, (elapsed-0.4)*cfg.blackArrowCap*2.5);
         if (inspRoll(rise + M.fighter.fat*cfg.fateInspCoef, inspBoost)) {
           baFired=true;
-          if (cfg.survival) { maxT -= Math.round(cfg.duration*0.15); events.push({t, kind:"Black Arrow (flaming)", who:M.fighter.tpl.name}); lg(`★ BLACK ARROW — clock cut`); }
-          else              { boss = Math.max(0, boss-cfg.boss*0.18); events.push({t, kind:"Black Arrow", who:M.fighter.tpl.name}); lg(`★ BLACK ARROW — 18% resolve chunk`); }
+          if (cfg.survival) {
+            const cut = Math.round(cfg.duration*0.15);
+            maxT -= cut; inspBlackArrowAmount = cut;
+            events.push({t, kind:"Black Arrow (flaming)", who:M.fighter.tpl.name}); lg(`★ BLACK ARROW — clock cut`);
+          } else {
+            const burn = cfg.boss*0.18;
+            boss = Math.max(0, boss-burn); inspBlackArrowAmount = burn;
+            events.push({t, kind:"Black Arrow", who:M.fighter.tpl.name}); lg(`★ BLACK ARROW — 18% resolve chunk`);
+          }
         }
       }
     }
 
     // termination
-    if (!cfg.survival && boss <= 0) return _result("VICTORY", t, M, events, rescuesUsed, wardsUsed, logs, 0, cfg.boss);
-    if (!ORDER.some(k => !M[k].grievous && !M[k].broken && M[k].hp>0)) return _result("DEFEAT", t, M, events, rescuesUsed, wardsUsed, logs, boss, cfg.boss);
-    if (t >= maxT) return _result(cfg.survival?"REPELLED":"STALEMATE", t, M, events, rescuesUsed, wardsUsed, logs, boss, cfg.boss);
+    const metrics = { dmgByMember, healByType, streakCount, streakBonusDmg, streakBonusHeal, hotActiveTicks,
+                       inspGraceHeal, inspHornRedirect, inspDawnHeal, inspDawnBonusDps, inspBlackArrowAmount };
+    if (!cfg.survival && boss <= 0) return _result("VICTORY", t, M, events, rescuesUsed, wardsUsed, logs, 0, cfg.boss, metrics);
+    if (!ORDER.some(k => !M[k].grievous && !M[k].broken && M[k].hp>0)) return _result("DEFEAT", t, M, events, rescuesUsed, wardsUsed, logs, boss, cfg.boss, metrics);
+    if (t >= maxT) return _result(cfg.survival?"REPELLED":"STALEMATE", t, M, events, rescuesUsed, wardsUsed, logs, boss, cfg.boss, metrics);
   }
 }
 
-function _result(outcome, t, M, events, rescuesUsed, wardsUsed, logs, bossRemaining, bossMax) {
+function _result(outcome, t, M, events, rescuesUsed, wardsUsed, logs, bossRemaining, bossMax, metrics) {
   const grievous = ORDER.filter(k=>M[k].grievous);
   const totalWounds = ORDER.reduce((s,k)=>s+M[k].wounds+(M[k].grievous?GRIEVOUS:0),0);
   const insps = events.filter(e=>/Grace|Horn|Red Dawn|Black Arrow/.test(e.kind));
@@ -531,7 +592,7 @@ function _result(outcome, t, M, events, rescuesUsed, wardsUsed, logs, bossRemain
   const stunCount  = events.filter(e => e.kind === "dread-stun").length;
   const breakCount = events.filter(e => e.kind === "morale-break").length;
   return { outcome, t, grievous, totalWounds, rescuesUsed, wardsUsed, events, insps, logs,
-    bossRemaining, closeness, stunCount, breakCount,
+    bossRemaining, closeness, stunCount, breakCount, metrics,
     wounds: Object.fromEntries(ORDER.map(k=>[k, M[k].wounds+(M[k].grievous?GRIEVOUS:0)])) };
 }
 
@@ -544,6 +605,14 @@ function runMany(cfg, n, verbose) {
   // close-call tracking: defeats where enemy was < 25% resolve remaining
   let closeDefeats=0, totalBossRemaining=0, defeatCount=0;
   let sample = null;
+
+  // ── metrics aggregates ────────────────────────────────────────────────────
+  const totalDmgByMember   = Object.fromEntries(ORDER.map(k=>[k,0]));
+  const totalHealByType    = { hot:0, triage:0, group:0, rescue:0 };
+  const totalStreakCount   = Object.fromEntries(ORDER.map(k=>[k,0]));
+  let totalStreakBonusDmg=0, totalStreakBonusHeal=0, totalHotActiveTicks=0;
+  let totalInspGraceHeal=0, totalInspHornRedirect=0, totalInspDawnHeal=0, totalInspDawnBonusDps=0;
+  let totalInspBlackArrowAmount=0;
 
   for (let i=0; i<n; i++) {
     const r = runFight(cfg, verbose && i===0);
@@ -562,11 +631,27 @@ function runMany(cfg, n, verbose) {
       if (r.closeness <= 0.25) closeDefeats++;
     }
     if (i===0) sample = r;
+
+    const m = r.metrics;
+    ORDER.forEach(k => { totalDmgByMember[k] += m.dmgByMember[k]; totalStreakCount[k] += m.streakCount[k]; });
+    ["hot","triage","group","rescue"].forEach(t => { totalHealByType[t] += m.healByType[t]; });
+    totalStreakBonusDmg   += m.streakBonusDmg;
+    totalStreakBonusHeal  += m.streakBonusHeal;
+    totalHotActiveTicks   += m.hotActiveTicks;
+    totalInspGraceHeal    += m.inspGraceHeal;
+    totalInspHornRedirect += m.inspHornRedirect;
+    totalInspDawnHeal     += m.inspDawnHeal;
+    totalInspDawnBonusDps += m.inspDawnBonusDps;
+    totalInspBlackArrowAmount += m.inspBlackArrowAmount;
   }
 
   return { counts, inspFired, totalWounds, totalRescues, totalWardsUsed, totalTime,
            woundsByRole, n, sample, closeDefeats, totalBossRemaining, defeatCount,
-           totalStuns, totalBreaks };
+           totalStuns, totalBreaks,
+           totalDmgByMember, totalHealByType, totalStreakCount,
+           totalStreakBonusDmg, totalStreakBonusHeal, totalHotActiveTicks,
+           totalInspGraceHeal, totalInspHornRedirect, totalInspDawnHeal,
+           totalInspDawnBonusDps, totalInspBlackArrowAmount };
 }
 
 // ── reporting ──────────────────────────────────────────────────────────────
@@ -641,9 +726,43 @@ function report(cfg, res) {
     console.log(`  ${(inspNames[k]||k).padEnd(26)} ${pct(v).padStart(6)}  fired in ${v} fights`);
   });
 
+  console.log("\n── DPS by member (avg per fight, effective damage to boss) ──");
+  const totalDmg = ORDER.reduce((s,k)=>s+res.totalDmgByMember[k],0);
+  ORDER.forEach(k => {
+    const share = totalDmg > 0 ? (res.totalDmgByMember[k]/totalDmg*100).toFixed(1) : "0.0";
+    console.log(`  ${k.padEnd(10)} ${avg(res.totalDmgByMember[k]).padStart(9)} dmg   (${share}% of party)`);
+  });
+  console.log(`  ${"TOTAL".padEnd(10)} ${avg(totalDmg).padStart(9)} dmg`);
+
+  console.log("\n── Healing by source (avg per fight, outgoing/pre-overheal) ──");
+  const totalHeal = Object.values(res.totalHealByType).reduce((s,v)=>s+v,0);
+  const healLabels = { hot:"HoT", triage:"Triage", group:"Group Heal", rescue:"Rescue Burst" };
+  Object.entries(res.totalHealByType).forEach(([k,v]) => {
+    console.log(`  ${healLabels[k].padEnd(14)} ${avg(v).padStart(9)} hp`);
+  });
+  console.log(`  ${"TOTAL".padEnd(14)} ${avg(totalHeal).padStart(9)} hp`);
+  const hotUptimePct = (res.totalHotActiveTicks / res.totalTime * 100).toFixed(1);
+  const hotPotency = res.totalHotActiveTicks > 0 ? (res.totalHealByType.hot / res.totalHotActiveTicks).toFixed(2) : "0.00";
+  console.log(`  HoT uptime      ${hotUptimePct}% of fight duration  |  potency ${hotPotency} hp/tick avg`);
+
   console.log("\n── Streak activity ──");
-  console.log(`  Fate×${STREAK_K} trigger | ${STREAK_DURATION}-tick duration | ${STREAK_MULT}× multiplier`);
-  console.log(`  Refractory: ${STREAK_REFRACTORY} ticks`);
+  console.log(`  Fate×${STREAK_K} trigger | ${STREAK_DURATION}-tick duration | ${STREAK_MULT}× multiplier | Refractory: ${STREAK_REFRACTORY} ticks`);
+  const totalStreaks = ORDER.reduce((s,k)=>s+res.totalStreakCount[k],0);
+  ORDER.forEach(k => console.log(`  ${k.padEnd(10)} ${avg(res.totalStreakCount[k]).padStart(6)} triggers/fight`));
+  console.log(`  ${"TOTAL".padEnd(10)} ${avg(totalStreaks).padStart(6)} triggers/fight`);
+  console.log(`  Bonus damage from streaks   ${avg(res.totalStreakBonusDmg)} dmg/fight`);
+  console.log(`  Bonus healing from streaks  ${avg(res.totalStreakBonusHeal)} hp/fight`);
+
+  console.log("\n── Inspiration contribution (avg per fight, all fights — not just where it fired) ──");
+  console.log(`  Grace         HP restored        ${avg(res.totalInspGraceHeal)} hp`);
+  console.log(`  Horn          Damage redirected  ${avg(res.totalInspHornRedirect)} dmg`);
+  console.log(`  Red Dawn      HP restored        ${avg(res.totalInspDawnHeal)} hp`);
+  console.log(`  Red Dawn      Bonus damage       ${avg(res.totalInspDawnBonusDps)} dmg`);
+  if (cfg.survival) {
+    console.log(`  Black Arrow   Clock cut          ${avg(res.totalInspBlackArrowAmount)} sec`);
+  } else {
+    console.log(`  Black Arrow   Resolve burned     ${avg(res.totalInspBlackArrowAmount)} dmg`);
+  }
 
   if (res.sample && res.sample.logs.length) {
     console.log("\n── Verbose log (fight #1) ──");
