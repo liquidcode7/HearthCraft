@@ -337,6 +337,8 @@ private fun HarvestResultDialog(readout: HarvestReadout, onDismiss: () -> Unit) 
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Spacer(modifier = Modifier.width(6.dp))
+                        GradeBadge(grade = item.grade)
+                        Spacer(modifier = Modifier.width(6.dp))
                         Text(
                             item.rarity.replaceFirstChar { it.uppercase() },
                             style = MaterialTheme.typography.labelSmall,
