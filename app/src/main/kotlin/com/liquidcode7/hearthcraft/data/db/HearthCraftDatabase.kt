@@ -33,7 +33,7 @@ import com.liquidcode7.hearthcraft.data.db.dao.SeedStockDao
         HohSession::class,
         EncounterTicks::class,
     ],
-    version = 17,
+    version = 18,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 5, to = 6),

@@ -20,6 +20,7 @@ import com.liquidcode7.hearthcraft.data.db.MIGRATION_10_11
 import com.liquidcode7.hearthcraft.data.db.Migration14To15
 import com.liquidcode7.hearthcraft.data.db.Migration15To16
 import com.liquidcode7.hearthcraft.data.db.Migration16To17
+import com.liquidcode7.hearthcraft.data.db.Migration17To18
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -35,7 +36,7 @@ object DatabaseModule {
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): HearthCraftDatabase =
         Room.databaseBuilder(context, HearthCraftDatabase::class.java, "hearthcraft.db")
-            .addMigrations(MIGRATION_10_11, Migration14To15, Migration15To16, Migration16To17)
+            .addMigrations(MIGRATION_10_11, Migration14To15, Migration15To16, Migration16To17, Migration17To18)
             .fallbackToDestructiveMigration(true)
             .build()
 

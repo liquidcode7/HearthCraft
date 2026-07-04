@@ -25,5 +25,8 @@ data class BandMemberState(
     @ColumnInfo(defaultValue = "0")
     val recoveryBuffPending: Boolean = false,
     @ColumnInfo(defaultValue = "0")
-    val combatXp: Int = 0
+    val combatXp: Int = 0,
+    @ColumnInfo(defaultValue = "0") val missionsSurvived: Int = 0,
+    @ColumnInfo(defaultValue = "0") val woundsSurvived: Int = 0,
+    @ColumnInfo(defaultValue = "0") val grievousWoundsSurvived: Int = 0
 )
