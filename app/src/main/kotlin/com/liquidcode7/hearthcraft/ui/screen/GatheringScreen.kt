@@ -36,6 +36,7 @@ import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -78,7 +79,10 @@ fun GatheringScreen(viewModel: GatheringViewModel = hiltViewModel()) {
 
     val pagerState = rememberPagerState(pageCount = { 3 })
     LaunchedEffect(subTab) { if (pagerState.currentPage != subTab) pagerState.animateScrollToPage(subTab) }
-    LaunchedEffect(pagerState.currentPage) { if (pagerState.currentPage != subTab) viewModel.selectGatherSubTab(pagerState.currentPage) }
+    LaunchedEffect(pagerState) {
+        snapshotFlow { pagerState.settledPage }
+            .collect { settled -> if (settled != subTab) viewModel.selectGatherSubTab(settled) }
+    }
 
     if (lastHarvest != null) {
         HarvestResultDialog(readout = lastHarvest!!, onDismiss = { viewModel.clearLastHarvest() })
