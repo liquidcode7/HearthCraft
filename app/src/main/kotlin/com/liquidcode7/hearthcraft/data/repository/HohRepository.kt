@@ -5,7 +5,6 @@ import androidx.work.WorkManager
 import com.liquidcode7.hearthcraft.data.db.HohSession
 import com.liquidcode7.hearthcraft.data.db.dao.BandMemberStateDao
 import com.liquidcode7.hearthcraft.data.db.dao.HohSessionDao
-import com.liquidcode7.hearthcraft.data.quality.CookQuality
 import com.liquidcode7.hearthcraft.worker.HohWorker
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
@@ -23,6 +22,7 @@ class HohRepository @Inject constructor(
     private val hohSessionDao: HohSessionDao,
     private val player: PlayerRepository,
     private val gameData: GameDataRepository,
+    private val inventory: InventoryRepository,
     @ApplicationContext private val context: Context
 ) {
 
@@ -41,48 +41,40 @@ class HohRepository @Inject constructor(
         4 to floatArrayOf(1.00f, 0.60f, 0.35f, 0.280f, 0.18f)
     )
 
-    suspend fun applyPreparation(
+    suspend fun applyPreparedItem(
         memberId: String,
         recipeId: String,
-        ingredientGrades: Map<String, Int>
+        grade: Int
     ): ApplyResult {
         val member = memberDao.get(memberId) ?: error("Member $memberId not found")
         val recipe = gameData.recipes.find { it.id == recipeId }
             ?: error("Recipe $recipeId not found")
-        val playerState = player.get() ?: error("PlayerState not found")
 
-        val grade = CookQuality.resolveDishGrade(recipe, ingredientGrades, playerState.hohLevel,
-            overrideUnlockLevel = recipe.hohLevel)
+        inventory.removePreparedFood(recipeId, grade)
+
         val tier = recipe.tier.coerceIn(1, 4)
 
-        // Load or create session
         val session = hohSessionDao.get(memberId) ?: HohSession(memberId)
 
-        // Calculate elapsed time already served
         val nowMs = System.currentTimeMillis()
         val elapsed = if (member.hohTimerStartMs > 0L)
             (nowMs - member.hohTimerStartMs).coerceAtLeast(0L)
         else
             session.elapsedMsAtLastTreatment
 
-        // Merge treated types
         val prevTreated = session.treatedTypes.split(",").filter { it.isNotBlank() }.toMutableSet()
         val newlyTreated = recipe.treatsWoundTypes.toSet()
         val allTreated = prevTreated + newlyTreated
 
-        // Best grade and tier across all preparations
         val bestGrade = maxOf(session.bestGrade, grade)
         val bestTier = maxOf(session.bestTier, tier)
 
-        // All wound types on member
         val memberWoundTypes = member.woundTypes.split(",").filter { it.isNotBlank() }
         val allWoundsCleared = memberWoundTypes.isNotEmpty() && allTreated.containsAll(memberWoundTypes)
 
-        // Calculate new timer
         val newTimer = calcTimer(memberWoundTypes, allTreated.toList(), bestGrade, bestTier)
         val creditedTimer = (newTimer - elapsed).coerceAtLeast(0L)
 
-        // Persist session
         hohSessionDao.upsert(
             session.copy(
                 treatedTypes = allTreated.joinToString(","),
@@ -92,19 +84,13 @@ class HohRepository @Inject constructor(
             )
         )
 
-        // Start/restart timer
         memberDao.setHohTimer(memberId, nowMs, creditedTimer)
-
-        // Set recovery buff (best across applications)
         memberDao.setRecoveryBuff(memberId, bestGrade, bestTier, pending = true)
 
-        // Grant XP
         val xp = PlayerRepository.XP_HOH_APPLY +
             if (allWoundsCleared) PlayerRepository.XP_HOH_CLEAR_BONUS else 0
         player.addHohXp(xp)
 
-        // Schedule HohWorker — cancel any prior timer for this member first so a
-        // second preparation restarts the clock correctly, then enqueue the new one.
         val workManager = WorkManager.getInstance(context)
         workManager.cancelAllWorkByTag("hoh_$memberId")
         workManager.enqueue(HohWorker.buildRequest(memberId, creditedTimer))
