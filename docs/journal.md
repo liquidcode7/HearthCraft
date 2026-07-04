@@ -5,16 +5,41 @@
 
 ---
 
-## Current Status — July 4, 2026
+## Current Status — July 4, 2026 (evening)
 
-**Phase:** Men (Greycloaks) — navigation redesign complete. Missions is now the sole mission-launch pad (live Monte-Carlo odds estimate, inline provisioning, boss HP); Journal shows per-character stats/bio; Band is a pure roster + switcher; House of Healing has its own tab with a full craft-then-treat flow (crafting session tracking, grade-picker, apply-to-member). A standalone recipe/ingredient data browser tool also shipped (`tools/recipe-browser/`, run via `node tools/recipe-browser/generate.js`).
-**What's working:** Full loop verified end-to-end via build + tests (not yet manually verified on-device): Home → Missions (select, provision, odds, send, battle, recap) → Journal (bios/stats) → Band (roster) → House of Healing (wound status, craft, treat). DB migrated to v19 (bio-stage counters + HoH cooking session table, both additive).
-**What's not wired yet:** Bio-stage trigger logic (schema-only counters exist, no triggers/authored content yet). HoH Treat list now shows which wounds a preparation treats and warns on zero-overlap waste, but doesn't otherwise gate treatment (by design — partial treatment is intentional). `grievousWoundSpecs` still not populated on any encounter. Lone-Lands region unlock trigger not yet wired. Balance sim vs. Men encounters not yet run. Gather/farm/garden yield balance and the "too many unused ingredients" concern are still open — the new recipe browser's Ingredient Usage tab is meant to help diagnose the latter but the actual balance pass hasn't happened. The Coop/Hive/Dairy timer-sticks-at-zero bug reported this session is still unfixed (not attempted — out of scope for the navigation redesign).
-**Next session:** Manually verify the full navigation redesign on-device/emulator (build-level verification only was possible this session — no emulator in the CLI environment). Then: fix the producer-timer bug, look at gather/farm yield balance using the new recipe browser's Ingredient Usage tab, and decide on the HTML combat-sim metrics overhaul (DPS/HoT/streak/Inspiration breakdown) requested but not yet started.
-**Open questions:** Player title (still TBD). Exact Lone-Lands unlock trigger. `DatabaseModule.kt`'s `fallbackToDestructiveMigration(true)` was flagged in the final review as a latent, pre-existing risk (any future migration failure silently wipes the save) — worth a dedicated follow-up, not fixed this session (out of scope, predates this branch).
-**CLI build note:** `./gradlew` needs `export JAVA_HOME=/usr/share/pycharm/jbr` (no system JDK on PATH by default) — last session's "SDK path issue" was actually this, not the SDK. Confirmed working for full `./gradlew build` including lint + unit tests.
+**Phase:** Men (Greycloaks) — navigation redesign complete, plus a full triage + fix pass on Wes's 04 Jul 2026 playtest audit. Missions is the sole mission-launch pad (live Monte-Carlo odds estimate, inline provisioning, boss HP); Journal shows per-character stats/bio; Band is a pure roster + switcher; House of Healing has its own tab with a full craft-then-treat flow. Kitchen's leftover Discover/experimentation mechanic is gone — Grimoire is now the only recipe-unlock path. Market's seed catalogue is now driven by the player's actual discovered ingredients instead of a hardcoded 5-item list.
+**What's working:** Full loop verified end-to-end via build + tests (not yet manually verified on-device this session either — no emulator in the CLI environment). DB still at v19, no schema changes this session by design.
+**What's not wired yet:** Same as before (bio-stage triggers, `grievousWoundSpecs`, Lone-Lands unlock trigger, balance sim vs. Men encounters) plus the audit's bigger open items, deliberately not touched this session: damage types are engine-wide physical-only (no magic/hybrid distinction yet), the combat timer pre-computes the whole fight and just replays it (Wes wants kill-fight timers removed, survival-fight timers kept — a combat-feel design decision, not planned yet), a gear/weapons/armor system doesn't exist at all, and `contemplative_tea` (Mithlost) has the same T1 dual-stat issue just fixed on two Greycloaks recipes — left alone since Mithlost is pending redesign (§3) and draughts giving raw stat boosts contradicts the draught model in §7.3 anyway; Wes chose to defer this to whenever Elves get redesigned rather than patch a parked system.
+**Next session:** Wes's call on what's next — candidates from the audit are: a damage-type system design pass, the kill-fight-timer removal, wound-severity UI (no visible consequence/timer today), a post-fight loot/rewards summary, or the gear-system scoping conversation. None of these are started; see `docs/superpowers/plans/2026-07-04-audit-quick-fixes.md`'s triage table for the full list of what's deferred and why.
+**Open questions:** Player title (still TBD). Exact Lone-Lands unlock trigger. `DatabaseModule.kt`'s `fallbackToDestructiveMigration(true)` (pre-existing risk, still not addressed). New this session: does the T1-single-stat rule (§8.2) apply to draughts, or are draughts exempt? (`contemplative_tea` is the one existing recipe that would answer it either way.)
+**CLI build note:** `./gradlew` needs `export JAVA_HOME=/usr/share/pycharm/jbr` (no system JDK on PATH by default). Confirmed working for full `./gradlew build` including lint + unit tests, both in a worktree (after copying `local.properties` in — not tracked by git) and on the main checkout.
 
 ---
+
+## Session 21 — July 4, 2026
+**Playtest audit triage + 4 quick-fixes (Discover-mechanic removal, T1 recipe data fix, Market seed catalogue, Gathering tab glitch)**
+
+**What was built:**
+- Read Wes's `App Audit 04JUL2026.docx` (17 distinct playtest findings), researched each against the actual codebase (not guessed), and wrote `docs/superpowers/plans/2026-07-04-audit-quick-fixes.md` — a triage table for all 17 items plus a 4-task implementation plan for the ones that were confirmed bugs with no open design question attached
+- Executed the plan via Subagent-Driven Development (fresh implementer + reviewer per task, in an isolated worktree, final whole-branch review before merge):
+  - `engine/RecipeDiscoveryEngine.kt` (deleted), `ui/viewmodel/KitchenViewModel.kt`, `ui/screen/KitchenScreen.kt`: removed the leftover Discover/free-assembly-experimentation Kitchen tab (superseded by Grimoire in the 30 June redesign but never torn out) plus its now-orphaned `FoodHintsCard` hint card; starter-recipe seeding and `CookingWorker`'s discover-on-first-cook are untouched (different feature, shares storage)
+  - `app/src/main/assets/data/recipes.json`, `tools/sim/food_model.js`: stripped the illegal secondary stat from two T1 starter recipes (`hearthbread`, `wanderers_supper`) per master-design.md §8.2
+  - `ui/viewmodel/MarketViewModel.kt` (+ new `MarketSeedsTest.kt`): replaced the hardcoded 5-seed `SEED_CATALOGUE` with a pure `availableSeeds()` function derived from `GameDataRepository.ingredients` filtered by `cultivatable && discoveredIngredientIds` — fixes wanderer's fig (and 90+ other cultivatable ingredients) being unbuyable/unplantable on purpose
+  - `ui/screen/GatheringScreen.kt`, and (as part of the Kitchen task) `ui/screen/KitchenScreen.kt`: fixed both screens' tab/`HorizontalPager` sync — was racing two `LaunchedEffect`s off `pagerState.currentPage` (fires every animation frame); fixed by syncing off `pagerState.settledPage` via `snapshotFlow`, keyed on the stable `pagerState` object
+  - `future/wishlist.md`: logged the 2 now-dead `PlayerState` hint columns and their 2 dead `PlayerRepository` methods for a future batched schema migration
+
+**Decisions made:**
+- Only 4 of the audit's 17 items got a code plan this session — the rest either need a design decision (combat timer, damage types, gear system), are content-writing (narrative copy, Inspiration descriptions), or are UI features nobody had scoped yet (wound timers, loot summary, ingredient filters). Full reasoning per item is in the plan's triage table.
+- `contemplative_tea` (Mithlost) has the same T1 dual-stat bug the plan fixed on Greycloaks recipes, caught by the final whole-branch review — Wes chose to defer it to the eventual Elves redesign rather than patch a parked band's data now
+- Dead Room-backed booleans (`hasSeenExperimentHint`, `hasSeenFoodStructureHints`) and their now-dead repository methods are left in place rather than migrated out — not worth a schema bump for two unused fields in isolation; batched into the wishlist for the next migration that already needs a version bump
+
+**Anything that diverged from design/master-design.md:**
+- None — all four fixes bring the code closer to what §8.2/§8.3/§10.2 already specify, no new mechanics introduced
+
+**Coming up:**
+- Next session: Wes picks the next audit item to tackle — see Current Status above for the candidate list
+- Near term: still-open items from Session 20 (bio-stage triggers, `grievousWoundSpecs`, Lone-Lands unlock trigger, gather/farm yield balance pass)
+- Future ideas logged: dead `PlayerState` hint columns + dead `PlayerRepository` methods (`future/wishlist.md`, batch into next schema-bump migration)
 
 ## Session 20 — July 4, 2026
 **Navigation redesign: Missions launch pad, Journal character detail, House of Healing tab, recipe/ingredient browser tool**
