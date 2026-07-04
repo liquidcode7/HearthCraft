@@ -676,9 +676,7 @@
       { "id": "forest_honey", "qty": 1 }
     ],
     "primaryStat": "vit",
-    "primaryBoost": 2,
-    "secondaryStat": "mig",
-    "secondaryBoost": 1
+    "primaryBoost": 2
   },
   {
     "id": "wanderers_supper",
@@ -695,9 +693,7 @@
       { "id": "duskberry",    "qty": 1 }
     ],
     "primaryStat": "agi",
-    "primaryBoost": 2,
-    "secondaryStat": "mig",
-    "secondaryBoost": 1
+    "primaryBoost": 2
   },
   {
     "id": "contemplative_tea",
