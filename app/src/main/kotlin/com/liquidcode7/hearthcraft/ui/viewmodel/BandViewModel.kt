@@ -153,6 +153,7 @@ class BandViewModel @Inject constructor(
                     level = level,
                     woundedSinceMs = state?.woundedSinceMs ?: 0L,
                     woundedDurationMs = state?.woundedDurationMs ?: 0L,
+                    woundTypes = state?.woundTypes?.split(",")?.filter { it.isNotBlank() } ?: emptyList(),
                     might = curve?.let { statAtLevel(startMig, it.migGrowth, level) }?.roundToInt() ?: startMig,
                     agility = curve?.let { statAtLevel(startAgi, it.agiGrowth, level) }?.roundToInt() ?: startAgi,
                     vitality = curve?.let { statAtLevel(member.startingVitality, it.vitGrowth, level) }?.roundToInt() ?: member.startingVitality,

@@ -87,15 +87,23 @@ fun HouseOfHealingScreen(
                         if (preparedItems.isNotEmpty()) {
                             Spacer(modifier = Modifier.height(6.dp))
                             preparedItems.forEach { item ->
+                                val treatsAnything = item.treatsWoundTypes.any { it in member.woundTypes }
                                 Row(
                                     modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Text(item.name, style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1f))
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(item.name, style = MaterialTheme.typography.bodySmall)
+                                        Text(
+                                            "Treats: ${item.treatsWoundTypes.joinToString(", ") { it.replaceFirstChar(Char::uppercase) }}",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = if (treatsAnything) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.error
+                                        )
+                                    }
                                     GradeBadge(item.grade)
                                     Spacer(modifier = Modifier.width(6.dp))
                                     Button(onClick = { hohViewModel.applyToMember(member.memberId, item) }) {
-                                        Text("Treat")
+                                        Text(if (treatsAnything) "Treat" else "Treat anyway")
                                     }
                                 }
                             }

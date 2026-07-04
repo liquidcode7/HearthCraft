@@ -41,6 +41,7 @@ data class BandMemberWithState(
     val level: Int = 1,
     val woundedSinceMs: Long = 0L,
     val woundedDurationMs: Long = 0L,
+    val woundTypes: List<String> = emptyList(),
     val might: Int = 0,
     val agility: Int = 0,
     val vitality: Int = 0,
