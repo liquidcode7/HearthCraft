@@ -171,6 +171,7 @@ class BandViewModel @Inject constructor(
                 rewardMoneyMax       = enc.rewardMoneyMax,
                 rewardMultiplier     = enc.rewardMultiplier,
                 physMitPct           = enc.stages.firstOrNull()?.physMitPct ?: 0f,
+                bossResolve          = enc.stages.firstOrNull()?.resolve ?: 0,
                 isUnlocked           = maxVit >= enc.recLevel && cookLvl >= enc.requiredCookingLevel
             )
         }

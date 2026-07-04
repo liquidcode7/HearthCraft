@@ -269,6 +269,17 @@ private fun EncounterCard(
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(difficultyLabel, style = MaterialTheme.typography.labelSmall, color = difficultyColor)
             }
+            Spacer(modifier = Modifier.height(6.dp))
+            Text(
+                "Boss HP: ${encounter.bossResolve}",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            HpBar(
+                fraction = 1f,
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier.fillMaxWidth().height(4.dp)
+            )
             if (!provisioned) {
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
