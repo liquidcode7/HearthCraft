@@ -69,10 +69,6 @@ class KitchenViewModel @Inject constructor(
 
     val allGrimoires: List<Grimoire> get() = gameData.grimoires
 
-    val hintsSeen: StateFlow<Boolean> = player.observe()
-        .map { it?.hasSeenFoodStructureHints ?: false }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
-
     val cookingXpProgress: StateFlow<XpProgress> = player.observe()
         .map { xpProgress(it?.cookingXp ?: 0) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), XpProgress(1, 0, 100))
@@ -301,10 +297,6 @@ class KitchenViewModel @Inject constructor(
 
     fun selectTab(index: Int) {
         _selectedTab.value = index
-    }
-
-    fun markHintsSeen() {
-        viewModelScope.launch { player.markHintsSeen() }
     }
 
     // ── Process station functions ─────────────────────────────────────────────
