@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -25,11 +26,13 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -109,8 +112,8 @@ fun MissionsScreen(
             Spacer(modifier = Modifier.height(16.dp))
         }
 
-        // ── Food selection ─────────────────────────────────────────────────
-        Text("Food", style = MaterialTheme.typography.titleSmall)
+        // ── Provisioning ────────────────────────────────────────────────────
+        Text("Provisioning", style = MaterialTheme.typography.titleSmall)
         Spacer(modifier = Modifier.height(6.dp))
         if (preparedFood.isEmpty()) {
             Text(
@@ -119,12 +122,52 @@ fun MissionsScreen(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         } else {
-            preparedFood.forEach { food ->
-                FoodRow(
-                    food = food,
-                    isSelected = memberFood.values.any { it?.recipeId == food.recipeId },
-                    onClick = { /* provisioning is done in Band screen — assign per member there */ }
+            var pickingFor by remember { mutableStateOf<String?>(null) }
+            if (pickingFor != null) {
+                FoodPickerDialog(
+                    options = preparedFood,
+                    onSelect = { food -> bandViewModel.assignFoodToMember(pickingFor!!, food); pickingFor = null },
+                    onDismiss = { pickingFor = null }
                 )
+            }
+            members.filter { it.isAlive }.forEach { member ->
+                val food = memberFood[member.memberId]
+                Card(modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(10.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(member.name, style = MaterialTheme.typography.bodyMedium)
+                            Text(
+                                member.role.replaceFirstChar { it.titlecase() },
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            if (food != null) {
+                                val statLine = buildString {
+                                    if (food.primaryStat != null) append("+${food.primaryBoost} ${food.primaryStat.uppercase()}")
+                                    if (food.secondaryStat != null) append("  +${food.secondaryBoost} ${food.secondaryStat.uppercase()}")
+                                }
+                                Text(
+                                    if (statLine.isNotEmpty()) "${food.name}  $statLine" else food.name,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            } else {
+                                Text("Unfed", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
+                            }
+                        }
+                        TextButton(onClick = { pickingFor = member.memberId }) {
+                            Text(if (food != null) "Change" else "Assign")
+                        }
+                        if (food != null) {
+                            TextButton(onClick = { bandViewModel.assignFoodToMember(member.memberId, null) }) {
+                                Text("Clear")
+                            }
+                        }
+                    }
+                }
                 Spacer(modifier = Modifier.height(4.dp))
             }
         }
@@ -212,29 +255,6 @@ fun MissionsScreen(
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-        }
-    }
-}
-
-@Composable
-private fun FoodRow(food: PreparedFoodDetail, isSelected: Boolean, onClick: () -> Unit) {
-    Card(
-        onClick = onClick,
-        border = if (isSelected) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null,
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Row(modifier = Modifier.padding(10.dp), verticalAlignment = Alignment.CenterVertically) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(food.name, style = MaterialTheme.typography.bodySmall)
-                Text(
-                    food.buffType,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-            GradeBadge(food.grade)
-            Spacer(modifier = Modifier.width(6.dp))
-            Text("×${food.quantity}", style = MaterialTheme.typography.bodySmall)
         }
     }
 }
@@ -662,4 +682,51 @@ private fun buildCombatNarrative(report: CombatReport): String {
             }. The band retreated in order."
         }
     }
+}
+
+@Composable
+private fun FoodPickerDialog(
+    options: List<PreparedFoodDetail>,
+    onSelect: (PreparedFoodDetail) -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Choose food") },
+        text = {
+            Column {
+                if (options.isEmpty()) {
+                    Text(
+                        "No food prepared. Cook something in the Kitchen first.",
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                } else {
+                    options.forEach { food ->
+                        TextButton(onClick = { onSelect(food) }, modifier = Modifier.fillMaxWidth()) {
+                            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(food.name)
+                                    if (food.primaryStat != null) {
+                                        val secondaryPart = if (food.secondaryStat != null)
+                                            "  +${food.secondaryBoost} ${food.secondaryStat.uppercase()}"
+                                        else ""
+                                        Text(
+                                            "+${food.primaryBoost} ${food.primaryStat.uppercase()}$secondaryPart",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = MaterialTheme.colorScheme.primary
+                                        )
+                                    }
+                                }
+                                GradeBadge(food.grade)
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text("×${food.quantity}", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {},
+        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } }
+    )
 }
