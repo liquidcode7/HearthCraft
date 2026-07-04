@@ -9,7 +9,7 @@
     --ink:#241a12;--parch:#efe6d2;--parch2:#e6dac0;--rule:#b9a47c;--roast:#4a2f1a;
     --ember:#b5602e;--gold:#b8843c;--surv:#5b7f63;--win:#4a6c93;--keeper:#7d5a93;
     --boss:#8a3a2c;--good:#5b7f63;--stale:#b8843c;--bad:#9a3526;--bar-bg:#cabfa3;--insp:#b8843c;
-    --warden:#2e6da4;--captain:#b8843c;--hunter:#c0392b;--keeperc:#7d5a93;
+    --warden:#2e6da4;--captain:#b8843c;--fighter:#c0392b;--keeperc:#7d5a93;
   }
   *{box-sizing:border-box;margin:0;padding:0}
   body{background:radial-gradient(ellipse at 50% -10%,#f6efdd 0%,var(--parch) 55%,var(--parch2) 100%);color:var(--ink);font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;min-height:100vh;padding:20px 16px 60px}
@@ -41,7 +41,7 @@
   .char-insp-name{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--insp);font-weight:700;margin-bottom:4px}
   .char-insp-text{font-size:12px;line-height:1.6;color:#6a5030}
   .hdr-warden{background:var(--warden)}
-  .hdr-hunter{background:var(--hunter)}
+  .hdr-fighter{background:var(--fighter)}
   .hdr-keeper{background:var(--keeper)}
   .hdr-captain{background:var(--captain)}
 
@@ -105,7 +105,7 @@
   .m-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:3px}
   .m-name{font-size:14px;font-weight:600}
   .m-role{font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;padding:1px 6px;border-radius:8px;color:#fff}
-  .role-warden{background:#2e6da4}.role-captain{background:#b8843c}.role-hunter{background:#c0392b}.role-keeper{background:#7d5a93}
+  .role-warden{background:#2e6da4}.role-captain{background:#b8843c}.role-fighter{background:#c0392b}.role-keeper{background:#7d5a93}
   .m-hp-num{font-size:10.5px;color:#6a5638;font-variant-numeric:tabular-nums;margin-top:3px;display:flex;justify-content:space-between}
   .m-wounds{font-size:10px;margin-top:2px;letter-spacing:1px}
   .wound-pip{color:var(--bad)}.wound-empty{color:#cabfa3}
@@ -311,7 +311,7 @@ const FOOD_MODEL = (function () {
           <div class="ctl" id="r_boss"><label>Boss resolve (kill pool) <span class="val" id="v_boss">8500</span></label><input type="range" id="boss" min="1000" max="20000" step="250" value="8500"></div>
           <div class="ctl"><label>Steady drain / sec <span class="val" id="v_drain">70</span></label><input type="range" id="drain" min="0" max="220" value="70"><div class="effect" id="e_drain"></div></div>
           <div class="ctl"><label>Spike size (crit potency) <span class="val" id="v_spike">160</span></label><input type="range" id="spike" min="0" max="340" step="10" value="160"><div class="effect" id="e_spike"></div></div>
-          <div class="ctl"><label>Seconds between spikes (mean) <span class="val" id="v_spikeiv">12</span></label><input type="range" id="spikeiv" min="2" max="20" value="12"><div class="effect">interval is randomised ±50% each spike, damage ±30% — same mean, real variance. Fragile members (Hunter/Keeper) can catch a bad run of spikes with no mid-fight reaction possible.</div></div>
+          <div class="ctl"><label>Seconds between spikes (mean) <span class="val" id="v_spikeiv">12</span></label><input type="range" id="spikeiv" min="2" max="20" value="12"><div class="effect">interval is randomised ±50% each spike, damage ±30% — same mean, real variance. Fragile members (Fighter/Keeper) can catch a bad run of spikes with no mid-fight reaction possible.</div></div>
         </div>
         <div class="ctl-group" id="r_phys">
           <h3 onclick="this.parentElement.classList.toggle('open')">Physical mitigation (armor) <span>&#9432;</span></h3>
@@ -348,7 +348,7 @@ const FOOD_MODEL = (function () {
             <option value="contemplative_tea">Contemplative Tea (Wil &#8594; Agi)</option>
             <option value="rangers_fare">Ranger's Fare (Mig &#8594; Vit)</option>
           </select></div>
-          <div class="ctl"><label>Hunter eats</label><select id="rh" onchange="onRecipeChange()">
+          <div class="ctl"><label>Fighter eats</label><select id="rh" onchange="onRecipeChange()">
             <option value="">&#8212; no recipe</option>
             <option value="hearthbread">Hearthbread (Vit &#8594; Mig)</option>
             <option value="wanderers_supper" selected>Wanderer's Supper (Agi &#8594; Mig)</option>
@@ -373,9 +373,9 @@ const FOOD_MODEL = (function () {
         </div>
         <div class="ctl-group">
           <h3 onclick="this.parentElement.classList.toggle('open')">The band <span>&#9432;</span></h3>
-          <div class="gnote">Band level scales every member's stats up from their 1&#8211;20 starting spread. Each role is a fixed template: Warden tanky, Hunter fragile striker, Keeper fragile linchpin, Captain durable empowerer. Live stats shown below.</div>
+          <div class="gnote">Band level scales every member's stats up from their 1&#8211;20 starting spread. Each role is a fixed template: Warden tanky, Fighter fragile striker, Keeper fragile linchpin, Captain durable empowerer. Live stats shown below.</div>
           <div class="ctl"><label>Band level <span class="val" id="v_lvl">10</span></label><input type="range" id="lvl" min="1" max="20" value="10"></div>
-          <div class="ctl"><label>Hunter flavor <span class="val" id="v_hflav">agility</span></label><input type="range" id="hflav" min="0" max="1" value="0"></div>
+          <div class="ctl"><label>Fighter flavor <span class="val" id="v_hflav">agility</span></label><input type="range" id="hflav" min="0" max="1" value="0"></div>
           <div id="statpreview" class="statline"></div>
         </div>
         <div class="ctl-group">
@@ -442,7 +442,7 @@ const FOOD_MODEL = (function () {
       </div>
       <div class="panel gauge"><div class="g-h">DPS per character</div>
         <div class="g-row"><span>Borin (Warden)</span><span id="g_dps_warden"><b>&#8212;</b></span></div>
-        <div class="g-row"><span>Mira (Hunter)</span><span id="g_dps_hunter"><b>&#8212;</b></span></div>
+        <div class="g-row"><span>Mira (Fighter)</span><span id="g_dps_fighter"><b>&#8212;</b></span></div>
         <div class="g-row"><span>Cael (Keeper)</span><span id="g_dps_keeper"><b>&#8212;</b></span></div>
         <div class="g-row"><span>Aelindra (Captain)</span><span id="g_dps_captain"><b>&#8212;</b></span></div>
         <div class="g-row" style="margin-top:4px;border-top:1px solid var(--rule);padding-top:4px"><span style="font-size:10px;color:#8a7355">Keeper magic bypasses armor</span></div>
@@ -553,11 +553,11 @@ const FOOD_MODEL = (function () {
         </div>
       </div>
 
-      <!-- HUNTER -->
+      <!-- FIGHTER -->
       <div class="char-card">
-        <div class="char-header hdr-hunter">
+        <div class="char-header hdr-fighter">
           <span class="char-name">Mira</span>
-          <span class="char-role">Hunter</span>
+          <span class="char-role">Fighter</span>
         </div>
         <div class="char-body">
           <div class="char-bio">Grew up among the Greycloaks. Has known Aldric since she was small. There is nothing uncertain about who she is or what she is for — she has always known, and that quiet certainty is not arrogance, it is inheritance. Notices things she does not mention until exactly the right moment.</div>
@@ -593,7 +593,7 @@ const FOOD_MODEL = (function () {
         </div>
         <div class="char-body">
           <div class="char-bio">Ancient and precise. Speaks as though each word costs something. Has outlived three forests and is not sentimental about it. Her stillness in a bad moment steadies everyone around her — not because she says anything, but because she does not move.</div>
-          <div class="char-mech">Durable where the Hunter is fragile, steadying where the Keeper is singular. Her Will and Fate feed into the band's resistance to Dread — the cowering of courage before evil. Against enemies that carry fear as a weapon, she is the difference between a band that fights and one that breaks.<br><br>Her damage is secondary. Her presence is not.</div>
+          <div class="char-mech">Durable where the Fighter is fragile, steadying where the Keeper is singular. Her Will and Fate feed into the band's resistance to Dread — the cowering of courage before evil. Against enemies that carry fear as a weapon, she is the difference between a band that fights and one that breaks.<br><br>Her damage is secondary. Her presence is not.</div>
           <div class="char-insp">
             <div class="char-insp-name">&#10022; Wrath, Ruin, and the Red Dawn</div>
             <div class="char-insp-text">In the worst moments — when the line is cracking and two or more are in peril — Aelindra has been known to say something. Nobody remembers the words exactly. What they remember is the feeling: that the world had not ended yet, that there was still something worth fighting for, and that they were on their feet again. All of them. Every Inspiration that follows in the next half-minute seems to come easier.</div>
@@ -636,12 +636,12 @@ function recipeLevelLabel(rl){
 }
 const TPL={
   warden:  {name:"Borin Ironmantle",role:"Warden", cls:"role-warden", soak:true,  color:"#2e6da4", start:{mig:13,agi:6,vit:15,wil:7,fat:6},  grow:{mig:0.5,agi:0.15,vit:0.55,wil:0.2,fat:0.15}},
-  hunterA: {name:"Mira",role:"Hunter", cls:"role-hunter", soak:false, color:"#c0392b", start:{mig:9,agi:15,vit:7,wil:5,fat:9},   grow:{mig:0.3,agi:0.55,vit:0.2,wil:0.15,fat:0.35}},
-  hunterM: {name:"Mira",role:"Hunter", cls:"role-hunter", soak:false, color:"#c0392b", start:{mig:15,agi:9,vit:8,wil:5,fat:7},   grow:{mig:0.55,agi:0.3,vit:0.25,wil:0.15,fat:0.25}},
+  fighterA: {name:"Mira",role:"Fighter", cls:"role-fighter", soak:false, color:"#c0392b", start:{mig:9,agi:15,vit:7,wil:5,fat:9},   grow:{mig:0.3,agi:0.55,vit:0.2,wil:0.15,fat:0.35}},
+  fighterM: {name:"Mira",role:"Fighter", cls:"role-fighter", soak:false, color:"#c0392b", start:{mig:15,agi:9,vit:8,wil:5,fat:7},   grow:{mig:0.55,agi:0.3,vit:0.25,wil:0.15,fat:0.25}},
   keeper:  {name:"Cael",role:"Keeper", cls:"role-keeper", soak:false, color:"#7d5a93", start:{mig:5,agi:7,vit:9,wil:15,fat:12},  grow:{mig:0.15,agi:0.2,vit:0.3,wil:0.55,fat:0.45}},
   captain: {name:"Aelindra",role:"Captain",cls:"role-captain",soak:true,color:"#b8843c",start:{mig:8,agi:7,vit:12,wil:13,fat:13},grow:{mig:0.2,agi:0.2,vit:0.4,wil:0.45,fat:0.45}},
 };
-const ORDER=["warden","hunter","keeper","captain"];
+const ORDER=["warden","fighter","keeper","captain"];
 const STAT_KEYS=["mig","agi","vit","wil","fat"];
 const STAT_LABEL={mig:"Mig",agi:"Agi",vit:"Vit",wil:"Wil",fat:"Fat"};
 // statuses: enemy debuffs/hazards. rich = Dread/Shadow (stat interactions); simple = Morale-drain hazards.
@@ -673,7 +673,7 @@ const $=id=>document.getElementById(id);
 const stat=(t,k,l)=>t.start[k]+t.grow[k]*(l-1);
 const moraleOf=(t,l)=>Math.round(30+stat(t,"vit",l)*16);
 const fmtT=s=>`${Math.floor(s/60)}:${String(Math.max(0,s)%60).padStart(2,"0")}`;
-function roster(){const hk=(+$("hflav").value===1)?"hunterM":"hunterA";return {warden:TPL.warden,hunter:TPL[hk],keeper:TPL.keeper,captain:TPL.captain};}
+function roster(){const hk=(+$("hflav").value===1)?"fighterM":"fighterA";return {warden:TPL.warden,fighter:TPL[hk],keeper:TPL.keeper,captain:TPL.captain};}
 
 let MODE=0,SPEED=1,running=false,timer=null,t=0,P=null,maxT=0;
 let M={},events=[],fired={},windows={},baFired=false,series=[],rescuesUsed=0,wardsUsed=0,inspBoost=0,prevTrouble=0,spikesTotal=0;
@@ -795,7 +795,7 @@ function statusOn(id){const c=$("st_"+id);return c&&c.checked?(+$("sl_"+id).valu
 function antidoteOn(a){const c=$("an_"+a);return c&&c.checked?(+$("al_"+a).value):0;}
 function draughtPotency(){return +($("draught_potency")||{value:0}).value||0;}
 // food stat bonuses per member — driven by recipe select + cooking level via food_model.js
-const RECIPE_SELECTS={warden:"rw",hunter:"rh",keeper:"rk",captain:"rc"};
+const RECIPE_SELECTS={warden:"rw",fighter:"rh",keeper:"rk",captain:"rc"};
 function memberRecipeId(k){return $(RECIPE_SELECTS[k])?.value||"";}
 function memberFoodBonuses(k){
   const rid=memberRecipeId(k); if(!rid)return {};
@@ -830,7 +830,7 @@ function statPreview(){const lvl=+$("lvl").value,R=roster();
   }).join("<br>");}
 function woundPips(n){let s="";for(let i=0;i<GRIEVOUS;i++)s+=`<span class="${i<n?'wound-pip':'wound-empty'}">&#9670;</span>`;return s;}
 function renderParty(){const host=$("party");host.innerHTML="";
-  ORDER.forEach(k=>{const m=M[k],pct=Math.max(0,(m.hp/m.max)*100),wc=(k==="hunter")?"role-h":"";
+  ORDER.forEach(k=>{const m=M[k],pct=Math.max(0,(m.hp/m.max)*100),wc=(k==="fighter")?"role-h":"";
     const resPct=(m.reserve/m.max)*100;
     const resBar=m.reserve>0?`<div class="bar-reserve" style="left:${pct}%;width:${resPct}%"></div>`:"";
     const resNum=m.reserve>0?`<span class="res-num">+${Math.round(m.reserve)}</span>`:"";
@@ -858,13 +858,13 @@ function updEffects(){const drainPer=+$("drain").value/4;
 
 // returns full breakdown incl penetration + Dread(Will+Hope) + Shadow effects
 function dpsBreakdown(){
-  const ZERO={warden:0,hunter:0,keeper:0,captain:0};
-  if(P.unkill)return {raw:0,physAfter:0,layerADrag:0,eff:0,penSaved:0,willSaved:0,hopeSaved:0,potency:0,effBy:{warden:0,hunter:0,keeper:0,captain:0,captain_phys:0,captain_magic:0},physMitTotal:0,magicDmg:0,dawnBoost:0};
-  const rawBy={warden:0,hunter:0,keeper:0,captain:0};
+  const ZERO={warden:0,fighter:0,keeper:0,captain:0};
+  if(P.unkill)return {raw:0,physAfter:0,layerADrag:0,eff:0,penSaved:0,willSaved:0,hopeSaved:0,potency:0,effBy:{warden:0,fighter:0,keeper:0,captain:0,captain_phys:0,captain_magic:0},physMitTotal:0,magicDmg:0,dawnBoost:0};
+  const rawBy={warden:0,fighter:0,keeper:0,captain:0};
   let raw=0;ORDER.forEach(k=>{if(M[k].grievous||M[k].hp<=0||M[k].stunned||M[k].broken)return;
     let r=0;
     if(k==="keeper"){if(M[k].action!=="burst")r=M[k].wil*0.9;}
-    else if(k==="hunter")r=M[k].agi+M[k].mig*0.4;else if(k==="warden")r=M[k].mig*0.5;
+    else if(k==="fighter")r=M[k].agi+M[k].mig*0.4;else if(k==="warden")r=M[k].mig*0.5;
     else if(k==="captain")r=M[k].mig*0.3+M[k].wil*0.2;
     rawBy[k]=r;raw+=r;});
   if(windows.dawn>0){raw*=1.5;ORDER.forEach(k=>rawBy[k]*=1.5);}
@@ -888,7 +888,7 @@ function dpsBreakdown(){
   const layerANoHope=Math.min(1,dreadNoHope*DREAD_VAR_COEF+dreadRaw*DREAD_FLOOR_COEF);
   const effNoWill=raw*(1-physAfter)*(1-layerANoWill);
   const effNoHope=raw*(1-physAfter)*(1-layerANoHope);
-  // per-member effective DPS: Keeper is magic-only; Hunter/Warden are physical; Captain is 50/50 hybrid.
+  // per-member effective DPS: Keeper is magic-only; Fighter/Warden are physical; Captain is 50/50 hybrid.
   const effBy={};
   ORDER.forEach(k=>{
     if(k==="captain"){
@@ -905,7 +905,7 @@ function dpsBreakdown(){
   // damage mitigated — Captain's Mig-driven half counts toward armor absorption, Will-driven half bypasses
   const captPhysRawGlobal=(M.captain.grievous||M.captain.stunned||M.captain.broken)?0:M.captain.mig*0.3*(windows.dawn>0?1.5:1);
   const captMagicRawGlobal=(M.captain.grievous||M.captain.stunned||M.captain.broken)?0:M.captain.wil*0.2*(windows.dawn>0?1.5:1);
-  const physMitTotal=(rawBy.warden+rawBy.hunter+captPhysRawGlobal)*physAfter*(1-layerADrag);
+  const physMitTotal=(rawBy.warden+rawBy.fighter+captPhysRawGlobal)*physAfter*(1-layerADrag);
   const magicDmg=rawBy.keeper*(1-layerADrag)+captMagicRawGlobal*(1-layerADrag);
   // Red Dawn boost this tick: when active, raw was already multiplied by 1.5; delta = raw/1.5 * 0.5
   const dawnBoost=windows.dawn>0 ? (raw/1.5)*0.5 : 0;
@@ -1033,22 +1033,22 @@ function stepOnce(){
     log(`&#10022; WRATH, RUIN, AND THE RED DAWN — ${M.captain.tpl.name} cries: 'Now for wrath, now for ruin, and the red dawn!' (all Inspirations boosted)`,"insp");events.push({t,kind:"Wrath, Ruin, and the Red Dawn",who:M.captain.tpl.name});}
   prevTrouble=nowTrouble;
   const bd=dpsBreakdown();let boss=window._boss;const _jit=(+($("jitter")||{value:10}).value)/100;if(!P.unkill)boss=Math.max(0,boss-bd.eff*(1+(Math.random()*2-1)*_jit));window._boss=boss;
-  if(!baFired&&!M.hunter.grievous&&!M.hunter.stunned&&!M.hunter.broken&&M.hunter.hp>0){const elapsed=t/maxT;const ttk=bd.eff>0?boss/bd.eff:1e9;const trem=maxT-t;
+  if(!baFired&&!M.fighter.grievous&&!M.fighter.stunned&&!M.fighter.broken&&M.fighter.hp>0){const elapsed=t/maxT;const ttk=bd.eff>0?boss/bd.eff:1e9;const trem=maxT-t;
     const losing=P.unkill?(elapsed>0.5):(ttk>trem&&elapsed>0.4);
     if(losing){const rise=Math.min(P.blackArrowCap,(elapsed-0.4)*P.blackArrowCap*2.5);
-      if(inspRoll(rise+M.hunter.fat*0.003,inspBoost)){baFired=true;
-        if(P.unkill){maxT-=Math.round(P.duration*0.15);log(`&#10022; BLACK ARROW — ${M.hunter.tpl.name} looses a flaming arrow — the terror recoils, the clock shortens`,"insp");events.push({t,kind:"Black Arrow (flaming)",who:M.hunter.tpl.name});}
-        else{boss=Math.max(0,boss-P.boss*0.18);window._boss=boss;log(`&#10022; BLACK ARROW — ${M.hunter.tpl.name} draws the Black Arrow — go now, and speed well!`,"insp");events.push({t,kind:"Black Arrow",who:M.hunter.tpl.name});}}}}
+      if(inspRoll(rise+M.fighter.fat*0.003,inspBoost)){baFired=true;
+        if(P.unkill){maxT-=Math.round(P.duration*0.15);log(`&#10022; BLACK ARROW — ${M.fighter.tpl.name} looses a flaming arrow — the terror recoils, the clock shortens`,"insp");events.push({t,kind:"Black Arrow (flaming)",who:M.fighter.tpl.name});}
+        else{boss=Math.max(0,boss-P.boss*0.18);window._boss=boss;log(`&#10022; BLACK ARROW — ${M.fighter.tpl.name} draws the Black Arrow — go now, and speed well!`,"insp");events.push({t,kind:"Black Arrow",who:M.fighter.tpl.name});}}}}
   // record time-series frame
   const incoming=P.drain+P.spike/P.spikeiv;
   series.push({t,boss:boss,dps:bd.eff,raw:bd.raw,penSaved:bd.penSaved,willSaved:bd.willSaved,hopeSaved:bd.hopeSaved,layerADrag:bd.layerADrag||0,sustain:sustain(),incoming,
-    effBy:{warden:bd.effBy.warden,hunter:bd.effBy.hunter,keeper:bd.effBy.keeper,captain:bd.effBy.captain,captain_phys:bd.effBy.captain_phys||0,captain_magic:bd.effBy.captain_magic||0},
+    effBy:{warden:bd.effBy.warden,fighter:bd.effBy.fighter,keeper:bd.effBy.keeper,captain:bd.effBy.captain,captain_phys:bd.effBy.captain_phys||0,captain_magic:bd.effBy.captain_magic||0},
     physMitTotal:bd.physMitTotal||0, magicDmg:bd.magicDmg||0, dawnBoost:bd.dawnBoost||0, healBy:{keeper:tickHeal},
     spirit:{wil:ORDER.reduce((a,k)=>a+(M[k].grievous?0:M[k].wil),0),fat:ORDER.reduce((a,k)=>a+(M[k].grievous?0:M[k].fat),0)},
     spiritBase:{wil:ORDER.reduce((a,k)=>a+M[k].wilBase,0),fat:ORDER.reduce((a,k)=>a+M[k].fatBase,0)},
-    morale:{warden:Math.max(0,M.warden.hp),hunter:Math.max(0,M.hunter.hp),keeper:Math.max(0,M.keeper.hp),captain:Math.max(0,M.captain.hp)},
-    maxmorale:{warden:M.warden.max,hunter:M.hunter.max,keeper:M.keeper.max,captain:M.captain.max},
-    wounds:{warden:M.warden.wounds+(M.warden.grievous?GRIEVOUS:0),hunter:M.hunter.wounds+(M.hunter.grievous?GRIEVOUS:0),keeper:M.keeper.wounds+(M.keeper.grievous?GRIEVOUS:0),captain:M.captain.wounds+(M.captain.grievous?GRIEVOUS:0)}});
+    morale:{warden:Math.max(0,M.warden.hp),fighter:Math.max(0,M.fighter.hp),keeper:Math.max(0,M.keeper.hp),captain:Math.max(0,M.captain.hp)},
+    maxmorale:{warden:M.warden.max,fighter:M.fighter.max,keeper:M.keeper.max,captain:M.captain.max},
+    wounds:{warden:M.warden.wounds+(M.warden.grievous?GRIEVOUS:0),fighter:M.fighter.wounds+(M.fighter.grievous?GRIEVOUS:0),keeper:M.keeper.wounds+(M.keeper.grievous?GRIEVOUS:0),captain:M.captain.wounds+(M.captain.grievous?GRIEVOUS:0)}});
   updLive(bd,boss,incoming);
   // VICTORY needs only the kill landed by whoever is still standing — grievous casualties are survivable, the band just needs healing time after.
   if(!P.unkill&&boss<=0){finish("VICTORY","v-victory");return true;}
@@ -1113,7 +1113,7 @@ function prep(){buildParty();$("log").innerHTML="";t=0;P=curParams();maxT=P.dura
   const incoming=drain+spike/iv;
   const margin=sus-incoming;
   log(P.unkill?`The band sets itself against a terror that cannot be slain — endure for ${fmtT(maxT)}.`:`The band draws weapons. The enemy host holds ${Math.round(P.boss)} resolve.`,"");
-  log(`Provisions: Warden ${foodOf("warden")}/s · Hunter ${foodOf("hunter")}/s · Keeper ${foodOf("keeper")}/s · Captain ${foodOf("captain")}/s → ${Math.round(sus)}/s total sustain`,"");
+  log(`Provisions: Warden ${foodOf("warden")}/s · Fighter ${foodOf("fighter")}/s · Keeper ${foodOf("keeper")}/s · Captain ${foodOf("captain")}/s → ${Math.round(sus)}/s total sustain`,"");
   if(drain>0||spike>0){
     let pressStr=`Pressure: `;
     if(drain>0)pressStr+=`steady drain ${drain}/s (${Math.round(drain/4)}/s per member, independent)`;
@@ -1242,11 +1242,11 @@ function renderResults(){
 
   // Morale over time (line chart)
   const mMax=Math.max(...ORDER.map(k=>series[0].maxmorale[k]));
-  lineChart("ch_morale","lg_morale",ORDER.map(k=>({name:M[k].tpl.name+" ("+M[k].role+")",color:TPL[k==="hunter"?"hunterA":k].color,pts:series.map(s=>({x:s.t,y:s.morale[k]})),fmt:v=>Math.round(v)})),xmax,mMax,{});
+  lineChart("ch_morale","lg_morale",ORDER.map(k=>({name:M[k].tpl.name+" ("+M[k].role+")",color:TPL[k==="fighter"?"fighterA":k].color,pts:series.map(s=>({x:s.t,y:s.morale[k]})),fmt:v=>Math.round(v)})),xmax,mMax,{});
 
   // DPS per character — MMO bar meter
   meterChart("ch_dpschar",[
-    {name:"Mira (Hunter)",     color:"#c0392b", value:avgBy("hunter")},
+    {name:"Mira (Fighter)",     color:"#c0392b", value:avgBy("fighter")},
     {name:"Borin (Warden)",    color:"#2e6da4", value:avgBy("warden")},
     {name:"Cael (Keeper)",     color:"#7d5a93", value:avgBy("keeper")},
     {name:"Aelindra (Capt.)", color:"#b8843c", value:avgBy("captain")},
@@ -1277,7 +1277,7 @@ function renderResults(){
   // Damage dealt to enemy by type — pie chart
   const avgCaptPhys=series.reduce((s,f)=>s+(f.effBy?f.effBy.captain_phys||0:0),0)/series.length;
   const avgCaptMagic=series.reduce((s,f)=>s+(f.effBy?f.effBy.captain_magic||0:0),0)/series.length;
-  const physDps=avgBy("warden")+avgBy("hunter")+avgCaptPhys;
+  const physDps=avgBy("warden")+avgBy("fighter")+avgCaptPhys;
   const magicDps=avgBy("keeper")+avgCaptMagic;
   pieChart("ch_damagetype","lg_damagetype",[
     {name:"Physical", color:"#c0392b", value:physDps},
@@ -1311,7 +1311,7 @@ function renderResults(){
   }
 
   // Wounds accumulated (line chart)
-  lineChart("ch_wounds","lg_wounds",ORDER.map(k=>({name:M[k].tpl.name,color:TPL[k==="hunter"?"hunterA":k].color,pts:series.map(s=>({x:s.t,y:s.wounds[k]})),fmt:v=>Math.round(v)+" wounds"})),xmax,GRIEVOUS,{yfmt:v=>Math.round(v)});
+  lineChart("ch_wounds","lg_wounds",ORDER.map(k=>({name:M[k].tpl.name,color:TPL[k==="fighter"?"fighterA":k].color,pts:series.map(s=>({x:s.t,y:s.wounds[k]})),fmt:v=>Math.round(v)+" wounds"})),xmax,GRIEVOUS,{yfmt:v=>Math.round(v)});
 
   // Shadow spirit drain (line chart, conditional)
   const sawShadow=series.some(s=>s.spirit.wil<s.spiritBase.wil-0.5||s.spirit.fat<s.spiritBase.fat-0.5);
@@ -1330,7 +1330,7 @@ function renderResults(){
   if(spikesTotal>0){
     meterChart("ch_fatespike",ORDER.map(k=>({
       name:M[k].tpl.name+" ("+M[k].tpl.role+")",
-      color:TPL[k==="hunter"?"hunterA":k].color,
+      color:TPL[k==="fighter"?"fighterA":k].color,
       value:M[k].fatEvades
     })),"slipped",`Total spikes: ${spikesTotal}`);
   } else {
@@ -1343,7 +1343,7 @@ function renderResults(){
       {name:"Laurelin’s Grace", k:"keeper",  base:P.graceBase,      color:"#7d5a93", fired:events.some(e=>e.kind==="Laurelin's Grace")},
       {name:"Horn of Gondor",        k:"warden",  base:P.hornBase,       color:"#2e6da4", fired:!!fired.horn},
       {name:"Red Dawn",              k:"captain", base:P.dawnBase,       color:"#b8843c", fired:!!fired.dawn},
-      {name:"Black Arrow (peak)",    k:"hunter",  base:P.blackArrowCap,  color:"#c0392b", fired:baFired},
+      {name:"Black Arrow (peak)",    k:"fighter",  base:P.blackArrowCap,  color:"#c0392b", fired:baFired},
     ];
     let html='<div class="meter-list">';
     inspDefs.forEach(d=>{
@@ -1411,7 +1411,7 @@ function batchRunOne(hps, P_in) {
       const m = members[k];
       if (m.grievous || m.hp <= 0 || m.stunned || m.broken) return;
       if (k === 'keeper') { if (m.action !== 'burst') raw += m.wil * 0.9; }
-      else if (k === 'hunter') raw += m.agi + m.mig * 0.4;
+      else if (k === 'fighter') raw += m.agi + m.mig * 0.4;
       else if (k === 'warden') raw += m.mig * 0.5;
       else if (k === 'captain') raw += m.mig * 0.3 + m.wil * 0.2;
     });
@@ -1557,12 +1557,12 @@ function batchRunOne(hps, P_in) {
     if (!P.unkill) boss = Math.max(0, boss - dps);
 
     // Black Arrow
-    if (!baFired && !members.hunter.grievous && !members.hunter.stunned && !members.hunter.broken && members.hunter.hp > 0) {
+    if (!baFired && !members.fighter.grievous && !members.fighter.stunned && !members.fighter.broken && members.fighter.hp > 0) {
       const elapsed = t / maxT, trem = maxT - t;
       const losing = P.unkill ? (elapsed > 0.5) : (dps > 0 ? (boss / dps > trem) : true) && elapsed > 0.4;
       if (losing) {
         const rise = Math.min(P.blackArrowCap || 0.06, (elapsed - 0.4) * (P.blackArrowCap || 0.06) * 2.5);
-        if (inspRollB(rise + members.hunter.fat * 0.003, inspBoost)) {
+        if (inspRollB(rise + members.fighter.fat * 0.003, inspBoost)) {
           baFired = true;
           if (P.unkill) maxT -= Math.round(P.duration * 0.15);
           else boss = Math.max(0, boss - P.boss * 0.18);
