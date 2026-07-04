@@ -59,6 +59,43 @@ already lists every wounded member (light/heavy/grievous alike) with a "Wounded"
 | 5+, no HoH recipe available yet (safety net) | Wounded (heavy), extended | 6 hours | **2 hours** — kept deliberately harsh as a real penalty for under-provisioning/poor band care, not a nudge toward HoH specifically (starting areas don't have any HoH recipe available at all, so this is the only consequence a new player faces for this outcome) |
 | 5+, HoH recipe available | Grievously wounded | — | unchanged, no auto-heal, HoH-only (§9.1) |
 
+**Full picture — wound types and compounding (grievous only, no change, reproduced here for
+completeness):** Light and heavy wounds are flat-duration, time-only — they never roll a
+wound type (§6.8: "time only, no food or prep involved"). Only grievous wounds (5+ downs,
+HoH available) roll one or more of five wound types, each with its own base floor duration,
+and multiple types on the same member sum into a single combined timer. This is entirely
+pre-existing design from `docs/superpowers/specs/2026-07-02-hoh-mechanics-design.md` §2 —
+not a new mechanic, included here so this spec is a complete reference for wound recovery
+across all three severities.
+
+| Wound type | Typical sources | Base floor duration |
+|---|---|---|
+| Physical | Any combat grievous wound | 4h |
+| Will | Barrow-wights, wraith-adjacent enemies, Old Forest | 3h |
+| Corruption | Cargul, Nazgûl, Morgul weapons | 6h |
+| Poison | Orcs, spiders, venomous creatures | 4h |
+| Disease/Wasting | Dark places, cursed wounds, lingering illness | 5h |
+
+Stacking example — combined (uncured) floor durations when multiple types resolve on the
+same grievous wound:
+
+| Wound types present | Combined floor (uncured) |
+|---|---|
+| Physical only | 4h |
+| Physical + Will | 7h |
+| Physical + Corruption | 10h |
+| Physical + Poison | 8h |
+| Physical + Disease | 9h |
+| Physical + Will + Corruption | 13h |
+| Physical + Corruption + Poison | 14h |
+| Physical + Corruption + Disease | 15h |
+
+HoH treatment reduces this combined timer based on preparation grade and whether it's a
+single-type or compound recipe (full grade-to-timer tables and the elapsed-time-credit rule
+for partial treatment are in the HoH mechanics spec, not repeated here). None of this
+changes as part of this spec — Section B's actual work is only the light/heavy duration
+fix and the HoH-tab countdown display above.
+
 **UI fix (`HouseOfHealingScreen.kt`):**
 - For `woundStatus == "wounded"` (light or heavy): remove the treat-options block entirely;
   show a live countdown instead, computed from `woundedSinceMs + woundedDurationMs - now`
