@@ -384,7 +384,9 @@ removed (04 Jul 2026 audit), taking their only readers/writers with them. The co
 exist (defaulting `false`, never touched) because dropping them requires a real Room
 migration in this project (explicit `Migration`s through v19, no destructive fallback), and
 that wasn't worth doing for two dead booleans in isolation. Batch dropping both columns into
-the next migration that already needs a schema version bump for something else.
+the next migration that already needs a schema version bump for something else. While in
+there, also delete `PlayerRepository.markHintsSeen()` and `markExperimentHintSeen()` —
+both are now dead code too (zero callers), left in place alongside the columns they write.
 
 ## Pantry access from more screens
 The Pantry button is now always visible in the Kitchen Recipes tab, but the player might want to check their pantry from other places (e.g. Missions screen when deciding what to cook, Band screen). Add a Pantry shortcut to at least one more logical access point in a future session.
