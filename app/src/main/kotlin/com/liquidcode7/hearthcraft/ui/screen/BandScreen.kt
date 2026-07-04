@@ -94,21 +94,6 @@ fun BandScreen(
             Spacer(modifier = Modifier.height(4.dp))
         }
 
-        val recoveringMembers = members.filter { it.isAlive && it.woundStatus == "wounded" }
-        if (recoveringMembers.isNotEmpty()) {
-            Spacer(modifier = Modifier.height(12.dp))
-            Text("Recovering", style = MaterialTheme.typography.titleSmall)
-            Spacer(modifier = Modifier.height(8.dp))
-            recoveringMembers.forEach { member ->
-                WoundRecoveryRow(
-                    name = member.name,
-                    woundedSinceMs = member.woundedSinceMs,
-                    woundedDurationMs = member.woundedDurationMs
-                )
-                Spacer(modifier = Modifier.height(6.dp))
-            }
-        }
-
         if (!hasAliveMembers) {
             Spacer(modifier = Modifier.height(16.dp))
             Card(
@@ -292,35 +277,6 @@ private fun MissionActiveCard(missionName: String, startedAtMs: Long, durationMs
                 "remaining",
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onPrimaryContainer
-            )
-        }
-    }
-}
-
-@Composable
-private fun WoundRecoveryRow(name: String, woundedSinceMs: Long, woundedDurationMs: Long) {
-    var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
-    LaunchedEffect(woundedSinceMs) {
-        while (true) {
-            now = System.currentTimeMillis()
-            delay(1000L)
-        }
-    }
-    val remainingMs = maxOf(0L, woundedSinceMs + woundedDurationMs - now)
-    Card(modifier = Modifier.fillMaxWidth()) {
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(10.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                "$name — Wounded",
-                style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier.weight(1f)
-            )
-            Text(
-                formatMs(remainingMs),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.primary
             )
         }
     }
