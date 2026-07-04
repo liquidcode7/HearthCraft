@@ -377,6 +377,15 @@ Full Battlegrounds design: `design/battlegrounds.md` and `design/battlegrounds-r
 - **Hive label rename** — current "Plant" button on the hive slot reads oddly
   (Plant a hive?). Rename to "Tend" or "Start" in a future polish pass.
 
+## Dead PlayerState columns to drop on the next schema bump
+`hasSeenExperimentHint` and `hasSeenFoodStructureHints` on `PlayerState` are now unused
+dead columns — the Discover-tab experiment mechanic and its `FoodHintsCard` hint were both
+removed (04 Jul 2026 audit), taking their only readers/writers with them. The columns still
+exist (defaulting `false`, never touched) because dropping them requires a real Room
+migration in this project (explicit `Migration`s through v19, no destructive fallback), and
+that wasn't worth doing for two dead booleans in isolation. Batch dropping both columns into
+the next migration that already needs a schema version bump for something else.
+
 ## Pantry access from more screens
 The Pantry button is now always visible in the Kitchen Recipes tab, but the player might want to check their pantry from other places (e.g. Missions screen when deciding what to cook, Band screen). Add a Pantry shortcut to at least one more logical access point in a future session.
 
