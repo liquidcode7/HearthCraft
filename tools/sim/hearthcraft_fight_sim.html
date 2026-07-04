@@ -854,6 +854,360 @@ function dpsBreakdown(){
     penSaved:Math.max(0,eff-effNoPen), willSaved:Math.max(0,eff-effNoWill), hopeSaved:Math.max(0,eff-effNoHope),
     potency, effBy, physMitTotal:Math.max(0,physMitTotal), magicDmg:Math.max(0,magicDmg), dawnBoost};
 }
+
+// ── Streak + Keeper-heal constants (ported verbatim from run_sim.js — must match) ──
+const HOT_DURATION    = 8;    // ticks per HoT application
+const HOT_HEAL_MUL    = 0.15; // healPerTick = keeper.wil * HOT_HEAL_MUL
+const TRIAGE_HP       = 0.25; // triage fires when target hp < max * TRIAGE_HP
+const TRIAGE_MUL      = 2.0;  // triageHeal = keeper.wil * TRIAGE_MUL
+const TRIAGE_COOLDOWN = 2;    // ticks between triage uses
+const GROUP_HEAL_IV   = 20;   // ticks between group heals
+const GROUP_HEAL_MUL  = 0.5;  // groupHeal per member = keeper.wil * GROUP_HEAL_MUL
+const STREAK_K          = 0.002; // trigger prob per eligible tick = fat * STREAK_K
+const STREAK_REFRACTORY = 20;    // ticks before streak can re-trigger
+const STREAK_DURATION   = 5;     // streak active ticks
+const STREAK_MULT       = 1.5;   // DPS/heal multiplier during streak
+
+// ── Shared fight engine (DOM-free) — ported from run_sim.js's runFight() ──
+// cfg: { lvl, roster:{warden,fighter,keeper,captain} TPL objects, duration, boss,
+//        drain, spike, spikeiv, phys, dread, hope, shadow, radiance, disease, hale,
+//        cold, warmth, heat, heatease, wake, alert, burstmul, potency,
+//        graceBase, hornBase, dawnBase, blackArrowCap, memberFoodBonuses:{k:{mig,agi,vit,wil,fat}} }
+function createFightState(cfg) {
+  const lvl = cfg.lvl;
+  const M = {};
+  ORDER.forEach(k => {
+    const tpl = cfg.roster[k];
+    const sb = (cfg.memberFoodBonuses && cfg.memberFoodBonuses[k]) || {};
+    const bvit = sb.vit || 0;
+    const max = Math.round(30 + (stat(tpl,"vit",lvl) + bvit) * 16);
+    M[k] = {
+      key:k, tpl, role:tpl.role, cls:tpl.cls, soak:tpl.soak, color:tpl.color,
+      max, hp:max, wounds:0, grievous:false, atZero:false, stunned:false, stunTicks:0,
+      broken:false, horn:false, action:"",
+      mig:stat(tpl,"mig",lvl)+(sb.mig||0), agi:stat(tpl,"agi",lvl)+(sb.agi||0),
+      vit:stat(tpl,"vit",lvl)+bvit, wil:stat(tpl,"wil",lvl)+(sb.wil||0), fat:stat(tpl,"fat",lvl)+(sb.fat||0),
+      wilBase:stat(tpl,"wil",lvl)+(sb.wil||0), fatBase:stat(tpl,"fat",lvl)+(sb.fat||0), shDrain:0,
+      fatEvades:0
+    };
+  });
+  return {
+    cfg, M,
+    streak: Object.fromEntries(ORDER.map(k=>[k,{refractory:0,active:0}])),
+    hot1:null, hot2:null, triageCooldown:0, groupHealTimer:GROUP_HEAL_IV,
+    t:0, boss:cfg.boss, maxT:cfg.duration,
+    keeperDealtDps:true, rescuesUsed:0, wardsUsed:0, inspBoost:0, baFired:false,
+    nextSpikeAt: Math.round(cfg.spikeiv*(0.5+Math.random())),
+    fired:{}, windows:{dawn:0,horn:0}, events:[], prevTrouble:0, spikesTotal:0,
+    outcome:null, done:false,
+    // metrics (Task: sim metrics overhaul — observation only, no effect on simulation)
+    dmgByMember:{warden:0,fighter:0,keeper:0,captain:0},
+    healByType:{hot:0,triage:0,group:0,rescue:0},
+    streakCount:{warden:0,fighter:0,keeper:0,captain:0},
+    streakBonusDmg:0, streakBonusHeal:0, hotActiveTicks:0,
+    inspGraceHeal:0, inspHornRedirect:0, inspDawnHeal:0, inspDawnBonusDps:0, inspBlackArrowAmount:0
+  };
+}
+
+function fightActive(S)   { return ORDER.filter(k => !S.M[k].grievous && !S.M[k].broken); }
+function fightStanding(S) { return fightActive(S).filter(k => S.M[k].hp > 0); }
+function fightInTrouble(S){ return fightActive(S).filter(k => S.M[k].hp / S.M[k].max < 0.35).length; }
+function fightInspRoll(base, boost) { return Math.random() < (base + boost); }
+
+// Mirrors run_sim.js's dpsBreakdown() exactly, reading from a FightState instead of closures.
+function fightDpsBreakdown(S) {
+  const cfg = S.cfg;
+  if (cfg.unkill) return { raw:0, eff:0, physAfter:0, layerADrag:0, rawBy:{warden:0,fighter:0,keeper:0,captain:0}, streakBonus:0, dawnBonus:0 };
+  let raw = 0, streakBonus = 0;
+  const rawBy = { warden:0, fighter:0, keeper:0, captain:0 };
+  ORDER.forEach(k => {
+    const m = S.M[k];
+    if (m.grievous || m.hp <= 0 || m.stunned || m.broken) return;
+    const isStreaking = S.streak[k] && S.streak[k].active > 0;
+    const mult = isStreaking ? STREAK_MULT : 1;
+    let base = 0;
+    if (k==="keeper")        { if (S.keeperDealtDps) base = m.wil * 0.9; }
+    else if (k==="fighter")  base = m.agi + m.mig * 0.4;
+    else if (k==="warden")   base = m.mig * 0.5;
+    else if (k==="captain")  base = m.mig * 0.3 + m.wil * 0.2;
+    const contribution = base * mult;
+    rawBy[k] += contribution; raw += contribution;
+    if (isStreaking) streakBonus += base * (STREAK_MULT - 1);
+  });
+  let dawnBonus = 0;
+  if (S.windows.dawn > 0) {
+    dawnBonus = raw * 0.5;
+    raw *= 1.5; streakBonus *= 1.5;
+    ORDER.forEach(k => { rawBy[k] *= 1.5; });
+  }
+  const potency = cfg.potency || 0;
+  const physAfter = Math.max(0, cfg.phys * (1 - Math.min(1, potency/PEN_SCALE)));
+  const capWil = (!S.M.captain.grievous && !S.M.captain.stunned) ? S.M.captain.wil : 0;
+  const willCut = Math.min(1, capWil/100), hopeCut = Math.min(1, (cfg.hope||0)/100);
+  const effectiveDread = cfg.dread * (1 - Math.min(1, willCut + hopeCut));
+  const layerADrag = Math.min(1, effectiveDread * DREAD_VAR_COEF + cfg.dread * DREAD_FLOOR_COEF);
+  const eff = Math.max(0, raw * (1-physAfter) * (1-layerADrag));
+  return { raw, eff, physAfter, layerADrag, rawBy, streakBonus, dawnBonus };
+}
+
+// Advances S by exactly one tick. Returns { done, outcome, logLines }.
+// logLines is an array of narrative strings for this tick only (empty most ticks) —
+// the caller (Live tab, Task 4) is responsible for displaying them; this function
+// never touches the DOM.
+function fightTick(S) {
+  S.t++;
+  const logLines = [];
+  const cfg = S.cfg;
+
+  // Keeper HoT ticks
+  if (!S.M.keeper.grievous && S.M.keeper.hp > 0 && !S.M.keeper.stunned) {
+    const keepStreak = S.streak.keeper;
+    const healMult = (keepStreak && keepStreak.active > 0) ? STREAK_MULT : 1;
+    if (S.hot1 || S.hot2) S.hotActiveTicks++;
+    for (const hot of [S.hot1, S.hot2].filter(Boolean)) {
+      const tgt = S.M[hot.targetKey];
+      if (tgt && !tgt.grievous) {
+        const healAmt = hot.healPerTick * healMult;
+        tgt.hp = Math.min(tgt.max, tgt.hp + healAmt);
+        S.healByType.hot += healAmt;
+        if (healMult > 1) S.streakBonusHeal += hot.healPerTick * (STREAK_MULT - 1);
+      }
+      hot.ticksLeft--;
+    }
+    if (S.hot1 && S.hot1.ticksLeft <= 0) S.hot1 = null;
+    if (S.hot2 && S.hot2.ticksLeft <= 0) S.hot2 = null;
+  }
+  if (S.windows.dawn > 0) S.windows.dawn--;
+  if (S.windows.horn > 0) { S.windows.horn--; if (S.windows.horn === 0) S.M.warden.horn = false; }
+  if (cfg.dread > 0) {
+    ORDER.forEach(k => {
+      if (S.M[k].stunned) {
+        S.M[k].stunTicks--;
+        if (S.M[k].stunTicks <= 0) { S.M[k].stunned = false; S.M[k].stunTicks = 0; logLines.push(`${S.M[k].tpl.name} shakes free`); }
+      }
+    });
+  }
+
+  const act = fightActive(S);
+  const live = fightStanding(S);
+
+  // Streak updates
+  act.forEach(k => {
+    const s = S.streak[k];
+    if (S.M[k].grievous || S.M[k].broken || S.M[k].stunned) return;
+    if (s.active > 0) { s.active--; }
+    else if (s.refractory > 0) { s.refractory--; }
+    else if (Math.random() < S.M[k].fat * STREAK_K) {
+      s.active = STREAK_DURATION; s.refractory = STREAK_REFRACTORY;
+      S.streakCount[k]++;
+      logLines.push(`★ STREAK — ${S.M[k].tpl.name}`);
+    }
+  });
+
+  // Keeper action
+  S.keeperDealtDps = true;
+  S.M.keeper.action = "damage";
+  if (!S.M.keeper.grievous && S.M.keeper.hp > 0 && !S.M.keeper.stunned) {
+    const healPerTick = S.M.keeper.wil * HOT_HEAL_MUL;
+    const keepStreakAct = S.streak.keeper;
+    const healMult = (keepStreakAct && keepStreakAct.active > 0) ? STREAK_MULT : 1;
+    if (S.triageCooldown > 0) S.triageCooldown--;
+    S.groupHealTimer--;
+    let actionTaken = false;
+    if (S.groupHealTimer <= 0) {
+      const groupHeal = S.M.keeper.wil * GROUP_HEAL_MUL * healMult;
+      live.forEach(k => { S.M[k].hp = Math.min(S.M[k].max, S.M[k].hp + groupHeal); });
+      S.healByType.group += groupHeal * live.length;
+      if (healMult > 1) S.streakBonusHeal += (S.M.keeper.wil * GROUP_HEAL_MUL) * (STREAK_MULT - 1) * live.length;
+      S.groupHealTimer = GROUP_HEAL_IV;
+      actionTaken = true;
+      logLines.push(`Cael group heal +${Math.round(groupHeal)} to all`);
+    } else {
+      const triageTarget = live.filter(k => k !== "keeper").find(k => S.M[k].hp / S.M[k].max < TRIAGE_HP);
+      if (triageTarget && S.triageCooldown === 0) {
+        const triageHeal = S.M.keeper.wil * TRIAGE_MUL * healMult;
+        S.M[triageTarget].hp = Math.min(S.M[triageTarget].max, S.M[triageTarget].hp + triageHeal);
+        S.healByType.triage += triageHeal;
+        if (healMult > 1) S.streakBonusHeal += (S.M.keeper.wil * TRIAGE_MUL) * (STREAK_MULT - 1);
+        S.triageCooldown = TRIAGE_COOLDOWN;
+        actionTaken = true;
+        logLines.push(`Cael triage → ${S.M[triageTarget].tpl.name} +${Math.round(triageHeal)}`);
+      } else {
+        if (!S.hot1 || !S.hot2) {
+          const covered = new Set([S.hot1?.targetKey, S.hot2?.targetKey].filter(Boolean));
+          const hotTarget = live.filter(k => !covered.has(k)).sort((a,b) => (S.M[a].hp/S.M[a].max) - (S.M[b].hp/S.M[b].max))[0];
+          if (hotTarget) {
+            const newHot = { targetKey: hotTarget, ticksLeft: HOT_DURATION, healPerTick };
+            if (!S.hot1) S.hot1 = newHot; else S.hot2 = newHot;
+            logLines.push(`Cael applies HoT → ${S.M[hotTarget].tpl.name}`);
+          }
+        }
+      }
+    }
+    S.keeperDealtDps = !actionTaken;
+    S.M.keeper.action = actionTaken ? "burst" : "damage";
+  }
+
+  // Rescue burst
+  if (!S.M.keeper.grievous && S.M.keeper.hp > 0 && !S.M.keeper.stunned && S.rescuesUsed < RESCUE_CAP) {
+    let rescue = null;
+    for (const k of ORDER) { if (k === "keeper" || S.M[k].grievous) continue; if (S.M[k].hp <= 0) { rescue = k; break; } }
+    if (rescue) {
+      const burst = (40 + S.M.keeper.wil * 4) * (cfg.burstmul || 1);
+      S.M[rescue].hp = Math.min(S.M[rescue].max, Math.max(S.M[rescue].hp, 0) + burst);
+      S.healByType.rescue += burst;
+      S.rescuesUsed++;
+      S.M.keeper.action = "burst";
+      logLines.push(`Cael bursts ${S.M[rescue].tpl.name} (+${Math.round(burst)}) rescue ${S.rescuesUsed}/${RESCUE_CAP}`);
+    }
+  }
+
+  // Steady drain
+  if (live.length) { live.forEach(k => { S.M[k].hp -= cfg.drain / 4; }); }
+
+  // Global spike (one per interval, hits one random standing member; Horn redirects to Warden)
+  if (cfg.spike > 0 && S.t >= S.nextSpikeAt) {
+    S.nextSpikeAt = S.t + Math.round(cfg.spikeiv * (0.5 + Math.random()));
+    const spikeRoll = cfg.spike * (0.7 + Math.random() * 0.6);
+    let target = null, hornRedirected = false;
+    if (S.windows.horn > 0 && !S.M.warden.grievous && S.M.warden.hp > 0) { target = "warden"; hornRedirected = true; }
+    else {
+      target = live.length ? live[Math.floor(Math.random() * live.length)] : null;
+      if (target === "keeper" && (S.M.keeper.hp - spikeRoll) <= 0 && S.M.warden.hp > 0 && !S.M.warden.grievous && S.wardsUsed < WARD_CAP) {
+        target = "warden"; S.wardsUsed++;
+        logLines.push(`${S.M.warden.tpl.name} guards Cael from a killing blow (guard ${S.wardsUsed}/${WARD_CAP})`);
+      }
+    }
+    if (target) {
+      S.spikesTotal++;
+      if (Math.random() < S.M[target].fat * 0.004) {
+        S.M[target].fatEvades++;
+        logLines.push(`${S.M[target].tpl.name} slips the blow — Fate ${Math.round(S.M[target].fat)} (near miss)`);
+      } else {
+        S.M[target].hp -= spikeRoll;
+        if (hornRedirected && target === "warden") S.inspHornRedirect += spikeRoll;
+        logLines.push(`a blow strikes ${S.M[target].tpl.name} (${Math.round(spikeRoll)})`);
+      }
+    }
+  }
+
+  // Shadow drain
+  if (cfg.shadow > 0) {
+    const deepFloor = Math.max(0.25, SHADOW_FLOOR - (cfg.shadow/100)*0.30);
+    const floor = deepFloor + (1-deepFloor)*Math.min(1, (cfg.radiance||0)/100);
+    const dr = cfg.shadow * SHADOW_RATE;
+    ORDER.forEach(k => {
+      if (S.M[k].grievous) return;
+      S.M[k].wil = Math.max(S.M[k].wilBase*floor, S.M[k].wil-dr);
+      S.M[k].fat = Math.max(S.M[k].fatBase*floor, S.M[k].fat-dr);
+      S.M[k].shDrain = (S.M[k].wilBase-S.M[k].wil)+(S.M[k].fatBase-S.M[k].fat);
+    });
+  }
+
+  // Simple hazard drain
+  { const haz=[["disease","hale"],["cold","warmth"],["heat","heatease"],["wake","alert"]];
+    let extra=0; haz.forEach(([hz,an])=>{ const str=cfg[hz]||0; if(str>0) extra+=(str*0.08)*(1-Math.min(1,(cfg[an]||0)/100)); });
+    if(extra>0) act.forEach(k=>{ S.M[k].hp -= extra/act.length; }); }
+
+  // Dread Layer B
+  if (cfg.dread > 0 && S.t % BREAK_CHECK_INTERVAL === 0) {
+    const capWil = (!S.M.captain.grievous && !S.M.captain.stunned) ? S.M.captain.wil : 0;
+    const wCut = Math.min(1, capWil/100), hCut = Math.min(1, (cfg.hope||0)/100);
+    const neg = wCut + hCut;
+    const dreadPool = captW => { const pool = []; ORDER.forEach(k => { if (!S.M[k].grievous && !S.M[k].broken && !S.M[k].stunned && S.M[k].hp > 0) pool.push({k, w: k==="captain" ? captW : 1}); }); return pool; };
+    const dreadPick = pool => { const tot = pool.reduce((s,p) => s+p.w, 0); if (!tot) return null; let r = Math.random() * tot; for (const p of pool) { r -= p.w; if (r <= 0) return p.k; } return pool[pool.length-1]?.k || null; };
+    if (neg < T_TEMP) { const tgt = dreadPick(dreadPool(CAPTAIN_STUN_WEIGHT)); if (tgt) { S.M[tgt].stunned = true; S.M[tgt].stunTicks = STUN_TICKS; logLines.push(`${S.M[tgt].tpl.name} is seized by dread — action lost for ${STUN_TICKS} seconds`); S.events.push({t:S.t, kind:"dread-stun", who:S.M[tgt].tpl.name}); } }
+    if (neg < T_PERM) { const tgt = dreadPick(dreadPool(CAPTAIN_BREAK_WEIGHT)); if (tgt) { S.M[tgt].broken = true; logLines.push(`${S.M[tgt].tpl.name}'s courage fails — they are gone`); S.events.push({t:S.t, kind:"morale-break", who:S.M[tgt].tpl.name}); } }
+  }
+
+  // Wound / grievous checks
+  ORDER.forEach(k => {
+    if (S.M[k].grievous) return;
+    if (S.M[k].hp <= 0 && !S.M[k].atZero) {
+      S.M[k].atZero = true; S.M[k].wounds++;
+      logLines.push(`${S.M[k].tpl.name} hits zero — a wound (${S.M[k].wounds}/${GRIEVOUS})`);
+      if (S.M[k].wounds >= GRIEVOUS) {
+        if (!S.M.keeper.grievous && !S.M.keeper.stunned && S.M.keeper.hp>0 && fightInspRoll(Math.min(0.25, cfg.graceBase + S.M.keeper.fat*0.003), S.inspBoost)) {
+          const restored = S.M[k].max*0.4;
+          S.M[k].wounds=0; S.M[k].hp=Math.round(restored); S.M[k].atZero=false;
+          S.inspGraceHeal += restored;
+          logLines.push(`★ LAURELIN'S GRACE — ${S.M[k].tpl.name} pulled back`);
+          S.events.push({t:S.t, kind:"Laurelin's Grace", who:S.M[k].tpl.name});
+        } else {
+          S.M[k].grievous=true;
+          logLines.push(`${S.M[k].tpl.name} takes a GRIEVOUS wound — out of the fight`);
+          S.events.push({t:S.t, kind:"grievous", who:S.M[k].tpl.name});
+        }
+      }
+    }
+    if (S.M[k].hp > 5) S.M[k].atZero = false;
+  });
+
+  // Inspiration: Horn of Gondor
+  if (S.inspBoost > 0) S.inspBoost = Math.max(0, S.inspBoost - 0.005);
+  const nowTrouble = fightInTrouble(S);
+  const crisisEdge = nowTrouble >= 2 && S.prevTrouble < 2;
+  if (!S.fired.horn && crisisEdge && !S.M.warden.grievous && !S.M.warden.stunned && !S.M.warden.broken && S.M.warden.hp>0 && fightInspRoll(Math.min(0.25, cfg.hornBase + S.M.warden.fat*0.003), S.inspBoost)) {
+    S.fired.horn=true; S.windows.horn=8; S.M.warden.horn=true;
+    logLines.push(`★ THE HORN OF GONDOR — ${S.M.warden.tpl.name}`);
+    S.events.push({t:S.t, kind:"The Horn of Gondor", who:S.M.warden.tpl.name});
+  }
+
+  // Inspiration: Wrath, Ruin, and the Red Dawn
+  if (!S.fired.dawn && crisisEdge && !S.M.captain.grievous && !S.M.captain.stunned && !S.M.captain.broken && S.M.captain.hp>0 && fightInspRoll(Math.min(0.25, cfg.dawnBase + S.M.captain.fat*0.003), 0)) {
+    S.fired.dawn=true; S.windows.dawn=10;
+    act.forEach(k => { const before = S.M[k].hp; S.M[k].hp = Math.min(S.M[k].max, S.M[k].hp + S.M[k].max*0.15); S.inspDawnHeal += (S.M[k].hp - before); });
+    S.inspBoost = 0.15;
+    logLines.push(`★ RED DAWN — ${S.M.captain.tpl.name}`);
+    S.events.push({t:S.t, kind:"Wrath, Ruin, and the Red Dawn", who:S.M.captain.tpl.name});
+  }
+  S.prevTrouble = nowTrouble;
+
+  // DPS tick
+  const bd = fightDpsBreakdown(S);
+  if (!cfg.unkill) {
+    const jitter = 0.10;
+    const jitterFactor = 1 + (Math.random()*2-1)*jitter;
+    const appliedDmg = bd.eff * jitterFactor;
+    S.boss = Math.max(0, S.boss - appliedDmg);
+    const mitFactor = (1-bd.physAfter) * (1-bd.layerADrag);
+    if (bd.raw > 0) { ORDER.forEach(k => { S.dmgByMember[k] += (bd.rawBy[k] / bd.raw) * appliedDmg; }); }
+    S.streakBonusDmg   += bd.streakBonus * mitFactor * jitterFactor;
+    S.inspDawnBonusDps += bd.dawnBonus   * mitFactor * jitterFactor;
+  }
+
+  // Inspiration: Black Arrow
+  if (!S.baFired && !S.M.fighter.grievous && !S.M.fighter.stunned && !S.M.fighter.broken && S.M.fighter.hp>0) {
+    const elapsed = S.t/S.maxT;
+    const ttk = bd.eff>0 ? S.boss/bd.eff : 1e9;
+    const trem = S.maxT-S.t;
+    const losing = cfg.unkill ? elapsed>0.5 : (ttk>trem && elapsed>0.4);
+    if (losing) {
+      const rise = Math.min(cfg.blackArrowCap, (elapsed-0.4)*cfg.blackArrowCap*2.5);
+      if (fightInspRoll(rise + S.M.fighter.fat*0.003, S.inspBoost)) {
+        S.baFired=true;
+        if (cfg.unkill) {
+          const cut = Math.round(cfg.duration*0.15);
+          S.maxT -= cut; S.inspBlackArrowAmount = cut;
+          logLines.push(`★ BLACK ARROW — ${S.M.fighter.tpl.name} looses a flaming arrow — the terror recoils, the clock shortens`);
+          S.events.push({t:S.t, kind:"Black Arrow (flaming)", who:S.M.fighter.tpl.name});
+        } else {
+          const burn = cfg.boss*0.18;
+          S.boss = Math.max(0, S.boss-burn); S.inspBlackArrowAmount = burn;
+          logLines.push(`★ BLACK ARROW — ${S.M.fighter.tpl.name} draws the Black Arrow — go now, and speed well!`);
+          S.events.push({t:S.t, kind:"Black Arrow", who:S.M.fighter.tpl.name});
+        }
+      }
+    }
+  }
+
+  // Termination
+  if (!cfg.unkill && S.boss <= 0) { S.outcome = "VICTORY"; S.done = true; }
+  else if (!ORDER.some(k => !S.M[k].grievous && !S.M[k].broken && S.M[k].hp>0)) { S.outcome = "DEFEAT"; S.done = true; }
+  else if (S.t >= S.maxT) { S.outcome = cfg.unkill ? "REPELLED" : "STALEMATE"; S.done = true; }
+
+  return { done: S.done, outcome: S.outcome, logLines };
+}
 function sustain(){let s=0;ORDER.forEach(k=>{if(!M[k].grievous)s+=foodOf(k);});return s;}
 function refreshRead(){buildParty();const drain=+$("drain").value,spike=+$("spike").value,iv=+$("spikeiv").value;
   const incoming=drain+spike/iv,sus=sustain();const sR=sus/Math.max(1,incoming);
