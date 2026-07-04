@@ -180,7 +180,10 @@ fun HomeScreen(
             Spacer(modifier = Modifier.height(20.dp))
             SectionLabel(activeBandName)
             Spacer(modifier = Modifier.height(8.dp))
-            Card(modifier = Modifier.fillMaxWidth()) {
+            Card(
+                onClick = { onNavigate("missions") },
+                modifier = Modifier.fillMaxWidth()
+            ) {
                 Column(modifier = Modifier.padding(12.dp)) {
                     val memberLine = when {
                         woundedCount > 0 -> "$aliveCount active · $woundedCount wounded"
