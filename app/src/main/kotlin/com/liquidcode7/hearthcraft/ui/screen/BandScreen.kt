@@ -36,55 +36,28 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.liquidcode7.hearthcraft.ui.viewmodel.BandMemberWithState
 import com.liquidcode7.hearthcraft.ui.viewmodel.BandViewModel
-import com.liquidcode7.hearthcraft.ui.viewmodel.EncounterDetail
-import com.liquidcode7.hearthcraft.ui.viewmodel.InventoryViewModel
-import com.liquidcode7.hearthcraft.ui.viewmodel.PreparedFoodDetail
 import com.liquidcode7.hearthcraft.ui.util.formatMs
 import kotlinx.coroutines.delay
 
 @Composable
 fun BandScreen(
-    bandViewModel: BandViewModel = hiltViewModel(),
-    inventoryViewModel: InventoryViewModel = hiltViewModel()
+    bandViewModel: BandViewModel = hiltViewModel()
 ) {
     val activeMission by bandViewModel.activeMission.collectAsState()
     val activeEncounterSession by bandViewModel.activeEncounterSession.collectAsState()
     val members by bandViewModel.members.collectAsState()
     val hasAliveMembers by bandViewModel.hasAliveMembers.collectAsState()
     val encounters by bandViewModel.encounters.collectAsState()
-    val preparedFood by inventoryViewModel.preparedFood.collectAsState()
     val viewingSecond by bandViewModel.viewingSecond.collectAsState()
     val isSecondBandUnlocked by bandViewModel.isSecondBandUnlocked.collectAsState()
     val firstBandId by bandViewModel.firstBandId.collectAsState()
     val secondBandId by bandViewModel.secondBandId.collectAsState()
     val availableBandsForUnlock by bandViewModel.availableBandsForUnlock.collectAsState()
-    val memberFood by bandViewModel.memberFood.collectAsState()
-    val selectedEncounter by bandViewModel.selectedEncounter.collectAsState()
-    val allAliveHealthy by bandViewModel.allAliveHealthy.collectAsState()
 
     var selectedMember by remember { mutableStateOf<BandMemberWithState?>(null) }
-    var showProvisioningDialog by remember { mutableStateOf(false) }
 
     selectedMember?.let { member ->
         MemberDetailDialog(member = member, onDismiss = { selectedMember = null })
-    }
-
-    if (showProvisioningDialog && selectedEncounter != null) {
-        ProvisioningDialog(
-            members      = members,
-            memberFood   = memberFood,
-            preparedFood = preparedFood,
-            onAssign     = { memberId, food -> bandViewModel.assignFoodToMember(memberId, food) },
-            onConfirm    = {
-                showProvisioningDialog = false
-                bandViewModel.sendOnEncounter()
-            },
-            onDismiss    = {
-                showProvisioningDialog = false
-                bandViewModel.clearMemberFood()
-                bandViewModel.selectEncounter(null)
-            }
-        )
     }
 
     Column(
@@ -162,35 +135,6 @@ fun BandScreen(
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onErrorContainer
                     )
-                }
-            }
-        } else if (activeMission == null && activeEncounterSession == null) {
-            val unlockedEncounters = encounters.filter { it.isUnlocked }
-            if (!allAliveHealthy) {
-                Spacer(modifier = Modifier.height(12.dp))
-                Text(
-                    "A band member is wounded. Wait for recovery before sending this band out again.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.error
-                )
-            } else if (unlockedEncounters.isEmpty()) {
-                Spacer(modifier = Modifier.height(12.dp))
-                Text(
-                    "No encounters available yet. Level up your band.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            } else {
-                Spacer(modifier = Modifier.height(16.dp))
-                unlockedEncounters.forEach { enc ->
-                    EncounterSendRow(
-                        encounter = enc,
-                        onSend = {
-                            bandViewModel.selectEncounter(enc)
-                            showProvisioningDialog = true
-                        }
-                    )
-                    Spacer(modifier = Modifier.height(6.dp))
                 }
             }
         }
@@ -488,159 +432,4 @@ private fun WoundRecoveryRow(name: String, woundedSinceMs: Long, woundedDuration
             )
         }
     }
-}
-
-@Composable
-private fun EncounterSendRow(encounter: EncounterDetail, onSend: () -> Unit) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-    ) {
-        Row(
-            modifier = Modifier.padding(10.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(encounter.name, style = MaterialTheme.typography.bodyMedium)
-                Text(
-                    encounter.flavorLine,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-            Spacer(modifier = Modifier.width(8.dp))
-            OutlinedButton(onClick = onSend) {
-                Text("Send")
-            }
-        }
-    }
-}
-
-@Composable
-private fun ProvisioningDialog(
-    members: List<BandMemberWithState>,
-    memberFood: Map<String, PreparedFoodDetail?>,
-    preparedFood: List<PreparedFoodDetail>,
-    onAssign: (memberId: String, food: PreparedFoodDetail?) -> Unit,
-    onConfirm: () -> Unit,
-    onDismiss: () -> Unit
-) {
-    var pickingFor by remember { mutableStateOf<String?>(null) }
-
-    if (pickingFor != null) {
-        FoodPickerDialog(
-            options   = preparedFood,
-            onSelect  = { food -> onAssign(pickingFor!!, food); pickingFor = null },
-            onDismiss = { pickingFor = null }
-        )
-    }
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Provision the band") },
-        text = {
-            Column {
-                members.filter { it.isAlive }.forEach { member ->
-                    val food = memberFood[member.memberId]
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(member.name, style = MaterialTheme.typography.bodyMedium)
-                            Text(
-                                member.role.replaceFirstChar { it.uppercase() },
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            if (food != null) {
-                                val statLine = buildString {
-                                    if (food.primaryStat != null) {
-                                        append("+${food.primaryBoost} ${food.primaryStat.uppercase()}")
-                                    }
-                                    if (food.secondaryStat != null) {
-                                        append("  +${food.secondaryBoost} ${food.secondaryStat.uppercase()}")
-                                    }
-                                }
-                                Text(
-                                    if (statLine.isNotEmpty()) "${food.name}  $statLine" else food.name,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.primary
-                                )
-                            }
-                        }
-                        TextButton(onClick = { pickingFor = member.memberId }) {
-                            Text(if (food != null) "Change" else "Assign")
-                        }
-                        if (food != null) {
-                            TextButton(onClick = { onAssign(member.memberId, null) }) {
-                                Text("Clear")
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        confirmButton = {
-            TextButton(onClick = onConfirm) { Text("Send") }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancel") }
-        }
-    )
-}
-
-@Composable
-private fun FoodPickerDialog(
-    options: List<PreparedFoodDetail>,
-    onSelect: (PreparedFoodDetail) -> Unit,
-    onDismiss: () -> Unit
-) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Choose food") },
-        text = {
-            Column {
-                if (options.isEmpty()) {
-                    Text(
-                        "No food prepared. Cook something in the Kitchen first.",
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                } else {
-                    options.forEach { food ->
-                        TextButton(
-                            onClick  = { onSelect(food) },
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(food.name)
-                                    if (food.primaryStat != null) {
-                                        val secondaryPart = if (food.secondaryStat != null)
-                                            "  +${food.secondaryBoost} ${food.secondaryStat.uppercase()}"
-                                        else ""
-                                        Text(
-                                            "+${food.primaryBoost} ${food.primaryStat.uppercase()}$secondaryPart",
-                                            style = MaterialTheme.typography.labelSmall,
-                                            color = MaterialTheme.colorScheme.primary
-                                        )
-                                    }
-                                }
-                                GradeBadge(food.grade)
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Text(
-                                    "×${food.quantity}",
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        confirmButton = {},
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } }
-    )
 }
