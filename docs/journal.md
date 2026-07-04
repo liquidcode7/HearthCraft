@@ -5,15 +5,51 @@
 
 ---
 
-## Current Status — July 3, 2026
+## Current Status — July 4, 2026
 
-**Phase:** Men (Greycloaks) — battle in-progress screen and post-fight recap built.
-**What's working:** Missions tab now shows live health bars (boss + per-member) driven by pre-computed tick replay while the fight is in progress. Post-fight recap shows per-member DPS bars, Keeper heal-vs-DPS uptime %, total healing, and wound recap per member. False "no provisions" starvation narrative removed. DB migrated to v17.
-**What's not wired yet:** HoH UI. No encounter has `grievousWoundSpecs` populated yet. Lone-Lands region unlock trigger not yet wired. Balance sim vs. Men encounters not yet run.
-**Next session:** Build must be verified in Android Studio (SDK path issue prevented `./gradlew build` from CLI). Then add `grievousWoundSpecs` to Greycloaks encounters and run balance sim.
-**Open questions:** Player title (still TBD). Exact Lone-Lands unlock trigger. HoH UI design.
+**Phase:** Men (Greycloaks) — navigation redesign complete. Missions is now the sole mission-launch pad (live Monte-Carlo odds estimate, inline provisioning, boss HP); Journal shows per-character stats/bio; Band is a pure roster + switcher; House of Healing has its own tab with a full craft-then-treat flow (crafting session tracking, grade-picker, apply-to-member). A standalone recipe/ingredient data browser tool also shipped (`tools/recipe-browser/`, run via `node tools/recipe-browser/generate.js`).
+**What's working:** Full loop verified end-to-end via build + tests (not yet manually verified on-device): Home → Missions (select, provision, odds, send, battle, recap) → Journal (bios/stats) → Band (roster) → House of Healing (wound status, craft, treat). DB migrated to v19 (bio-stage counters + HoH cooking session table, both additive).
+**What's not wired yet:** Bio-stage trigger logic (schema-only counters exist, no triggers/authored content yet). HoH Treat list now shows which wounds a preparation treats and warns on zero-overlap waste, but doesn't otherwise gate treatment (by design — partial treatment is intentional). `grievousWoundSpecs` still not populated on any encounter. Lone-Lands region unlock trigger not yet wired. Balance sim vs. Men encounters not yet run. Gather/farm/garden yield balance and the "too many unused ingredients" concern are still open — the new recipe browser's Ingredient Usage tab is meant to help diagnose the latter but the actual balance pass hasn't happened. The Coop/Hive/Dairy timer-sticks-at-zero bug reported this session is still unfixed (not attempted — out of scope for the navigation redesign).
+**Next session:** Manually verify the full navigation redesign on-device/emulator (build-level verification only was possible this session — no emulator in the CLI environment). Then: fix the producer-timer bug, look at gather/farm yield balance using the new recipe browser's Ingredient Usage tab, and decide on the HTML combat-sim metrics overhaul (DPS/HoT/streak/Inspiration breakdown) requested but not yet started.
+**Open questions:** Player title (still TBD). Exact Lone-Lands unlock trigger. `DatabaseModule.kt`'s `fallbackToDestructiveMigration(true)` was flagged in the final review as a latent, pre-existing risk (any future migration failure silently wipes the save) — worth a dedicated follow-up, not fixed this session (out of scope, predates this branch).
+**CLI build note:** `./gradlew` needs `export JAVA_HOME=/usr/share/pycharm/jbr` (no system JDK on PATH by default) — last session's "SDK path issue" was actually this, not the SDK. Confirmed working for full `./gradlew build` including lint + unit tests.
 
 ---
+
+## Session 20 — July 4, 2026
+**Navigation redesign: Missions launch pad, Journal character detail, House of Healing tab, recipe/ingredient browser tool**
+
+**What was built:**
+- `tools/recipe-browser/` (new): standalone Node.js tool (no npm deps) — `load-data.js`, `group-recipes.js`, `ingredient-usage.js`, `format.js`, `render-html.js`, `generate.js`, each with tests (27 total via `node --test tools/recipe-browser/*.test.js`); generates `recipe-browser.html`, a tabbed static page (region × class, Houses of Healing, Ingredient Usage) for browsing recipe/ingredient data by hand
+- `ui/screen/MissionsScreen.kt`: now the sole mission-launch pad — inline per-member provisioning (replacing the old `AlertDialog` flow), boss HP display (`Stage.resolve`), live plain-language odds label (Outmatched/Even Fight/Favored/Crushing) from a background Monte-Carlo sample of `EncounterEngine`
+- `engine/OddsEstimator.kt` (new): samples `EncounterEngine.resolve()` up to 75× with varying seeds, buckets win rate into an `OddsLabel`
+- `ui/viewmodel/BandViewModel.kt`: `oddsLabel` StateFlow (`combine` + `collectLatest`, off-main-thread simulation, cancels stale computation on encounter/food/draught change)
+- `ui/screen/BandScreen.kt`: trimmed to pure roster + band switcher — send-flow, `MemberDetailDialog`, and the "Recovering" list all removed (superseded by Missions and House of Healing)
+- `ui/screen/JournalScreen.kt`: new "Characters" section (stats + bio) per band member
+- `data/db/Migration17To18.kt`: additive bio-stage counters (`missionsSurvived`, `woundsSurvived`, `grievousWoundsSurvived`) on `BandMemberState` — schema only, no trigger logic yet
+- House of Healing (new): `ui/screen/HouseOfHealingScreen.kt`, `ui/viewmodel/HohViewModel.kt`, `data/db/HohCookingSession.kt` + DAO + `Migration18To19.kt` (mirrors Kitchen's cooking-session pattern), `HohRepository.applyPreparedItem` (replaces a dead-code one-step design with the two-step craft-then-apply flow), `InventoryViewModel.preparedHohItems` (class-split from `preparedFood`)
+- `ui/screen/GatheringScreen.kt`: harvest results now show a `GradeBadge` per item
+- `ui/viewmodel/KitchenViewModel.kt`: HoH-class recipes excluded from all three Kitchen recipe lists (they now live in their own tab)
+- DB version 17 → 19 (two additive migrations, both verified against exported schema snapshots)
+
+**Decisions made:**
+- HoH treatment is two-step (craft into inventory, then apply to a member later) — matches food's existing pattern, chosen over a one-step design an earlier session had partially started and abandoned (`HohRepository.applyPreparation`, deleted as dead code)
+- Partial HoH treatment stays fully allowed and unwarned beyond a text label — per existing design (`docs/superpowers/specs/2026-07-02-hoh-mechanics-design.md`), treating only part of a multi-type wound is an intentional, rewarded strategy, not a mistake to gate against
+- Odds label is plain-language only (no raw percentage), computed only for the currently-selected encounter (not all cards at once) to keep the Monte-Carlo cost bounded
+
+**Anything that diverged from design/master-design.md:**
+- None — this was UI/navigation restructuring of already-designed systems, not new mechanics
+
+**Bugs found and fixed during implementation (not part of the original ask, found via code review):**
+- Recipe browser: tab grouping was per-band instead of per-region (would've produced duplicate tabs if two bands ever shared a region); `formatEffect` dispatched on `recipe.class` instead of field presence (2/60 real recipes rendered as garbage/blank); a negative-boost recipe rendered as `+-2` instead of `-2`
+- `InventoryViewModel.preparedFood`'s class filter was originally `== "food"`, which would have hidden cooked draughts from Pantry (draughts share the same storage as food) — fixed to `!= "hoh"`
+- `HohViewModel.startCrafting()` had a TOCTOU race (rapid double-tap could consume ingredients twice) — fixed with a `Mutex`, mirroring `KitchenViewModel`'s existing pattern
+- House of Healing's Treat list gave no indication of which wounds a preparation actually treats, so a hard-to-craft item could be wasted with zero warning — fixed by showing treated wound types and relabeling the button ("Treat anyway") on zero-overlap, without disabling it (partial-match treatments stay fully usable)
+
+**Coming up:**
+- Next session: manual on-device verification of the full navigation redesign (no emulator was available in the CLI environment this session — build + unit/JS tests are green, but nobody has tapped through the app yet)
+- Near term: fix the Coop/Hive/Dairy timer-sticks-at-zero bug (reported this session, not yet investigated), gather/farm/garden yield balance pass (use the new recipe browser's Ingredient Usage tab to help spot unused ingredients), HTML combat-sim metrics overhaul (DPS/HoT/heal potency/streak/Inspiration breakdown — requested, not started)
+- Future ideas logged: none this session (all work came from an already-approved spec)
 
 ## Session 19 — July 3, 2026
 **Battle in-progress screen, post-fight recap, starvation narrative fix**
