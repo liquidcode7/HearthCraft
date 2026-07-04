@@ -21,6 +21,14 @@ data class PreparedFoodDetail(
     val secondaryBoost: Int = 0
 )
 
+data class PreparedHohItemDetail(
+    val recipeId: String,
+    val name: String,
+    val quantity: Int,
+    val grade: Int,
+    val treatsWoundTypes: List<String>
+)
+
 data class BandMemberWithState(
     val memberId: String,
     val name: String,

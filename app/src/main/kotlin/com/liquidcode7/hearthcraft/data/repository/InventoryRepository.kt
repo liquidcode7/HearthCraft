@@ -85,6 +85,11 @@ class InventoryRepository @Inject constructor(
         preparedFoodDao.deleteIfEmpty(target.recipeId, target.grade)
     }
 
+    /** Removes one serving of [recipeId] at the explicit [grade]. */
+    suspend fun removePreparedFood(recipeId: String, grade: Int) {
+        preparedFoodDao.removeOne(recipeId, grade)
+    }
+
     /** Total quantity of [recipeId] across all grades. */
     suspend fun preparedFoodQty(recipeId: String): Int = preparedFoodDao.totalQuantity(recipeId)
 

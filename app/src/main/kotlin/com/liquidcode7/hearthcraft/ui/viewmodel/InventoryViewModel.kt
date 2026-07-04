@@ -45,9 +45,8 @@ class InventoryViewModel @Inject constructor(
         inventory.observePreparedFood(),
         player.observe()
     ) { foods, state ->
-        val cookingLevel = state?.cookingLevel ?: 1
         foods.mapNotNull { pf ->
-            val recipe = gameData.recipes.find { it.id == pf.recipeId } ?: return@mapNotNull null
+            val recipe = gameData.recipes.find { it.id == pf.recipeId && it.recipeClass == "food" } ?: return@mapNotNull null
             PreparedFoodDetail(
                 recipeId      = pf.recipeId,
                 name          = recipe.name,
@@ -62,4 +61,19 @@ class InventoryViewModel @Inject constructor(
             )
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val preparedHohItems: StateFlow<List<PreparedHohItemDetail>> = inventory.observePreparedFood()
+        .map { foods ->
+            foods.mapNotNull { pf ->
+                val recipe = gameData.recipes.find { it.id == pf.recipeId && it.recipeClass == "hoh" } ?: return@mapNotNull null
+                PreparedHohItemDetail(
+                    recipeId = pf.recipeId,
+                    name = recipe.name,
+                    quantity = pf.quantity,
+                    grade = pf.grade,
+                    treatsWoundTypes = recipe.treatsWoundTypes
+                )
+            }
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 }
