@@ -3,6 +3,17 @@
 **Date:** 2026-07-04
 **Status:** Approved
 
+**Addendum (same day, after initial approval):** the Batch tab's entire
+premise — a "HP/s sweep" to find win-rate cliffs — doesn't survive the
+resync: Model B food has no HP/s value at all (stat boosts only), so there's
+no axis left to sweep. Decision: **remove the Batch tab entirely** rather
+than redesign it. `run_sim.js` already does batch/aggregate win-rate analysis
+correctly, with the same metrics dashboard added this session — the browser
+tool's job narrows to watching and inspecting one fight at a time (Setup /
+Live / Results / Company tabs only). This is reflected in the implementation
+plan (`docs/superpowers/plans/2026-07-04-browser-sim-resync.md`) as its own
+task, ahead of the engine work.
+
 ---
 
 ## 1. Overview
