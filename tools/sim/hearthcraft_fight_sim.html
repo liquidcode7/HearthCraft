@@ -832,7 +832,7 @@ function fightInspRoll(base, boost) { return Math.random() < (base + boost); }
 // Mirrors run_sim.js's dpsBreakdown() exactly, reading from a FightState instead of closures.
 function fightDpsBreakdown(S) {
   const cfg = S.cfg;
-  if (cfg.unkill) return { raw:0, eff:0, physAfter:0, layerADrag:0, rawBy:{warden:0,fighter:0,keeper:0,captain:0}, streakBonus:0, dawnBonus:0 };
+  if (cfg.unkill) return { raw:0, eff:0, physAfter:0, layerADrag:0, rawBy:{warden:0,fighter:0,keeper:0,captain:0,captain_phys:0,captain_magic:0}, streakBonus:0, dawnBonus:0 };
   let raw = 0, streakBonus = 0;
   const rawBy = { warden:0, fighter:0, keeper:0, captain:0, captain_phys:0, captain_magic:0 };
   ORDER.forEach(k => {
