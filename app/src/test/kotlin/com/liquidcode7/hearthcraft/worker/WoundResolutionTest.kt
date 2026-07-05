@@ -42,4 +42,14 @@ class WoundResolutionTest {
         assertTrue(safetyNet.durationMs > heavy.durationMs)
     }
 
+    @Test
+    fun `corrected production durations are 18 minutes light, 30 minutes heavy, 2 hours safety net`() {
+        val light = resolveWoundOutcome(wounds = 1, hohAvailable = false)!!
+        val heavy = resolveWoundOutcome(wounds = 3, hohAvailable = false)!!
+        val safetyNet = resolveWoundOutcome(wounds = 5, hohAvailable = false)!!
+        assertEquals(18 * 60 * 1000L, light.durationMs)
+        assertEquals(30 * 60 * 1000L, heavy.durationMs)
+        assertEquals(2 * 60 * 60 * 1000L, safetyNet.durationMs)
+    }
+
 }

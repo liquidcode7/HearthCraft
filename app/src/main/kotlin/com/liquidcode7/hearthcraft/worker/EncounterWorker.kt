@@ -211,16 +211,15 @@ class EncounterWorker @AssistedInject constructor(
     }
 }
 
-// Testing values: short (seconds-scale) durations so Wes can exercise recovery on-device.
-// Strictly increasing by severity band — matches the design intent below (heavy wounds
-// recover slower than light; the safety net is deliberately the longest of all).
-// Target production values (revisit once the sim rebalance pass locks in real numbers):
-//   LIGHT_WOUND_MS = 3_600_000L   (1 hour)
-//   HEAVY_WOUND_MS = 7_200_000L   (2 hours)
-//   SAFETY_NET_WOUND_MS = 21_600_000L (6 hours)
-private const val LIGHT_WOUND_MS       = 15_000L
-private const val HEAVY_WOUND_MS       = 30_000L
-private const val SAFETY_NET_WOUND_MS  = 60_000L
+// Wound recovery durations (master-design.md §6.8). Corrected 05 Jul 2026 — both the
+// original 1h/2h/6h design figures and this file's earlier seconds-scale test
+// stand-ins were wrong. These are the real production values.
+private const val LIGHT_WOUND_MS       = 1_080_000L  // 18 minutes
+private const val HEAVY_WOUND_MS       = 1_800_000L  // 30 minutes
+// Deliberately harsh, not a soft nudge toward HoH: a real penalty for
+// under-provisioning. Starting areas have no HoH recipe available at all, so this
+// is the only consequence a new player faces for a 5+ down-count result.
+private const val SAFETY_NET_WOUND_MS  = 7_200_000L  // 2 hours
 
 data class WoundOutcome(val grievous: Boolean, val durationMs: Long)
 

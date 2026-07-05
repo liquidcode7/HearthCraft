@@ -309,8 +309,8 @@ many times they went down during the fight:
 
 | Down-count | Severity | Recovery |
 |------------|----------|----------|
-| 1-2 | Wounded (light) | Auto-heals after 1 hour — time only, no food or prep involved |
-| 3-4 | Wounded (heavy) | Auto-heals after 2 hours — time only |
+| 1-2 | Wounded (light) | Auto-heals after 18 minutes — time only, no food or prep involved |
+| 3-4 | Wounded (heavy) | Auto-heals after 30 minutes — time only |
 | 5+  | Grievously wounded | See §9.1 — requires Houses of Healing, does not auto-heal |
 
 **Wounds never kill.** There is no death-by-combat-wound mechanic. Permadeath,
@@ -318,10 +318,12 @@ if designed later, is a separate system (see roadmap Phase 2B).
 
 **HoH-availability safety net:** while the player has no visible/craftable HoH
 recipe at all, a 5+ down-count result is capped at "Wounded (heavy)" with an
-extended 6-hour recovery instead of becoming a genuine grievous wound. This
-prevents an unrecoverable band before Houses of Healing content exists. The
-safety net switches off automatically the moment a real HoH recipe becomes
-available to the player — it is not a permanent difficulty reduction.
+extended 2-hour recovery instead of becoming a genuine grievous wound. This is
+deliberately harsh — a real penalty for under-provisioning, not a soft nudge —
+since starting areas have no HoH recipe available at all and this is the only
+consequence a new player faces for this outcome. The safety net switches off
+automatically the moment a real HoH recipe becomes available to the player —
+it is not a permanent difficulty reduction.
 
 ---
 
