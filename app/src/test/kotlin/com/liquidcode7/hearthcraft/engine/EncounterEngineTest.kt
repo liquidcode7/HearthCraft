@@ -45,6 +45,54 @@ class EncounterEngineTest {
     }
 
     @Test
+    fun `physFractionByMember is 1 for warden and fighter, 0 for keeper, regardless of armor`() {
+        val armoredStage = stage(resolve = 50000, drain = 4f, spike = 30f, spikeIv = 20, phys = 40f)
+        val r = EncounterEngine.resolve(armoredStage, party(), seed = 1L)
+        assert(r.physFractionByMember["warden"] == 1f)
+        assert(r.physFractionByMember["fighter"] == 1f)
+        assert(r.physFractionByMember["keeper"] == 0f)
+    }
+
+    @Test
+    fun `physFractionByMember for captain is reduced by armor relative to the raw physicalFraction`() {
+        val captain = MemberInput("c", "captain", 3f, 2f, 4f, 5f, 4f)
+        val warden = MemberInput("w", "warden", 4f, 2f, 5f, 3f, 2f)
+        val partyOf = listOf(captain, warden)
+        val noArmorStage = stage(resolve = 50000, drain = 4f, spike = 30f, spikeIv = 20, phys = 0f)
+        val armoredStage = stage(resolve = 50000, drain = 4f, spike = 30f, spikeIv = 20, phys = 40f)
+        val rNoArmor = EncounterEngine.resolve(noArmorStage, partyOf, seed = 1L)
+        val rArmored = EncounterEngine.resolve(armoredStage, partyOf, seed = 1L)
+        val rawFraction = EncounterEngine.physicalFraction(captain)
+        val noArmorFraction = rNoArmor.physFractionByMember["c"] ?: 0f
+        val armoredFraction = rArmored.physFractionByMember["c"] ?: 0f
+        assert(kotlin.math.abs(noArmorFraction - rawFraction) < 0.0001f) {
+            "Expected no-armor fraction $noArmorFraction to equal raw fraction $rawFraction"
+        }
+        assert(armoredFraction < rawFraction) {
+            "Expected armored fraction $armoredFraction to be less than raw fraction $rawFraction"
+        }
+    }
+
+    @Test
+    fun `final tick snapshot's cumulative damage and heal match the result totals`() {
+        val midStage = stage(resolve = 40000, drain = 4f, spike = 25f, spikeIv = 12)
+        val r = EncounterEngine.resolve(midStage, party(), seed = 42L)
+        val last = r.snapshots.last()
+        r.damageByMember.forEach { (id, total) ->
+            val fromSnapshot = last.cumDamage[id] ?: 0f
+            assert(kotlin.math.abs(total - fromSnapshot) < 0.001f) {
+                "cumDamage mismatch for $id: result=$total snapshot=$fromSnapshot"
+            }
+        }
+        r.healingByMember.forEach { (id, total) ->
+            val fromSnapshot = last.cumHeal[id] ?: 0f
+            assert(kotlin.math.abs(total - fromSnapshot) < 0.001f) {
+                "cumHeal mismatch for $id: result=$total snapshot=$fromSnapshot"
+            }
+        }
+    }
+
+    @Test
     fun `keeper heals party — band survives easy encounter`() {
         // Soft encounter: low drain so Keeper healing keeps party standing
         val easyStage = stage(resolve = 15000, drain = 2f, spike = 30f, spikeIv = 20)

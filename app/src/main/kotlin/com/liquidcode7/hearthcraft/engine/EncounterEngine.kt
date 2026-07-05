@@ -56,6 +56,13 @@ private const val BLACK_ARROW_RESOLVE_BURN = 0.18f // fraction of boss resolve b
 private const val BLACK_ARROW_CLOCK_BURN   = 0.15f // fraction of remaining time burned (unkillable)
 private const val CRISIS_HP_FRAC   = 0.35f  // "crisis edge": 2+ standing members below this % HP
 
+// Live-combat-visibility flash durations. Black Arrow and Grace are one-shot effects with
+// no natural ongoing window (unlike Horn/Dawn), so a live UI would only see them for a
+// single tick — often imperceptible at normal playback speed. These give the UI badge a
+// few ticks of visibility instead.
+private const val BLACK_ARROW_FLASH_TICKS = 5
+private const val GRACE_FLASH_TICKS       = 5
+
 enum class Outcome { VICTORY, DEFEAT, STALEMATE }
 
 data class MemberInput(
@@ -84,7 +91,8 @@ data class EncounterResult(
     val keeperDpsTicks: Int = 0,   // ticks keeper spent on DPS
     val memberMaxHp: Map<String, Float> = emptyMap(), // memberId → maxHp (static; used by replay UI)
     val snapshots: List<TickSnapshot> = emptyList(),  // per-tick state for in-progress replay
-    val inspirationsFired: Map<String, Int> = emptyMap() // "horn"|"dawn"|"blackArrow"|"grace" → times fired
+    val inspirationsFired: Map<String, Int> = emptyMap(), // "horn"|"dawn"|"blackArrow"|"grace" → times fired
+    val physFractionByMember: Map<String, Float> = emptyMap() // memberId → post-mitigation physical fraction of damage output (static per fight; complement is the magical fraction)
 )
 
 object EncounterEngine {
@@ -96,6 +104,17 @@ object EncounterEngine {
         // All members receive the same value from BandRepository.memberInputsForBand — reading first() is safe.
         val draughtPotency = members.firstOrNull()?.draughtPotency ?: 0f
         val effArmor = physMit * (1f - min(1f, draughtPotency / PEN_SCALE))
+
+        // Physical/magical output split, per member — static for the whole fight since
+        // effArmor and stats don't change mid-encounter. Complement of this value is the
+        // magical fraction. Consumed by the live-combat-visibility UI to color DPS bars.
+        val physFractionByMember: Map<String, Float> = members.associate { m ->
+            val physFrac = physicalFraction(m)
+            val physTerm = physFrac * (1f - effArmor)
+            val magicTerm = 1f - physFrac
+            val total = physTerm + magicTerm
+            m.id to (if (total > 0f) physTerm / total else 1f)
+        }
 
         // Member state — MS is intentionally defined inside resolve()
         data class MS(
@@ -200,10 +219,54 @@ object EncounterEngine {
         var survivalClockBurnSec = 0 // ticks shaved off a non-"kill" objective's effective duration
         val inspirationCounts = mutableMapOf("horn" to 0, "dawn" to 0, "blackArrow" to 0, "grace" to 0)
 
+        // Live-combat-visibility state.
+        var blackArrowFlashTicks = 0
+        var graceFlashTicks = 0
+        var keeperHealingThisTick = false  // set once the Keeper action block below resolves for the current tick; false by default on any snapshot taken earlier in the same tick (moot — the fight already ended on those)
+
+        // Builds a TickSnapshot from current mutable state — used at every snapshot site
+        // below so new fields only ever need to be threaded through once.
+        fun buildSnapshot(t: Int, bossVal: Float): TickSnapshot = TickSnapshot(
+            tick = t,
+            bossResolve = maxOf(0f, bossVal),
+            memberHp = party.associate { it.input.id to maxOf(0f, it.hp) },
+            cumDamage = damageAcc.toMap(),
+            cumHeal = healingAcc.toMap(),
+            memberReserve = party.associate { it.input.id to it.reserve },
+            streakActive = party.filter { (streaks[it.input.id]?.active ?: 0) > 0 }.map { it.input.id }.toSet(),
+            hotTargets = setOfNotNull(hot1?.targetId, hot2?.targetId),
+            keeperHealing = keeperHealingThisTick,
+            hornActive = hornWindow > 0,
+            dawnActive = dawnWindow > 0,
+            blackArrowFlash = blackArrowFlashTicks > 0,
+            graceFlash = graceFlashTicks > 0
+        )
+
+        // Builds an EncounterResult from current mutable state — used at every return site
+        // below so new fields only ever need to be threaded through once.
+        fun buildResult(outcome: Outcome, endedAtSec: Int, resolveRemainingFraction: Float): EncounterResult = EncounterResult(
+            outcome = outcome,
+            woundsByMember = party.associate { it.input.id to it.wounds },
+            rescuesUsed = rescues, wardGuardsUsed = wardGuards,
+            resolveRemainingFraction = resolveRemainingFraction, endedAtSec = endedAtSec,
+            grievousWoundTypes = buildGrievousWoundMap(party.filter { it.grievous }.map { it.input.id }, grievousWoundSpecs, rng),
+            damageByMember = damageAcc.toMap(),
+            healingByMember = healingAcc.toMap(),
+            keeperHealTicks = keeperHealTicksCount,
+            keeperDpsTicks = keeperDpsTicksCount,
+            memberMaxHp = party.associate { it.input.id to it.maxHp },
+            snapshots = snapshots,
+            inspirationsFired = inspirationCounts.toMap(),
+            physFractionByMember = physFractionByMember
+        )
+
         for (t in 1..stage.durationSec) {
             newlyGrievousThisTick.clear()
             if (hornWindow > 0) hornWindow--
             if (dawnWindow > 0) dawnWindow--
+            if (blackArrowFlashTicks > 0) blackArrowFlashTicks--
+            if (graceFlashTicks > 0) graceFlashTicks--
+            keeperHealingThisTick = false
             if (dawnInspBoost > 0f) dawnInspBoost = max(0f, dawnInspBoost - DAWN_BOOST_DECAY)
 
             // ── Keeper HoT ticks ──────────────────────────────────────────────────
@@ -250,21 +313,8 @@ object EncounterEngine {
             }
             boss -= nonKeeperDps
             if (boss <= 0f) {
-                snapshots.add(TickSnapshot(tick = t, bossResolve = 0f, memberHp = party.associate { it.input.id to maxOf(0f, it.hp) }))
-                return EncounterResult(
-                    outcome = Outcome.VICTORY,
-                    woundsByMember = party.associate { it.input.id to it.wounds },
-                    rescuesUsed = rescues, wardGuardsUsed = wardGuards,
-                    resolveRemainingFraction = 0f, endedAtSec = t,
-                    grievousWoundTypes = buildGrievousWoundMap(party.filter { it.grievous }.map { it.input.id }, grievousWoundSpecs, rng),
-                    damageByMember = damageAcc.toMap(),
-                    healingByMember = healingAcc.toMap(),
-                    keeperHealTicks = keeperHealTicksCount,
-                    keeperDpsTicks = keeperDpsTicksCount,
-                    memberMaxHp = party.associate { it.input.id to it.maxHp },
-                    snapshots = snapshots,
-                    inspirationsFired = inspirationCounts.toMap()
-                )
+                snapshots.add(buildSnapshot(t, boss))
+                return buildResult(Outcome.VICTORY, t, 0f)
             }
 
             // ── Drain ─────────────────────────────────────────────────────────
@@ -380,6 +430,7 @@ object EncounterEngine {
                         if (rng.nextFloat() < chance) {
                             blackArrowFired = true
                             inspirationCounts["blackArrow"] = 1
+                            blackArrowFlashTicks = BLACK_ARROW_FLASH_TICKS
                             if (stage.objective == "kill") {
                                 boss -= boss * BLACK_ARROW_RESOLVE_BURN
                             } else {
@@ -390,21 +441,8 @@ object EncounterEngine {
                 }
             }
             if (boss <= 0f) {
-                snapshots.add(TickSnapshot(tick = t, bossResolve = 0f, memberHp = party.associate { it.input.id to maxOf(0f, it.hp) }))
-                return EncounterResult(
-                    outcome = Outcome.VICTORY,
-                    woundsByMember = party.associate { it.input.id to it.wounds },
-                    rescuesUsed = rescues, wardGuardsUsed = wardGuards,
-                    resolveRemainingFraction = 0f, endedAtSec = t,
-                    grievousWoundTypes = buildGrievousWoundMap(party.filter { it.grievous }.map { it.input.id }, grievousWoundSpecs, rng),
-                    damageByMember = damageAcc.toMap(),
-                    healingByMember = healingAcc.toMap(),
-                    keeperHealTicks = keeperHealTicksCount,
-                    keeperDpsTicks = keeperDpsTicksCount,
-                    memberMaxHp = party.associate { it.input.id to it.maxHp },
-                    snapshots = snapshots,
-                    inspirationsFired = inspirationCounts.toMap()
-                )
+                snapshots.add(buildSnapshot(t, boss))
+                return buildResult(Outcome.VICTORY, t, 0f)
             }
 
             // Keeper — Hands of Healing. Fires reactively when a member hits grievous;
@@ -424,6 +462,7 @@ object EncounterEngine {
                         graceTarget.hp = healed
                         graceUses++
                         inspirationCounts["grace"] = graceUses
+                        graceFlashTicks = GRACE_FLASH_TICKS
                         healingAcc[keeper.input.id] = (healingAcc[keeper.input.id] ?: 0f) + healed
                     }
                 }
@@ -432,20 +471,7 @@ object EncounterEngine {
             // Non-"kill" objectives (survive/retrieve): Black Arrow's clock-burn effect
             // shortens the effective duration rather than dealing resolve damage.
             if (stage.objective != "kill" && survivalClockBurnSec > 0 && t >= stage.durationSec - survivalClockBurnSec) {
-                return EncounterResult(
-                    outcome = if (boss <= 0f) Outcome.VICTORY else Outcome.STALEMATE,
-                    woundsByMember = party.associate { it.input.id to it.wounds },
-                    rescuesUsed = rescues, wardGuardsUsed = wardGuards,
-                    resolveRemainingFraction = max(0f, boss / stage.resolve), endedAtSec = t,
-                    grievousWoundTypes = buildGrievousWoundMap(party.filter { it.grievous }.map { it.input.id }, grievousWoundSpecs, rng),
-                    damageByMember = damageAcc.toMap(),
-                    healingByMember = healingAcc.toMap(),
-                    keeperHealTicks = keeperHealTicksCount,
-                    keeperDpsTicks = keeperDpsTicksCount,
-                    memberMaxHp = party.associate { it.input.id to it.maxHp },
-                    snapshots = snapshots,
-                    inspirationsFired = inspirationCounts.toMap()
-                )
+                return buildResult(if (boss <= 0f) Outcome.VICTORY else Outcome.STALEMATE, t, max(0f, boss / stage.resolve))
             }
 
             // ── Keeper action ─────────────────────────────────────────────────────
@@ -494,6 +520,7 @@ object EncounterEngine {
                         }
                     }
                 }
+                keeperHealingThisTick = actionTaken
                 // Keeper DPS only when no consuming action taken. Keeper is pure magical
                 // (physicalFraction == 0), so this is unconditionally unmitigated by armor —
                 // written directly rather than routed through physicalFraction since the
@@ -508,65 +535,22 @@ object EncounterEngine {
 
             // Victory check after keeper DPS
             if (boss <= 0f) {
-                snapshots.add(TickSnapshot(tick = t, bossResolve = 0f, memberHp = party.associate { it.input.id to maxOf(0f, it.hp) }))
-                return EncounterResult(
-                    outcome = Outcome.VICTORY,
-                    woundsByMember = party.associate { it.input.id to it.wounds },
-                    rescuesUsed = rescues, wardGuardsUsed = wardGuards,
-                    resolveRemainingFraction = 0f, endedAtSec = t,
-                    grievousWoundTypes = buildGrievousWoundMap(party.filter { it.grievous }.map { it.input.id }, grievousWoundSpecs, rng),
-                    damageByMember = damageAcc.toMap(),
-                    healingByMember = healingAcc.toMap(),
-                    keeperHealTicks = keeperHealTicksCount,
-                    keeperDpsTicks = keeperDpsTicksCount,
-                    memberMaxHp = party.associate { it.input.id to it.maxHp },
-                    snapshots = snapshots,
-                    inspirationsFired = inspirationCounts.toMap()
-                )
+                snapshots.add(buildSnapshot(t, boss))
+                return buildResult(Outcome.VICTORY, t, 0f)
             }
 
             // ── Tick snapshot for in-progress replay ─────────────────────────
-            snapshots.add(TickSnapshot(
-                tick = t,
-                bossResolve = maxOf(0f, boss),
-                memberHp = party.associate { it.input.id to maxOf(0f, it.hp) }
-            ))
+            snapshots.add(buildSnapshot(t, boss))
 
             // ── Check defeat ──────────────────────────────────────────────────
             if (standing().isEmpty()) {
-                return EncounterResult(
-                    outcome = Outcome.DEFEAT,
-                    woundsByMember = party.associate { it.input.id to it.wounds },
-                    rescuesUsed = rescues, wardGuardsUsed = wardGuards,
-                    resolveRemainingFraction = boss / stage.resolve, endedAtSec = t,
-                    grievousWoundTypes = buildGrievousWoundMap(party.filter { it.grievous }.map { it.input.id }, grievousWoundSpecs, rng),
-                    damageByMember = damageAcc.toMap(),
-                    healingByMember = healingAcc.toMap(),
-                    keeperHealTicks = keeperHealTicksCount,
-                    keeperDpsTicks = keeperDpsTicksCount,
-                    memberMaxHp = party.associate { it.input.id to it.maxHp },
-                    snapshots = snapshots,
-                    inspirationsFired = inspirationCounts.toMap()
-                )
+                return buildResult(Outcome.DEFEAT, t, boss / stage.resolve)
             }
         }
 
         // Duration expired
         val finalOutcome = if (boss <= 0f) Outcome.VICTORY else Outcome.STALEMATE
-        return EncounterResult(
-            outcome = finalOutcome,
-            woundsByMember = party.associate { it.input.id to it.wounds },
-            rescuesUsed = rescues, wardGuardsUsed = wardGuards,
-            resolveRemainingFraction = max(0f, boss / stage.resolve), endedAtSec = stage.durationSec,
-            grievousWoundTypes = buildGrievousWoundMap(party.filter { it.grievous }.map { it.input.id }, grievousWoundSpecs, rng),
-            damageByMember = damageAcc.toMap(),
-            healingByMember = healingAcc.toMap(),
-            keeperHealTicks = keeperHealTicksCount,
-            keeperDpsTicks = keeperDpsTicksCount,
-            memberMaxHp = party.associate { it.input.id to it.maxHp },
-            snapshots = snapshots,
-            inspirationsFired = inspirationCounts.toMap()
-        )
+        return buildResult(finalOutcome, stage.durationSec, max(0f, boss / stage.resolve))
     }
 
     // ── Wound type rolling ────────────────────────────────────────────────────

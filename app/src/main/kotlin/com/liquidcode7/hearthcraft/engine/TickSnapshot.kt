@@ -9,5 +9,15 @@ import kotlinx.serialization.Serializable
 data class TickSnapshot(
     val tick: Int,
     val bossResolve: Float,
-    val memberHp: Map<String, Float>    // memberId → hp at this tick
+    val memberHp: Map<String, Float>,        // memberId → hp at this tick
+    val cumDamage: Map<String, Float> = emptyMap(),   // memberId → cumulative damage dealt as of this tick
+    val cumHeal: Map<String, Float> = emptyMap(),     // memberId → cumulative healing delivered as of this tick (keeper only, non-zero)
+    val memberReserve: Map<String, Float> = emptyMap(), // memberId → current shield/reserve amount at this tick
+    val streakActive: Set<String> = emptySet(),       // member ids currently inside a streak (1.5x DPS/heal) window
+    val hotTargets: Set<String> = emptySet(),         // member ids currently receiving a Keeper heal-over-time
+    val keeperHealing: Boolean = false,               // true if the Keeper's last-resolved action this tick was healing, not DPS
+    val hornActive: Boolean = false,                  // Horn of Gondor window active
+    val dawnActive: Boolean = false,                  // Red Dawn window active
+    val blackArrowFlash: Boolean = false,             // short artificial "just fired" pulse (Black Arrow has no natural window)
+    val graceFlash: Boolean = false                   // same, for Grace
 )
