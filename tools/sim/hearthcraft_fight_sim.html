@@ -207,8 +207,8 @@ const FOOD_MODEL = (function () {
     return `Lv${c}`;
   }
   const RECIPES = [
-    { id:"hearthbread",       name:"Hearthbread",        levelRequired:1,  primaryStat:"vit", secondaryStat:"mig" },
-    { id:"wanderers_supper",  name:"Wanderer's Supper",  levelRequired:1,  primaryStat:"agi", secondaryStat:"mig" },
+    { id:"hearthbread",       name:"Hearthbread",        levelRequired:1,  primaryStat:"vit", secondaryStat:null },
+    { id:"wanderers_supper",  name:"Wanderer's Supper",  levelRequired:1,  primaryStat:"agi", secondaryStat:null },
     { id:"contemplative_tea", name:"Contemplative Tea",  levelRequired:1,  primaryStat:"wil", secondaryStat:"agi" },
     { id:"rangers_fare",      name:"Ranger's Fare",      levelRequired:1,  primaryStat:"mig", secondaryStat:"vit" },
     { id:"ember_porridge",    name:"Ember Porridge",     levelRequired:1,  primaryStat:null,  secondaryStat:null  },
@@ -340,29 +340,29 @@ const FOOD_MODEL = (function () {
           <div class="gnote" id="rlevel_hps" style="margin-top:4px">&#8594; 10.0 HP/s per member</div>
           <div class="ctl" style="margin-top:8px"><label>Warden eats</label><select id="rw" onchange="onRecipeChange()">
             <option value="">&#8212; no recipe</option>
-            <option value="hearthbread" selected>Hearthbread (Vit &#8594; Mig)</option>
-            <option value="wanderers_supper">Wanderer's Supper (Agi &#8594; Mig)</option>
+            <option value="hearthbread" selected>Hearthbread (Vit)</option>
+            <option value="wanderers_supper">Wanderer's Supper (Agi)</option>
             <option value="contemplative_tea">Contemplative Tea (Wil &#8594; Agi)</option>
             <option value="rangers_fare">Ranger's Fare (Mig &#8594; Vit)</option>
           </select></div>
           <div class="ctl"><label>Fighter eats</label><select id="rh" onchange="onRecipeChange()">
             <option value="">&#8212; no recipe</option>
-            <option value="hearthbread">Hearthbread (Vit &#8594; Mig)</option>
-            <option value="wanderers_supper" selected>Wanderer's Supper (Agi &#8594; Mig)</option>
+            <option value="hearthbread">Hearthbread (Vit)</option>
+            <option value="wanderers_supper" selected>Wanderer's Supper (Agi)</option>
             <option value="contemplative_tea">Contemplative Tea (Wil &#8594; Agi)</option>
             <option value="rangers_fare">Ranger's Fare (Mig &#8594; Vit)</option>
           </select></div>
           <div class="ctl"><label>Keeper eats</label><select id="rk" onchange="onRecipeChange()">
             <option value="">&#8212; no recipe</option>
-            <option value="hearthbread">Hearthbread (Vit &#8594; Mig)</option>
-            <option value="wanderers_supper">Wanderer's Supper (Agi &#8594; Mig)</option>
+            <option value="hearthbread">Hearthbread (Vit)</option>
+            <option value="wanderers_supper">Wanderer's Supper (Agi)</option>
             <option value="contemplative_tea" selected>Contemplative Tea (Wil &#8594; Agi)</option>
             <option value="rangers_fare">Ranger's Fare (Mig &#8594; Vit)</option>
           </select></div>
           <div class="ctl"><label>Captain eats</label><select id="rc" onchange="onRecipeChange()">
             <option value="">&#8212; no recipe</option>
-            <option value="hearthbread">Hearthbread (Vit &#8594; Mig)</option>
-            <option value="wanderers_supper">Wanderer's Supper (Agi &#8594; Mig)</option>
+            <option value="hearthbread">Hearthbread (Vit)</option>
+            <option value="wanderers_supper">Wanderer's Supper (Agi)</option>
             <option value="contemplative_tea">Contemplative Tea (Wil &#8594; Agi)</option>
             <option value="rangers_fare" selected>Ranger's Fare (Mig &#8594; Vit)</option>
           </select></div>
