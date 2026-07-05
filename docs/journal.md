@@ -5,12 +5,12 @@
 
 ---
 
-## Current Status — July 5, 2026
+## Current Status — July 5, 2026 (evening)
 
-**Phase:** Men (Greycloaks) — navigation redesign complete, plus two follow-up passes on Wes's 04 Jul 2026 playtest audit: the 4 quick-fixes session (Session 21) and this session's "Combat Feel & Feedback" sub-project (Session 22, first of the 7-group sequence from the audit triage). Kill-fights no longer show a countdown timer that gave away a pre-computed loss; wound recovery is now 18min/30min (light/heavy, corrected from wrong 1hr/2hr design values) with a live countdown on the House of Healing tab instead of nonsensical treat-options for time-only wounds; and post-fight recaps now show an actual Rewards section (gold/ingredients/XP/grimoire) instead of granting everything silently.
-**What's working:** Full loop verified end-to-end via build + tests (still not manually verified on-device — no emulator in the CLI environment, flagged consistently across recent sessions). DB now at v20 (additive migration: 4 new columns on `combat_reports` for reward tracking).
-**What's not wired yet:** Bio-stage triggers, `grievousWoundSpecs`, Lone-Lands unlock trigger, balance sim vs. Men encounters (all long-standing). From the audit's remaining 6 sub-project groups (see `docs/superpowers/plans/2026-07-04-audit-quick-fixes.md`'s triage table): damage types (engine-wide physical-only, no magic/hybrid distinction), live in-combat DPS/heal visibility (blocked on damage types), Inspiration/narrative content pass, Kitchen/Pantry UX (scroll-jump, filters, collapsible tiers), the crafting economy pass (Recipe Rank, too-many-ingredients-too-few-recipes, drop-rate tuning), and the gear system (deliberately last, needs its own brainstorm — Wes doesn't yet know the scope he wants). `contemplative_tea` (Mithlost) still has its T1 dual-stat issue, deferred to the eventual Elves redesign.
-**Next session:** Wes picks the next of the 6 remaining audit sub-project groups. Damage types is the natural next pick — several other deferred items (live combat visibility, accurate Inspiration copy) are blocked on it.
+**Phase:** Men (Greycloaks) — navigation redesign complete, plus three follow-up passes on Wes's 04 Jul 2026 playtest audit: 4 quick-fixes (Session 21), "Combat Feel & Feedback" (Session 22), "Damage Types" (Session 23) — groups 1 and 2 of the 7-group audit sequence, both DONE. Kill-fights no longer show a countdown timer that gave away a pre-computed loss; wound recovery is 18min/30min with a live countdown on the House of Healing tab; post-fight recaps show a real Rewards section; and Keeper/Captain's magical damage now bypasses armor mitigation instead of being reduced like a sword swing, with named magic types (Light/Westernesse) and enemy-category tags (orc/dragon/shadow/wraith/nature) documented for the future gear/bane system.
+**What's working:** Full loop verified end-to-end via build + tests (still not manually verified on-device — no emulator in the CLI environment, flagged consistently across recent sessions). DB now at v20. No schema change this session (damage types is pure engine logic + one inert data field).
+**What's not wired yet:** Bio-stage triggers, `grievousWoundSpecs`, Lone-Lands unlock trigger, balance sim vs. Men encounters (all long-standing — the damage-type change is a real buff to Keeper/Captain against armored encounters, making a balance-sim pass more relevant than before, but re-tuning is explicitly deferred to group #6). The full ordered list of the 5 remaining audit sub-project groups (live combat visibility, content pass, Kitchen/Pantry UX, economy pass, gear system) — with what's done and what's next — is now written down at the bottom of `docs/superpowers/plans/2026-07-04-audit-quick-fixes.md` ("Roadmap: the 7 sub-project groups"), not just in conversation. `contemplative_tea` (Mithlost) still has its T1 dual-stat issue, deferred to the eventual Elves redesign.
+**Next session:** Group #3, Live combat visibility (DPS/heal bars during the fight, colored by damage type) — now unblocked since damage types (group #2) is done. See the Roadmap section in `docs/superpowers/plans/2026-07-04-audit-quick-fixes.md` for the full remaining order and reasoning.
 **Open questions:** Player title (still TBD). Exact Lone-Lands unlock trigger. `DatabaseModule.kt`'s `fallbackToDestructiveMigration(true)` (pre-existing risk, still not addressed). Does the T1-single-stat rule (§8.2) apply to draughts, or are draughts exempt? (`contemplative_tea` still unresolved, low priority — parked band.)
 **CLI build note:** `./gradlew` needs `export JAVA_HOME=/usr/share/pycharm/jbr` (no system JDK on PATH by default). Confirmed working for full `./gradlew build` including lint + unit tests, both in a worktree (after copying `local.properties` in — not tracked by git) and on the main checkout.
 
@@ -64,6 +64,30 @@
 - Next session: Wes picks the next audit item to tackle — see Current Status above for the candidate list
 - Near term: still-open items from Session 20 (bio-stage triggers, `grievousWoundSpecs`, Lone-Lands unlock trigger, gather/farm yield balance pass)
 - Future ideas logged: dead `PlayerState` hint columns + dead `PlayerRepository` methods (`future/wishlist.md`, batch into next schema-bump migration)
+
+## Session 23 — July 5, 2026
+**Damage Types: magic bypasses armor, named magic-type taxonomy, enemy-category tags**
+
+**What was built:**
+- Brainstormed and wrote `docs/superpowers/specs/2026-07-05-damage-types-design.md` (second sub-project of the 04 Jul audit's 7-group sequence — see the Roadmap section appended to `docs/superpowers/plans/2026-07-04-audit-quick-fixes.md` this session), then `docs/superpowers/plans/2026-07-05-damage-types.md` (2 tasks), executed via Subagent-Driven Development in an isolated worktree
+- `engine/EncounterEngine.kt`: added `physicalFraction(m: MemberInput): Float` (internal, unit-tested directly) — 1.0 for Warden/Fighter (fully armor-mitigated, unchanged), 0.0 for Keeper (fully bypasses armor — a real gap found this session: Keeper's magical damage was being reduced by armor exactly like a sword swing, contradicting master-design.md §5), and a stat-weighted split for Captain (`might*0.9` term physical, `will*0.6` term magical — falls out of the existing hybrid `rawDps` formula, no new number invented). Applied at both places the tick loop mitigates damage. `rawDps()` itself unchanged.
+- `design/master-design.md` §6.9 (new): documents the split rule, and — drawing on `legacy/brainstorm/damage-types-bane-affinities-design.md` (confirmed by Wes as valid reference despite predating the 30 June redesign) — a named magic-type taxonomy (Keeper's magic is **Light**, Captain's is **Westernesse**, flavor/documentation only, no code field yet since nothing reads it) and an enemy-category vocabulary (`orc`/`dragon`/`shadow`/`wraith`/`nature`) for a future gear/weapon "bane affinity" system that doesn't exist yet.
+- `data/model/Encounter.kt`, `assets/data/encounters.json`: added nullable `Encounter.enemyCategory` and tagged 7 of the 16 current encounters (3 goblin encounters → `orc`, a drakeling → `dragon`, a large spider → `shadow`, the barrow-wight → `wraith`, the huorn → `nature`) per the §6.9 taxonomy. Field is inert — nothing reads it yet; forward-compatible data for when weapons get built.
+
+**Decisions made:**
+- No new enemy-side "magic resistance" stat this session, despite master-design.md §5.1 implying one ("or by Will resistance") — Wes's call: bypass armor entirely for magic until a specific encounter actually needs enemies resistant to it, rather than invent a number nobody's validated
+- Captain's physical/magical split is stat-weighted from the existing formula, not a fixed 50/50 — a Captain built with more Will naturally gets more armor-immune damage, no new tunable introduced
+- This is an intentional damage buff to Keeper/Captain against any armored encounter (magic damage that used to be reduced by armor no longer is) — re-tuning encounter armor/difficulty values is explicitly deferred to the later economy/balance-pass group (#6), not attempted here
+- Bane affinities (the actual damage bonus vs. enemy category) stay fully inert — weapon-gated, and weapons don't exist yet (gear system, group #7, deliberately last)
+- Wrote the full 7-group roadmap with status down to a file (`docs/superpowers/plans/2026-07-04-audit-quick-fixes.md`, new "Roadmap" section at the bottom) rather than leaving the ordering only in conversation — needed before Wes could safely `/clear` the session
+
+**Anything that diverged from design/master-design.md:**
+- None — §6.9 is new content filling a gap the doc already implied (role damage types existed in §5, nothing implemented them)
+
+**Coming up:**
+- Next session: Group #3, Live combat visibility (DPS/heal bars during the fight, colored by damage type) — unblocked now that damage types exist
+- Near term: same long-standing items as before (bio-stage triggers, `grievousWoundSpecs`, Lone-Lands unlock trigger, gather/farm yield balance pass); a balance-sim pass against Men encounters is now more relevant given the Keeper/Captain damage buff, but still deferred to group #6
+- Future ideas logged: none this session (all work came from an already-approved spec)
 
 ## Session 20 — July 4, 2026
 **Navigation redesign: Missions launch pad, Journal character detail, House of Healing tab, recipe/ingredient browser tool**
