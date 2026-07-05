@@ -19,8 +19,12 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -32,6 +36,7 @@ import com.liquidcode7.hearthcraft.ui.viewmodel.BandViewModel
 import com.liquidcode7.hearthcraft.ui.viewmodel.HohViewModel
 import com.liquidcode7.hearthcraft.ui.viewmodel.InventoryViewModel
 import com.liquidcode7.hearthcraft.ui.viewmodel.PreparedHohItemDetail
+import kotlinx.coroutines.delay
 
 @Composable
 fun HouseOfHealingScreen(
@@ -49,6 +54,14 @@ fun HouseOfHealingScreen(
     val preparedItems by inventoryViewModel.preparedHohItems.collectAsState()
 
     val recovering = members.filter { it.isAlive && it.woundStatus != "healthy" }
+
+    var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
+    LaunchedEffect(Unit) {
+        while (true) {
+            now = System.currentTimeMillis()
+            delay(30_000L)
+        }
+    }
 
     Column(
         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp)
@@ -84,29 +97,40 @@ fun HouseOfHealingScreen(
                                 color = MaterialTheme.colorScheme.error
                             )
                         }
-                        if (preparedItems.isNotEmpty()) {
-                            Spacer(modifier = Modifier.height(6.dp))
-                            preparedItems.forEach { item ->
-                                val treatsAnything = item.treatsWoundTypes.any { it in member.woundTypes }
-                                Row(
-                                    modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Column(modifier = Modifier.weight(1f)) {
-                                        Text(item.name, style = MaterialTheme.typography.bodySmall)
-                                        Text(
-                                            "Treats: ${item.treatsWoundTypes.joinToString(", ") { it.replaceFirstChar(Char::uppercase) }}",
-                                            style = MaterialTheme.typography.labelSmall,
-                                            color = if (treatsAnything) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.error
-                                        )
-                                    }
-                                    GradeBadge(item.grade)
-                                    Spacer(modifier = Modifier.width(6.dp))
-                                    Button(onClick = { hohViewModel.applyToMember(member.memberId, item) }) {
-                                        Text(if (treatsAnything) "Treat" else "Treat anyway")
+                        if (member.woundStatus == "grievously_wounded") {
+                            if (preparedItems.isNotEmpty()) {
+                                Spacer(modifier = Modifier.height(6.dp))
+                                preparedItems.forEach { item ->
+                                    val treatsAnything = item.treatsWoundTypes.any { it in member.woundTypes }
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Column(modifier = Modifier.weight(1f)) {
+                                            Text(item.name, style = MaterialTheme.typography.bodySmall)
+                                            Text(
+                                                "Treats: ${item.treatsWoundTypes.joinToString(", ") { it.replaceFirstChar(Char::uppercase) }}",
+                                                style = MaterialTheme.typography.labelSmall,
+                                                color = if (treatsAnything) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.error
+                                            )
+                                        }
+                                        GradeBadge(item.grade)
+                                        Spacer(modifier = Modifier.width(6.dp))
+                                        Button(onClick = { hohViewModel.applyToMember(member.memberId, item) }) {
+                                            Text(if (treatsAnything) "Treat" else "Treat anyway")
+                                        }
                                     }
                                 }
                             }
+                        } else {
+                            Spacer(modifier = Modifier.height(6.dp))
+                            val remainingMs = (member.woundedSinceMs + member.woundedDurationMs - now).coerceAtLeast(0L)
+                            val remainingMin = (remainingMs / 60_000L).toInt()
+                            Text(
+                                if (remainingMin > 0) "Resting — back in ${remainingMin}m" else "Resting — back any moment",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                         }
                     }
                 }
