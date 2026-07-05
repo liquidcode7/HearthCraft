@@ -610,6 +610,10 @@ function roster(){const hk=(+$("hflav").value===1)?"fighterM":"fighterA";return 
 let MODE=0,SPEED=1,running=false,timer=null,t=0,P=null,maxT=0;
 let FIGHT = null;
 let series = [];
+// Results-tab bridge — Task 5 resyncs those reads to FIGHT.* directly; until then, finish() copies
+// FIGHT's final values here since M/events/fired are object refs (mutate-in-place, safe to alias early)
+// but baFired/spikesTotal are primitives (must be re-copied after the fight, not aliased once).
+let M={},events=[],fired={},baFired=false,spikesTotal=0;
 const SPEED_MS=[1000,250,62,0];
 
 function showTab(name){['setup','live','results','company'].forEach(n=>{$('pane_'+n).classList.toggle('on',n===name);$('tab_'+n).classList.toggle('on',n===name);});}
@@ -736,6 +740,8 @@ function refreshFoodSummary(){
 function buildParty(){
   const lvl=+$("lvl").value, R=roster();
   const cfg = { lvl, roster:R, duration:+$("dur").value, boss:+$("boss").value,
+    phys:(MODE===1?0:+$("phys").value/100), unkill:MODE===1,
+    potency: draughtPotency(), dread:statusOn("dread")/100, hope:antidoteOn("hope"),
     memberFoodBonuses: Object.fromEntries(ORDER.map(k=>[k, memberFoodBonuses(k)])) };
   FIGHT = createFightState(cfg);
   renderParty();
@@ -748,8 +754,8 @@ function statPreview(){const lvl=+$("lvl").value,R=roster();
   }).join("<br>");}
 function woundPips(n){let s="";for(let i=0;i<GRIEVOUS;i++)s+=`<span class="${i<n?'wound-pip':'wound-empty'}">&#9670;</span>`;return s;}
 function renderParty(){const host=$("party");host.innerHTML="";
-  ORDER.forEach(k=>{const m=FIGHT.M[k],pct=Math.max(0,(m.hp/m.max)*100);
-    const el=document.createElement("div");el.className=`panel member ${m.grievous?"grievous":""} ${m.horn?"horn":""}`;
+  ORDER.forEach(k=>{const m=FIGHT.M[k],pct=Math.max(0,(m.hp/m.max)*100),wc=(k==="fighter")?"role-h":"";
+    const el=document.createElement("div");el.className=`panel member ${wc} ${m.grievous?"grievous":""} ${m.horn?"horn":""}`;
     el.innerHTML=`<div class="m-top"><span class="m-name">${m.tpl.name}</span><span class="m-role ${m.cls}">${m.role}</span></div>
       <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
       <div class="m-hp-num"><span>Morale</span><span>${Math.max(0,Math.round(m.hp))} / ${m.max}</span></div>
@@ -1202,6 +1208,8 @@ function buildSummary(verdict){
 function finish(label,cls){clearInterval(timer);running=false;const v=$("verdict");v.textContent=label;v.className="verdict "+cls;
   log(`— ${label} —`,cls==="v-victory"?"g":cls==="v-defeat"?"t":"h");$("run").innerHTML="&#9654; Run Again";
   $("runstate").textContent=`${label} at ${fmtT(FIGHT.t)} — see Results`;
+  // Bridge FIGHT's final state onto the Results tab's still-untouched bare-global reads (Task 5 resyncs those reads to FIGHT.*).
+  M=FIGHT.M; events=FIGHT.events; fired=FIGHT.fired; baFired=FIGHT.baFired; spikesTotal=FIGHT.spikesTotal;
   buildSummary(label);renderResults();$("results_empty").style.display="none";$("results_body").style.display="";showTab('results');}
 
 function prep(){
@@ -1221,7 +1229,7 @@ function prep(){
     memberFoodBonuses: Object.fromEntries(ORDER.map(k=>[k, memberFoodBonuses(k)]))
   };
   FIGHT = createFightState(cfg);
-  P = cfg; // P stays as an alias other functions (refreshRead, buildSummary) already read
+  P = cfg; // P stays as an alias for the Results tab, which still reads it directly (Task 5 resyncs those reads to FIGHT.cfg)
   maxT = cfg.duration;
   $("log").innerHTML=""; series=[];
   $("verdict").textContent="ENGAGED";$("verdict").className="verdict v-fighting";
