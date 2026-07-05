@@ -93,6 +93,9 @@ class BandViewModel @Inject constructor(
     fun firstBandName(): String = gameData.bands.find { it.id == firstBandId.value }?.name ?: ""
     fun secondBandName(): String = gameData.bands.find { it.id == secondBandId.value }?.name ?: ""
 
+    fun ingredientName(id: String): String = gameData.ingredients.find { it.id == id }?.name ?: id
+    fun grimoireName(id: String): String = gameData.grimoires.find { it.id == id }?.name ?: id
+
     val availableBandsForUnlock: StateFlow<List<Band>> = playerState.map { state ->
         val chosenId = state?.chosenBandId.orEmpty()
         val secondId = state?.secondBandId.orEmpty()

@@ -113,6 +113,8 @@ fun MissionsScreen(
         if (combatReport != null) {
             CombatReportCard(
                 report = combatReport!!,
+                ingredientName = bandViewModel::ingredientName,
+                grimoireName = bandViewModel::grimoireName,
                 onDismiss = { bandViewModel.dismissCombatReport() }
             )
             Spacer(modifier = Modifier.height(16.dp))
@@ -539,7 +541,12 @@ private fun formatMissionMs(ms: Long): String {
 }
 
 @Composable
-private fun CombatReportCard(report: CombatReport, onDismiss: () -> Unit) {
+private fun CombatReportCard(
+    report: CombatReport,
+    ingredientName: (String) -> String,
+    grimoireName: (String) -> String,
+    onDismiss: () -> Unit
+) {
     val (containerColor, headerText) = when (report.outcome) {
         "VICTORY"  -> MaterialTheme.colorScheme.primaryContainer to "Victory"
         "DEFEAT"   -> MaterialTheme.colorScheme.errorContainer to "Fallen"
@@ -651,6 +658,42 @@ private fun CombatReportCard(report: CombatReport, onDismiss: () -> Unit) {
                             "${severity.first} ($count×)",
                             style = MaterialTheme.typography.labelSmall,
                             color = severity.second
+                        )
+                    }
+                }
+            }
+
+            // ── Rewards ────────────────────────────────────────────────────────
+            if (report.outcome != "DEFEAT") {
+                val grantedIngredients: Map<String, Int> = remember(report.ingredientsGrantedJson) {
+                    report.ingredientsGrantedJson.split(",").mapNotNull { entry ->
+                        val parts = entry.split(":")
+                        if (parts.size == 2) parts[0] to (parts[1].toIntOrNull() ?: 0) else null
+                    }.toMap()
+                }
+                val grantedGrimoires: List<String> = remember(report.grimoireIdsGrantedJson) {
+                    report.grimoireIdsGrantedJson.split(",").filter { it.isNotBlank() }
+                }
+                if (report.moneyGranted > 0 || grantedIngredients.isNotEmpty() || grantedGrimoires.isNotEmpty() || report.xpGranted > 0) {
+                    Spacer(modifier = Modifier.height(10.dp))
+                    HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.15f))
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text("Rewards", style = MaterialTheme.typography.labelMedium)
+                    Spacer(modifier = Modifier.height(4.dp))
+                    if (report.moneyGranted > 0) {
+                        Text("+${report.moneyGranted} gold", style = MaterialTheme.typography.bodySmall)
+                    }
+                    grantedIngredients.forEach { (id, qty) ->
+                        Text("+$qty ${ingredientName(id)}", style = MaterialTheme.typography.bodySmall)
+                    }
+                    if (report.xpGranted > 0) {
+                        Text("+${report.xpGranted} band XP", style = MaterialTheme.typography.bodySmall)
+                    }
+                    grantedGrimoires.forEach { id ->
+                        Text(
+                            "Grimoire found: ${grimoireName(id)}",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.primary
                         )
                     }
                 }
