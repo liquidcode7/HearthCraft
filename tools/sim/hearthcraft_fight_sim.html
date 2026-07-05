@@ -451,8 +451,7 @@ const FOOD_MODEL = (function () {
         <div class="panel chart-card"><div class="ch-h">Effective DPS over time</div><div class="ch-body" id="ch_dps"></div><div class="chart-legend" id="lg_dps"></div></div>
         <div class="panel chart-card"><div class="ch-h">Party Morale over time</div><div class="ch-body" id="ch_morale"></div><div class="chart-legend" id="lg_morale"></div></div>
         <div class="panel chart-card"><div class="ch-h">DPS per character</div><div id="ch_dpschar"></div></div>
-        <div class="panel chart-card"><div class="ch-h">Captain&#8217;s boost to the party</div><div id="ch_captainboost"></div></div>
-        <div class="panel chart-card"><div class="ch-h">Keeper healing</div><div id="ch_keeperheal"></div></div>
+        <div class="panel chart-card"><div class="ch-h">Healing by source</div><div id="ch_healsource"></div></div>
         <div class="panel chart-card"><div class="ch-h">Damage dealt to enemy &#8212; by type</div><div id="ch_damagetype"></div><div id="lg_damagetype"></div></div>
         <div class="panel chart-card"><div class="ch-h">Armor mitigation</div><div id="ch_armormet"></div></div>
         <div class="panel chart-card"><div class="ch-h">Dread mitigation</div><div id="ch_dreadmet"></div></div>
@@ -460,6 +459,7 @@ const FOOD_MODEL = (function () {
         <div class="panel chart-card"><div class="ch-h">Shadow &#8212; party spirit (Will + Fate)</div><div class="ch-body" id="ch_spirit"></div><div class="chart-legend" id="lg_spirit"></div></div>
         <div class="panel chart-card"><div class="ch-h">Fate &#8212; spikes slipped</div><div id="ch_fatespike"></div></div>
         <div class="panel chart-card"><div class="ch-h">Fate &#8212; Inspiration trigger rates</div><div id="ch_fateinsp"></div></div>
+        <div class="panel chart-card"><div class="ch-h">Fate &#8212; Streak activity</div><div id="ch_streak"></div></div>
       </div>
       <div class="panel insp-timeline" style="margin-top:14px"><div class="panel-h" style="margin:-10px -14px 8px">Inspiration Timeline</div><div id="insp_list"></div></div>
       <div class="note">All DPS values are averages over the full engagement. Hover line charts for per-second values.</div>
@@ -1362,7 +1362,7 @@ function renderResults(){
 
   // Morale over time (line chart)
   const mMax=Math.max(...ORDER.map(k=>series[0].maxmorale[k]));
-  lineChart("ch_morale","lg_morale",ORDER.map(k=>({name:M[k].tpl.name+" ("+M[k].role+")",color:TPL[k==="fighter"?"fighterA":k].color,pts:series.map(s=>({x:s.t,y:s.morale[k]})),fmt:v=>Math.round(v)})),xmax,mMax,{});
+  lineChart("ch_morale","lg_morale",ORDER.map(k=>({name:FIGHT.M[k].tpl.name+" ("+FIGHT.M[k].role+")",color:FIGHT.M[k].color,pts:series.map(s=>({x:s.t,y:s.morale[k]})),fmt:v=>Math.round(v)})),xmax,mMax,{});
 
   // DPS per character — MMO bar meter
   meterChart("ch_dpschar",[
@@ -1372,26 +1372,19 @@ function renderResults(){
     {name:"Aelindra (Capt.)", color:"#b8843c", value:avgBy("captain")},
   ],"dps","Party total");
 
-  // Captain's boost — Will + Red Dawn averaged over fight
-  const avgWillSaved=avg("willSaved"), avgHopeSaved=avg("hopeSaved"), avgDawnBoost=avg("dawnBoost");
-  const captainBoostTotal=avgWillSaved+avgDawnBoost;
-  if(captainBoostTotal>0.1||avgHopeSaved>0.1){
-    meterChart("ch_captainboost",[
-      {name:"Captain Will + Red Dawn", color:"#8a9aaa", value:captainBoostTotal},
-      {name:"Hope (food antidote)",    color:"#c9a84c", value:avgHopeSaved},
-    ],"dps","Total boost");
+  // Healing by source — HoT / Triage / Group / Rescue
+  const healTotal = FIGHT.healByType.hot + FIGHT.healByType.triage + FIGHT.healByType.group + FIGHT.healByType.rescue;
+  if (healTotal > 0.01) {
+    meterChart("ch_healsource",[
+      {name:"HoT",          color:"#5b7f63", value:FIGHT.healByType.hot},
+      {name:"Triage",       color:"#7d5a93", value:FIGHT.healByType.triage},
+      {name:"Group Heal",   color:"#4a6c93", value:FIGHT.healByType.group},
+      {name:"Rescue Burst", color:"#b8843c", value:FIGHT.healByType.rescue},
+    ],"hp","Total healing");
+    const hotUptimePct = FIGHT.t > 0 ? (FIGHT.hotActiveTicks / FIGHT.t * 100).toFixed(1) : "0.0";
+    $("ch_healsource").innerHTML += `<div class="meter-footer">HoT uptime: ${hotUptimePct}% of fight duration</div>`;
   } else {
-    $("ch_captainboost").innerHTML='<div class="empty" style="padding:24px 14px;text-align:center">No Dread active and Red Dawn did not fire — enable Dread or run a long fight to see the Captain\'s boost.</div>';
-  }
-
-  // Keeper healing — green bar
-  const avgHeal=series.reduce((s,f)=>s+(f.healBy?f.healBy.keeper||0:0),0)/series.length;
-  if(avgHeal>0.01){
-    meterChart("ch_keeperheal",[
-      {name:"Cael (Keeper)", color:"#5b7f63", value:avgHeal},
-    ],"hp/s","Avg HP/s restored");
-  } else {
-    $("ch_keeperheal").innerHTML='<div class="empty" style="padding:24px 14px;text-align:center">No rescues fired this engagement — Keeper spent all time on damage.</div>';
+    $("ch_healsource").innerHTML='<div class="empty" style="padding:24px 14px;text-align:center">No healing this engagement.</div>';
   }
 
   // Damage dealt to enemy by type — pie chart
@@ -1406,7 +1399,7 @@ function renderResults(){
 
   // Armor mitigation — what armor absorbed vs what got through
   const avgPhysAbsorbed=avg("physMitTotal");
-  if(P.phys>0&&(avgPhysAbsorbed>0||physDps>0)){
+  if(FIGHT.cfg.phys>0&&(avgPhysAbsorbed>0||physDps>0)){
     meterChart("ch_armormet",[
       {name:"Absorbed by armor", color:"#c0392b", value:avgPhysAbsorbed},
       {name:"Through armor",     color:"#5b7f63", value:physDps},
@@ -1415,15 +1408,13 @@ function renderResults(){
     $("ch_armormet").innerHTML='<div class="empty" style="padding:24px 14px;text-align:center">No armor in this fight — set Physical mit. % on Setup to see the breakdown.</div>';
   }
 
-  // Dread mitigation — Layer A drag + Will/Hope counters + Layer B event counts
-  if(P.dread>0){
+  // Dread mitigation — Layer A drag + Layer B event counts
+  if(FIGHT.cfg.dread>0){
     const avgLayerALoss=series.reduce((s,f)=>s+(f.raw||0)*(f.layerADrag||0),0)/series.length;
-    const stunEvts=events.filter(e=>e.kind==="dread-stun").length;
-    const breakEvts=events.filter(e=>e.kind==="morale-break").length;
+    const stunEvts=FIGHT.events.filter(e=>e.kind==="dread-stun").length;
+    const breakEvts=FIGHT.events.filter(e=>e.kind==="morale-break").length;
     meterChart("ch_dreadmet",[
       {name:"Layer A drag (DPS lost to dread floor)",color:"#9a3526",value:avgLayerALoss},
-      {name:"Saved by Captain Will + Red Dawn",color:"#b8843c",value:captainBoostTotal},
-      {name:"Saved by Hope",color:"#c9a84c",value:avgHopeSaved},
     ],"dps","Dread summary");
     $("ch_dreadmet").innerHTML+=`<div class="meter-footer">Layer B events this fight: ${stunEvts} stun${stunEvts!==1?"s":""}, ${breakEvts} break${breakEvts!==1?"s":""}</div>`;
   } else {
@@ -1431,7 +1422,7 @@ function renderResults(){
   }
 
   // Wounds accumulated (line chart)
-  lineChart("ch_wounds","lg_wounds",ORDER.map(k=>({name:M[k].tpl.name,color:TPL[k==="fighter"?"fighterA":k].color,pts:series.map(s=>({x:s.t,y:s.wounds[k]})),fmt:v=>Math.round(v)+" wounds"})),xmax,GRIEVOUS,{yfmt:v=>Math.round(v)});
+  lineChart("ch_wounds","lg_wounds",ORDER.map(k=>({name:FIGHT.M[k].tpl.name,color:FIGHT.M[k].color,pts:series.map(s=>({x:s.t,y:s.wounds[k]})),fmt:v=>Math.round(v)+" wounds"})),xmax,GRIEVOUS,{yfmt:v=>Math.round(v)});
 
   // Shadow spirit drain (line chart, conditional)
   const sawShadow=series.some(s=>s.spirit.wil<s.spiritBase.wil-0.5||s.spirit.fat<s.spiritBase.fat-0.5);
@@ -1443,16 +1434,26 @@ function renderResults(){
   else{$("ch_spirit").innerHTML='<div class="empty" style="padding:30px 14px;text-align:center">No Shadow in this fight — toggle Shadow on the enemy to watch it drain the party\'s Will and Fate (and Radiance hold it back).</div>';$("lg_spirit").innerHTML="";}
 
   // Inspiration timeline
-  const insps=events.filter(e=>/Grace|Horn|Red Dawn|Black Arrow/.test(e.kind));
+  const insps=FIGHT.events.filter(e=>/Grace|Horn|Red Dawn|Black Arrow/.test(e.kind));
   $("insp_list").innerHTML=insps.length?insps.map(e=>`<div class="insp-row"><span class="it">${fmtT(e.t)}</span><span class="ik">${e.kind}</span><span>&#8212; ${e.who}</span></div>`).join(""):'<div class="empty">No Inspirations fired this engagement. They are rare grace — most fights pass without them.</div>';
 
+  const contribLines = [];
+  if (FIGHT.inspGraceHeal > 0) contribLines.push(`Grace restored ${Math.round(FIGHT.inspGraceHeal)} HP`);
+  if (FIGHT.inspHornRedirect > 0) contribLines.push(`Horn redirected ${Math.round(FIGHT.inspHornRedirect)} damage to the Warden`);
+  if (FIGHT.inspDawnHeal > 0) contribLines.push(`Red Dawn restored ${Math.round(FIGHT.inspDawnHeal)} HP`);
+  if (FIGHT.inspDawnBonusDps > 0) contribLines.push(`Red Dawn added ${Math.round(FIGHT.inspDawnBonusDps)} bonus damage`);
+  if (FIGHT.inspBlackArrowAmount > 0) contribLines.push(FIGHT.cfg.unkill ? `Black Arrow cut ${Math.round(FIGHT.inspBlackArrowAmount)}s off the clock` : `Black Arrow burned ${Math.round(FIGHT.inspBlackArrowAmount)} resolve`);
+  if (contribLines.length) {
+    $("insp_list").innerHTML += `<div class="meter-footer" style="text-align:left;padding:8px 2px 0">${contribLines.join(" · ")}</div>`;
+  }
+
   // Fate — spikes slipped
-  if(spikesTotal>0){
+  if(FIGHT.spikesTotal>0){
     meterChart("ch_fatespike",ORDER.map(k=>({
-      name:M[k].tpl.name+" ("+M[k].tpl.role+")",
-      color:TPL[k==="fighter"?"fighterA":k].color,
-      value:M[k].fatEvades
-    })),"slipped",`Total spikes: ${spikesTotal}`);
+      name:FIGHT.M[k].tpl.name+" ("+FIGHT.M[k].tpl.role+")",
+      color:FIGHT.M[k].color,
+      value:FIGHT.M[k].fatEvades
+    })),"slipped",`Total spikes: ${FIGHT.spikesTotal}`);
   } else {
     $("ch_fatespike").innerHTML='<div class="empty" style="padding:24px 14px;text-align:center">No spikes in this fight — set spike potency on Setup to see Fate evasion.</div>';
   }
@@ -1460,14 +1461,14 @@ function renderResults(){
   // Fate — Inspiration trigger rates (one row per Inspiration showing effective % at fight end)
   {
     const inspDefs=[
-      {name:"Laurelin’s Grace", k:"keeper",  base:P.graceBase,      color:"#7d5a93", fired:events.some(e=>e.kind==="Laurelin's Grace")},
-      {name:"Horn of Gondor",        k:"warden",  base:P.hornBase,       color:"#2e6da4", fired:!!fired.horn},
-      {name:"Red Dawn",              k:"captain", base:P.dawnBase,       color:"#b8843c", fired:!!fired.dawn},
-      {name:"Black Arrow (peak)",    k:"fighter",  base:P.blackArrowCap,  color:"#c0392b", fired:baFired},
+      {name:"Laurelin’s Grace", k:"keeper",  base:FIGHT.cfg.graceBase,      color:"#7d5a93", fired:FIGHT.events.some(e=>e.kind==="Laurelin's Grace")},
+      {name:"Horn of Gondor",        k:"warden",  base:FIGHT.cfg.hornBase,       color:"#2e6da4", fired:!!FIGHT.fired.horn},
+      {name:"Red Dawn",              k:"captain", base:FIGHT.cfg.dawnBase,       color:"#b8843c", fired:!!FIGHT.fired.dawn},
+      {name:"Black Arrow (peak)",    k:"fighter",  base:FIGHT.cfg.blackArrowCap,  color:"#c0392b", fired:FIGHT.baFired},
     ];
     let html='<div class="meter-list">';
     inspDefs.forEach(d=>{
-      const rate=Math.min(0.25,d.base+M[d.k].fat*0.003);
+      const rate=Math.min(0.25,d.base+FIGHT.M[d.k].fat*0.003);
       const pct=Math.round(rate*100);
       const barW=Math.round(rate/0.25*100);
       const firedHtml=d.fired?'<span style="color:var(--good);font-weight:700">fired</span>':'<span style="color:#8a7355">no</span>';
@@ -1480,6 +1481,18 @@ function renderResults(){
     });
     html+='</div><div class="meter-footer">Cap: 25% &middot; formula: base + Fate &times; 0.003 &middot; Black Arrow shows peak late-fight rate</div>';
     $("ch_fateinsp").innerHTML=html;
+  }
+
+  // Streak activity — trigger count per member + bonus damage/healing
+  const totalStreaks = ORDER.reduce((s,k)=>s+FIGHT.streakCount[k],0);
+  if (totalStreaks > 0) {
+    meterChart("ch_streak", ORDER.map(k=>({
+      name: FIGHT.M[k].tpl.name+" ("+FIGHT.M[k].role+")",
+      color: FIGHT.M[k].color,
+      value: FIGHT.streakCount[k]
+    })),"triggers",`Total: ${totalStreaks} · bonus damage ${Math.round(FIGHT.streakBonusDmg)} · bonus healing ${Math.round(FIGHT.streakBonusHeal)}`);
+  } else {
+    $("ch_streak").innerHTML='<div class="empty" style="padding:24px 14px;text-align:center">No streaks triggered this engagement.</div>';
   }
 }
 
