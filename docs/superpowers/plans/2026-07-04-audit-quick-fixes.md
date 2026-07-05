@@ -602,9 +602,13 @@ brainstorm → spec → plan → subagent-driven-development cycle, in this orde
    physical; named magic-type taxonomy (Light/Westernesse) and enemy-category tags
    (orc/dragon/shadow/wraith/nature) documented/tagged for the future gear/bane system,
    both inert until weapons exist. Merged to main.
-3. **Live combat visibility** — NOT STARTED. DPS/heal bars during the fight itself
-   (not just post-fight), colored by damage type, buff indicators. Depends on damage
-   types (#2, now done) — this is the natural next pick.
+3. **Live combat visibility** — DONE (05 Jul 2026). Spec:
+   `docs/superpowers/specs/2026-07-05-live-combat-visibility-design.md`. Plan:
+   `docs/superpowers/plans/2026-07-05-live-combat-visibility.md`. Shipped: live
+   cumulative DPS/heal bars on the in-progress fight card, colored by the engine's real
+   physical/magical split; shield outline, STREAK/HOT badges per member; a banner for
+   the four inspiration effects (Horn of Gondor, Red Dawn, Black Arrow, Grace). Merged
+   to main.
 4. **Content pass** — NOT STARTED. Inspiration descriptions rewrite, fight narrative/
    flavor text, victory narrative. Pure writing, no engine dependencies — could be done
    anytime, sequenced here so copy accurately reflects the now-real damage-type mechanics.
