@@ -9,7 +9,7 @@
     --ink:#241a12;--parch:#efe6d2;--parch2:#e6dac0;--rule:#b9a47c;--roast:#4a2f1a;
     --ember:#b5602e;--gold:#b8843c;--surv:#5b7f63;--win:#4a6c93;--keeper:#7d5a93;
     --boss:#8a3a2c;--good:#5b7f63;--stale:#b8843c;--bad:#9a3526;--bar-bg:#cabfa3;--insp:#b8843c;
-    --warden:#2e6da4;--captain:#b8843c;--hunter:#c0392b;--keeperc:#7d5a93;
+    --warden:#2e6da4;--captain:#b8843c;--fighter:#c0392b;--keeperc:#7d5a93;
   }
   *{box-sizing:border-box;margin:0;padding:0}
   body{background:radial-gradient(ellipse at 50% -10%,#f6efdd 0%,var(--parch) 55%,var(--parch2) 100%);color:var(--ink);font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;min-height:100vh;padding:20px 16px 60px}
@@ -41,7 +41,7 @@
   .char-insp-name{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--insp);font-weight:700;margin-bottom:4px}
   .char-insp-text{font-size:12px;line-height:1.6;color:#6a5030}
   .hdr-warden{background:var(--warden)}
-  .hdr-hunter{background:var(--hunter)}
+  .hdr-fighter{background:var(--fighter)}
   .hdr-keeper{background:var(--keeper)}
   .hdr-captain{background:var(--captain)}
 
@@ -105,14 +105,12 @@
   .m-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:3px}
   .m-name{font-size:14px;font-weight:600}
   .m-role{font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;padding:1px 6px;border-radius:8px;color:#fff}
-  .role-warden{background:#2e6da4}.role-captain{background:#b8843c}.role-hunter{background:#c0392b}.role-keeper{background:#7d5a93}
+  .role-warden{background:#2e6da4}.role-captain{background:#b8843c}.role-fighter{background:#c0392b}.role-keeper{background:#7d5a93}
   .m-hp-num{font-size:10.5px;color:#6a5638;font-variant-numeric:tabular-nums;margin-top:3px;display:flex;justify-content:space-between}
   .m-wounds{font-size:10px;margin-top:2px;letter-spacing:1px}
   .wound-pip{color:var(--bad)}.wound-empty{color:#cabfa3}
   .m-action{font-size:10px;font-style:italic;color:var(--keeper);min-height:13px;margin-top:1px}
   .member .bar-fill{background:var(--surv)}.member.role-h .bar-fill{background:var(--win)}
-  .bar-reserve{position:absolute;top:0;height:100%;background:rgba(70,130,210,0.50);border-radius:0 2px 2px 0;transition:left .08s linear,width .08s linear}
-  .res-num{color:#4a7abf;font-size:9.5px;margin-left:4px;font-style:normal}
   .member.horn{box-shadow:0 0 0 2px var(--gold) inset}
   .statusline{display:flex;justify-content:space-between;align-items:center;padding:9px 15px;font-size:13px;margin-bottom:13px}
   .clock{font-variant-numeric:tabular-nums;color:#6a5638}
@@ -209,8 +207,8 @@ const FOOD_MODEL = (function () {
     return `Lv${c}`;
   }
   const RECIPES = [
-    { id:"hearthbread",       name:"Hearthbread",        levelRequired:1,  primaryStat:"vit", secondaryStat:"mig" },
-    { id:"wanderers_supper",  name:"Wanderer's Supper",  levelRequired:1,  primaryStat:"agi", secondaryStat:"mig" },
+    { id:"hearthbread",       name:"Hearthbread",        levelRequired:1,  primaryStat:"vit", secondaryStat:null },
+    { id:"wanderers_supper",  name:"Wanderer's Supper",  levelRequired:1,  primaryStat:"agi", secondaryStat:null },
     { id:"contemplative_tea", name:"Contemplative Tea",  levelRequired:1,  primaryStat:"wil", secondaryStat:"agi" },
     { id:"rangers_fare",      name:"Ranger's Fare",      levelRequired:1,  primaryStat:"mig", secondaryStat:"vit" },
     { id:"ember_porridge",    name:"Ember Porridge",     levelRequired:1,  primaryStat:null,  secondaryStat:null  },
@@ -264,7 +262,6 @@ const FOOD_MODEL = (function () {
     <button id="tab_setup" class="on" onclick="showTab('setup')">1 &middot; Setup</button>
     <button id="tab_live" onclick="showTab('live')">2 &middot; Live</button>
     <button id="tab_results" onclick="showTab('results')">3 &middot; Results</button>
-    <button id="tab_batch" onclick="showTab('batch')">5 &middot; Batch</button>
     <button id="tab_company" onclick="showTab('company')">4 &middot; The Company</button>
     <span class="runstate" id="runstate">not yet run</span>
   </div>
@@ -274,7 +271,7 @@ const FOOD_MODEL = (function () {
   <!-- ===================== TAB 1: SETUP ===================== -->
   <div class="tab on" id="pane_setup">
     <div class="panel impbar"><div class="panel-h">Import encounter from spreadsheet</div><div class="panel-b">
-      <div class="gnote">Edit the <b>Sim Encounters</b> sheet in HearthCraft_Encounter_Builder.xlsx, save, then load it here. Picking one drops its numbers into the controls below and sets the band to its recommended level.</div>
+      <div class="gnote">Edit the <b>Sim Encounters</b> sheet in HearthCraft_Encounter_Builder.xlsx, save, then load it here. Picking one drops its numbers into the controls below and sets the band to its recommended level. For batch/aggregate win-rate analysis across many fights, use <code>node tools/sim/run_sim.js</code> instead — this browser tool is for watching and inspecting one fight at a time.</div>
       <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
         <label class="impbtn">Load .xlsx&#8230;<input type="file" id="enc_file" accept=".xlsx" style="display:none" onchange="loadEncFile(event)"></label>
         <select id="enc_select" style="display:none" onchange="applyEncByIndex(this.value)"></select>
@@ -311,7 +308,7 @@ const FOOD_MODEL = (function () {
           <div class="ctl" id="r_boss"><label>Boss resolve (kill pool) <span class="val" id="v_boss">8500</span></label><input type="range" id="boss" min="1000" max="20000" step="250" value="8500"></div>
           <div class="ctl"><label>Steady drain / sec <span class="val" id="v_drain">70</span></label><input type="range" id="drain" min="0" max="220" value="70"><div class="effect" id="e_drain"></div></div>
           <div class="ctl"><label>Spike size (crit potency) <span class="val" id="v_spike">160</span></label><input type="range" id="spike" min="0" max="340" step="10" value="160"><div class="effect" id="e_spike"></div></div>
-          <div class="ctl"><label>Seconds between spikes (mean) <span class="val" id="v_spikeiv">12</span></label><input type="range" id="spikeiv" min="2" max="20" value="12"><div class="effect">interval is randomised ±50% each spike, damage ±30% — same mean, real variance. Fragile members (Hunter/Keeper) can catch a bad run of spikes with no mid-fight reaction possible.</div></div>
+          <div class="ctl"><label>Seconds between spikes (mean) <span class="val" id="v_spikeiv">12</span></label><input type="range" id="spikeiv" min="2" max="20" value="12"><div class="effect">interval is randomised ±50% each spike, damage ±30% — same mean, real variance. Fragile members (Fighter/Keeper) can catch a bad run of spikes with no mid-fight reaction possible.</div></div>
         </div>
         <div class="ctl-group" id="r_phys">
           <h3 onclick="this.parentElement.classList.toggle('open')">Physical mitigation (armor) <span>&#9432;</span></h3>
@@ -343,29 +340,29 @@ const FOOD_MODEL = (function () {
           <div class="gnote" id="rlevel_hps" style="margin-top:4px">&#8594; 10.0 HP/s per member</div>
           <div class="ctl" style="margin-top:8px"><label>Warden eats</label><select id="rw" onchange="onRecipeChange()">
             <option value="">&#8212; no recipe</option>
-            <option value="hearthbread" selected>Hearthbread (Vit &#8594; Mig)</option>
-            <option value="wanderers_supper">Wanderer's Supper (Agi &#8594; Mig)</option>
+            <option value="hearthbread" selected>Hearthbread (Vit)</option>
+            <option value="wanderers_supper">Wanderer's Supper (Agi)</option>
             <option value="contemplative_tea">Contemplative Tea (Wil &#8594; Agi)</option>
             <option value="rangers_fare">Ranger's Fare (Mig &#8594; Vit)</option>
           </select></div>
-          <div class="ctl"><label>Hunter eats</label><select id="rh" onchange="onRecipeChange()">
+          <div class="ctl"><label>Fighter eats</label><select id="rh" onchange="onRecipeChange()">
             <option value="">&#8212; no recipe</option>
-            <option value="hearthbread">Hearthbread (Vit &#8594; Mig)</option>
-            <option value="wanderers_supper" selected>Wanderer's Supper (Agi &#8594; Mig)</option>
+            <option value="hearthbread">Hearthbread (Vit)</option>
+            <option value="wanderers_supper" selected>Wanderer's Supper (Agi)</option>
             <option value="contemplative_tea">Contemplative Tea (Wil &#8594; Agi)</option>
             <option value="rangers_fare">Ranger's Fare (Mig &#8594; Vit)</option>
           </select></div>
           <div class="ctl"><label>Keeper eats</label><select id="rk" onchange="onRecipeChange()">
             <option value="">&#8212; no recipe</option>
-            <option value="hearthbread">Hearthbread (Vit &#8594; Mig)</option>
-            <option value="wanderers_supper">Wanderer's Supper (Agi &#8594; Mig)</option>
+            <option value="hearthbread">Hearthbread (Vit)</option>
+            <option value="wanderers_supper">Wanderer's Supper (Agi)</option>
             <option value="contemplative_tea" selected>Contemplative Tea (Wil &#8594; Agi)</option>
             <option value="rangers_fare">Ranger's Fare (Mig &#8594; Vit)</option>
           </select></div>
           <div class="ctl"><label>Captain eats</label><select id="rc" onchange="onRecipeChange()">
             <option value="">&#8212; no recipe</option>
-            <option value="hearthbread">Hearthbread (Vit &#8594; Mig)</option>
-            <option value="wanderers_supper">Wanderer's Supper (Agi &#8594; Mig)</option>
+            <option value="hearthbread">Hearthbread (Vit)</option>
+            <option value="wanderers_supper">Wanderer's Supper (Agi)</option>
             <option value="contemplative_tea">Contemplative Tea (Wil &#8594; Agi)</option>
             <option value="rangers_fare" selected>Ranger's Fare (Mig &#8594; Vit)</option>
           </select></div>
@@ -373,9 +370,9 @@ const FOOD_MODEL = (function () {
         </div>
         <div class="ctl-group">
           <h3 onclick="this.parentElement.classList.toggle('open')">The band <span>&#9432;</span></h3>
-          <div class="gnote">Band level scales every member's stats up from their 1&#8211;20 starting spread. Each role is a fixed template: Warden tanky, Hunter fragile striker, Keeper fragile linchpin, Captain durable empowerer. Live stats shown below.</div>
+          <div class="gnote">Band level scales every member's stats up from their 1&#8211;20 starting spread. Each role is a fixed template: Warden tanky, Fighter fragile striker, Keeper fragile linchpin, Captain durable empowerer. Live stats shown below.</div>
           <div class="ctl"><label>Band level <span class="val" id="v_lvl">10</span></label><input type="range" id="lvl" min="1" max="20" value="10"></div>
-          <div class="ctl"><label>Hunter flavor <span class="val" id="v_hflav">agility</span></label><input type="range" id="hflav" min="0" max="1" value="0"></div>
+          <div class="ctl"><label>Fighter flavor <span class="val" id="v_hflav">agility</span></label><input type="range" id="hflav" min="0" max="1" value="0"></div>
           <div id="statpreview" class="statline"></div>
         </div>
         <div class="ctl-group">
@@ -405,7 +402,6 @@ const FOOD_MODEL = (function () {
   <div class="tab" id="pane_live">
     <div class="panel readbar">
       <span class="lbl">Pre-engagement read</span>
-      <span>Survive <span class="chip c-risky" id="read_surv">&#8212;</span></span>
       <span>Victory <span class="chip c-risky" id="read_win">&#8212;</span></span>
       <span style="margin-left:auto;font-size:11px;color:#6a5638" id="read_hint"></span>
     </div>
@@ -422,19 +418,11 @@ const FOOD_MODEL = (function () {
       <div class="clock" id="speed">&#8212;</div>
     </div>
     <div class="gauges">
-      <div class="panel gauge"><div class="g-h">Survive axis</div>
-        <div class="g-row"><span>Party sustain (HP/s)</span><span id="g_sus">&#8212;</span></div>
-        <div class="g-row"><span>Incoming pressure</span><span id="g_inc">&#8212;</span></div>
-        <div class="g-row"><span>Holding?</span><span id="g_hold">&#8212;</span></div>
-      </div>
       <div class="panel gauge"><div class="g-h">Win axis &amp; mitigation</div>
         <div class="g-row"><span>Raw party DPS</span><span id="g_raw">&#8212;</span></div>
         <div class="g-row sub" id="g_physrow"><span>&#8722; Armor (after penetration)</span><span id="g_phys">&#8212;</span></div>
-        <div class="g-row sub" id="g_pensaverow"><span>&nbsp;&nbsp;DPS preserved by penetration</span><span class="save" id="g_pensave">&#8212;</span></div>
         <div class="g-row sub" id="g_pendetail" style="font-size:10px;color:#8a7355"></div>
         <div class="g-row sub" id="g_dreadrow"><span>&#8722; Dread (after Will + Hope)</span><span id="g_dreadval">&#8212;</span></div>
-        <div class="g-row sub" id="g_willrow"><span>&nbsp;&nbsp;preserved by Captain Will</span><span class="save" id="g_willsave">&#8212;</span></div>
-        <div class="g-row sub" id="g_hoperow"><span>&nbsp;&nbsp;preserved by Hope-food</span><span class="save" id="g_hopesave">&#8212;</span></div>
         <div class="g-row sub" id="g_shadowrow"><span>Shadow drain (Will+Fate lost)</span><span class="no" id="g_shadowval">&#8212;</span></div>
         <div class="g-row"><span><b>Effective DPS</b></span><span id="g_dps"><b>&#8212;</b></span></div>
         <div class="g-row"><span>Keeper</span><span id="g_keep">&#8212;</span></div>
@@ -442,7 +430,7 @@ const FOOD_MODEL = (function () {
       </div>
       <div class="panel gauge"><div class="g-h">DPS per character</div>
         <div class="g-row"><span>Borin (Warden)</span><span id="g_dps_warden"><b>&#8212;</b></span></div>
-        <div class="g-row"><span>Mira (Hunter)</span><span id="g_dps_hunter"><b>&#8212;</b></span></div>
+        <div class="g-row"><span>Mira (Fighter)</span><span id="g_dps_fighter"><b>&#8212;</b></span></div>
         <div class="g-row"><span>Cael (Keeper)</span><span id="g_dps_keeper"><b>&#8212;</b></span></div>
         <div class="g-row"><span>Aelindra (Captain)</span><span id="g_dps_captain"><b>&#8212;</b></span></div>
         <div class="g-row" style="margin-top:4px;border-top:1px solid var(--rule);padding-top:4px"><span style="font-size:10px;color:#8a7355">Keeper magic bypasses armor</span></div>
@@ -460,8 +448,7 @@ const FOOD_MODEL = (function () {
         <div class="panel chart-card"><div class="ch-h">Effective DPS over time</div><div class="ch-body" id="ch_dps"></div><div class="chart-legend" id="lg_dps"></div></div>
         <div class="panel chart-card"><div class="ch-h">Party Morale over time</div><div class="ch-body" id="ch_morale"></div><div class="chart-legend" id="lg_morale"></div></div>
         <div class="panel chart-card"><div class="ch-h">DPS per character</div><div id="ch_dpschar"></div></div>
-        <div class="panel chart-card"><div class="ch-h">Captain&#8217;s boost to the party</div><div id="ch_captainboost"></div></div>
-        <div class="panel chart-card"><div class="ch-h">Keeper healing</div><div id="ch_keeperheal"></div></div>
+        <div class="panel chart-card"><div class="ch-h">Healing by source</div><div id="ch_healsource"></div></div>
         <div class="panel chart-card"><div class="ch-h">Damage dealt to enemy &#8212; by type</div><div id="ch_damagetype"></div><div id="lg_damagetype"></div></div>
         <div class="panel chart-card"><div class="ch-h">Armor mitigation</div><div id="ch_armormet"></div></div>
         <div class="panel chart-card"><div class="ch-h">Dread mitigation</div><div id="ch_dreadmet"></div></div>
@@ -469,67 +456,10 @@ const FOOD_MODEL = (function () {
         <div class="panel chart-card"><div class="ch-h">Shadow &#8212; party spirit (Will + Fate)</div><div class="ch-body" id="ch_spirit"></div><div class="chart-legend" id="lg_spirit"></div></div>
         <div class="panel chart-card"><div class="ch-h">Fate &#8212; spikes slipped</div><div id="ch_fatespike"></div></div>
         <div class="panel chart-card"><div class="ch-h">Fate &#8212; Inspiration trigger rates</div><div id="ch_fateinsp"></div></div>
+        <div class="panel chart-card"><div class="ch-h">Fate &#8212; Streak activity</div><div id="ch_streak"></div></div>
       </div>
       <div class="panel insp-timeline" style="margin-top:14px"><div class="panel-h" style="margin:-10px -14px 8px">Inspiration Timeline</div><div id="insp_list"></div></div>
       <div class="note">All DPS values are averages over the full engagement. Hover line charts for per-second values.</div>
-    </div>
-  </div>
-
-
-  <!-- ===================== TAB 5: BATCH / MONTE CARLO ===================== -->
-  <div class="tab" id="pane_batch">
-    <div class="setup-grid" style="margin-bottom:14px">
-      <div class="panel"><div class="panel-h">Batch Settings</div><div class="panel-b">
-        <div class="ctl">
-          <label>Runs per data point <span class="val" id="v_bruns">500</span></label>
-          <input type="range" id="bruns" min="100" max="2000" step="100" value="500" oninput="$('v_bruns').textContent=this.value">
-          <div class="effect">More runs = smoother curves but slower. 500 is a good balance.</div>
-        </div>
-        <div class="ctl" style="margin-top:10px">
-          <label>HP/s sweep — min <span class="val" id="v_bmin">3.0</span></label>
-          <input type="range" id="bmin" min="1" max="20" step="0.5" value="3" oninput="$('v_bmin').textContent=(+this.value).toFixed(1)">
-        </div>
-        <div class="ctl">
-          <label>HP/s sweep — max <span class="val" id="v_bmax">14.0</span></label>
-          <input type="range" id="bmax" min="5" max="50" step="0.5" value="14" oninput="$('v_bmax').textContent=(+this.value).toFixed(1)">
-        </div>
-        <div class="ctl">
-          <label>HP/s step size <span class="val" id="v_bstep">0.5</span></label>
-          <input type="range" id="bstep" min="0.1" max="2" step="0.1" value="0.5" oninput="$('v_bstep').textContent=(+this.value).toFixed(1)">
-        </div>
-        <div class="btns" style="margin-top:14px">
-          <button class="act btn-run" id="bbtn" onclick="runBatch()">Run Batch</button>
-        </div>
-        <div style="font-size:11px;color:#8a7355;margin-top:8px" id="bstatus">Uses the encounter parameters from the Setup tab. Each data point runs the full fight engine N times.</div>
-      </div></div>
-
-      <div class="panel"><div class="panel-h">Single HP/s — Outcome Breakdown</div><div class="panel-b">
-        <div class="ctl">
-          <label>HP/s to inspect <span class="val" id="v_binspect">5.0</span></label>
-          <input type="range" id="binspect" min="1" max="50" step="0.1" value="5" oninput="$('v_binspect').textContent=(+this.value).toFixed(1);drawInspectBar()">
-        </div>
-        <div id="binspect_bars" style="margin-top:12px">
-          <div style="font-size:12px;color:#8a7355;font-style:italic">Run a batch to see the breakdown.</div>
-        </div>
-        <div style="margin-top:12px;font-size:11px;color:#8a7355" id="binspect_note"></div>
-      </div></div>
-    </div>
-
-    <!-- Win rate sweep chart -->
-    <div class="panel chart-card" style="margin-bottom:14px">
-      <div class="ch-h">Win Rate vs HP/s &mdash; full sweep</div>
-      <div style="padding:10px 6px 4px" id="bsweep_wrap">
-        <div style="font-size:12px;color:#8a7355;font-style:italic;padding:20px">Run a batch to see the sweep chart. The curve shows how win rate changes as food strength improves &mdash; find the cliff and see where your food levels sit on it.</div>
-      </div>
-      <div class="chart-legend" id="bsweep_legend"></div>
-    </div>
-
-    <!-- FL markers table -->
-    <div class="panel chart-card">
-      <div class="ch-h">Food Level Markers &mdash; where each cooking level lands</div>
-      <div id="bfl_table" style="padding:10px 14px">
-        <div style="font-size:12px;color:#8a7355;font-style:italic">Run a batch to populate.</div>
-      </div>
     </div>
   </div>
 
@@ -553,11 +483,11 @@ const FOOD_MODEL = (function () {
         </div>
       </div>
 
-      <!-- HUNTER -->
+      <!-- FIGHTER -->
       <div class="char-card">
-        <div class="char-header hdr-hunter">
+        <div class="char-header hdr-fighter">
           <span class="char-name">Mira</span>
-          <span class="char-role">Hunter</span>
+          <span class="char-role">Fighter</span>
         </div>
         <div class="char-body">
           <div class="char-bio">Grew up among the Greycloaks. Has known Aldric since she was small. There is nothing uncertain about who she is or what she is for — she has always known, and that quiet certainty is not arrogance, it is inheritance. Notices things she does not mention until exactly the right moment.</div>
@@ -593,7 +523,7 @@ const FOOD_MODEL = (function () {
         </div>
         <div class="char-body">
           <div class="char-bio">Ancient and precise. Speaks as though each word costs something. Has outlived three forests and is not sentimental about it. Her stillness in a bad moment steadies everyone around her — not because she says anything, but because she does not move.</div>
-          <div class="char-mech">Durable where the Hunter is fragile, steadying where the Keeper is singular. Her Will and Fate feed into the band's resistance to Dread — the cowering of courage before evil. Against enemies that carry fear as a weapon, she is the difference between a band that fights and one that breaks.<br><br>Her damage is secondary. Her presence is not.</div>
+          <div class="char-mech">Durable where the Fighter is fragile, steadying where the Keeper is singular. Her Will and Fate feed into the band's resistance to Dread — the cowering of courage before evil. Against enemies that carry fear as a weapon, she is the difference between a band that fights and one that breaks.<br><br>Her damage is secondary. Her presence is not.</div>
           <div class="char-insp">
             <div class="char-insp-name">&#10022; Wrath, Ruin, and the Red Dawn</div>
             <div class="char-insp-text">In the worst moments — when the line is cracking and two or more are in peril — Aelindra has been known to say something. Nobody remembers the words exactly. What they remember is the feeling: that the world had not ended yet, that there was still something worth fighting for, and that they were on their feet again. All of them. Every Inspiration that follows in the next half-minute seems to come easier.</div>
@@ -636,12 +566,12 @@ function recipeLevelLabel(rl){
 }
 const TPL={
   warden:  {name:"Borin Ironmantle",role:"Warden", cls:"role-warden", soak:true,  color:"#2e6da4", start:{mig:13,agi:6,vit:15,wil:7,fat:6},  grow:{mig:0.5,agi:0.15,vit:0.55,wil:0.2,fat:0.15}},
-  hunterA: {name:"Mira",role:"Hunter", cls:"role-hunter", soak:false, color:"#c0392b", start:{mig:9,agi:15,vit:7,wil:5,fat:9},   grow:{mig:0.3,agi:0.55,vit:0.2,wil:0.15,fat:0.35}},
-  hunterM: {name:"Mira",role:"Hunter", cls:"role-hunter", soak:false, color:"#c0392b", start:{mig:15,agi:9,vit:8,wil:5,fat:7},   grow:{mig:0.55,agi:0.3,vit:0.25,wil:0.15,fat:0.25}},
+  fighterA: {name:"Mira",role:"Fighter", cls:"role-fighter", soak:false, color:"#c0392b", start:{mig:9,agi:15,vit:7,wil:5,fat:9},   grow:{mig:0.3,agi:0.55,vit:0.2,wil:0.15,fat:0.35}},
+  fighterM: {name:"Mira",role:"Fighter", cls:"role-fighter", soak:false, color:"#c0392b", start:{mig:15,agi:9,vit:8,wil:5,fat:7},   grow:{mig:0.55,agi:0.3,vit:0.25,wil:0.15,fat:0.25}},
   keeper:  {name:"Cael",role:"Keeper", cls:"role-keeper", soak:false, color:"#7d5a93", start:{mig:5,agi:7,vit:9,wil:15,fat:12},  grow:{mig:0.15,agi:0.2,vit:0.3,wil:0.55,fat:0.45}},
   captain: {name:"Aelindra",role:"Captain",cls:"role-captain",soak:true,color:"#b8843c",start:{mig:8,agi:7,vit:12,wil:13,fat:13},grow:{mig:0.2,agi:0.2,vit:0.4,wil:0.45,fat:0.45}},
 };
-const ORDER=["warden","hunter","keeper","captain"];
+const ORDER=["warden","fighter","keeper","captain"];
 const STAT_KEYS=["mig","agi","vit","wil","fat"];
 const STAT_LABEL={mig:"Mig",agi:"Agi",vit:"Vit",wil:"Wil",fat:"Fat"};
 // statuses: enemy debuffs/hazards. rich = Dread/Shadow (stat interactions); simple = Morale-drain hazards.
@@ -660,7 +590,6 @@ const SHADOW_RATE=0.0011; // per-tick drain per point of shadow strength
 const RESCUE_CAP=5;
 const WARD_CAP=3; // Keeper zero-rescues per fight (Laurelin's Grace is separate, uncapped)
 const GRIEVOUS=5;
-const RMAX=50; // reserve pool cap per member (sink mode) — absorbs spike damage before morale
 const DREAD_VAR_COEF       = 0.008;   // Layer A variable term coefficient (placeholder — tune in sim)
 const DREAD_FLOOR_COEF     = 0.003;   // Layer A floor term coefficient (placeholder — tune in sim)
 const T_TEMP               = 0.65;    // negation threshold below which Gate 1 stuns fire
@@ -673,13 +602,14 @@ const $=id=>document.getElementById(id);
 const stat=(t,k,l)=>t.start[k]+t.grow[k]*(l-1);
 const moraleOf=(t,l)=>Math.round(30+stat(t,"vit",l)*16);
 const fmtT=s=>`${Math.floor(s/60)}:${String(Math.max(0,s)%60).padStart(2,"0")}`;
-function roster(){const hk=(+$("hflav").value===1)?"hunterM":"hunterA";return {warden:TPL.warden,hunter:TPL[hk],keeper:TPL.keeper,captain:TPL.captain};}
+function roster(){const hk=(+$("hflav").value===1)?"fighterM":"fighterA";return {warden:TPL.warden,fighter:TPL[hk],keeper:TPL.keeper,captain:TPL.captain};}
 
-let MODE=0,SPEED=1,running=false,timer=null,t=0,P=null,maxT=0;
-let M={},events=[],fired={},windows={},baFired=false,series=[],rescuesUsed=0,wardsUsed=0,inspBoost=0,prevTrouble=0,spikesTotal=0;
+let MODE=0,SPEED=1,running=false,timer=null,maxT=0;
+let FIGHT = null;
+let series = [];
 const SPEED_MS=[1000,250,62,0];
 
-function showTab(name){['setup','live','results','batch','company'].forEach(n=>{$('pane_'+n).classList.toggle('on',n===name);$('tab_'+n).classList.toggle('on',n===name);});}
+function showTab(name){['setup','live','results','company'].forEach(n=>{$('pane_'+n).classList.toggle('on',n===name);$('tab_'+n).classList.toggle('on',n===name);});}
 function setMode(m){MODE=m;$("mode_att").classList.toggle("on",m===0);$("mode_tim").classList.toggle("on",m===1);
   $("r_boss").style.display=m===1?"none":"";$("r_phys").style.display=m===1?"none":"";
   $("g_ttklabel").textContent=m===1?"Clock remaining":"Time-to-kill";
@@ -773,19 +703,6 @@ function loadEncPaste(){const txt=document.getElementById("enc_paste").value.tri
   st.textContent=_encList.length+" encounter(s) loaded from paste. Pick one \u2192";}
 
 
-function curParams(){
-  return {lvl:+$("lvl").value,duration:+$("dur").value,boss:+$("boss").value,drain:+$("drain").value,spike:+$("spike").value,spikeiv:+$("spikeiv").value,
-    phys:(MODE===1?0:+$("phys").value/100),unkill:MODE===1,burstmul:+$("burstmul").value/100,
-    dread:statusOn("dread")/100, hope:antidoteOn("hope"),
-    shadow:statusOn("shadow"), radiance:antidoteOn("radiance"),
-    disease:statusOn("disease"),hale:antidoteOn("hale"),
-    cold:statusOn("cold"),warmth:antidoteOn("warmth"),
-    heat:statusOn("heat"),heatease:antidoteOn("heatease"),
-    wake:statusOn("wake"),alert:antidoteOn("alert"),
-    // Fixed 5% base for Grace/Horn/Dawn; Black Arrow grows with time. Captain Red Dawn boosts others via inspBoost state.
-    graceBase:0.05,hornBase:0.03,dawnBase:0.03,blackArrowCap:0.06};}
-function foodOf(k){return recipeLevelToHps(+$("rlevel").value);}
-
 function buildStatusRows(){
   $("status_rows").innerHTML=STATUSES.map(st=>`<div class="ctl" style="margin-bottom:5px"><label style="align-items:center"><span><input type="checkbox" id="st_${st.id}" onchange="onStatusToggle()"> ${st.name}</span><span class="val" id="v_st_${st.id}">0</span></label><input type="range" id="sl_${st.id}" min="0" max="90" value="40" oninput="document.getElementById('v_st_${st.id}').textContent=this.value;if(!running){refreshRead();refreshBoss();}"></div>`).join("");
   $("antidote_rows").innerHTML=Object.keys(ANTIDOTES).map(a=>`<div class="ctl" style="margin-bottom:5px"><label style="align-items:center"><span><input type="checkbox" id="an_${a}" onchange="if(!running)refreshRead()"> ${ANTIDOTES[a]}</span><span class="val" id="v_an_${a}">0</span></label><input type="range" id="al_${a}" min="0" max="90" value="40" oninput="document.getElementById('v_an_${a}').textContent=this.value;if(!running)refreshRead();"></div>`).join("");
@@ -795,7 +712,7 @@ function statusOn(id){const c=$("st_"+id);return c&&c.checked?(+$("sl_"+id).valu
 function antidoteOn(a){const c=$("an_"+a);return c&&c.checked?(+$("al_"+a).value):0;}
 function draughtPotency(){return +($("draught_potency")||{value:0}).value||0;}
 // food stat bonuses per member — driven by recipe select + cooking level via food_model.js
-const RECIPE_SELECTS={warden:"rw",hunter:"rh",keeper:"rk",captain:"rc"};
+const RECIPE_SELECTS={warden:"rw",fighter:"rh",keeper:"rk",captain:"rc"};
 function memberRecipeId(k){return $(RECIPE_SELECTS[k])?.value||"";}
 function memberFoodBonuses(k){
   const rid=memberRecipeId(k); if(!rid)return {};
@@ -813,15 +730,15 @@ function refreshFoodSummary(){
   }).filter(Boolean);
   $("food_bonus_summary").innerHTML=lines.join(" &nbsp;&#183;&nbsp; ")||"No stat recipes selected";
 }
-function buildParty(){const lvl=+$("lvl").value,R=roster();M={};
-  ORDER.forEach(k=>{const tpl=R[k];
-    const sb=memberFoodBonuses(k);
-    const bvit=sb.vit||0;
-    const max=Math.round(30+(stat(tpl,"vit",lvl)+bvit)*16);
-    M[k]={key:k,tpl,role:tpl.role,cls:tpl.cls,soak:tpl.soak,color:tpl.color,max,hp:max,reserve:0,wounds:0,grievous:false,atZero:false,stunned:false,stunTicks:0,broken:false,action:"",horn:false,
-      mig:stat(tpl,"mig",lvl)+(sb.mig||0),agi:stat(tpl,"agi",lvl)+(sb.agi||0),vit:stat(tpl,"vit",lvl)+bvit,wil:stat(tpl,"wil",lvl)+(sb.wil||0),fat:stat(tpl,"fat",lvl)+(sb.fat||0),
-      wilBase:stat(tpl,"wil",lvl)+(sb.wil||0),fatBase:stat(tpl,"fat",lvl)+(sb.fat||0),shDrain:0,fatEvades:0,spikesTargeted:0};});
-  renderParty();}
+function buildParty(){
+  const lvl=+$("lvl").value, R=roster();
+  const cfg = { lvl, roster:R, duration:+$("dur").value, boss:+$("boss").value,
+    phys:(MODE===1?0:+$("phys").value/100), unkill:MODE===1,
+    potency: draughtPotency(), dread:statusOn("dread")/100, hope:antidoteOn("hope"),
+    memberFoodBonuses: Object.fromEntries(ORDER.map(k=>[k, memberFoodBonuses(k)])) };
+  FIGHT = createFightState(cfg);
+  renderParty();
+}
 function statPreview(){const lvl=+$("lvl").value,R=roster();
   $("statpreview").innerHTML=ORDER.map(k=>{
     const t=R[k],sb=memberFoodBonuses(k);
@@ -830,14 +747,11 @@ function statPreview(){const lvl=+$("lvl").value,R=roster();
   }).join("<br>");}
 function woundPips(n){let s="";for(let i=0;i<GRIEVOUS;i++)s+=`<span class="${i<n?'wound-pip':'wound-empty'}">&#9670;</span>`;return s;}
 function renderParty(){const host=$("party");host.innerHTML="";
-  ORDER.forEach(k=>{const m=M[k],pct=Math.max(0,(m.hp/m.max)*100),wc=(k==="hunter")?"role-h":"";
-    const resPct=(m.reserve/m.max)*100;
-    const resBar=m.reserve>0?`<div class="bar-reserve" style="left:${pct}%;width:${resPct}%"></div>`:"";
-    const resNum=m.reserve>0?`<span class="res-num">+${Math.round(m.reserve)}</span>`:"";
+  ORDER.forEach(k=>{const m=FIGHT.M[k],pct=Math.max(0,(m.hp/m.max)*100),wc=(k==="fighter")?"role-h":"";
     const el=document.createElement("div");el.className=`panel member ${wc} ${m.grievous?"grievous":""} ${m.horn?"horn":""}`;
     el.innerHTML=`<div class="m-top"><span class="m-name">${m.tpl.name}</span><span class="m-role ${m.cls}">${m.role}</span></div>
-      <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div>${resBar}</div>
-      <div class="m-hp-num"><span>Morale</span><span>${Math.max(0,Math.round(m.hp))} / ${m.max}${resNum}</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
+      <div class="m-hp-num"><span>Morale</span><span>${Math.max(0,Math.round(m.hp))} / ${m.max}</span></div>
       <div class="m-wounds">${woundPips(m.wounds)}</div><div class="m-action">${m.action||""}</div>`;
     host.appendChild(el);});}
 function tierName(d){return d<10?"&#8212; Rabble":d<20?"&#8212; Fell":d<32?"&#8212; Bane-tier":d<44?"&#8212; of the Nine":"&#8212; Nameless";}
@@ -853,236 +767,427 @@ function refreshBoss(){
     $("bossmit").innerHTML=mit.join(" &#183; ");}}
 function updEffects(){const drainPer=+$("drain").value/4;
   $("e_drain").textContent=`each member soaks ${Math.round(drainPer)}/s independently — losing a member does not increase pressure on survivors`;
-  $("e_spike").textContent=+$("spike").value>0?`each member rolls their own spike independently — reserve pool absorbs the first hit if full`:`no spikes &#8212; pure steady drain`;
+  $("e_spike").textContent=+$("spike").value>0?`one global spike lands on a random standing member every ~${$("spikeiv").value}s — no reserve pool`:`no spikes &#8212; pure steady drain`;
   $("e_phys").textContent=+$("phys").value>0?`armor cut by party draught potency (see Provisioning &#8212; draught below)`:``;}
 
-// returns full breakdown incl penetration + Dread(Will+Hope) + Shadow effects
-function dpsBreakdown(){
-  const ZERO={warden:0,hunter:0,keeper:0,captain:0};
-  if(P.unkill)return {raw:0,physAfter:0,layerADrag:0,eff:0,penSaved:0,willSaved:0,hopeSaved:0,potency:0,effBy:{warden:0,hunter:0,keeper:0,captain:0,captain_phys:0,captain_magic:0},physMitTotal:0,magicDmg:0,dawnBoost:0};
-  const rawBy={warden:0,hunter:0,keeper:0,captain:0};
-  let raw=0;ORDER.forEach(k=>{if(M[k].grievous||M[k].hp<=0||M[k].stunned||M[k].broken)return;
-    let r=0;
-    if(k==="keeper"){if(M[k].action!=="burst")r=M[k].wil*0.9;}
-    else if(k==="hunter")r=M[k].agi+M[k].mig*0.4;else if(k==="warden")r=M[k].mig*0.5;
-    else if(k==="captain")r=M[k].mig*0.3+M[k].wil*0.2;
-    rawBy[k]=r;raw+=r;});
-  if(windows.dawn>0){raw*=1.5;ORDER.forEach(k=>rawBy[k]*=1.5);}
-  // PHYSICAL: draught potency reduces armor
-  const potency=draughtPotency();
-  const physRaw=P.phys;
-  const physAfter=Math.max(0,physRaw*(1-Math.min(1,potency/PEN_SCALE)));
-  // DREAD: Layer A two-term formula — variable drag (suppressed by counters) + floor (always present)
-  const capWill=(!M.captain.grievous&&!M.captain.stunned)?M.captain.wil:0;
-  const dreadRaw=P.dread;
-  const willCut=Math.min(1,capWill/100), hopeCut=Math.min(1,P.hope/100);
-  const negation=willCut+hopeCut;
-  const effectiveDread=dreadRaw*(1-Math.min(1,negation));
-  const layerADrag=Math.min(1,effectiveDread*DREAD_VAR_COEF+dreadRaw*DREAD_FLOOR_COEF);
-  const eff=raw*(1-physAfter)*(1-layerADrag);
-  // preserved-by-counter decomposition
-  const effNoPen=raw*(1-physRaw)*(1-layerADrag);
-  const dreadNoWill=dreadRaw*(1-Math.min(1,hopeCut));
-  const layerANoWill=Math.min(1,dreadNoWill*DREAD_VAR_COEF+dreadRaw*DREAD_FLOOR_COEF);
-  const dreadNoHope=dreadRaw*(1-Math.min(1,willCut));
-  const layerANoHope=Math.min(1,dreadNoHope*DREAD_VAR_COEF+dreadRaw*DREAD_FLOOR_COEF);
-  const effNoWill=raw*(1-physAfter)*(1-layerANoWill);
-  const effNoHope=raw*(1-physAfter)*(1-layerANoHope);
-  // per-member effective DPS: Keeper is magic-only; Hunter/Warden are physical; Captain is 50/50 hybrid.
-  const effBy={};
-  ORDER.forEach(k=>{
-    if(k==="captain"){
-      const captPhysRaw=(M.captain.grievous||M.captain.stunned||M.captain.broken)?0:M.captain.mig*0.3*(windows.dawn>0?1.5:1);
-      const captMagicRaw=(M.captain.grievous||M.captain.stunned||M.captain.broken)?0:M.captain.wil*0.2*(windows.dawn>0?1.5:1);
-      effBy.captain_phys=captPhysRaw*(1-physAfter)*(1-layerADrag);
-      effBy.captain_magic=captMagicRaw*(1-layerADrag);
-      effBy.captain=effBy.captain_phys+effBy.captain_magic;
-    } else {
-      const isPhys=k!=="keeper";
-      effBy[k]=rawBy[k]*(isPhys?(1-physAfter)*(1-layerADrag):(1-layerADrag));
+// ── Streak + Keeper-heal constants (ported verbatim from run_sim.js — must match) ──
+const HOT_DURATION    = 8;    // ticks per HoT application
+const HOT_HEAL_MUL    = 0.15; // healPerTick = keeper.wil * HOT_HEAL_MUL
+const TRIAGE_HP       = 0.25; // triage fires when target hp < max * TRIAGE_HP
+const TRIAGE_MUL      = 2.0;  // triageHeal = keeper.wil * TRIAGE_MUL
+const TRIAGE_COOLDOWN = 2;    // ticks between triage uses
+const GROUP_HEAL_IV   = 20;   // ticks between group heals
+const GROUP_HEAL_MUL  = 0.5;  // groupHeal per member = keeper.wil * GROUP_HEAL_MUL
+const STREAK_K          = 0.002; // trigger prob per eligible tick = fat * STREAK_K
+const STREAK_REFRACTORY = 20;    // ticks before streak can re-trigger
+const STREAK_DURATION   = 5;     // streak active ticks
+const STREAK_MULT       = 1.5;   // DPS/heal multiplier during streak
+
+// ── Shared fight engine (DOM-free) — ported from run_sim.js's runFight() ──
+// cfg: { lvl, roster:{warden,fighter,keeper,captain} TPL objects, duration, boss,
+//        drain, spike, spikeiv, phys, dread, hope, shadow, radiance, disease, hale,
+//        cold, warmth, heat, heatease, wake, alert, burstmul, potency,
+//        graceBase, hornBase, dawnBase, blackArrowCap, memberFoodBonuses:{k:{mig,agi,vit,wil,fat}} }
+function createFightState(cfg) {
+  const lvl = cfg.lvl;
+  const M = {};
+  ORDER.forEach(k => {
+    const tpl = cfg.roster[k];
+    const sb = (cfg.memberFoodBonuses && cfg.memberFoodBonuses[k]) || {};
+    const bvit = sb.vit || 0;
+    const max = Math.round(30 + (stat(tpl,"vit",lvl) + bvit) * 16);
+    M[k] = {
+      key:k, tpl, role:tpl.role, cls:tpl.cls, soak:tpl.soak, color:tpl.color,
+      max, hp:max, wounds:0, grievous:false, atZero:false, stunned:false, stunTicks:0,
+      broken:false, horn:false, action:"",
+      mig:stat(tpl,"mig",lvl)+(sb.mig||0), agi:stat(tpl,"agi",lvl)+(sb.agi||0),
+      vit:stat(tpl,"vit",lvl)+bvit, wil:stat(tpl,"wil",lvl)+(sb.wil||0), fat:stat(tpl,"fat",lvl)+(sb.fat||0),
+      wilBase:stat(tpl,"wil",lvl)+(sb.wil||0), fatBase:stat(tpl,"fat",lvl)+(sb.fat||0), shDrain:0,
+      fatEvades:0
+    };
+  });
+  return {
+    cfg, M,
+    streak: Object.fromEntries(ORDER.map(k=>[k,{refractory:0,active:0}])),
+    hot1:null, hot2:null, triageCooldown:0, groupHealTimer:GROUP_HEAL_IV,
+    t:0, boss:cfg.boss, maxT:cfg.duration,
+    keeperDealtDps:true, rescuesUsed:0, wardsUsed:0, inspBoost:0, baFired:false,
+    nextSpikeAt: Math.round(cfg.spikeiv*(0.5+Math.random())),
+    fired:{}, windows:{dawn:0,horn:0}, events:[], prevTrouble:0, spikesTotal:0,
+    outcome:null, done:false,
+    // metrics (Task: sim metrics overhaul — observation only, no effect on simulation)
+    dmgByMember:{warden:0,fighter:0,keeper:0,captain:0},
+    healByType:{hot:0,triage:0,group:0,rescue:0},
+    streakCount:{warden:0,fighter:0,keeper:0,captain:0},
+    streakBonusDmg:0, streakBonusHeal:0, hotActiveTicks:0,
+    inspGraceHeal:0, inspHornRedirect:0, inspDawnHeal:0, inspDawnBonusDps:0, inspBlackArrowAmount:0
+  };
+}
+
+function fightActive(S)   { return ORDER.filter(k => !S.M[k].grievous && !S.M[k].broken); }
+function fightStanding(S) { return fightActive(S).filter(k => S.M[k].hp > 0); }
+function fightInTrouble(S){ return fightActive(S).filter(k => S.M[k].hp / S.M[k].max < 0.35).length; }
+function fightInspRoll(base, boost) { return Math.random() < (base + boost); }
+
+// Mirrors run_sim.js's dpsBreakdown() exactly, reading from a FightState instead of closures.
+function fightDpsBreakdown(S) {
+  const cfg = S.cfg;
+  if (cfg.unkill) return { raw:0, eff:0, physAfter:0, layerADrag:0, rawBy:{warden:0,fighter:0,keeper:0,captain:0,captain_phys:0,captain_magic:0}, streakBonus:0, dawnBonus:0 };
+  let raw = 0, streakBonus = 0;
+  const rawBy = { warden:0, fighter:0, keeper:0, captain:0, captain_phys:0, captain_magic:0 };
+  ORDER.forEach(k => {
+    const m = S.M[k];
+    if (m.grievous || m.hp <= 0 || m.stunned || m.broken) return;
+    const isStreaking = S.streak[k] && S.streak[k].active > 0;
+    const mult = isStreaking ? STREAK_MULT : 1;
+    let base = 0;
+    if (k==="keeper")        { if (S.keeperDealtDps) base = m.wil * 0.9; }
+    else if (k==="fighter")  base = m.agi + m.mig * 0.4;
+    else if (k==="warden")   base = m.mig * 0.5;
+    else if (k==="captain")  {
+      // Captain's damage is a physical (Mig-driven)/magic (Wil-driven) hybrid — armor
+      // only mitigates the physical half, so the split must survive into rawBy.
+      rawBy.captain_phys += m.mig*0.3*mult; rawBy.captain_magic += m.wil*0.2*mult;
+      base = m.mig * 0.3 + m.wil * 0.2;
+    }
+    const contribution = base * mult;
+    rawBy[k] += contribution; raw += contribution;
+    if (isStreaking) streakBonus += base * (STREAK_MULT - 1);
+  });
+  let dawnBonus = 0;
+  if (S.windows.dawn > 0) {
+    dawnBonus = raw * 0.5;
+    raw *= 1.5; streakBonus *= 1.5;
+    ORDER.forEach(k => { rawBy[k] *= 1.5; });
+    rawBy.captain_phys *= 1.5; rawBy.captain_magic *= 1.5;
+  }
+  const potency = cfg.potency || 0;
+  const physAfter = Math.max(0, cfg.phys * (1 - Math.min(1, potency/PEN_SCALE)));
+  const capWil = (!S.M.captain.grievous && !S.M.captain.stunned) ? S.M.captain.wil : 0;
+  const willCut = Math.min(1, capWil/100), hopeCut = Math.min(1, (cfg.hope||0)/100);
+  const effectiveDread = cfg.dread * (1 - Math.min(1, willCut + hopeCut));
+  const layerADrag = Math.min(1, effectiveDread * DREAD_VAR_COEF + cfg.dread * DREAD_FLOOR_COEF);
+  const eff = Math.max(0, raw * (1-physAfter) * (1-layerADrag));
+  return { raw, eff, physAfter, layerADrag, rawBy, streakBonus, dawnBonus };
+}
+
+// Advances S by exactly one tick. Returns { done, outcome, logLines }.
+// logLines is an array of narrative strings for this tick only (empty most ticks) —
+// the caller (Live tab, Task 4) is responsible for displaying them; this function
+// never touches the DOM.
+function fightTick(S) {
+  S.t++;
+  const logLines = [];
+  const cfg = S.cfg;
+
+  // Keeper HoT ticks
+  if (!S.M.keeper.grievous && S.M.keeper.hp > 0 && !S.M.keeper.stunned) {
+    const keepStreak = S.streak.keeper;
+    const healMult = (keepStreak && keepStreak.active > 0) ? STREAK_MULT : 1;
+    if (S.hot1 || S.hot2) S.hotActiveTicks++;
+    for (const hot of [S.hot1, S.hot2].filter(Boolean)) {
+      const tgt = S.M[hot.targetKey];
+      if (tgt && !tgt.grievous) {
+        const healAmt = hot.healPerTick * healMult;
+        tgt.hp = Math.min(tgt.max, tgt.hp + healAmt);
+        S.healByType.hot += healAmt;
+        if (healMult > 1) S.streakBonusHeal += hot.healPerTick * (STREAK_MULT - 1);
+      }
+      hot.ticksLeft--;
+    }
+    if (S.hot1 && S.hot1.ticksLeft <= 0) S.hot1 = null;
+    if (S.hot2 && S.hot2.ticksLeft <= 0) S.hot2 = null;
+  }
+  if (S.windows.dawn > 0) S.windows.dawn--;
+  if (S.windows.horn > 0) { S.windows.horn--; if (S.windows.horn === 0) S.M.warden.horn = false; }
+  if (cfg.dread > 0) {
+    ORDER.forEach(k => {
+      if (S.M[k].stunned) {
+        S.M[k].stunTicks--;
+        if (S.M[k].stunTicks <= 0) { S.M[k].stunned = false; S.M[k].stunTicks = 0; logLines.push(`${S.M[k].tpl.name} shakes free`); }
+      }
+    });
+  }
+
+  const act = fightActive(S);
+  const live = fightStanding(S);
+
+  // Streak updates
+  act.forEach(k => {
+    const s = S.streak[k];
+    if (S.M[k].grievous || S.M[k].broken || S.M[k].stunned) return;
+    if (s.active > 0) { s.active--; }
+    else if (s.refractory > 0) { s.refractory--; }
+    else if (Math.random() < S.M[k].fat * STREAK_K) {
+      s.active = STREAK_DURATION; s.refractory = STREAK_REFRACTORY;
+      S.streakCount[k]++;
+      logLines.push(`★ STREAK — ${S.M[k].tpl.name}`);
     }
   });
-  // damage mitigated — Captain's Mig-driven half counts toward armor absorption, Will-driven half bypasses
-  const captPhysRawGlobal=(M.captain.grievous||M.captain.stunned||M.captain.broken)?0:M.captain.mig*0.3*(windows.dawn>0?1.5:1);
-  const captMagicRawGlobal=(M.captain.grievous||M.captain.stunned||M.captain.broken)?0:M.captain.wil*0.2*(windows.dawn>0?1.5:1);
-  const physMitTotal=(rawBy.warden+rawBy.hunter+captPhysRawGlobal)*physAfter*(1-layerADrag);
-  const magicDmg=rawBy.keeper*(1-layerADrag)+captMagicRawGlobal*(1-layerADrag);
-  // Red Dawn boost this tick: when active, raw was already multiplied by 1.5; delta = raw/1.5 * 0.5
-  const dawnBoost=windows.dawn>0 ? (raw/1.5)*0.5 : 0;
-  return {raw,physRaw,physAfter,dreadRaw,layerADrag,eff:Math.max(0,eff),
-    penSaved:Math.max(0,eff-effNoPen), willSaved:Math.max(0,eff-effNoWill), hopeSaved:Math.max(0,eff-effNoHope),
-    potency, effBy, physMitTotal:Math.max(0,physMitTotal), magicDmg:Math.max(0,magicDmg), dawnBoost};
+
+  // Keeper action
+  S.keeperDealtDps = true;
+  S.M.keeper.action = "damage";
+  if (!S.M.keeper.grievous && S.M.keeper.hp > 0 && !S.M.keeper.stunned) {
+    const healPerTick = S.M.keeper.wil * HOT_HEAL_MUL;
+    const keepStreakAct = S.streak.keeper;
+    const healMult = (keepStreakAct && keepStreakAct.active > 0) ? STREAK_MULT : 1;
+    if (S.triageCooldown > 0) S.triageCooldown--;
+    S.groupHealTimer--;
+    let actionTaken = false;
+    if (S.groupHealTimer <= 0) {
+      const groupHeal = S.M.keeper.wil * GROUP_HEAL_MUL * healMult;
+      live.forEach(k => { S.M[k].hp = Math.min(S.M[k].max, S.M[k].hp + groupHeal); });
+      S.healByType.group += groupHeal * live.length;
+      if (healMult > 1) S.streakBonusHeal += (S.M.keeper.wil * GROUP_HEAL_MUL) * (STREAK_MULT - 1) * live.length;
+      S.groupHealTimer = GROUP_HEAL_IV;
+      actionTaken = true;
+      logLines.push(`Cael group heal +${Math.round(groupHeal)} to all`);
+    } else {
+      const triageTarget = live.filter(k => k !== "keeper").find(k => S.M[k].hp / S.M[k].max < TRIAGE_HP);
+      if (triageTarget && S.triageCooldown === 0) {
+        const triageHeal = S.M.keeper.wil * TRIAGE_MUL * healMult;
+        S.M[triageTarget].hp = Math.min(S.M[triageTarget].max, S.M[triageTarget].hp + triageHeal);
+        S.healByType.triage += triageHeal;
+        if (healMult > 1) S.streakBonusHeal += (S.M.keeper.wil * TRIAGE_MUL) * (STREAK_MULT - 1);
+        S.triageCooldown = TRIAGE_COOLDOWN;
+        actionTaken = true;
+        logLines.push(`Cael triage → ${S.M[triageTarget].tpl.name} +${Math.round(triageHeal)}`);
+      } else {
+        if (!S.hot1 || !S.hot2) {
+          const covered = new Set([S.hot1?.targetKey, S.hot2?.targetKey].filter(Boolean));
+          const hotTarget = live.filter(k => !covered.has(k)).sort((a,b) => (S.M[a].hp/S.M[a].max) - (S.M[b].hp/S.M[b].max))[0];
+          if (hotTarget) {
+            const newHot = { targetKey: hotTarget, ticksLeft: HOT_DURATION, healPerTick };
+            if (!S.hot1) S.hot1 = newHot; else S.hot2 = newHot;
+            logLines.push(`Cael applies HoT → ${S.M[hotTarget].tpl.name}`);
+          }
+        }
+      }
+    }
+    S.keeperDealtDps = !actionTaken;
+    S.M.keeper.action = actionTaken ? "burst" : "damage";
+  }
+
+  // Rescue burst
+  if (!S.M.keeper.grievous && S.M.keeper.hp > 0 && !S.M.keeper.stunned && S.rescuesUsed < RESCUE_CAP) {
+    let rescue = null;
+    for (const k of ORDER) { if (k === "keeper" || S.M[k].grievous) continue; if (S.M[k].hp <= 0) { rescue = k; break; } }
+    if (rescue) {
+      const burst = (40 + S.M.keeper.wil * 4) * (cfg.burstmul || 1);
+      S.M[rescue].hp = Math.min(S.M[rescue].max, Math.max(S.M[rescue].hp, 0) + burst);
+      S.healByType.rescue += burst;
+      S.rescuesUsed++;
+      S.M.keeper.action = "burst";
+      logLines.push(`Cael bursts ${S.M[rescue].tpl.name} (+${Math.round(burst)}) rescue ${S.rescuesUsed}/${RESCUE_CAP}`);
+    }
+  }
+
+  // Steady drain
+  if (live.length) { live.forEach(k => { S.M[k].hp -= cfg.drain / 4; }); }
+
+  // Global spike (one per interval, hits one random standing member; Horn redirects to Warden)
+  if (cfg.spike > 0 && S.t >= S.nextSpikeAt) {
+    S.nextSpikeAt = S.t + Math.round(cfg.spikeiv * (0.5 + Math.random()));
+    const spikeRoll = cfg.spike * (0.7 + Math.random() * 0.6);
+    let target = null, hornRedirected = false;
+    if (S.windows.horn > 0 && !S.M.warden.grievous && S.M.warden.hp > 0) { target = "warden"; hornRedirected = true; }
+    else {
+      target = live.length ? live[Math.floor(Math.random() * live.length)] : null;
+      if (target === "keeper" && (S.M.keeper.hp - spikeRoll) <= 0 && S.M.warden.hp > 0 && !S.M.warden.grievous && S.wardsUsed < WARD_CAP) {
+        target = "warden"; S.wardsUsed++;
+        logLines.push(`${S.M.warden.tpl.name} guards Cael from a killing blow (guard ${S.wardsUsed}/${WARD_CAP})`);
+      }
+    }
+    if (target) {
+      S.spikesTotal++;
+      if (Math.random() < S.M[target].fat * 0.004) {
+        S.M[target].fatEvades++;
+        logLines.push(`${S.M[target].tpl.name} slips the blow — Fate ${Math.round(S.M[target].fat)} (near miss)`);
+      } else {
+        S.M[target].hp -= spikeRoll;
+        if (hornRedirected && target === "warden") S.inspHornRedirect += spikeRoll;
+        logLines.push(`a blow strikes ${S.M[target].tpl.name} (${Math.round(spikeRoll)})`);
+      }
+    }
+  }
+
+  // Shadow drain
+  if (cfg.shadow > 0) {
+    const deepFloor = Math.max(0.25, SHADOW_FLOOR - (cfg.shadow/100)*0.30);
+    const floor = deepFloor + (1-deepFloor)*Math.min(1, (cfg.radiance||0)/100);
+    const dr = cfg.shadow * SHADOW_RATE;
+    ORDER.forEach(k => {
+      if (S.M[k].grievous) return;
+      S.M[k].wil = Math.max(S.M[k].wilBase*floor, S.M[k].wil-dr);
+      S.M[k].fat = Math.max(S.M[k].fatBase*floor, S.M[k].fat-dr);
+      S.M[k].shDrain = (S.M[k].wilBase-S.M[k].wil)+(S.M[k].fatBase-S.M[k].fat);
+    });
+  }
+
+  // Simple hazard drain
+  { const haz=[["disease","hale"],["cold","warmth"],["heat","heatease"],["wake","alert"]];
+    let extra=0; haz.forEach(([hz,an])=>{ const str=cfg[hz]||0; if(str>0) extra+=(str*0.08)*(1-Math.min(1,(cfg[an]||0)/100)); });
+    if(extra>0) act.forEach(k=>{ S.M[k].hp -= extra/act.length; }); }
+
+  // Dread Layer B
+  if (cfg.dread > 0 && S.t % BREAK_CHECK_INTERVAL === 0) {
+    const capWil = (!S.M.captain.grievous && !S.M.captain.stunned) ? S.M.captain.wil : 0;
+    const wCut = Math.min(1, capWil/100), hCut = Math.min(1, (cfg.hope||0)/100);
+    const neg = wCut + hCut;
+    const dreadPool = captW => { const pool = []; ORDER.forEach(k => { if (!S.M[k].grievous && !S.M[k].broken && !S.M[k].stunned && S.M[k].hp > 0) pool.push({k, w: k==="captain" ? captW : 1}); }); return pool; };
+    const dreadPick = pool => { const tot = pool.reduce((s,p) => s+p.w, 0); if (!tot) return null; let r = Math.random() * tot; for (const p of pool) { r -= p.w; if (r <= 0) return p.k; } return pool[pool.length-1]?.k || null; };
+    if (neg < T_TEMP) { const tgt = dreadPick(dreadPool(CAPTAIN_STUN_WEIGHT)); if (tgt) { S.M[tgt].stunned = true; S.M[tgt].stunTicks = STUN_TICKS; logLines.push(`${S.M[tgt].tpl.name} is seized by dread — action lost for ${STUN_TICKS} seconds`); S.events.push({t:S.t, kind:"dread-stun", who:S.M[tgt].tpl.name}); } }
+    if (neg < T_PERM) { const tgt = dreadPick(dreadPool(CAPTAIN_BREAK_WEIGHT)); if (tgt) { S.M[tgt].broken = true; logLines.push(`${S.M[tgt].tpl.name}'s courage fails — they are gone`); S.events.push({t:S.t, kind:"morale-break", who:S.M[tgt].tpl.name}); } }
+  }
+
+  // Wound / grievous checks
+  ORDER.forEach(k => {
+    if (S.M[k].grievous) return;
+    if (S.M[k].hp <= 0 && !S.M[k].atZero) {
+      S.M[k].atZero = true; S.M[k].wounds++;
+      logLines.push(`${S.M[k].tpl.name} hits zero — a wound (${S.M[k].wounds}/${GRIEVOUS})`);
+      if (S.M[k].wounds >= GRIEVOUS) {
+        if (!S.M.keeper.grievous && !S.M.keeper.stunned && S.M.keeper.hp>0 && fightInspRoll(Math.min(0.25, cfg.graceBase + S.M.keeper.fat*0.003), S.inspBoost)) {
+          const restored = S.M[k].max*0.4;
+          S.M[k].wounds=0; S.M[k].hp=Math.round(restored); S.M[k].atZero=false;
+          S.inspGraceHeal += restored;
+          logLines.push(`★ LAURELIN'S GRACE — ${S.M[k].tpl.name} pulled back`);
+          S.events.push({t:S.t, kind:"Laurelin's Grace", who:S.M[k].tpl.name});
+        } else {
+          S.M[k].grievous=true;
+          logLines.push(`${S.M[k].tpl.name} takes a GRIEVOUS wound — out of the fight`);
+          S.events.push({t:S.t, kind:"grievous", who:S.M[k].tpl.name});
+        }
+      }
+    }
+    if (S.M[k].hp > 5) S.M[k].atZero = false;
+  });
+
+  // Inspiration: Horn of Gondor
+  if (S.inspBoost > 0) S.inspBoost = Math.max(0, S.inspBoost - 0.005);
+  const nowTrouble = fightInTrouble(S);
+  const crisisEdge = nowTrouble >= 2 && S.prevTrouble < 2;
+  if (!S.fired.horn && crisisEdge && !S.M.warden.grievous && !S.M.warden.stunned && !S.M.warden.broken && S.M.warden.hp>0 && fightInspRoll(Math.min(0.25, cfg.hornBase + S.M.warden.fat*0.003), S.inspBoost)) {
+    S.fired.horn=true; S.windows.horn=8; S.M.warden.horn=true;
+    logLines.push(`★ THE HORN OF GONDOR — ${S.M.warden.tpl.name}`);
+    S.events.push({t:S.t, kind:"The Horn of Gondor", who:S.M.warden.tpl.name});
+  }
+
+  // Inspiration: Wrath, Ruin, and the Red Dawn
+  if (!S.fired.dawn && crisisEdge && !S.M.captain.grievous && !S.M.captain.stunned && !S.M.captain.broken && S.M.captain.hp>0 && fightInspRoll(Math.min(0.25, cfg.dawnBase + S.M.captain.fat*0.003), 0)) {
+    S.fired.dawn=true; S.windows.dawn=10;
+    act.forEach(k => { const before = S.M[k].hp; S.M[k].hp = Math.min(S.M[k].max, S.M[k].hp + S.M[k].max*0.15); S.inspDawnHeal += (S.M[k].hp - before); });
+    S.inspBoost = 0.15;
+    logLines.push(`★ RED DAWN — ${S.M.captain.tpl.name}`);
+    S.events.push({t:S.t, kind:"Wrath, Ruin, and the Red Dawn", who:S.M.captain.tpl.name});
+  }
+  S.prevTrouble = nowTrouble;
+
+  // DPS tick
+  const bd = fightDpsBreakdown(S);
+  if (!cfg.unkill) {
+    const jitter = 0.10;
+    const jitterFactor = 1 + (Math.random()*2-1)*jitter;
+    const appliedDmg = bd.eff * jitterFactor;
+    S.boss = Math.max(0, S.boss - appliedDmg);
+    const mitFactor = (1-bd.physAfter) * (1-bd.layerADrag);
+    if (bd.raw > 0) { ORDER.forEach(k => { S.dmgByMember[k] += (bd.rawBy[k] / bd.raw) * appliedDmg; }); }
+    S.streakBonusDmg   += bd.streakBonus * mitFactor * jitterFactor;
+    S.inspDawnBonusDps += bd.dawnBonus   * mitFactor * jitterFactor;
+  }
+
+  // Inspiration: Black Arrow
+  if (!S.baFired && !S.M.fighter.grievous && !S.M.fighter.stunned && !S.M.fighter.broken && S.M.fighter.hp>0) {
+    const elapsed = S.t/S.maxT;
+    const ttk = bd.eff>0 ? S.boss/bd.eff : 1e9;
+    const trem = S.maxT-S.t;
+    const losing = cfg.unkill ? elapsed>0.5 : (ttk>trem && elapsed>0.4);
+    if (losing) {
+      const rise = Math.min(cfg.blackArrowCap, (elapsed-0.4)*cfg.blackArrowCap*2.5);
+      if (fightInspRoll(rise + S.M.fighter.fat*0.003, S.inspBoost)) {
+        S.baFired=true;
+        if (cfg.unkill) {
+          const cut = Math.round(cfg.duration*0.15);
+          S.maxT -= cut; S.inspBlackArrowAmount = cut;
+          logLines.push(`★ BLACK ARROW — ${S.M.fighter.tpl.name} looses a flaming arrow — the terror recoils, the clock shortens`);
+          S.events.push({t:S.t, kind:"Black Arrow (flaming)", who:S.M.fighter.tpl.name});
+        } else {
+          const burn = cfg.boss*0.18;
+          S.boss = Math.max(0, S.boss-burn); S.inspBlackArrowAmount = burn;
+          logLines.push(`★ BLACK ARROW — ${S.M.fighter.tpl.name} draws the Black Arrow — go now, and speed well!`);
+          S.events.push({t:S.t, kind:"Black Arrow", who:S.M.fighter.tpl.name});
+        }
+      }
+    }
+  }
+
+  // Termination
+  if (!cfg.unkill && S.boss <= 0) { S.outcome = "VICTORY"; S.done = true; }
+  else if (!ORDER.some(k => !S.M[k].grievous && !S.M[k].broken && S.M[k].hp>0)) { S.outcome = "DEFEAT"; S.done = true; }
+  else if (S.t >= S.maxT) { S.outcome = cfg.unkill ? "REPELLED" : "STALEMATE"; S.done = true; }
+
+  return { done: S.done, outcome: S.outcome, logLines };
 }
-function sustain(){let s=0;ORDER.forEach(k=>{if(!M[k].grievous)s+=foodOf(k);});return s;}
-function refreshRead(){buildParty();const drain=+$("drain").value,spike=+$("spike").value,iv=+$("spikeiv").value;
-  const incoming=drain+spike/iv,sus=sustain();const sR=sus/Math.max(1,incoming);
-  setChip("read_surv",sR>=1.25?"LIKELY":sR>=0.95?"RISKY":"UNLIKELY");
+function refreshRead(){buildParty();
   if(MODE===1){setChip("read_win","UNLIKELY");$("read_hint").textContent="The Nine cannot be killed — survival is the only victory.";}
-  else{P=curParams();const bd=dpsBreakdown();const boss=+$("boss").value;const ttk=bd.eff>0?boss/bd.eff:1e9;
+  else{const bd=fightDpsBreakdown(FIGHT);const boss=+$("boss").value;const ttk=bd.eff>0?boss/bd.eff:1e9;
     setChip("read_win",ttk<=+$("dur").value*0.7?"LIKELY":ttk<=+$("dur").value?"RISKY":"UNLIKELY");
     $("read_hint").textContent=ttk>+$("dur").value?"At this rate you won't finish in time.":"";}}
 function setChip(id,w){const el=$(id);el.textContent=w;el.className="chip "+(w==="LIKELY"?"c-likely":w==="RISKY"?"c-risky":"c-unlikely");}
 function log(msg,cls){const l=$("log"),d=document.createElement("div");
-  d.innerHTML=`<span style="color:#a8956d">${fmtT(t).padStart(5," ")}</span> ${cls?`<span class="${cls}">`:""}${msg}${cls?"</span>":""}`;
+  d.innerHTML=`<span style="color:#a8956d">${fmtT(FIGHT?FIGHT.t:0).padStart(5," ")}</span> ${cls?`<span class="${cls}">`:""}${msg}${cls?"</span>":""}`;
   l.appendChild(d);l.scrollTop=l.scrollHeight;}
-function active(){return ORDER.filter(k=>!M[k].grievous&&!M[k].broken);}
-function inTrouble(){return active().filter(k=>M[k].hp/M[k].max<0.35).length;}
-const inspRoll=(base,boost)=>Math.random()<(base+boost);
 
 function stepOnce(){
-  t++;let tickHeal=0;
-  if(windows.dawn>0)windows.dawn--;
-  // stun countdown — decrement before this tick's action to let them act on the tick they recover
-  if(P.dread>0){ORDER.forEach(k=>{if(M[k].stunned){M[k].stunTicks--;if(M[k].stunTicks<=0){M[k].stunned=false;M[k].stunTicks=0;log(`${M[k].tpl.name} shakes free — action restored`,"g");}}});}
-  if(windows.horn>0){windows.horn--;if(windows.horn===0&&M.warden)M.warden.horn=false;}
-  const act=active();
-  let rescue=null;
-  // Keeper rescues someone at zero — but only if charges remain (capped per fight)
-  if(!M.keeper.grievous && M.keeper.hp>0 && !M.keeper.stunned && rescuesUsed<RESCUE_CAP){for(const k of ORDER){if(k==="keeper"||M[k].grievous)continue;if(M[k].hp<=0){rescue=k;break;}}M.keeper.action=rescue?"burst":"damage";}
-  else if(!M.keeper.grievous){M.keeper.action="damage";}
-  // STEADY DRAIN: independent — each active member soaks drain/4, regardless of who else is standing
-  {act.filter(k=>M[k].hp>0).forEach(k=>{M[k].hp-=P.drain/4;});}
-  // SPIKES: per-member independent rolls — each tick every living member has a 1/(spikeiv×4) chance of being hit
-  // This matches the same expected party-wide rate as a global spike but makes each member's survival independent.
-  if(P.spike>0){
-    const pPerTick=1/(P.spikeiv*4);
-    act.filter(k=>M[k].hp>0).forEach(originalTarget=>{
-      if(Math.random()>=pPerTick)return;
-      const hit=P.spike*(0.7+Math.random()*0.6);
-      let target=originalTarget;let guarded=false;
-      if(windows.horn>0&&!M.warden.grievous&&M.warden.hp>0){target="warden";}  // Horn of Gondor pulls all spikes
-      else if(originalTarget==="keeper"&&(M.keeper.hp-hit)<=0&&M.warden.hp>0&&!M.warden.grievous&&wardsUsed<WARD_CAP){
-        target="warden";guarded=true;wardsUsed++;}
-      spikesTotal++;M[target].spikesTargeted++;
-      if(!guarded&&Math.random()<M[target].fat*0.004){
-        log(`${M[target].tpl.name} slips the blow — Fate ${Math.round(M[target].fat)} (near miss)`,"g");
-        M[target].fatEvades++;
-      } else {
-        // Reserve pool absorbs spike damage before morale (sink model)
-        let dmg=hit;
-        if(M[target].reserve>0){const absorbed=Math.min(M[target].reserve,dmg);M[target].reserve-=absorbed;dmg-=absorbed;}
-        M[target].hp-=dmg;
-        if(guarded)log(`${M.warden.tpl.name} throws himself across a killing blow meant for ${M.keeper.tpl.name} (${Math.round(hit)}) — guard ${wardsUsed} of ${WARD_CAP}`,"s");
-        else if(M[target].reserve>0||dmg<hit)log(`a blow strikes ${M[target].tpl.name} (${Math.round(hit)} — reserve absorbed ${Math.round(hit-dmg)})`,"t");
-        else log(`a heavy blow strikes ${M[target].tpl.name} (${Math.round(hit)})`,"t");
-      }
-    });
-  }
-  // food healing (steady, LIVING ONLY) — overflow above max morale banks into the reserve pool (cap RMAX)
-  act.forEach(k=>{if(M[k].hp<=0||M[k].stunned)return;const heal=foodOf(k);
-    const next=M[k].hp+heal;
-    if(next>M[k].max){M[k].reserve=Math.min(RMAX,M[k].reserve+(next-M[k].max));}
-    if(!(windows.horn>0&&k==="warden"))M[k].hp=Math.min(M[k].max,next);});
-  if(rescue){const burst=(40+M.keeper.wil*4)*P.burstmul;tickHeal=burst;M[rescue].hp=Math.min(M[rescue].max,Math.max(M[rescue].hp,0)+burst);M.keeper.action="burst";rescuesUsed++;
-    log(`Cael bursts ${M[rescue].tpl.name} clear of zero (+${Math.round(burst)}) — rescue ${rescuesUsed} of ${RESCUE_CAP}`,"h");}
-  // --- SHADOW (Model C): drains Will+Fate toward a floor; RADIANCE RAISES THE FLOOR (so partial Radiance meaningfully limits how deep the spirit sinks, full Radiance nearly stops it). Cascades into heals/dread-resist/inspiration. ---
-  if(P.shadow>0){
-    // deep floor (no Radiance) scales with severity: harsher Shadow can drain further. Radiance lifts the floor back toward full.
-    const deepFloor=Math.max(0.25, SHADOW_FLOOR - (P.shadow/100)*0.30);   // sev10 with no Radiance can reach ~0.25 of base
-    const floor=deepFloor + (1-deepFloor)*Math.min(1,P.radiance/100);     // Radiance raises floor toward 1.0
-    const dr=P.shadow*SHADOW_RATE;                                         // drain rate is full; Radiance limits DEPTH, not speed
-    ORDER.forEach(k=>{if(M[k].grievous)return;
-      M[k].wil=Math.max(M[k].wilBase*floor, M[k].wil-dr);
-      M[k].fat=Math.max(M[k].fatBase*floor, M[k].fat-dr);
-      M[k].shDrain=(M[k].wilBase-M[k].wil)+(M[k].fatBase-M[k].fat);});
-    if(t===1||t%30===0)log(`the Shadow gnaws at the spirit &#8212; Will and Fate wither${P.radiance>0?" (Radiance holds the floor)":" (no Radiance — they sink deep)"}`,"t");}
-  // --- simple Morale-pressure hazards (Disease/Cold/Heat/Wakefulness), each cut by its antidote ---
-  {const haz=[["disease","hale"],["cold","warmth"],["heat","heatease"],["wake","alert"]];
-   let extra=0; haz.forEach(([hz,an])=>{const str=P[hz]||0; if(str>0){extra+=(str*0.08)*(1-Math.min(1,(P[an]||0)/100));}});
-   if(extra>0)act.forEach(k=>{M[k].hp-=extra/act.length;});}
-  // --- DREAD Layer B: action denial — checked every BREAK_CHECK_INTERVAL ticks ---
-  if(P.dread>0&&t%BREAK_CHECK_INTERVAL===0){
-    const capWil=(!M.captain.grievous&&!M.captain.stunned)?M.captain.wil:0;
-    const wCut=Math.min(1,capWil/100),hCut=Math.min(1,P.hope/100);
-    const neg=wCut+hCut;
-    function dreadPool(captW){const pool=[];ORDER.forEach(k=>{if(!M[k].grievous&&!M[k].broken&&!M[k].stunned&&M[k].hp>0)pool.push({k,w:k==="captain"?captW:1});});return pool;}
-    function dreadPick(pool){const tot=pool.reduce((s,p)=>s+p.w,0);if(!tot)return null;let r=Math.random()*tot;for(const p of pool){r-=p.w;if(r<=0)return p.k;}return pool[pool.length-1]?.k||null;}
-    if(neg<T_TEMP){const tgt=dreadPick(dreadPool(CAPTAIN_STUN_WEIGHT));if(tgt){M[tgt].stunned=true;M[tgt].stunTicks=STUN_TICKS;log(`${M[tgt].tpl.name} is seized by dread — action lost for ${STUN_TICKS} seconds`,"t");events.push({t,kind:"dread-stun",who:M[tgt].tpl.name});}}
-    if(neg<T_PERM){const tgt=dreadPick(dreadPool(CAPTAIN_BREAK_WEIGHT));if(tgt){M[tgt].broken=true;log(`${M[tgt].tpl.name}'s courage fails — they are gone`,"t");events.push({t,kind:"morale-break",who:M[tgt].tpl.name});}}
-  }
-  ORDER.forEach(k=>{if(M[k].grievous)return;
-    if(M[k].hp<=0&&!M[k].atZero){M[k].atZero=true;M[k].wounds++;log(`${M[k].tpl.name} hits zero — a wound (${M[k].wounds}/${GRIEVOUS})`,"t");
-      if(M[k].wounds>=GRIEVOUS){if(!M.keeper.grievous&&!M.keeper.stunned&&M.keeper.hp>0&&inspRoll(Math.min(0.25,P.graceBase+M.keeper.fat*0.003),inspBoost)){M[k].wounds=0;M[k].hp=Math.round(M[k].max*0.4);M[k].atZero=false;
-          log(`&#10022; LAURELIN'S GRACE — Cael calls upon Laurelin's Grace, and the shadow loosens its hold on ${M[k].tpl.name}`,"insp");events.push({t,kind:"Laurelin's Grace",who:M[k].tpl.name});}
-        else{M[k].grievous=true;log(`${M[k].tpl.name} takes a GRIEVOUS wound — out of the fight`,"t");events.push({t,kind:"grievous",who:M[k].tpl.name});}}}
-    if(M[k].hp>5)M[k].atZero=false;});
-  // --- periodic flavor commentary ---
-  if(t>0&&t%60===0){
-    const pct=active().length/4;const bd2=dpsBreakdown();const trem=maxT-t;
-    // rescue fuel check
-    if(rescuesUsed>=3&&rescuesUsed<RESCUE_CAP)log(`Keeper has used ${rescuesUsed} of ${RESCUE_CAP} rescues — the well is getting shallow.`,"t");
-    else if(rescuesUsed>=RESCUE_CAP)log(`Keeper has no rescues left — the next fall is a wound with no catch.`,"t");
-    // boss milestone callouts
-    if(!P.unkill){const bpct=window._boss/P.boss;
-      if(bpct<=0.5&&bpct>0.45&&!fired.halfBlood){fired.halfBlood=true;log(`The enemy host has lost half its resolve — the band's damage is landing.`,"g");}
-      if(bpct<=0.25&&bpct>0.20&&!fired.quarterBlood){fired.quarterBlood=true;log(`Enemy resolve below a quarter — push harder.`,"g");}
-    }
-    // morale state pulse
-    const low=active().filter(k=>M[k].hp/M[k].max<0.40);
-    if(low.length>=2)log(`${low.map(k=>M[k].tpl.name).join(" and ")} are running low — the Keeper's eye is everywhere.`,"t");
-    // shadow escalation
-    if(P.shadow>0&&t%120===0){const lost=ORDER.reduce((a,k)=>a+(M[k].grievous?0:M[k].shDrain),0);
-      if(lost>2)log(`The Shadow has stolen ${Math.round(lost)} spirit from the band — Will and Fate sink lower.`,"t");}
-  }
-  if(inspBoost>0)inspBoost=Math.max(0,inspBoost-0.005);
-  const nowTrouble=inTrouble(), crisisEdge=nowTrouble>=2&&prevTrouble<2;
-  if(crisisEdge&&!fired.horn&&!M.warden.grievous&&!M.warden.stunned&&!M.warden.broken&&M.warden.hp>0&&inspRoll(Math.min(0.25,P.hornBase+M.warden.fat*0.003),inspBoost)){fired.horn=true;windows.horn=8;M.warden.horn=true;
-    log(`&#10022; THE HORN OF GONDOR — ${M.warden.tpl.name} blows the Horn of Gondor and refuses to fall`,"insp");events.push({t,kind:"The Horn of Gondor",who:M.warden.tpl.name});}
-  if(crisisEdge&&!fired.dawn&&!M.captain.grievous&&!M.captain.stunned&&!M.captain.broken&&M.captain.hp>0&&inspRoll(Math.min(0.25,P.dawnBase+M.captain.fat*0.003),0)){fired.dawn=true;windows.dawn=10;act.forEach(k=>{M[k].hp=Math.min(M[k].max,M[k].hp+M[k].max*0.15);});
-    inspBoost=0.15;
-    log(`&#10022; WRATH, RUIN, AND THE RED DAWN — ${M.captain.tpl.name} cries: 'Now for wrath, now for ruin, and the red dawn!' (all Inspirations boosted)`,"insp");events.push({t,kind:"Wrath, Ruin, and the Red Dawn",who:M.captain.tpl.name});}
-  prevTrouble=nowTrouble;
-  const bd=dpsBreakdown();let boss=window._boss;const _jit=(+($("jitter")||{value:10}).value)/100;if(!P.unkill)boss=Math.max(0,boss-bd.eff*(1+(Math.random()*2-1)*_jit));window._boss=boss;
-  if(!baFired&&!M.hunter.grievous&&!M.hunter.stunned&&!M.hunter.broken&&M.hunter.hp>0){const elapsed=t/maxT;const ttk=bd.eff>0?boss/bd.eff:1e9;const trem=maxT-t;
-    const losing=P.unkill?(elapsed>0.5):(ttk>trem&&elapsed>0.4);
-    if(losing){const rise=Math.min(P.blackArrowCap,(elapsed-0.4)*P.blackArrowCap*2.5);
-      if(inspRoll(rise+M.hunter.fat*0.003,inspBoost)){baFired=true;
-        if(P.unkill){maxT-=Math.round(P.duration*0.15);log(`&#10022; BLACK ARROW — ${M.hunter.tpl.name} looses a flaming arrow — the terror recoils, the clock shortens`,"insp");events.push({t,kind:"Black Arrow (flaming)",who:M.hunter.tpl.name});}
-        else{boss=Math.max(0,boss-P.boss*0.18);window._boss=boss;log(`&#10022; BLACK ARROW — ${M.hunter.tpl.name} draws the Black Arrow — go now, and speed well!`,"insp");events.push({t,kind:"Black Arrow",who:M.hunter.tpl.name});}}}}
-  // record time-series frame
-  const incoming=P.drain+P.spike/P.spikeiv;
-  series.push({t,boss:boss,dps:bd.eff,raw:bd.raw,penSaved:bd.penSaved,willSaved:bd.willSaved,hopeSaved:bd.hopeSaved,layerADrag:bd.layerADrag||0,sustain:sustain(),incoming,
-    effBy:{warden:bd.effBy.warden,hunter:bd.effBy.hunter,keeper:bd.effBy.keeper,captain:bd.effBy.captain,captain_phys:bd.effBy.captain_phys||0,captain_magic:bd.effBy.captain_magic||0},
-    physMitTotal:bd.physMitTotal||0, magicDmg:bd.magicDmg||0, dawnBoost:bd.dawnBoost||0, healBy:{keeper:tickHeal},
-    spirit:{wil:ORDER.reduce((a,k)=>a+(M[k].grievous?0:M[k].wil),0),fat:ORDER.reduce((a,k)=>a+(M[k].grievous?0:M[k].fat),0)},
-    spiritBase:{wil:ORDER.reduce((a,k)=>a+M[k].wilBase,0),fat:ORDER.reduce((a,k)=>a+M[k].fatBase,0)},
-    morale:{warden:Math.max(0,M.warden.hp),hunter:Math.max(0,M.hunter.hp),keeper:Math.max(0,M.keeper.hp),captain:Math.max(0,M.captain.hp)},
-    maxmorale:{warden:M.warden.max,hunter:M.hunter.max,keeper:M.keeper.max,captain:M.captain.max},
-    wounds:{warden:M.warden.wounds+(M.warden.grievous?GRIEVOUS:0),hunter:M.hunter.wounds+(M.hunter.grievous?GRIEVOUS:0),keeper:M.keeper.wounds+(M.keeper.grievous?GRIEVOUS:0),captain:M.captain.wounds+(M.captain.grievous?GRIEVOUS:0)}});
-  updLive(bd,boss,incoming);
-  // VICTORY needs only the kill landed by whoever is still standing — grievous casualties are survivable, the band just needs healing time after.
-  if(!P.unkill&&boss<=0){finish("VICTORY","v-victory");return true;}
-  // DEFEAT only if NO ONE is left standing (all downed or grievous) — then there's no damage and no rescuer.
-  if(!ORDER.some(k=>!M[k].grievous&&!M[k].broken&&M[k].hp>0)){finish("DEFEAT","v-defeat");return true;}
-  if(t>=maxT){finish(P.unkill?"REPELLED":"STALEMATE",P.unkill?"v-repelled":"v-stalemate");return true;}
-  return false;}
+  const result = fightTick(FIGHT);
+  result.logLines.forEach(msg => {
+    const cls = /GRIEVOUS|GRACE/.test(msg) ? "insp" : /hits zero|blow strikes/.test(msg) ? "t" : /group heal|triage|bursts|HoT/.test(msg) ? "h" : /shakes free|slips the blow/.test(msg) ? "g" : "";
+    log(msg, cls || undefined);
+  });
+  const bd = fightDpsBreakdown(FIGHT);
+  const incoming = FIGHT.cfg.drain + FIGHT.cfg.spike/FIGHT.cfg.spikeiv;
+  const physMitTotal=(bd.rawBy.warden+bd.rawBy.fighter+bd.rawBy.captain_phys)*bd.physAfter*(1-bd.layerADrag);
+  series.push({t:FIGHT.t, boss:FIGHT.boss, dps:bd.eff, raw:bd.raw, layerADrag:bd.layerADrag||0, incoming, physMitTotal,
+    effBy:{warden:bd.rawBy.warden*(1-bd.physAfter)*(1-bd.layerADrag), fighter:bd.rawBy.fighter*(1-bd.physAfter)*(1-bd.layerADrag),
+           keeper:bd.rawBy.keeper*(1-bd.layerADrag), captain:bd.rawBy.captain*(1-bd.physAfter)*(1-bd.layerADrag),
+           captain_phys:bd.rawBy.captain_phys*(1-bd.physAfter)*(1-bd.layerADrag), captain_magic:bd.rawBy.captain_magic*(1-bd.layerADrag)},
+    spirit:{wil:ORDER.reduce((a,k)=>a+(FIGHT.M[k].grievous?0:FIGHT.M[k].wil),0),fat:ORDER.reduce((a,k)=>a+(FIGHT.M[k].grievous?0:FIGHT.M[k].fat),0)},
+    spiritBase:{wil:ORDER.reduce((a,k)=>a+FIGHT.M[k].wilBase,0),fat:ORDER.reduce((a,k)=>a+FIGHT.M[k].fatBase,0)},
+    morale:Object.fromEntries(ORDER.map(k=>[k,Math.max(0,FIGHT.M[k].hp)])),
+    maxmorale:Object.fromEntries(ORDER.map(k=>[k,FIGHT.M[k].max])),
+    wounds:Object.fromEntries(ORDER.map(k=>[k,FIGHT.M[k].wounds+(FIGHT.M[k].grievous?GRIEVOUS:0)]))});
+  updLive(bd, FIGHT.boss, incoming);
+  if (result.done) { finish(result.outcome, "v-"+result.outcome.toLowerCase()); return true; }
+  return false;
+}
 
 function updLive(bd,boss,incoming){
-  const bossMax=P.unkill?maxT:P.boss;
-  $("bosshp").textContent=P.unkill?fmtT(Math.max(0,maxT-t)):Math.round(boss);
-  $("bossbar").style.width=(P.unkill?((maxT-t)/maxT*100):(boss/bossMax*100))+"%";
-  const sus=sustain();
-  $("g_sus").textContent=Math.round(sus);$("g_inc").textContent=Math.round(incoming);
-  $("g_hold").innerHTML=sus>=incoming?'<span class="ok">holding</span>':'<span class="no">losing ground</span>';
+  const cfg=FIGHT.cfg, Mx=FIGHT.M;
+  const bossMax=cfg.unkill?FIGHT.maxT:cfg.boss;
+  $("bosshp").textContent=cfg.unkill?fmtT(Math.max(0,FIGHT.maxT-FIGHT.t)):Math.round(boss);
+  $("bossbar").style.width=(cfg.unkill?((FIGHT.maxT-FIGHT.t)/FIGHT.maxT*100):(boss/bossMax*100))+"%";
   $("g_raw").textContent=Math.round(bd.raw);
-  const showPhys=P.phys>0,showDread=P.dread>0,showShadow=P.shadow>0;
-  $("g_physrow").style.display=showPhys?"":"none";$("g_pensaverow").style.display=showPhys?"":"none";$("g_pendetail").style.display=showPhys?"":"none";
-  $("g_dreadrow").style.display=showDread?"":"none";$("g_willrow").style.display=showDread?"":"none";$("g_hoperow").style.display=showDread?"":"none";
+  const showPhys=cfg.phys>0,showDread=cfg.dread>0,showShadow=cfg.shadow>0;
+  $("g_physrow").style.display=showPhys?"":"none";$("g_pendetail").style.display=showPhys?"":"none";
+  $("g_dreadrow").style.display=showDread?"":"none";
   $("g_shadowrow").style.display=showShadow?"":"none";
-  if(showPhys){$("g_phys").textContent="\u2212"+Math.round(bd.physAfter*100)+"%";$("g_pensave").textContent="+"+Math.round(bd.penSaved)+" dps";
-    $("g_pendetail").innerHTML=`&nbsp;&nbsp;Draught potency ${Math.round(bd.potency||0)} / ${PEN_SCALE} &#8594; strips ${Math.round(Math.min(1,(bd.potency||0)/PEN_SCALE)*100)}% of armor`;}
-  if(showDread){$("g_dreadval").textContent="\u2212"+Math.round((bd.layerADrag||0)*100)+"%";$("g_willsave").textContent="+"+Math.round(bd.willSaved)+" dps";$("g_hopesave").textContent="+"+Math.round(bd.hopeSaved)+" dps";}
-  if(showShadow){const lost=ORDER.reduce((a,k)=>a+(M[k].grievous?0:M[k].shDrain),0);$("g_shadowval").textContent="\u2212"+Math.round(lost)+" spirit";}
+  if(showPhys){$("g_phys").textContent="\u2212"+Math.round(bd.physAfter*100)+"%";
+    $("g_pendetail").innerHTML=`&nbsp;&nbsp;Draught potency ${Math.round(cfg.potency||0)} / ${PEN_SCALE} &#8594; strips ${Math.round(Math.min(1,(cfg.potency||0)/PEN_SCALE)*100)}% of armor`;}
+  if(showDread){$("g_dreadval").textContent="\u2212"+Math.round((bd.layerADrag||0)*100)+"%";}
+  if(showShadow){const lost=ORDER.reduce((a,k)=>a+(Mx[k].grievous?0:Mx[k].shDrain),0);$("g_shadowval").textContent="\u2212"+Math.round(lost)+" spirit";}
   $("g_dps").innerHTML="<b>"+Math.round(bd.eff)+"</b>";
-  if(bd.effBy){ORDER.forEach(k=>{const el=$("g_dps_"+k);if(el)el.innerHTML=M[k].grievous?'<span class="no">grievous</span>':M[k].broken?'<span class="no">fled</span>':M[k].stunned?'<span style="color:#9a3526">frozen</span>':(M[k].hp<=0?'<span class="no">down</span>':(k==="keeper"&&M[k].action==="burst"?'<span style="color:var(--keeper)">rescuing</span>':"<b>"+Math.round(bd.effBy[k])+"</b>"));});}
-  $("g_keep").innerHTML=M.keeper.grievous?'<span class="no">grievous</span>':(M.keeper.action==="burst"?'<span class="no">rescuing</span>':'<span class="ok">attacking</span>')+` <span style="color:#8a7355">(${RESCUE_CAP-rescuesUsed}/${RESCUE_CAP} rescues left)</span>`;
-  $("g_ttk").textContent=P.unkill?fmtT(Math.max(0,maxT-t)):(bd.eff>0?Math.ceil(boss/bd.eff)+"s":"\u221e");
-  $("clock").textContent=fmtT(t);$("speed").textContent=P.unkill?"surviving":`${Math.round(bd.eff)} dps`;
+  const effBy={warden:bd.rawBy.warden*(1-bd.physAfter)*(1-bd.layerADrag), fighter:bd.rawBy.fighter*(1-bd.physAfter)*(1-bd.layerADrag),
+               keeper:bd.rawBy.keeper*(1-bd.layerADrag), captain:bd.rawBy.captain*(1-bd.physAfter)*(1-bd.layerADrag)};
+  ORDER.forEach(k=>{const el=$("g_dps_"+k);if(el)el.innerHTML=Mx[k].grievous?'<span class="no">grievous</span>':Mx[k].broken?'<span class="no">fled</span>':Mx[k].stunned?'<span style="color:#9a3526">frozen</span>':(Mx[k].hp<=0?'<span class="no">down</span>':(k==="keeper"&&Mx[k].action==="burst"?'<span style="color:var(--keeper)">rescuing</span>':"<b>"+Math.round(effBy[k])+"</b>"));});
+  $("g_keep").innerHTML=Mx.keeper.grievous?'<span class="no">grievous</span>':(Mx.keeper.action==="burst"?'<span class="no">rescuing</span>':'<span class="ok">attacking</span>')+` <span style="color:#8a7355">(${RESCUE_CAP-FIGHT.rescuesUsed}/${RESCUE_CAP} rescues left)</span>`;
+  $("g_ttk").textContent=cfg.unkill?fmtT(Math.max(0,FIGHT.maxT-FIGHT.t)):(bd.eff>0?Math.ceil(boss/bd.eff)+"s":"\u221e");
+  $("clock").textContent=fmtT(FIGHT.t);$("speed").textContent=cfg.unkill?"surviving":`${Math.round(bd.eff)} dps`;
   renderParty();}
 
 function buildSummary(verdict){
-  const griev=ORDER.filter(k=>M[k].grievous);const insps=events.filter(e=>/Grace|Horn|Red Dawn|Black Arrow/.test(e.kind));
-  let saga=`After ${fmtT(t)}, the engagement ended in <b>${verdict}</b>. `;
+  const griev=ORDER.filter(k=>FIGHT.M[k].grievous);const insps=FIGHT.events.filter(e=>/Grace|Horn|Red Dawn|Black Arrow/.test(e.kind));
+  let saga=`After ${fmtT(FIGHT.t)}, the engagement ended in <b>${verdict}</b>. `;
   if(verdict==="VICTORY")saga+="The enemy host broke and the band held the field. ";
   else if(verdict==="REPELLED")saga+="The terror could not be slain, but the band endured until it withdrew. ";
   else if(verdict==="STALEMATE")saga+="The band survived but could not bring the enemy down before time ran out. ";
@@ -1090,7 +1195,7 @@ function buildSummary(verdict){
   if(insps.length)saga+="In the worst moments, grace intervened: "+insps.map(e=>`${e.who}'s ${e.kind}`).join("; ")+". ";
   else saga+="No grace was needed — or none came. ";
   let after=`<div class="after">`;
-  ORDER.forEach(k=>{const m=M[k];let cls,txt;
+  ORDER.forEach(k=>{const m=FIGHT.M[k];let cls,txt;
     if(m.broken){cls="ag";txt="fled the field — morale shattered";}
     else if(m.grievous){cls="ag";txt="grievous — Houses of Healing";}else if(m.wounds>=3){cls="aw";txt=`${m.wounds} wounds — significant rest`;}
     else if(m.wounds>0){cls="aw";txt=`${m.wounds} wound${m.wounds>1?'s':''} — short rest`;}else{cls="ah";txt="unhurt";}
@@ -1098,56 +1203,68 @@ function buildSummary(verdict){
   after+=`</div>`;
   const needHoH=griev.length>0;
   $("summary").innerHTML=`<h4>Battle Summary</h4><div class="saga">${saga}</div><h4>Aftermath &amp; recovery</h4>${after}
-    <div class="note" style="margin-top:8px">${needHoH?`${griev.length} member${griev.length>1?'s':''} took a grievous wound — they need the Houses of Healing before fighting again.`:`No grievous wounds — the band recovers with rest.`} Cael used ${rescuesUsed} of ${RESCUE_CAP} zero-rescues${rescuesUsed>=RESCUE_CAP?' — all spent.':'.'}</div>`;}
+    <div class="note" style="margin-top:8px">${needHoH?`${griev.length} member${griev.length>1?'s':''} took a grievous wound — they need the Houses of Healing before fighting again.`:`No grievous wounds — the band recovers with rest.`} Cael used ${FIGHT.rescuesUsed} of ${RESCUE_CAP} zero-rescues${FIGHT.rescuesUsed>=RESCUE_CAP?' — all spent.':'.'}</div>`;}
 
 function finish(label,cls){clearInterval(timer);running=false;const v=$("verdict");v.textContent=label;v.className="verdict "+cls;
   log(`— ${label} —`,cls==="v-victory"?"g":cls==="v-defeat"?"t":"h");$("run").innerHTML="&#9654; Run Again";
-  $("runstate").textContent=`${label} at ${fmtT(t)} — see Results`;
+  $("runstate").textContent=`${label} at ${fmtT(FIGHT.t)} — see Results`;
   buildSummary(label);renderResults();$("results_empty").style.display="none";$("results_body").style.display="";showTab('results');}
 
-function prep(){buildParty();$("log").innerHTML="";t=0;P=curParams();maxT=P.duration;window._boss=P.boss;
-  events=[];fired={};windows={dawn:0,horn:0};baFired=false;series=[];rescuesUsed=0;wardsUsed=0;inspBoost=0;prevTrouble=0;spikesTotal=0;
+function prep(){
+  const lvl=+$("lvl").value, R=roster();
+  const cfg = {
+    lvl, roster:R, duration:+$("dur").value, boss:+$("boss").value,
+    drain:+$("drain").value, spike:+$("spike").value, spikeiv:+$("spikeiv").value,
+    phys:(MODE===1?0:+$("phys").value/100), unkill:MODE===1, burstmul:+$("burstmul").value/100,
+    potency: draughtPotency(),
+    dread:statusOn("dread")/100, hope:antidoteOn("hope"),
+    shadow:statusOn("shadow"), radiance:antidoteOn("radiance"),
+    disease:statusOn("disease"), hale:antidoteOn("hale"),
+    cold:statusOn("cold"), warmth:antidoteOn("warmth"),
+    heat:statusOn("heat"), heatease:antidoteOn("heatease"),
+    wake:statusOn("wake"), alert:antidoteOn("alert"),
+    graceBase:0.05, hornBase:0.03, dawnBase:0.03, blackArrowCap:0.06,
+    memberFoodBonuses: Object.fromEntries(ORDER.map(k=>[k, memberFoodBonuses(k)]))
+  };
+  FIGHT = createFightState(cfg);
+  maxT = cfg.duration;
+  $("log").innerHTML=""; series=[];
   $("verdict").textContent="ENGAGED";$("verdict").className="verdict v-fighting";
-  // --- verbose startup log ---
-  const sus=sustain(), drain=P.drain, spike=P.spike, iv=P.spikeiv;
-  const incoming=drain+spike/iv;
-  const margin=sus-incoming;
-  log(P.unkill?`The band sets itself against a terror that cannot be slain — endure for ${fmtT(maxT)}.`:`The band draws weapons. The enemy host holds ${Math.round(P.boss)} resolve.`,"");
-  log(`Provisions: Warden ${foodOf("warden")}/s · Hunter ${foodOf("hunter")}/s · Keeper ${foodOf("keeper")}/s · Captain ${foodOf("captain")}/s → ${Math.round(sus)}/s total sustain`,"");
+  const sus = 0; // sustain no longer exists (Model B: no HP/s food) — startup log below no longer cites it
+  const drain=cfg.drain, spike=cfg.spike, iv=cfg.spikeiv;
+  log(cfg.unkill?`The band sets itself against a terror that cannot be slain — endure for ${fmtT(maxT)}.`:`The band draws weapons. The enemy host holds ${Math.round(cfg.boss)} resolve.`,"");
   if(drain>0||spike>0){
     let pressStr=`Pressure: `;
     if(drain>0)pressStr+=`steady drain ${drain}/s (${Math.round(drain/4)}/s per member, independent)`;
     if(drain>0&&spike>0)pressStr+=` · `;
-    if(spike>0)pressStr+=`spikes ${spike} potency — each member rolls independently every ~${iv}s`;
-    pressStr+=` → ~${Math.round(incoming)}/s combined`;
+    if(spike>0)pressStr+=`one spike every ~${iv}s, potency ${spike}`;
     log(pressStr,"");
   }
-  if(margin>=0){log(`Sustain holds: ${Math.round(sus)}/s in, ~${Math.round(incoming)}/s out — surplus ${Math.round(margin)}/s. The Keeper's real job is catching spikes.`,"g");}
-  else{log(`Sustain gap: ${Math.round(sus)}/s in, ~${Math.round(incoming)}/s out — deficit ${Math.round(Math.abs(margin))}/s. Members will bleed down over time.`,"t");}
-  if(!P.unkill){const bd=dpsBreakdown();const ttk=bd.eff>0?Math.ceil(P.boss/bd.eff):99999;
+  if(!cfg.unkill){const bd=fightDpsBreakdown(FIGHT);const ttk=bd.eff>0?Math.ceil(cfg.boss/bd.eff):99999;
     if(ttk<=maxT*0.6)log(`Damage looks strong — ${Math.round(bd.eff)} effective DPS, kill in ~${fmtT(ttk)} (${Math.round(ttk/maxT*100)}% of the clock).`,"g");
     else if(ttk<=maxT)log(`Damage is thin — ${Math.round(bd.eff)} effective DPS, kill in ~${fmtT(ttk)}. Cuts it close.`,"");
     else log(`Damage deficit — ${Math.round(bd.eff)} effective DPS, can't kill in time. Stalemate likely unless an Inspiration turns the fight.`,"t");}
   const hazards=[];
-  if(P.dread>0)hazards.push(`Dread (${Math.round(P.dread*100)}%) — suppresses all damage; countered by Hope and Captain's Will`);
-  if(P.shadow>0)hazards.push(`Shadow (${P.shadow}) — drains Will and Fate toward a floor; Radiance raises that floor`);
-  if(P.cold>0)hazards.push(`Cold (${P.cold}) — extra Morale drain${P.warmth>0?" (Warmth antidote active)":""}`);
-  if(P.heat>0)hazards.push(`Heat (${P.heat}) — extra Morale drain${P.heatease>0?" (Heat-ease active)":""}`);
-  if(P.disease>0)hazards.push(`Disease (${P.disease}) — extra Morale drain${P.hale>0?" (Hale active)":""}`);
-  if(P.wake>0)hazards.push(`Wakefulness (${P.wake}) — extra Morale drain${P.alert>0?" (Alert active)":""}`);
+  if(cfg.dread>0)hazards.push(`Dread (${Math.round(cfg.dread*100)}%) — suppresses all damage; countered by Hope and Captain's Will`);
+  if(cfg.shadow>0)hazards.push(`Shadow (${cfg.shadow}) — drains Will and Fate toward a floor; Radiance raises that floor`);
+  if(cfg.cold>0)hazards.push(`Cold (${cfg.cold}) — extra Morale drain${cfg.warmth>0?" (Warmth antidote active)":""}`);
+  if(cfg.heat>0)hazards.push(`Heat (${cfg.heat}) — extra Morale drain${cfg.heatease>0?" (Heat-ease active)":""}`);
+  if(cfg.disease>0)hazards.push(`Disease (${cfg.disease}) — extra Morale drain${cfg.hale>0?" (Hale active)":""}`);
+  if(cfg.wake>0)hazards.push(`Wakefulness (${cfg.wake}) — extra Morale drain${cfg.alert>0?" (Alert active)":""}`);
   if(hazards.length)hazards.forEach(h=>log(`Hazard: ${h}`,"t"));
   else log(`No hazards — a clean fight.`,"");
-  log(`Rescues: Cael holds ${RESCUE_CAP} burst rescues and ${WARD_CAP} Warden lethal-spike guards. Inspirations fire at 5% per trigger.`,""  );
-  log(`――― ENGAGED ―――`,"");}
+  log(`Rescues: Cael holds ${RESCUE_CAP} burst rescues and ${WARD_CAP} Warden lethal-spike guards.`,"");
+  log(`――― ENGAGED ―――`,"");
+}
 function runLoop(){if(SPEED===3){let g=0;while(!stepOnce()&&g++<20000){}return;}timer=setInterval(()=>{if(stepOnce())clearInterval(timer);},SPEED_MS[SPEED]);}
 function start(){if(running)return;prep();running=true;$("run").innerHTML="&#8230; fighting";$("runstate").textContent="running…";showTab('live');runLoop();}
 $("run").addEventListener("click",start);
-$("step").addEventListener("click",()=>{if(!running){if(t===0||series.length===0)prep();showTab('live');stepOnce();}});
-$("reset").addEventListener("click",()=>{clearInterval(timer);running=false;t=0;inspBoost=0;prevTrouble=0;
+$("step").addEventListener("click",()=>{if(!running){if(!FIGHT||series.length===0)prep();showTab('live');stepOnce();}});
+$("reset").addEventListener("click",()=>{clearInterval(timer);running=false;FIGHT=null;
   $("verdict").textContent="AWAITING ORDERS";$("verdict").className="verdict v-fighting";$("run").innerHTML="&#9654; Run";
   $("log").innerHTML="";$("clock").textContent="0:00";$("runstate").textContent="not yet run";
-  $("results_empty").style.display="";$("results_body").style.display="none";series=[];events=[];
-  ["g_sus","g_inc","g_hold","g_raw","g_dps","g_keep","g_ttk"].forEach(id=>$(id).textContent="\u2014");$("speed").textContent="\u2014";
+  $("results_empty").style.display="";$("results_body").style.display="none";series=[];
+  ["g_raw","g_dps","g_keep","g_ttk"].forEach(id=>$(id).textContent="\u2014");$("speed").textContent="\u2014";
   ORDER.forEach(k=>{const el=$("g_dps_"+k);if(el)el.innerHTML="<b>\u2014</b>";});
   buildParty();refreshBoss();refreshRead();updEffects();statPreview();updDurButtons();});
 
@@ -1242,42 +1359,35 @@ function renderResults(){
 
   // Morale over time (line chart)
   const mMax=Math.max(...ORDER.map(k=>series[0].maxmorale[k]));
-  lineChart("ch_morale","lg_morale",ORDER.map(k=>({name:M[k].tpl.name+" ("+M[k].role+")",color:TPL[k==="hunter"?"hunterA":k].color,pts:series.map(s=>({x:s.t,y:s.morale[k]})),fmt:v=>Math.round(v)})),xmax,mMax,{});
+  lineChart("ch_morale","lg_morale",ORDER.map(k=>({name:FIGHT.M[k].tpl.name+" ("+FIGHT.M[k].role+")",color:FIGHT.M[k].color,pts:series.map(s=>({x:s.t,y:s.morale[k]})),fmt:v=>Math.round(v)})),xmax,mMax,{});
 
   // DPS per character — MMO bar meter
   meterChart("ch_dpschar",[
-    {name:"Mira (Hunter)",     color:"#c0392b", value:avgBy("hunter")},
+    {name:"Mira (Fighter)",     color:"#c0392b", value:avgBy("fighter")},
     {name:"Borin (Warden)",    color:"#2e6da4", value:avgBy("warden")},
     {name:"Cael (Keeper)",     color:"#7d5a93", value:avgBy("keeper")},
     {name:"Aelindra (Capt.)", color:"#b8843c", value:avgBy("captain")},
   ],"dps","Party total");
 
-  // Captain's boost — Will + Red Dawn averaged over fight
-  const avgWillSaved=avg("willSaved"), avgHopeSaved=avg("hopeSaved"), avgDawnBoost=avg("dawnBoost");
-  const captainBoostTotal=avgWillSaved+avgDawnBoost;
-  if(captainBoostTotal>0.1||avgHopeSaved>0.1){
-    meterChart("ch_captainboost",[
-      {name:"Captain Will + Red Dawn", color:"#8a9aaa", value:captainBoostTotal},
-      {name:"Hope (food antidote)",    color:"#c9a84c", value:avgHopeSaved},
-    ],"dps","Total boost");
+  // Healing by source — HoT / Triage / Group / Rescue
+  const healTotal = FIGHT.healByType.hot + FIGHT.healByType.triage + FIGHT.healByType.group + FIGHT.healByType.rescue;
+  if (healTotal > 0.01) {
+    meterChart("ch_healsource",[
+      {name:"HoT",          color:"#5b7f63", value:FIGHT.healByType.hot},
+      {name:"Triage",       color:"#7d5a93", value:FIGHT.healByType.triage},
+      {name:"Group Heal",   color:"#4a6c93", value:FIGHT.healByType.group},
+      {name:"Rescue Burst", color:"#b8843c", value:FIGHT.healByType.rescue},
+    ],"hp","Total healing");
+    const hotUptimePct = FIGHT.t > 0 ? (FIGHT.hotActiveTicks / FIGHT.t * 100).toFixed(1) : "0.0";
+    $("ch_healsource").innerHTML += `<div class="meter-footer">HoT uptime: ${hotUptimePct}% of fight duration</div>`;
   } else {
-    $("ch_captainboost").innerHTML='<div class="empty" style="padding:24px 14px;text-align:center">No Dread active and Red Dawn did not fire — enable Dread or run a long fight to see the Captain\'s boost.</div>';
-  }
-
-  // Keeper healing — green bar
-  const avgHeal=series.reduce((s,f)=>s+(f.healBy?f.healBy.keeper||0:0),0)/series.length;
-  if(avgHeal>0.01){
-    meterChart("ch_keeperheal",[
-      {name:"Cael (Keeper)", color:"#5b7f63", value:avgHeal},
-    ],"hp/s","Avg HP/s restored");
-  } else {
-    $("ch_keeperheal").innerHTML='<div class="empty" style="padding:24px 14px;text-align:center">No rescues fired this engagement — Keeper spent all time on damage.</div>';
+    $("ch_healsource").innerHTML='<div class="empty" style="padding:24px 14px;text-align:center">No healing this engagement.</div>';
   }
 
   // Damage dealt to enemy by type — pie chart
   const avgCaptPhys=series.reduce((s,f)=>s+(f.effBy?f.effBy.captain_phys||0:0),0)/series.length;
   const avgCaptMagic=series.reduce((s,f)=>s+(f.effBy?f.effBy.captain_magic||0:0),0)/series.length;
-  const physDps=avgBy("warden")+avgBy("hunter")+avgCaptPhys;
+  const physDps=avgBy("warden")+avgBy("fighter")+avgCaptPhys;
   const magicDps=avgBy("keeper")+avgCaptMagic;
   pieChart("ch_damagetype","lg_damagetype",[
     {name:"Physical", color:"#c0392b", value:physDps},
@@ -1286,7 +1396,7 @@ function renderResults(){
 
   // Armor mitigation — what armor absorbed vs what got through
   const avgPhysAbsorbed=avg("physMitTotal");
-  if(P.phys>0&&(avgPhysAbsorbed>0||physDps>0)){
+  if(FIGHT.cfg.phys>0&&(avgPhysAbsorbed>0||physDps>0)){
     meterChart("ch_armormet",[
       {name:"Absorbed by armor", color:"#c0392b", value:avgPhysAbsorbed},
       {name:"Through armor",     color:"#5b7f63", value:physDps},
@@ -1295,15 +1405,13 @@ function renderResults(){
     $("ch_armormet").innerHTML='<div class="empty" style="padding:24px 14px;text-align:center">No armor in this fight — set Physical mit. % on Setup to see the breakdown.</div>';
   }
 
-  // Dread mitigation — Layer A drag + Will/Hope counters + Layer B event counts
-  if(P.dread>0){
+  // Dread mitigation — Layer A drag + Layer B event counts
+  if(FIGHT.cfg.dread>0){
     const avgLayerALoss=series.reduce((s,f)=>s+(f.raw||0)*(f.layerADrag||0),0)/series.length;
-    const stunEvts=events.filter(e=>e.kind==="dread-stun").length;
-    const breakEvts=events.filter(e=>e.kind==="morale-break").length;
+    const stunEvts=FIGHT.events.filter(e=>e.kind==="dread-stun").length;
+    const breakEvts=FIGHT.events.filter(e=>e.kind==="morale-break").length;
     meterChart("ch_dreadmet",[
       {name:"Layer A drag (DPS lost to dread floor)",color:"#9a3526",value:avgLayerALoss},
-      {name:"Saved by Captain Will + Red Dawn",color:"#b8843c",value:captainBoostTotal},
-      {name:"Saved by Hope",color:"#c9a84c",value:avgHopeSaved},
     ],"dps","Dread summary");
     $("ch_dreadmet").innerHTML+=`<div class="meter-footer">Layer B events this fight: ${stunEvts} stun${stunEvts!==1?"s":""}, ${breakEvts} break${breakEvts!==1?"s":""}</div>`;
   } else {
@@ -1311,7 +1419,7 @@ function renderResults(){
   }
 
   // Wounds accumulated (line chart)
-  lineChart("ch_wounds","lg_wounds",ORDER.map(k=>({name:M[k].tpl.name,color:TPL[k==="hunter"?"hunterA":k].color,pts:series.map(s=>({x:s.t,y:s.wounds[k]})),fmt:v=>Math.round(v)+" wounds"})),xmax,GRIEVOUS,{yfmt:v=>Math.round(v)});
+  lineChart("ch_wounds","lg_wounds",ORDER.map(k=>({name:FIGHT.M[k].tpl.name,color:FIGHT.M[k].color,pts:series.map(s=>({x:s.t,y:s.wounds[k]})),fmt:v=>Math.round(v)+" wounds"})),xmax,GRIEVOUS,{yfmt:v=>Math.round(v)});
 
   // Shadow spirit drain (line chart, conditional)
   const sawShadow=series.some(s=>s.spirit.wil<s.spiritBase.wil-0.5||s.spirit.fat<s.spiritBase.fat-0.5);
@@ -1323,16 +1431,26 @@ function renderResults(){
   else{$("ch_spirit").innerHTML='<div class="empty" style="padding:30px 14px;text-align:center">No Shadow in this fight — toggle Shadow on the enemy to watch it drain the party\'s Will and Fate (and Radiance hold it back).</div>';$("lg_spirit").innerHTML="";}
 
   // Inspiration timeline
-  const insps=events.filter(e=>/Grace|Horn|Red Dawn|Black Arrow/.test(e.kind));
+  const insps=FIGHT.events.filter(e=>/Grace|Horn|Red Dawn|Black Arrow/.test(e.kind));
   $("insp_list").innerHTML=insps.length?insps.map(e=>`<div class="insp-row"><span class="it">${fmtT(e.t)}</span><span class="ik">${e.kind}</span><span>&#8212; ${e.who}</span></div>`).join(""):'<div class="empty">No Inspirations fired this engagement. They are rare grace — most fights pass without them.</div>';
 
+  const contribLines = [];
+  if (FIGHT.inspGraceHeal > 0) contribLines.push(`Grace restored ${Math.round(FIGHT.inspGraceHeal)} HP`);
+  if (FIGHT.inspHornRedirect > 0) contribLines.push(`Horn redirected ${Math.round(FIGHT.inspHornRedirect)} damage to the Warden`);
+  if (FIGHT.inspDawnHeal > 0) contribLines.push(`Red Dawn restored ${Math.round(FIGHT.inspDawnHeal)} HP`);
+  if (FIGHT.inspDawnBonusDps > 0) contribLines.push(`Red Dawn added ${Math.round(FIGHT.inspDawnBonusDps)} bonus damage`);
+  if (FIGHT.inspBlackArrowAmount > 0) contribLines.push(FIGHT.cfg.unkill ? `Black Arrow cut ${Math.round(FIGHT.inspBlackArrowAmount)}s off the clock` : `Black Arrow burned ${Math.round(FIGHT.inspBlackArrowAmount)} resolve`);
+  if (contribLines.length) {
+    $("insp_list").innerHTML += `<div class="meter-footer" style="text-align:left;padding:8px 2px 0">${contribLines.join(" · ")}</div>`;
+  }
+
   // Fate — spikes slipped
-  if(spikesTotal>0){
+  if(FIGHT.spikesTotal>0){
     meterChart("ch_fatespike",ORDER.map(k=>({
-      name:M[k].tpl.name+" ("+M[k].tpl.role+")",
-      color:TPL[k==="hunter"?"hunterA":k].color,
-      value:M[k].fatEvades
-    })),"slipped",`Total spikes: ${spikesTotal}`);
+      name:FIGHT.M[k].tpl.name+" ("+FIGHT.M[k].tpl.role+")",
+      color:FIGHT.M[k].color,
+      value:FIGHT.M[k].fatEvades
+    })),"slipped",`Total spikes: ${FIGHT.spikesTotal}`);
   } else {
     $("ch_fatespike").innerHTML='<div class="empty" style="padding:24px 14px;text-align:center">No spikes in this fight — set spike potency on Setup to see Fate evasion.</div>';
   }
@@ -1340,14 +1458,14 @@ function renderResults(){
   // Fate — Inspiration trigger rates (one row per Inspiration showing effective % at fight end)
   {
     const inspDefs=[
-      {name:"Laurelin’s Grace", k:"keeper",  base:P.graceBase,      color:"#7d5a93", fired:events.some(e=>e.kind==="Laurelin's Grace")},
-      {name:"Horn of Gondor",        k:"warden",  base:P.hornBase,       color:"#2e6da4", fired:!!fired.horn},
-      {name:"Red Dawn",              k:"captain", base:P.dawnBase,       color:"#b8843c", fired:!!fired.dawn},
-      {name:"Black Arrow (peak)",    k:"hunter",  base:P.blackArrowCap,  color:"#c0392b", fired:baFired},
+      {name:"Laurelin’s Grace", k:"keeper",  base:FIGHT.cfg.graceBase,      color:"#7d5a93", fired:FIGHT.events.some(e=>e.kind==="Laurelin's Grace")},
+      {name:"Horn of Gondor",        k:"warden",  base:FIGHT.cfg.hornBase,       color:"#2e6da4", fired:!!FIGHT.fired.horn},
+      {name:"Red Dawn",              k:"captain", base:FIGHT.cfg.dawnBase,       color:"#b8843c", fired:!!FIGHT.fired.dawn},
+      {name:"Black Arrow (peak)",    k:"fighter",  base:FIGHT.cfg.blackArrowCap,  color:"#c0392b", fired:FIGHT.baFired},
     ];
     let html='<div class="meter-list">';
     inspDefs.forEach(d=>{
-      const rate=Math.min(0.25,d.base+M[d.k].fat*0.003);
+      const rate=Math.min(0.25,d.base+FIGHT.M[d.k].fat*0.003);
       const pct=Math.round(rate*100);
       const barW=Math.round(rate/0.25*100);
       const firedHtml=d.fired?'<span style="color:var(--good);font-weight:700">fired</span>':'<span style="color:#8a7355">no</span>';
@@ -1361,444 +1479,19 @@ function renderResults(){
     html+='</div><div class="meter-footer">Cap: 25% &middot; formula: base + Fate &times; 0.003 &middot; Black Arrow shows peak late-fight rate</div>';
     $("ch_fateinsp").innerHTML=html;
   }
-}
 
-// ===================== BATCH / MONTE CARLO ENGINE =====================
-// Headless version of the fight engine — no DOM updates, returns outcome only.
-// Mirrors stepOnce() and the full fight loop exactly.
-
-function batchRunOne(hps, P_in) {
-  // Build party state fresh for each fight
-  const lvl = P_in.lvl;
-  const R = roster();
-  const members = {};
-  ORDER.forEach(k => {
-    const tpl = R[k];
-    const sb = memberFoodBonuses(k);
-    const bvit = sb.vit || 0;
-    const max = Math.round(30 + (stat(tpl, "vit", lvl) + bvit) * 16);
-    members[k] = {
-      key: k, tpl, role: tpl.role,
-      max, hp: max, reserve: 0, wounds: 0, grievous: false, atZero: false,
-      stunned: false, stunTicks: 0, broken: false, horn: false,
-      mig: stat(tpl, "mig", lvl) + (sb.mig || 0),
-      agi: stat(tpl, "agi", lvl) + (sb.agi || 0),
-      vit: stat(tpl, "vit", lvl) + bvit,
-      wil: stat(tpl, "wil", lvl) + (sb.wil || 0),
-      fat: stat(tpl, "fat", lvl) + (sb.fat || 0),
-      wilBase: stat(tpl, "wil", lvl) + (sb.wil || 0),
-      fatBase: stat(tpl, "fat", lvl) + (sb.fat || 0),
-    };
-  });
-
-  const P = Object.assign({}, P_in);
-  // Override food — each member gets the same hps for a batch sweep
-  const memberHps = hps;
-
-  let boss = P.boss;
-  let maxT = P.duration;
-  let rescuesUsed = 0, wardsUsed = 0, inspBoost = 0, prevTrouble = 0, baFired = false;
-  const fired = {}, windows = { horn: 0, dawn: 0 };
-
-  const actv = () => ORDER.filter(k => !members[k].grievous && !members[k].broken);
-  const standing = () => ORDER.filter(k => !members[k].grievous && !members[k].broken && members[k].hp > 0);
-  const trouble = () => actv().filter(k => members[k].hp / members[k].max < 0.35).length;
-
-  // Headless raw DPS — mirrors dpsBreakdown() but without per-member tracking
-  function rawDps() {
-    let raw = 0;
-    ORDER.forEach(k => {
-      const m = members[k];
-      if (m.grievous || m.hp <= 0 || m.stunned || m.broken) return;
-      if (k === 'keeper') { if (m.action !== 'burst') raw += m.wil * 0.9; }
-      else if (k === 'hunter') raw += m.agi + m.mig * 0.4;
-      else if (k === 'warden') raw += m.mig * 0.5;
-      else if (k === 'captain') raw += m.mig * 0.3 + m.wil * 0.2;
-    });
-    if (windows.dawn > 0) raw *= 1.5;
-    return raw;
+  // Streak activity — trigger count per member + bonus damage/healing
+  const totalStreaks = ORDER.reduce((s,k)=>s+FIGHT.streakCount[k],0);
+  if (totalStreaks > 0) {
+    meterChart("ch_streak", ORDER.map(k=>({
+      name: FIGHT.M[k].tpl.name+" ("+FIGHT.M[k].role+")",
+      color: FIGHT.M[k].color,
+      value: FIGHT.streakCount[k]
+    })),"triggers",`Total: ${totalStreaks} · bonus damage ${Math.round(FIGHT.streakBonusDmg)} · bonus healing ${Math.round(FIGHT.streakBonusHeal)}`);
+  } else {
+    $("ch_streak").innerHTML='<div class="empty" style="padding:24px 14px;text-align:center">No streaks triggered this engagement.</div>';
   }
-
-  function effDps(raw) {
-    const potency = P_in.draughtPotency || 0;
-    const physAfter = Math.max(0, P.phys * (1 - Math.min(1, potency / PEN_SCALE)));
-    const capWil = (!members.captain.grievous && !members.captain.stunned) ? members.captain.wil : 0;
-    const willCut = Math.min(1, capWil / 100), hopeCut = Math.min(1, (P.hope || 0) / 100);
-    const neg = willCut + hopeCut;
-    const effDread = P.dread * (1 - Math.min(1, neg));
-    const layerA = Math.min(1, effDread * DREAD_VAR_COEF + P.dread * DREAD_FLOOR_COEF);
-    return Math.max(0, raw * (1 - physAfter) * (1 - layerA));
-  }
-
-  const inspRollB = (base, boost) => Math.random() < Math.min(0.25, base + boost);
-
-  for (let t = 1; t <= maxT; t++) {
-    if (windows.dawn > 0) windows.dawn--;
-    if (P.dread > 0) ORDER.forEach(k => { if (members[k].stunned) { members[k].stunTicks--; if (members[k].stunTicks <= 0) { members[k].stunned = false; members[k].stunTicks = 0; } } });
-    if (windows.horn > 0) { windows.horn--; if (windows.horn === 0) members.warden.horn = false; }
-
-    const act = actv();
-
-    // Keeper rescue
-    let rescue = null;
-    members.keeper.action = 'damage';
-    if (!members.keeper.grievous && members.keeper.hp > 0 && !members.keeper.stunned && rescuesUsed < RESCUE_CAP) {
-      for (const k of ORDER) {
-        if (k === 'keeper' || members[k].grievous) continue;
-        if (members[k].hp <= 0) { rescue = k; break; }
-      }
-      if (rescue) members.keeper.action = 'burst';
-    }
-
-    // Steady drain — always drain/4, never redistributed
-    act.filter(k => members[k].hp > 0).forEach(k => { members[k].hp -= P.drain / 4; });
-
-    // Spikes — per-member independent rolls
-    if (P.spike > 0) {
-      const pPerTick = 1 / (P.spikeiv * 4);
-      act.filter(k => members[k].hp > 0).forEach(origKey => {
-        if (Math.random() >= pPerTick) return;
-        const hit = P.spike * (0.7 + Math.random() * 0.6);
-        let targetKey = origKey;
-        if (windows.horn > 0 && !members.warden.grievous && members.warden.hp > 0) {
-          targetKey = 'warden';
-        } else if (origKey === 'keeper' && (members.keeper.hp - hit) <= 0 &&
-          members.warden.hp > 0 && !members.warden.grievous && wardsUsed < WARD_CAP) {
-          targetKey = 'warden'; wardsUsed++;
-        }
-        const m = members[targetKey];
-        if (Math.random() < m.fat * 0.004) return; // fate evasion
-        let dmg = hit;
-        if (m.reserve > 0) { const abs = Math.min(m.reserve, dmg); m.reserve -= abs; dmg -= abs; }
-        m.hp -= dmg;
-      });
-    }
-
-    // Food healing
-    act.forEach(k => {
-      if (members[k].hp <= 0 || members[k].stunned) return;
-      if (windows.horn > 0 && k === 'warden') return;
-      const next = members[k].hp + memberHps;
-      if (next > members[k].max) members[k].reserve = Math.min(RMAX, members[k].reserve + (next - members[k].max));
-      members[k].hp = Math.min(members[k].max, next);
-    });
-
-    // Keeper burst rescue
-    if (rescue) {
-      const burst = (40 + members.keeper.wil * 4) * (P.burstmul || 1);
-      members[rescue].hp = Math.min(members[rescue].max, Math.max(members[rescue].hp, 0) + burst);
-      rescuesUsed++;
-    }
-
-    // Shadow
-    if (P.shadow > 0) {
-      const deepFloor = Math.max(0.25, SHADOW_FLOOR - (P.shadow / 100) * 0.30);
-      const floor = deepFloor + (1 - deepFloor) * Math.min(1, (P.radiance || 0) / 100);
-      const dr = P.shadow * SHADOW_RATE;
-      ORDER.forEach(k => {
-        if (members[k].grievous) return;
-        members[k].wil = Math.max(members[k].wilBase * floor, members[k].wil - dr);
-        members[k].fat = Math.max(members[k].fatBase * floor, members[k].fat - dr);
-      });
-    }
-
-    // Hazards
-    { const haz = [['disease','hale'],['cold','warmth'],['heat','heatease'],['wake','alert']];
-      let extra = 0;
-      haz.forEach(([hz, an]) => { const str = P[hz] || 0; if (str > 0) extra += (str * 0.08) * (1 - Math.min(1, (P[an] || 0) / 100)); });
-      if (extra > 0) act.forEach(k => { members[k].hp -= extra / act.length; });
-    }
-
-    // Dread Layer B
-    if (P.dread > 0 && t % BREAK_CHECK_INTERVAL === 0) {
-      const capWil = (!members.captain.grievous && !members.captain.stunned) ? members.captain.wil : 0;
-      const wCut = Math.min(1, capWil / 100), hCut = Math.min(1, (P.hope || 0) / 100);
-      const neg = wCut + hCut;
-      function dreadPoolB(cw) { const pool = []; ORDER.forEach(k => { if (!members[k].grievous && !members[k].broken && !members[k].stunned && members[k].hp > 0) pool.push({ k, w: k === 'captain' ? cw : 1 }); }); return pool; }
-      function dreadPickB(pool) { const tot = pool.reduce((s, p) => s + p.w, 0); if (!tot) return null; let r = Math.random() * tot; for (const p of pool) { r -= p.w; if (r <= 0) return p.k; } return pool[pool.length - 1]?.k || null; }
-      if (neg < T_TEMP) { const tgt = dreadPickB(dreadPoolB(CAPTAIN_STUN_WEIGHT)); if (tgt) { members[tgt].stunned = true; members[tgt].stunTicks = STUN_TICKS; } }
-      if (neg < T_PERM) { const tgt = dreadPickB(dreadPoolB(CAPTAIN_BREAK_WEIGHT)); if (tgt) members[tgt].broken = true; }
-    }
-
-    // Wounds and grievous
-    ORDER.forEach(k => {
-      if (members[k].grievous) return;
-      if (members[k].hp <= 0 && !members[k].atZero) {
-        members[k].atZero = true; members[k].wounds++;
-        if (members[k].wounds >= GRIEVOUS) {
-          const keeper = members.keeper;
-          if (!keeper.grievous && !keeper.stunned && keeper.hp > 0 &&
-            inspRollB(P.graceBase || 0.05, inspBoost)) {
-            members[k].wounds = 0; members[k].hp = Math.round(members[k].max * 0.4); members[k].atZero = false;
-          } else {
-            members[k].grievous = true;
-          }
-        }
-      }
-      if (members[k].hp > 5) members[k].atZero = false;
-    });
-
-    // Inspirations
-    if (inspBoost > 0) inspBoost = Math.max(0, inspBoost - 0.005);
-    const nowTrouble = trouble(), crisisEdge = nowTrouble >= 2 && prevTrouble < 2;
-    if (crisisEdge && !fired.horn && !members.warden.grievous && !members.warden.stunned && !members.warden.broken && members.warden.hp > 0 && inspRollB(P.hornBase || 0.03, inspBoost)) {
-      fired.horn = true; windows.horn = 8; members.warden.horn = true;
-    }
-    if (crisisEdge && !fired.dawn && !members.captain.grievous && !members.captain.stunned && !members.captain.broken && members.captain.hp > 0 && inspRollB(P.dawnBase || 0.03, 0)) {
-      fired.dawn = true; windows.dawn = 10;
-      act.forEach(k => { members[k].hp = Math.min(members[k].max, members[k].hp + members[k].max * 0.15); });
-      inspBoost = 0.15;
-    }
-    prevTrouble = nowTrouble;
-
-    // DPS vs boss
-    const jitter = 0.10;
-    const dps = effDps(rawDps()) * (1 + (Math.random() * 2 - 1) * jitter);
-    if (!P.unkill) boss = Math.max(0, boss - dps);
-
-    // Black Arrow
-    if (!baFired && !members.hunter.grievous && !members.hunter.stunned && !members.hunter.broken && members.hunter.hp > 0) {
-      const elapsed = t / maxT, trem = maxT - t;
-      const losing = P.unkill ? (elapsed > 0.5) : (dps > 0 ? (boss / dps > trem) : true) && elapsed > 0.4;
-      if (losing) {
-        const rise = Math.min(P.blackArrowCap || 0.06, (elapsed - 0.4) * (P.blackArrowCap || 0.06) * 2.5);
-        if (inspRollB(rise + members.hunter.fat * 0.003, inspBoost)) {
-          baFired = true;
-          if (P.unkill) maxT -= Math.round(P.duration * 0.15);
-          else boss = Math.max(0, boss - P.boss * 0.18);
-        }
-      }
-    }
-
-    // Check victory / defeat
-    if (!P.unkill && boss <= 0) return 'VICTORY';
-    if (!ORDER.some(k => !members[k].grievous && !members[k].broken && members[k].hp > 0)) return 'DEFEAT';
-    if (t >= maxT) return P.unkill ? 'REPELLED' : 'STALEMATE';
-  }
-  return 'STALEMATE';
 }
-
-// Run N fights at a given hps, return {win, stalemate, defeat} fractions
-function batchAtHps(hps, N, P) {
-  let win = 0, stale = 0, defeat = 0;
-  for (let i = 0; i < N; i++) {
-    const r = batchRunOne(hps, P);
-    if (r === 'VICTORY' || r === 'REPELLED') win++;
-    else if (r === 'STALEMATE') stale++;
-    else defeat++;
-  }
-  return { win: win / N, stalemate: stale / N, defeat: defeat / N };
-}
-
-// Build batch params from current Setup sliders
-function batchParams() {
-  return {
-    lvl: +$('lvl').value,
-    duration: +$('dur').value,
-    boss: +$('boss').value,
-    drain: +$('drain').value,
-    spike: +$('spike').value,
-    spikeiv: +$('spikeiv').value,
-    phys: MODE === 1 ? 0 : +$('phys').value / 100,
-    unkill: MODE === 1,
-    burstmul: +$('burstmul').value / 100,
-    dread: statusOn('dread') / 100, hope: antidoteOn('hope'),
-    shadow: statusOn('shadow'), radiance: antidoteOn('radiance'),
-    disease: statusOn('disease'), hale: antidoteOn('hale'),
-    cold: statusOn('cold'), warmth: antidoteOn('warmth'),
-    heat: statusOn('heat'), heatease: antidoteOn('heatease'),
-    wake: statusOn('wake'), alert: antidoteOn('alert'),
-    draughtPotency: draughtPotency(),
-    graceBase: 0.05, hornBase: 0.03, dawnBase: 0.03, blackArrowCap: 0.06,
-  };
-}
-
-let _batchSweepData = null; // last sweep results, for re-rendering inspectBar on slider move
-
-function runBatch() {
-  const N = +$('bruns').value;
-  const hpsMin = +$('bmin').value;
-  const hpsMax = +$('bmax').value;
-  const hpsStep = +$('bstep').value;
-  const P = batchParams();
-
-  $('bbtn').disabled = true;
-  $('bstatus').textContent = 'Running…';
-
-  // Use setTimeout to let the browser paint the disabled state before blocking
-  setTimeout(() => {
-    const points = [];
-    for (let hps = hpsMin; hps <= hpsMax + 0.001; hps = Math.round((hps + hpsStep) * 10) / 10) {
-      points.push({ hps, ...batchAtHps(hps, N, P) });
-    }
-    _batchSweepData = points;
-
-    drawSweepChart(points);
-    drawFlTable(points);
-    drawInspectBar();
-
-    $('bbtn').disabled = false;
-    $('bstatus').textContent = `Done — ${N} runs per step, ${points.length} steps. Encounter params from Setup tab.`;
-  }, 20);
-}
-
-// The FL markers: Hearthkeeper CL1–4, then Initiate CL5
-const FL_MARKERS = [
-  { label: 'FL1 (CL1)', hps: 5.0, note: 'Hearthkeeper CL1' },
-  { label: 'FL2 (CL2)', hps: 5.2, note: 'Hearthkeeper CL2' },
-  { label: 'FL3 (CL3)', hps: 5.4, note: 'Hearthkeeper CL3' },
-  { label: 'FL4 (CL4)', hps: 5.6, note: 'Hearthkeeper CL4' },
-  { label: 'Initiate', hps: 11.0, note: 'Initiate CL5' },
-];
-const FL_COLORS = ['#c0392b','#b8843c','#5b7f63','#4a6c93','#7d5a93'];
-
-function drawSweepChart(points) {
-  const W = 760, H = 220, PL = 44, PR = 20, PT = 14, PB = 36;
-  const iW = W - PL - PR, iH = H - PT - PB;
-
-  const hpsArr = points.map(p => p.hps);
-  const hpsMin = hpsArr[0], hpsMax = hpsArr[hpsArr.length - 1];
-  const hpsRange = Math.max(0.01, hpsMax - hpsMin);
-
-  const xOf = hps => PL + ((hps - hpsMin) / hpsRange) * iW;
-  const yOf = frac => PT + iH - frac * iH;
-
-  // Build SVG
-  let svg = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;display:block;font-family:Georgia,serif">`;
-
-  // Grid lines at 0%, 25%, 50%, 75%, 100%
-  for (let pct = 0; pct <= 100; pct += 25) {
-    const y = yOf(pct / 100);
-    svg += `<line class="grid" x1="${PL}" y1="${y}" x2="${W - PR}" y2="${y}"/>`;
-    svg += `<text class="axlabel" x="${PL - 4}" y="${y + 3}" text-anchor="end">${pct}%</text>`;
-  }
-
-  // X-axis tick marks
-  const tickStep = hpsRange <= 5 ? 0.5 : hpsRange <= 10 ? 1 : 2;
-  for (let h = Math.ceil(hpsMin / tickStep) * tickStep; h <= hpsMax + 0.001; h = Math.round((h + tickStep) * 10) / 10) {
-    const x = xOf(h);
-    svg += `<line class="axis" x1="${x}" y1="${PT + iH}" x2="${x}" y2="${PT + iH + 4}"/>`;
-    svg += `<text class="axlabel" x="${x}" y="${PT + iH + 14}" text-anchor="middle">${h.toFixed(1)}</text>`;
-  }
-
-  // Axes
-  svg += `<line class="axis" x1="${PL}" y1="${PT}" x2="${PL}" y2="${PT + iH}"/>`;
-  svg += `<line class="axis" x1="${PL}" y1="${PT + iH}" x2="${W - PR}" y2="${PT + iH}"/>`;
-
-  // X-axis label
-  svg += `<text class="axlabel" x="${PL + iW / 2}" y="${H - 2}" text-anchor="middle">HP/s per member</text>`;
-
-  // FL marker vertical lines
-  FL_MARKERS.forEach((fl, i) => {
-    if (fl.hps < hpsMin || fl.hps > hpsMax) return;
-    const x = xOf(fl.hps);
-    svg += `<line x1="${x}" y1="${PT}" x2="${x}" y2="${PT + iH}" stroke="${FL_COLORS[i]}" stroke-width="1.5" stroke-dasharray="4 3" opacity="0.8"/>`;
-    svg += `<text x="${x + 3}" y="${PT + 10 + i * 11}" font-size="9" fill="${FL_COLORS[i]}" font-family="Georgia,serif" font-weight="600">${fl.label}</text>`;
-  });
-
-  // Win line (solid)
-  const winPts = points.map(p => `${xOf(p.hps)},${yOf(p.win)}`).join(' ');
-  svg += `<polyline fill="none" stroke="#5b7f63" stroke-width="2.5" points="${winPts}"/>`;
-
-  // Stalemate line (dashed)
-  const stalePts = points.map(p => `${xOf(p.hps)},${yOf(p.stalemate)}`).join(' ');
-  svg += `<polyline fill="none" stroke="#b8843c" stroke-width="1.5" stroke-dasharray="5 3" points="${stalePts}"/>`;
-
-  // Defeat line (dotted)
-  const defeatPts = points.map(p => `${xOf(p.hps)},${yOf(p.defeat)}`).join(' ');
-  svg += `<polyline fill="none" stroke="#9a3526" stroke-width="1.5" stroke-dasharray="2 3" points="${defeatPts}"/>`;
-
-  // Hover dots (transparent, handled by title)
-  points.forEach(p => {
-    svg += `<circle cx="${xOf(p.hps)}" cy="${yOf(p.win)}" r="4" fill="#5b7f63" opacity="0.8">
-      <title>${p.hps.toFixed(1)} HP/s — Win ${Math.round(p.win*100)}% / Stale ${Math.round(p.stalemate*100)}% / Defeat ${Math.round(p.defeat*100)}%</title></circle>`;
-  });
-
-  svg += '</svg>';
-  $('bsweep_wrap').innerHTML = svg;
-
-  // Legend
-  $('bsweep_legend').innerHTML = `
-    <span><span class="lg-line" style="background:#5b7f63;display:inline-block"></span> Victory</span>
-    <span><span class="lg-line" style="background:#b8843c;display:inline-block;opacity:.7"></span> Stalemate</span>
-    <span><span class="lg-line" style="background:#9a3526;display:inline-block;opacity:.7"></span> Defeat</span>
-    ${FL_MARKERS.map((fl, i) => `<span><span style="display:inline-block;width:14px;height:3px;background:${FL_COLORS[i]};border-radius:2px;opacity:.8"></span> ${fl.label} (${fl.hps} HP/s)</span>`).join('')}
-  `;
-}
-
-function drawFlTable(points) {
-  if (!points || !points.length) return;
-  // Interpolate win rate for a given hps from the sweep data
-  function winAt(hps) {
-    if (hps <= points[0].hps) return points[0].win;
-    if (hps >= points[points.length - 1].hps) return points[points.length - 1].win;
-    for (let i = 0; i < points.length - 1; i++) {
-      if (points[i].hps <= hps && points[i + 1].hps >= hps) {
-        const t = (hps - points[i].hps) / (points[i + 1].hps - points[i].hps);
-        return points[i].win + t * (points[i + 1].win - points[i].win);
-      }
-    }
-    return null;
-  }
-
-  const rows = FL_MARKERS.map((fl, i) => {
-    const winFrac = winAt(fl.hps);
-    const winPct = winFrac != null ? Math.round(winFrac * 100) : '—';
-    const color = winFrac == null ? '#8a7355' : winFrac >= 0.75 ? '#5b7f63' : winFrac >= 0.45 ? '#b8843c' : '#9a3526';
-    return `<tr>
-      <td style="padding:5px 10px;font-size:12px;color:${FL_COLORS[i]};font-weight:700">${fl.label}</td>
-      <td style="padding:5px 10px;font-size:12px;color:#4a3a26">${fl.hps.toFixed(1)} HP/s</td>
-      <td style="padding:5px 10px;font-size:13px;font-weight:700;color:${color}">${winPct}%</td>
-      <td style="padding:5px 10px;font-size:11px;color:#8a7355;font-style:italic">${fl.note}</td>
-    </tr>`;
-  }).join('');
-
-  $('bfl_table').innerHTML = `
-    <table style="border-collapse:collapse;width:100%">
-      <thead><tr style="border-bottom:1px solid var(--rule)">
-        <th style="padding:5px 10px;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ember);text-align:left">Food Level</th>
-        <th style="padding:5px 10px;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ember);text-align:left">HP/s</th>
-        <th style="padding:5px 10px;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ember);text-align:left">Win Rate</th>
-        <th style="padding:5px 10px;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ember);text-align:left">Tier</th>
-      </tr></thead>
-      <tbody>${rows}</tbody>
-    </table>`;
-}
-
-function drawInspectBar() {
-  if (!_batchSweepData) return;
-  const hps = +$('binspect').value;
-
-  // Find nearest point
-  let best = _batchSweepData[0];
-  _batchSweepData.forEach(p => { if (Math.abs(p.hps - hps) < Math.abs(best.hps - hps)) best = p; });
-
-  const win = Math.round(best.win * 100);
-  const stale = Math.round(best.stalemate * 100);
-  const defeat = Math.round(best.defeat * 100);
-
-  const barRow = (label, pct, color) => `
-    <div style="margin-bottom:8px">
-      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px">
-        <span style="color:${color};font-weight:700">${label}</span>
-        <span style="font-variant-numeric:tabular-nums;color:${color};font-weight:700">${pct}%</span>
-      </div>
-      <div style="height:18px;background:var(--bar-bg);border-radius:3px;overflow:hidden;border:1px solid rgba(74,47,26,.18)">
-        <div style="height:100%;width:${pct}%;background:${color};border-radius:2px;transition:width .2s"></div>
-      </div>
-    </div>`;
-
-  $('binspect_bars').innerHTML =
-    barRow('Victory', win, '#5b7f63') +
-    barRow('Stalemate', stale, '#b8843c') +
-    barRow('Defeat', defeat, '#9a3526');
-
-  $('binspect_note').textContent = `Showing nearest data point: ${best.hps.toFixed(1)} HP/s`;
-}
-
-// Re-draw inspect bar whenever the slider moves (data may be stale but show closest match)
-// (wired via oninput on the range input above)
-
 
 // Duration preset buttons
 const DUR_PRESETS=[1200,1500,1800,2100,2400,2700];
@@ -1824,8 +1517,6 @@ $("lvl").addEventListener("input", ()=>{updDurHint();updDurButtons();});
 buildStatusRows();
 _fillDropdown(); // show built-in encounter presets on load
 setMode(0);refreshBoss();buildParty();refreshRead();updEffects();statPreview();refreshFoodSummary();updDurHint();updDurButtons();
-// Pre-populate batch inspect slider display
-$('v_binspect').textContent = (+$('binspect').value).toFixed(1);
 
 </script>
 </body>
