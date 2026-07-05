@@ -90,10 +90,16 @@ fun MissionsScreen(
             } ?: activeMission?.let { ms ->
                 encounters.find { it.encounterId == ms.missionId }?.name ?: ms.missionId
             } ?: ""
+            val objective = activeEncounterSession?.let { es ->
+                encounters.find { it.encounterId == es.encounterId }?.objective
+            } ?: activeMission?.let { ms ->
+                encounters.find { it.encounterId == ms.missionId }?.objective
+            } ?: "kill"
             val startedAt = activeEncounterSession?.startedAtMs ?: activeMission!!.startedAtMs
             val duration  = activeEncounterSession?.durationMs  ?: activeMission!!.durationMs
             BattleInProgressCard(
                 missionName  = name,
+                objective    = objective,
                 startedAtMs  = startedAt,
                 durationMs   = duration,
                 ticks        = encounterTicks,
@@ -392,6 +398,7 @@ private fun BandReadyPanel(
 @Composable
 private fun BattleInProgressCard(
     missionName: String,
+    objective: String,
     startedAtMs: Long,
     durationMs: Long,
     ticks: EncounterTicks?,
@@ -490,16 +497,18 @@ private fun BattleInProgressCard(
                 Spacer(modifier = Modifier.height(12.dp))
             }
 
-            Text(
-                formatMissionMs(remainingMs),
-                style = MaterialTheme.typography.headlineSmall,
-                color = MaterialTheme.colorScheme.onPrimaryContainer
-            )
-            Text(
-                "remaining",
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onPrimaryContainer
-            )
+            if (objective != "kill") {
+                Text(
+                    formatMissionMs(remainingMs),
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+                Text(
+                    "remaining",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+            }
         }
     }
 }

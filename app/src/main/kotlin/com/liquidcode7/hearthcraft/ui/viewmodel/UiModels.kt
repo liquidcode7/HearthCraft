@@ -87,5 +87,6 @@ data class EncounterDetail(
     val rewardMultiplier: Int,
     val physMitPct: Float,  // from stage[0] — used to show "brings a draught" hint
     val bossResolve: Int,   // from stage[0] — the boss's total HP-equivalent, shown pre-battle
+    val objective: String,  // from stage[0] — "kill" | "survive" | "retrieve"
     val isUnlocked: Boolean // recLevel <= band's max vitality AND cookingLevel >= requiredCookingLevel
 )
