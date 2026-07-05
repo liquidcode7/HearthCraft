@@ -421,11 +421,8 @@ const FOOD_MODEL = (function () {
       <div class="panel gauge"><div class="g-h">Win axis &amp; mitigation</div>
         <div class="g-row"><span>Raw party DPS</span><span id="g_raw">&#8212;</span></div>
         <div class="g-row sub" id="g_physrow"><span>&#8722; Armor (after penetration)</span><span id="g_phys">&#8212;</span></div>
-        <div class="g-row sub" id="g_pensaverow"><span>&nbsp;&nbsp;DPS preserved by penetration</span><span class="save" id="g_pensave">&#8212;</span></div>
         <div class="g-row sub" id="g_pendetail" style="font-size:10px;color:#8a7355"></div>
         <div class="g-row sub" id="g_dreadrow"><span>&#8722; Dread (after Will + Hope)</span><span id="g_dreadval">&#8212;</span></div>
-        <div class="g-row sub" id="g_willrow"><span>&nbsp;&nbsp;preserved by Captain Will</span><span class="save" id="g_willsave">&#8212;</span></div>
-        <div class="g-row sub" id="g_hoperow"><span>&nbsp;&nbsp;preserved by Hope-food</span><span class="save" id="g_hopesave">&#8212;</span></div>
         <div class="g-row sub" id="g_shadowrow"><span>Shadow drain (Will+Fate lost)</span><span class="no" id="g_shadowval">&#8212;</span></div>
         <div class="g-row"><span><b>Effective DPS</b></span><span id="g_dps"><b>&#8212;</b></span></div>
         <div class="g-row"><span>Keeper</span><span id="g_keep">&#8212;</span></div>
@@ -607,13 +604,9 @@ const moraleOf=(t,l)=>Math.round(30+stat(t,"vit",l)*16);
 const fmtT=s=>`${Math.floor(s/60)}:${String(Math.max(0,s)%60).padStart(2,"0")}`;
 function roster(){const hk=(+$("hflav").value===1)?"fighterM":"fighterA";return {warden:TPL.warden,fighter:TPL[hk],keeper:TPL.keeper,captain:TPL.captain};}
 
-let MODE=0,SPEED=1,running=false,timer=null,t=0,P=null,maxT=0;
+let MODE=0,SPEED=1,running=false,timer=null,maxT=0;
 let FIGHT = null;
 let series = [];
-// Results-tab bridge — Task 5 resyncs those reads to FIGHT.* directly; until then, finish() copies
-// FIGHT's final values here since M/events/fired are object refs (mutate-in-place, safe to alias early)
-// but baFired/spikesTotal are primitives (must be re-copied after the fight, not aliased once).
-let M={},events=[],fired={},baFired=false,spikesTotal=0;
 const SPEED_MS=[1000,250,62,0];
 
 function showTab(name){['setup','live','results','company'].forEach(n=>{$('pane_'+n).classList.toggle('on',n===name);$('tab_'+n).classList.toggle('on',n===name);});}
@@ -841,7 +834,7 @@ function fightDpsBreakdown(S) {
   const cfg = S.cfg;
   if (cfg.unkill) return { raw:0, eff:0, physAfter:0, layerADrag:0, rawBy:{warden:0,fighter:0,keeper:0,captain:0}, streakBonus:0, dawnBonus:0 };
   let raw = 0, streakBonus = 0;
-  const rawBy = { warden:0, fighter:0, keeper:0, captain:0 };
+  const rawBy = { warden:0, fighter:0, keeper:0, captain:0, captain_phys:0, captain_magic:0 };
   ORDER.forEach(k => {
     const m = S.M[k];
     if (m.grievous || m.hp <= 0 || m.stunned || m.broken) return;
@@ -851,7 +844,12 @@ function fightDpsBreakdown(S) {
     if (k==="keeper")        { if (S.keeperDealtDps) base = m.wil * 0.9; }
     else if (k==="fighter")  base = m.agi + m.mig * 0.4;
     else if (k==="warden")   base = m.mig * 0.5;
-    else if (k==="captain")  base = m.mig * 0.3 + m.wil * 0.2;
+    else if (k==="captain")  {
+      // Captain's damage is a physical (Mig-driven)/magic (Wil-driven) hybrid — armor
+      // only mitigates the physical half, so the split must survive into rawBy.
+      rawBy.captain_phys += m.mig*0.3*mult; rawBy.captain_magic += m.wil*0.2*mult;
+      base = m.mig * 0.3 + m.wil * 0.2;
+    }
     const contribution = base * mult;
     rawBy[k] += contribution; raw += contribution;
     if (isStreaking) streakBonus += base * (STREAK_MULT - 1);
@@ -861,6 +859,7 @@ function fightDpsBreakdown(S) {
     dawnBonus = raw * 0.5;
     raw *= 1.5; streakBonus *= 1.5;
     ORDER.forEach(k => { rawBy[k] *= 1.5; });
+    rawBy.captain_phys *= 1.5; rawBy.captain_magic *= 1.5;
   }
   const potency = cfg.potency || 0;
   const physAfter = Math.max(0, cfg.phys * (1 - Math.min(1, potency/PEN_SCALE)));
@@ -1148,10 +1147,11 @@ function stepOnce(){
   });
   const bd = fightDpsBreakdown(FIGHT);
   const incoming = FIGHT.cfg.drain + FIGHT.cfg.spike/FIGHT.cfg.spikeiv;
-  series.push({t:FIGHT.t, boss:FIGHT.boss, dps:bd.eff, raw:bd.raw, layerADrag:bd.layerADrag||0, incoming,
+  const physMitTotal=(bd.rawBy.warden+bd.rawBy.fighter+bd.rawBy.captain_phys)*bd.physAfter*(1-bd.layerADrag);
+  series.push({t:FIGHT.t, boss:FIGHT.boss, dps:bd.eff, raw:bd.raw, layerADrag:bd.layerADrag||0, incoming, physMitTotal,
     effBy:{warden:bd.rawBy.warden*(1-bd.physAfter)*(1-bd.layerADrag), fighter:bd.rawBy.fighter*(1-bd.physAfter)*(1-bd.layerADrag),
-           keeper:bd.rawBy.keeper*(1-bd.layerADrag), captain:bd.rawBy.captain*(1-bd.physAfter)*(1-bd.layerADrag)},
-    dawnBoost:bd.dawnBonus||0,
+           keeper:bd.rawBy.keeper*(1-bd.layerADrag), captain:bd.rawBy.captain*(1-bd.physAfter)*(1-bd.layerADrag),
+           captain_phys:bd.rawBy.captain_phys*(1-bd.physAfter)*(1-bd.layerADrag), captain_magic:bd.rawBy.captain_magic*(1-bd.layerADrag)},
     spirit:{wil:ORDER.reduce((a,k)=>a+(FIGHT.M[k].grievous?0:FIGHT.M[k].wil),0),fat:ORDER.reduce((a,k)=>a+(FIGHT.M[k].grievous?0:FIGHT.M[k].fat),0)},
     spiritBase:{wil:ORDER.reduce((a,k)=>a+FIGHT.M[k].wilBase,0),fat:ORDER.reduce((a,k)=>a+FIGHT.M[k].fatBase,0)},
     morale:Object.fromEntries(ORDER.map(k=>[k,Math.max(0,FIGHT.M[k].hp)])),
@@ -1169,8 +1169,8 @@ function updLive(bd,boss,incoming){
   $("bossbar").style.width=(cfg.unkill?((FIGHT.maxT-FIGHT.t)/FIGHT.maxT*100):(boss/bossMax*100))+"%";
   $("g_raw").textContent=Math.round(bd.raw);
   const showPhys=cfg.phys>0,showDread=cfg.dread>0,showShadow=cfg.shadow>0;
-  $("g_physrow").style.display=showPhys?"":"none";$("g_pensaverow").style.display="none";$("g_pendetail").style.display=showPhys?"":"none";
-  $("g_dreadrow").style.display=showDread?"":"none";$("g_willrow").style.display="none";$("g_hoperow").style.display="none";
+  $("g_physrow").style.display=showPhys?"":"none";$("g_pendetail").style.display=showPhys?"":"none";
+  $("g_dreadrow").style.display=showDread?"":"none";
   $("g_shadowrow").style.display=showShadow?"":"none";
   if(showPhys){$("g_phys").textContent="\u2212"+Math.round(bd.physAfter*100)+"%";
     $("g_pendetail").innerHTML=`&nbsp;&nbsp;Draught potency ${Math.round(cfg.potency||0)} / ${PEN_SCALE} &#8594; strips ${Math.round(Math.min(1,(cfg.potency||0)/PEN_SCALE)*100)}% of armor`;}
@@ -1208,8 +1208,6 @@ function buildSummary(verdict){
 function finish(label,cls){clearInterval(timer);running=false;const v=$("verdict");v.textContent=label;v.className="verdict "+cls;
   log(`— ${label} —`,cls==="v-victory"?"g":cls==="v-defeat"?"t":"h");$("run").innerHTML="&#9654; Run Again";
   $("runstate").textContent=`${label} at ${fmtT(FIGHT.t)} — see Results`;
-  // Bridge FIGHT's final state onto the Results tab's still-untouched bare-global reads (Task 5 resyncs those reads to FIGHT.*).
-  M=FIGHT.M; events=FIGHT.events; fired=FIGHT.fired; baFired=FIGHT.baFired; spikesTotal=FIGHT.spikesTotal;
   buildSummary(label);renderResults();$("results_empty").style.display="none";$("results_body").style.display="";showTab('results');}
 
 function prep(){
@@ -1229,7 +1227,6 @@ function prep(){
     memberFoodBonuses: Object.fromEntries(ORDER.map(k=>[k, memberFoodBonuses(k)]))
   };
   FIGHT = createFightState(cfg);
-  P = cfg; // P stays as an alias for the Results tab, which still reads it directly (Task 5 resyncs those reads to FIGHT.cfg)
   maxT = cfg.duration;
   $("log").innerHTML=""; series=[];
   $("verdict").textContent="ENGAGED";$("verdict").className="verdict v-fighting";
