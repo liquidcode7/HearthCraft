@@ -49,6 +49,7 @@ data class Encounter(
     val rewardMultiplier: Int,
     val durationMs: Long,
     val rewardTable: List<String>,
+    val enemyCategory: String? = null, // "orc"|"dragon"|"shadow"|"wraith"|"nature"|null — bane-affinity target, inert until weapons exist (master-design.md §6.9)
     val grimoireDrops: List<String> = emptyList(),
     val grievousWoundSpecs: List<GrievousWoundSpec> = emptyList(), // wound infliction config
     val stages: List<Stage>

@@ -78,6 +78,7 @@
     "rewardMultiplier": 4,
     "durationMs": 1500000,
     "rewardTable": ["cave_truffle", "ironbark_resin", "moonpetal", "stormcap"],
+    "enemyCategory": "orc",
     "stages": [
       {
         "stageId": "main",
@@ -174,6 +175,7 @@
     "rewardMultiplier": 4,
     "durationMs": 1500000,
     "rewardTable": ["cave_truffle", "ironbark_resin", "pale_cap", "stormcap"],
+    "enemyCategory": "orc",
     "stages": [
       {
         "stageId": "main",
@@ -276,6 +278,7 @@
     "rewardMultiplier": 4,
     "durationMs": 1500000,
     "rewardTable": ["wolf_moss", "marshwort", "thornberry", "road_herb"],
+    "enemyCategory": "orc",
     "grievousWoundSpecs": [
       { "woundType": "physical", "guaranteed": true },
       { "woundType": "poison", "chance": 0.2 }
@@ -394,6 +397,7 @@
     "rewardMultiplier": 8,
     "durationMs": 1800000,
     "rewardTable": ["athelas", "meadowsweet", "willowherb", "yarrow"],
+    "enemyCategory": "wraith",
     "grievousWoundSpecs": [
       { "woundType": "corruption", "guaranteed": true },
       { "woundType": "will", "chance": 0.3 }
@@ -466,6 +470,7 @@
     "rewardMultiplier": 6,
     "durationMs": 1800000,
     "rewardTable": ["stone_honey", "cave_truffle", "deep_sage", "ironfoot_shroom"],
+    "enemyCategory": "dragon",
     "stages": [
       {
         "stageId": "main",
@@ -500,6 +505,7 @@
     "rewardMultiplier": 5,
     "durationMs": 1500000,
     "rewardTable": ["ironbark_resin", "moonpetal", "cave_truffle", "tidal_kelp"],
+    "enemyCategory": "shadow",
     "stages": [
       {
         "stageId": "main",
@@ -534,6 +540,7 @@
     "rewardMultiplier": 6,
     "durationMs": 1800000,
     "rewardTable": ["ironbark_resin", "moonpetal", "sunpetal_herb", "cave_truffle"],
+    "enemyCategory": "nature",
     "stages": [
       {
         "stageId": "main",
