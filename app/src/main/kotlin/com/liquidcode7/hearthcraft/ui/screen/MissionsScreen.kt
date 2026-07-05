@@ -3,11 +3,13 @@ package com.liquidcode7.hearthcraft.ui.screen
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -435,6 +437,12 @@ private fun BattleInProgressCard(
             if (parts.size == 2) parts[0] to (parts[1].toFloatOrNull() ?: 1f) else null
         }?.toMap() ?: emptyMap()
     }
+    val memberPhysFraction: Map<String, Float> = remember(ticks?.memberPhysFractionJson) {
+        ticks?.memberPhysFractionJson?.split(",")?.mapNotNull { entry ->
+            val parts = entry.split(":")
+            if (parts.size == 2) parts[0] to (parts[1].toFloatOrNull() ?: 1f) else null
+        }?.toMap() ?: emptyMap()
+    }
     val snapshot: TickSnapshot? = snapshots?.getOrNull(currentTick)
 
     // Wound counts from the pre-computed report.
@@ -456,6 +464,27 @@ private fun BattleInProgressCard(
 
             // Boss resolve bar
             if (ticks != null && snapshot != null) {
+                val activeBadges = buildList {
+                    if (snapshot.hornActive) add("HORN OF GONDOR" to MaterialTheme.colorScheme.tertiary)
+                    if (snapshot.dawnActive) add("RED DAWN" to Color(0xFFFFC107))
+                    if (snapshot.blackArrowFlash) add("BLACK ARROW" to Color(0xFF8D6E63))
+                    if (snapshot.graceFlash) add("GRACE" to Color(0xFF4CAF50))
+                }
+                if (activeBadges.isNotEmpty()) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier.padding(bottom = 8.dp)) {
+                        activeBadges.forEach { (label, color) ->
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(4.dp))
+                                    .background(color.copy(alpha = 0.25f))
+                                    .padding(horizontal = 6.dp, vertical = 2.dp)
+                            ) {
+                                Text(label, style = MaterialTheme.typography.labelSmall, color = color)
+                            }
+                        }
+                    }
+                }
+
                 val bossFraction = (snapshot.bossResolve / ticks.bossMaxResolve).coerceIn(0f, 1f)
                 Text("Enemy", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onPrimaryContainer)
                 Spacer(modifier = Modifier.height(2.dp))
@@ -475,28 +504,94 @@ private fun BattleInProgressCard(
                         else -> MaterialTheme.colorScheme.error
                     }
                     val wounds = woundsByMember[member.memberId] ?: 0
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            member.name,
-                            style = MaterialTheme.typography.labelSmall,
-                            modifier = Modifier.width(64.dp),
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                        HpBar(fraction = hpFraction, color = hpColor, modifier = Modifier.weight(1f))
-                        if (wounds > 0) {
-                            Spacer(modifier = Modifier.width(6.dp))
+                    val hasShield = (snapshot.memberReserve[member.memberId] ?: 0f) > 0f
+                    val hasStreak = member.memberId in snapshot.streakActive
+                    val hasHot = member.memberId in snapshot.hotTargets
+                    Column(modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
-                                "↓$wounds",
+                                member.name,
                                 style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.error
+                                modifier = Modifier.width(64.dp),
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
                             )
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .then(
+                                        if (hasShield) Modifier.border(BorderStroke(1.dp, Color(0xFF90CAF9)), RoundedCornerShape(4.dp))
+                                        else Modifier
+                                    )
+                            ) {
+                                HpBar(fraction = hpFraction, color = hpColor, modifier = Modifier.fillMaxWidth())
+                            }
+                            if (wounds > 0) {
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    "↓$wounds",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.error
+                                )
+                            }
+                        }
+                        if (hasStreak || hasHot) {
+                            Row(modifier = Modifier.padding(start = 64.dp)) {
+                                if (hasStreak) {
+                                    Text("STREAK", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.tertiary)
+                                }
+                                if (hasStreak && hasHot) Spacer(modifier = Modifier.width(6.dp))
+                                if (hasHot) {
+                                    Text("HOT", style = MaterialTheme.typography.labelSmall, color = Color(0xFF4CAF50))
+                                }
+                            }
                         }
                     }
                 }
                 Spacer(modifier = Modifier.height(12.dp))
+
+                // ── Live Damage & Healing ─────────────────────────────────────
+                val maxCumDamage = snapshot.cumDamage.values.maxOrNull()?.takeIf { it > 0f } ?: 1f
+                val maxCumHeal = snapshot.cumHeal.values.maxOrNull()?.takeIf { it > 0f } ?: 1f
+                val anyDamageOrHeal = snapshot.cumDamage.values.any { it > 0f } || snapshot.cumHeal.values.any { it > 0f }
+                if (anyDamageOrHeal) {
+                    Text("Live Damage & Healing", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onPrimaryContainer)
+                    Spacer(modifier = Modifier.height(4.dp))
+                    members.filter { it.isAlive }.forEach { member ->
+                        val dmg = snapshot.cumDamage[member.memberId] ?: 0f
+                        val heal = snapshot.cumHeal[member.memberId] ?: 0f
+                        if (dmg > 0f) {
+                            val dmgFraction = (dmg / maxCumDamage).coerceIn(0f, 1f)
+                            val physFrac = memberPhysFraction[member.memberId] ?: 1f
+                            Row(
+                                modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    member.name,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    modifier = Modifier.width(64.dp),
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
+                                TypedDamageBar(totalFraction = dmgFraction, physFraction = physFrac, modifier = Modifier.weight(1f))
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(dmg.toInt().toString(), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onPrimaryContainer)
+                            }
+                        }
+                        if (heal > 0f) {
+                            val healFraction = (heal / maxCumHeal).coerceIn(0f, 1f)
+                            Row(
+                                modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text("", style = MaterialTheme.typography.labelSmall, modifier = Modifier.width(64.dp))
+                                HpBar(fraction = healFraction, color = Color(0xFF4CAF50), modifier = Modifier.weight(1f))
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text("+${heal.toInt()}", style = MaterialTheme.typography.labelSmall, color = Color(0xFF4CAF50))
+                            }
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(12.dp))
+                }
             }
 
             if (objective != "kill") {
@@ -530,6 +625,39 @@ private fun HpBar(fraction: Float, color: Color, modifier: Modifier = Modifier) 
                 .clip(RoundedCornerShape(4.dp))
                 .background(color)
         )
+    }
+}
+
+private val PHYSICAL_DAMAGE_COLOR = Color(0xFFFF9800)
+private val MAGICAL_DAMAGE_COLOR = Color(0xFF2196F3)
+
+// A damage bar split into a physical-colored portion and a magical-colored portion,
+// proportional to physFraction. totalFraction is the bar's overall fill (normalized
+// against the current max cumulative damage among party members); physFraction is the
+// static post-mitigation physical/magical ratio for this member (EncounterResult's
+// physFractionByMember, decoded from EncounterTicks.memberPhysFractionJson). Pure
+// physical members (physFraction = 1) render solid orange, pure magical (physFraction = 0)
+// render solid blue, Captain splits visibly between the two.
+@Composable
+private fun TypedDamageBar(totalFraction: Float, physFraction: Float, modifier: Modifier = Modifier) {
+    val clampedTotal = totalFraction.coerceIn(0f, 1f)
+    val clampedPhysFrac = physFraction.coerceIn(0f, 1f)
+    val physWidth = clampedTotal * clampedPhysFrac
+    val magicWidth = clampedTotal * (1f - clampedPhysFrac)
+    Box(
+        modifier = modifier
+            .height(8.dp)
+            .clip(RoundedCornerShape(4.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant)
+    ) {
+        Row(modifier = Modifier.fillMaxWidth().height(8.dp)) {
+            if (physWidth > 0f) {
+                Box(modifier = Modifier.fillMaxWidth(physWidth).fillMaxHeight().background(PHYSICAL_DAMAGE_COLOR))
+            }
+            if (magicWidth > 0f) {
+                Box(modifier = Modifier.fillMaxWidth(magicWidth).fillMaxHeight().background(MAGICAL_DAMAGE_COLOR))
+            }
+        }
     }
 }
 
