@@ -315,12 +315,14 @@ class BandViewModel @Inject constructor(
 
             // Persist tick snapshots for in-progress health bar replay.
             val memberMaxHpEncoded = result.memberMaxHp.entries.joinToString(",") { "${it.key}:${it.value}" }
+            val memberPhysFractionEncoded = result.physFractionByMember.entries.joinToString(",") { "${it.key}:${it.value}" }
             sessions.saveTicks(EncounterTicks(
-                bandId           = bandId,
-                ticksJson        = Json.encodeToString<List<TickSnapshot>>(result.snapshots),
-                totalTicks       = result.endedAtSec,
-                bossMaxResolve   = enc.stages.firstOrNull()?.resolve?.toFloat() ?: 1f,
-                memberMaxHpJson  = memberMaxHpEncoded
+                bandId                 = bandId,
+                ticksJson              = Json.encodeToString<List<TickSnapshot>>(result.snapshots),
+                totalTicks             = result.endedAtSec,
+                bossMaxResolve         = enc.stages.firstOrNull()?.resolve?.toFloat() ?: 1f,
+                memberMaxHpJson        = memberMaxHpEncoded,
+                memberPhysFractionJson = memberPhysFractionEncoded
             ))
 
             // Consume one food item per member that had food assigned.

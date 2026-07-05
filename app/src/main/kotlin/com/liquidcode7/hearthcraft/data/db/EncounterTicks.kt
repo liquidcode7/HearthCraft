@@ -12,5 +12,6 @@ data class EncounterTicks(
     val ticksJson: String,       // serialized List<TickSnapshot>
     val totalTicks: Int,
     val bossMaxResolve: Float,
-    val memberMaxHpJson: String  // "memberId:maxHp,..." — static per fight
+    val memberMaxHpJson: String, // "memberId:maxHp,..." — static per fight
+    val memberPhysFractionJson: String = "" // "memberId:fraction,..." — static per fight, post-mitigation physical/magical split
 )
