@@ -18,5 +18,9 @@ data class CombatReport(
     val createdAtMs: Long,
     val dpsJson: String = "",     // "memberId:damage,..." for all members
     val healJson: String = "",    // "memberId:healing,..." (keeper only populated)
-    val keeperHealUptime: Int = 0 // keeperHealTicks / totalTicks * 100 as Int
+    val keeperHealUptime: Int = 0, // keeperHealTicks / totalTicks * 100 as Int
+    val moneyGranted: Int = 0,
+    val ingredientsGrantedJson: String = "", // "ingredientId:qty,ingredientId:qty,..."
+    val grimoireIdsGrantedJson: String = "", // comma-separated, usually empty
+    val xpGranted: Int = 0
 )

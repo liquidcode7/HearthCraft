@@ -96,7 +96,8 @@ class EncounterWorker @AssistedInject constructor(
                 val money = (encounter.rewardMoneyMin..encounter.rewardMoneyMax).random() * multiplier
                 player.addMoney(money)
                 val rewardCount = minOf(3, (1..3).random() + (multiplier - 1))
-                encounter.rewardTable.shuffled().take(rewardCount).forEach { inventory.addIngredient(it, 1) }
+                val grantedIngredients = encounter.rewardTable.shuffled().take(rewardCount)
+                grantedIngredients.forEach { inventory.addIngredient(it, 1) }
                 val grimoires = encounter.grimoireDrops
                 if (grimoires.isNotEmpty()) {
                     player.discoverGrimoires(grimoires)
@@ -104,10 +105,12 @@ class EncounterWorker @AssistedInject constructor(
                 player.addCookingXp(PlayerRepository.XP_COOK_WIN)
                 player.addGatheringXp(PlayerRepository.XP_GATHER_WIN)
                 band.grantCombatXp(bandId, xp = 40)
+                recordRewards(bandId, money = money, ingredients = grantedIngredients, grimoires = grimoires, xp = 40)
                 notify("Mission Complete", "${encounter.name} — your band has returned.")
             }
             "STALEMATE" -> {
                 band.grantCombatXp(bandId, xp = 15)
+                recordRewards(bandId, money = 0, ingredients = emptyList(), grimoires = emptyList(), xp = 15)
                 notify("No Result", "${encounter.name} — the band held but couldn't finish it.")
             }
             else -> { // DEFEAT
@@ -126,6 +129,22 @@ class EncounterWorker @AssistedInject constructor(
                 }
             }
         }
+    }
+
+    private suspend fun recordRewards(
+        bandId: String,
+        money: Int,
+        ingredients: List<String>,
+        grimoires: List<String>,
+        xp: Int
+    ) {
+        val existing = combatRepo.get(bandId) ?: return
+        combatRepo.save(existing.copy(
+            moneyGranted = money,
+            ingredientsGrantedJson = encodeIngredientCounts(ingredients),
+            grimoireIdsGrantedJson = grimoires.joinToString(","),
+            xpGranted = xp
+        ))
     }
 
     private fun parseWounds(json: String): Map<String, Int> =
@@ -235,3 +254,7 @@ fun resolveWoundOutcome(wounds: Int, hohAvailable: Boolean): WoundOutcome? = whe
     wounds >= 1 -> WoundOutcome(grievous = false, durationMs = LIGHT_WOUND_MS)
     else        -> null
 }
+
+// Pure function extracted from EncounterWorker — testable without Android context.
+fun encodeIngredientCounts(ingredientIds: List<String>): String =
+    ingredientIds.groupingBy { it }.eachCount().entries.joinToString(",") { "${it.key}:${it.value}" }
