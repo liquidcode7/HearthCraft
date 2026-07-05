@@ -26,6 +26,25 @@ class EncounterEngineTest {
     )
 
     @Test
+    fun `physicalFraction is 1 for warden and fighter, 0 for keeper`() {
+        val warden = MemberInput("w", "warden", 4f, 2f, 5f, 3f, 2f)
+        val fighter = MemberInput("f", "fighter", 3f, 5f, 3f, 4f, 4f)
+        val keeper = MemberInput("k", "keeper", 2f, 3f, 3f, 5f, 4f)
+        assert(EncounterEngine.physicalFraction(warden) == 1f)
+        assert(EncounterEngine.physicalFraction(fighter) == 1f)
+        assert(EncounterEngine.physicalFraction(keeper) == 0f)
+    }
+
+    @Test
+    fun `physicalFraction for captain is stat-weighted between might and will terms`() {
+        val captain = MemberInput("c", "captain", 3f, 2f, 4f, 5f, 4f)
+        // physTerm = 3*0.9 = 2.7, magicTerm = 5*0.6 = 3.0, total = 5.7
+        val expected = (3f * 0.9f) / (3f * 0.9f + 5f * 0.6f)
+        val actual = EncounterEngine.physicalFraction(captain)
+        assert(kotlin.math.abs(actual - expected) < 0.0001f) { "Expected $expected, got $actual" }
+    }
+
+    @Test
     fun `keeper heals party — band survives easy encounter`() {
         // Soft encounter: low drain so Keeper healing keeps party standing
         val easyStage = stage(resolve = 15000, drain = 2f, spike = 30f, spikeIv = 20)

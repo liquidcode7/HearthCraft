@@ -325,6 +325,54 @@ consequence a new player faces for this outcome. The safety net switches off
 automatically the moment a real HoH recipe becomes available to the player —
 it is not a permanent difficulty reduction.
 
+### 6.9 Damage Types
+
+Every role's damage is either physical or magical. Physical damage (Warden, Fighter, and
+the Might-driven portion of Captain's hybrid damage) is reduced by encounter armor
+(`physMitPct`, countered by Potency draughts as already documented in §7.3). Magical
+damage (Keeper's full damage, and the Will-driven portion of Captain's hybrid damage)
+bypasses armor entirely — full raw damage, always. There is no enemy-side magic
+resistance stat yet; this is a deliberate simplification until a specific encounter needs
+enemies resistant to magic.
+
+Captain's split is stat-weighted, not fixed: of the `might * 0.9 + will * 0.6` hybrid
+rawDps formula (§5.1), the `might * 0.9` term is physical and the `will * 0.6` term is
+magical. A Captain built with more Will naturally deals more armor-immune damage — this
+falls out of the existing formula, not a new number.
+
+Magical damage carries a named type, tied to who is casting it (character-driven until
+weapons exist, weapon-driven after):
+
+| Role | Magic type | Lore character |
+|---|---|---|
+| Keeper (default) | **Light** | Grace of the Valar; the fire of Aman and Elbereth's starlight |
+| Captain (default) | **Westernesse** | The strength of Númenorean heritage; ancient craftsmanship and the lineage of kings |
+
+The type name is documentation only in this pass — no code field carries it yet, since
+nothing reads it (no UI shows damage type, no bane-affinity logic exists to match
+against it). It becomes a real field the moment either is built.
+
+**Enemy category tags** (§12 encounters) mark what an enemy *is*, for the future
+gear/bane system: a legendary weapon will eventually carry a magic damage type of its
+own (**Beleriand** — First Age elvish/dwarven power, vs. orc-kind; **Mormegil** — the
+Black Sword's doom, vs. dragon-kind), and when a weapon's type matches an enemy's
+category vulnerability, a bane multiplier will fire. No bane fires without a weapon, and
+weapons don't exist yet — the tags are authored now purely so that system has data to
+read later.
+
+| Category | Vulnerable to | Notes |
+|---|---|---|
+| `orc` | Beleriand | Orcs, goblins, Uruk-hai |
+| `dragon` | Mormegil | Drakes, dragons |
+| `shadow` | Light | Shadow-creatures, spiders, Balrog-adjacent |
+| `wraith` | Westernesse | Ringwraiths, Barrow-wights, Dead Men of Dunharrow |
+| `nature` | *(none defined yet)* | Huorns and other nature-creatures |
+
+**Explicitly deferred:** the bane multiplier itself (needs weapons — gear system, not yet
+designed), incoming (enemy-side) typed damage such as Shadow/Wraith damage dealt *to* the
+party (needs a dedicated design session — see `legacy/brainstorm/damage-types-bane-affinities-design.md`
+for the open questions), and any UI surfacing of damage type or category.
+
 ---
 
 ## 7. The Provisioning System
