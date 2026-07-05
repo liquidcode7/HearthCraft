@@ -242,7 +242,9 @@ object EncounterEngine {
             for (m in standing().filter { it.input.role != "keeper" }) {
                 val s = streaks[m.input.id]
                 val mult = (if (s != null && s.active > 0) STREAK_MULT else 1f) * dawnDpsMult
-                val dmg = rawDps(m.input).toFloat() * mult * (1f - effArmor) * jMul
+                val raw = rawDps(m.input).toFloat() * mult * jMul
+                val physFrac = physicalFraction(m.input)
+                val dmg = raw * physFrac * (1f - effArmor) + raw * (1f - physFrac)
                 nonKeeperDps += dmg
                 damageAcc[m.input.id] = (damageAcc[m.input.id] ?: 0f) + dmg
             }
@@ -492,9 +494,12 @@ object EncounterEngine {
                         }
                     }
                 }
-                // Keeper DPS only when no consuming action taken
+                // Keeper DPS only when no consuming action taken. Keeper is pure magical
+                // (physicalFraction == 0), so this is unconditionally unmitigated by armor —
+                // written directly rather than routed through physicalFraction since the
+                // role is fixed here.
                 if (!actionTaken) {
-                    val keeperDmg = rawDps(keeper.input) * healMult * dawnDpsMult * (1f - effArmor) * jMul
+                    val keeperDmg = rawDps(keeper.input) * healMult * dawnDpsMult * jMul
                     boss -= keeperDmg
                     damageAcc[keeper.input.id] = (damageAcc[keeper.input.id] ?: 0f) + keeperDmg
                     keeperDpsTicksCount++
@@ -602,6 +607,22 @@ object EncounterEngine {
         "keeper"  -> m.will * 2.7f
         "captain" -> m.might * 0.9f + m.will * 0.6f
         else      -> 0f
+    }
+
+    // Fraction of a member's raw damage that is physical (armor-mitigated) vs. magical
+    // (bypasses armor). See master-design.md §6.9. Warden/Fighter are pure physical,
+    // Keeper is pure magical, Captain splits proportionally between the might-driven and
+    // will-driven terms of their own rawDps formula.
+    internal fun physicalFraction(m: MemberInput): Float = when (m.role) {
+        "warden", "fighter" -> 1f
+        "keeper" -> 0f
+        "captain" -> {
+            val physTerm = m.might * 0.9f
+            val magicTerm = m.will * 0.6f
+            val total = physTerm + magicTerm
+            if (total > 0f) physTerm / total else 1f
+        }
+        else -> 1f
     }
 
     private fun Random.nextFloat(lo: Float, hi: Float): Float =
