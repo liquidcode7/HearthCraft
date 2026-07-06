@@ -5,13 +5,15 @@
 
 const FOOD_MODEL = (function () {
 
-  // Grade ordinals mirror Grade.kt. CRUDE = 0, no bonus, no penalty.
+  // Grade ordinals mirror Grade.kt. CRUDE = 0.
   const GRADE_NAMES = ["Crude", "Common", "Fine", "Superb", "Pristine"];
-  const GRADE_STEPS = [0, 1.0, 2.0, 3.5, 5.5]; // additive stat bonus per grade
+  // Multiplicative grade bonus — mirrors app/.../data/model/QualityUtils.kt's
+  // GRADE_MULTIPLIER exactly (still marked TODO:TUNE there; keep in sync).
+  const GRADE_MULTIPLIER = [0.7, 0.85, 1.0, 1.3, 1.7];
 
   function effectiveStatBoost(authoredBoost, gradeOrdinal) {
     if (authoredBoost === 0) return 0;
-    return authoredBoost + (GRADE_STEPS[gradeOrdinal] || 0);
+    return authoredBoost * (GRADE_MULTIPLIER[gradeOrdinal] ?? 1.0);
   }
 
   function gradeName(ordinal) { return GRADE_NAMES[ordinal] || "Crude"; }
@@ -76,7 +78,7 @@ const FOOD_MODEL = (function () {
   }
 
   const FM = {
-    RECIPES, GRADE_NAMES, GRADE_STEPS,
+    RECIPES, GRADE_NAMES, GRADE_MULTIPLIER,
     statBonusesFor, effectiveStatBoost, gradeName,
   };
 

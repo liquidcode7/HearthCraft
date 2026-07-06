@@ -179,7 +179,15 @@
 </style>
 <script src="xlsx.full.min.js"></script>
 <script>
-// Inlined from food_model.js — keeps the sim self-contained (no external file needed)
+// NOTE: despite the name, this block is NOT currently a copy of food_model.js.
+// It predates the Grade system and Model B (HP/s removed) — it still models
+// food as FL-derived-from-cookLevel with its own HP/s tier table, and has no
+// grade/authoredBoost concept at all, so there is no additive-vs-multiplicative
+// formula here to reconcile with QualityUtils.kt. food_model.js's own
+// GRADE_MULTIPLIER (multiplicative, mirrors QualityUtils.kt) is the current
+// source of truth; this block needs a dedicated resync pass (like the one that
+// already resynced this file's combat-math <script> block below) before it
+// can be considered "the same tool" as food_model.js again.
 const FOOD_MODEL = (function () {
   const TIER_TABLE = [
     { tier:1, title:"Hearthkeeper", lo:1,  hi:4,  hpsLo:5.0, hpsHi:5.6 },
