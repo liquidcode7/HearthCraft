@@ -46,10 +46,12 @@ import com.liquidcode7.hearthcraft.data.db.InventoryItem
 import com.liquidcode7.hearthcraft.data.model.Grade
 import com.liquidcode7.hearthcraft.data.model.Ingredient
 import com.liquidcode7.hearthcraft.data.model.Recipe
+import com.liquidcode7.hearthcraft.data.model.gradeMultiplier
 import com.liquidcode7.hearthcraft.ui.viewmodel.KitchenViewModel
 import com.liquidcode7.hearthcraft.ui.viewmodel.RecipeTier
 import com.liquidcode7.hearthcraft.ui.util.formatMs
 import kotlinx.coroutines.delay
+import kotlin.math.roundToInt
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -302,9 +304,11 @@ private fun RecipeDetailPanel(
         "vit" -> "Vitality"; "wil" -> "Will"
         else -> recipe.primaryStat
     }
+    val gradeToUse = predictedGrade?.first ?: Grade.FINE
+    val scaledBoost = (recipe.primaryBoost * gradeMultiplier(gradeToUse)).roundToInt()
     val effectLine = when {
-        recipe.penalty && statName != null -> "$statName ${recipe.primaryBoost}"
-        recipe.primaryStat != null && statName != null -> "$statName +${recipe.primaryBoost}"
+        recipe.penalty && statName != null -> "$statName $scaledBoost"
+        recipe.primaryStat != null && statName != null -> "$statName +$scaledBoost"
         recipe.hazardEffect != null -> when (recipe.hazardEffect) {
             "warmth" -> "Warmth (cold resist)"
             "alert" -> "Alert (fatigue resist)"
