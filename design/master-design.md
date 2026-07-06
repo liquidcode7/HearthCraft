@@ -218,7 +218,7 @@ document.
 
 **Warden — Horn of Gondor.** Trigger: a "crisis edge" — the tick where the
 count of standing members below 35% HP rises from under 2 to 2 or more.
-Effect: for an 8-tick window, all incoming spike damage redirects to the
+Effect: for a 20-tick window, all incoming spike damage redirects to the
 Warden regardless of normal targeting, and the Warden's HP is floored at 1
 for the duration — he cannot be downed or take a wound from it.
 
@@ -242,8 +242,8 @@ fight** — a hard resource limit, not "uncapped but rare."
 **Captain — Wrath, Ruin, and the Red Dawn.** Trigger: the same crisis-edge
 condition as Horn of Gondor. Two effects, both active every time it fires:
 
-1. Direct: heals all active members 15% of max HP (can revive someone
-   downed) and grants the whole party a ×1.5 DPS multiplier for 10 ticks.
+1. Direct: heals all active members 30% of max HP (can revive someone
+   downed) and grants the whole party a ×2.0 DPS multiplier for 15 ticks.
    This is the Captain's core identity — making the whole party better at
    what they already do, not doing it for them.
 2. Unlocks each other role's use-condition for a window, rather than
