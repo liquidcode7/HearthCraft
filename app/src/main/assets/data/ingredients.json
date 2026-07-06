@@ -462,7 +462,7 @@
     "region": "Bree-land",
     "rarity": "c",
     "source": "hunt",
-    "gatheringMode": "hunt",
+    "gatheringMode": "forage",
     "gatherType": "hunt",
     "primaryStat": "agi",
     "secondaryStat": "vit",
@@ -474,7 +474,7 @@
     "region": "Bree-land",
     "rarity": "c",
     "source": "hunt",
-    "gatheringMode": "hunt",
+    "gatheringMode": "forage",
     "gatherType": "hunt",
     "primaryStat": "mig",
     "secondaryStat": "vit",
@@ -1792,7 +1792,7 @@
     "region": "Bree-land",
     "rarity": "c",
     "source": "draw",
-    "gatheringMode": "draw",
+    "gatheringMode": "forage",
     "gatherType": "draw",
     "notes": "Common well-water from Bree. Clean enough. Base for soups and draughts."
   },
@@ -1802,7 +1802,7 @@
     "region": "Bree-land",
     "rarity": "c",
     "source": "draw",
-    "gatheringMode": "draw",
+    "gatheringMode": "forage",
     "gatherType": "draw",
     "notes": "River water drawn fresh. Mild, faintly earthy."
   },
@@ -1812,7 +1812,7 @@
     "region": "Bree-land",
     "rarity": "u",
     "source": "draw",
-    "gatheringMode": "draw",
+    "gatheringMode": "forage",
     "gatherType": "draw",
     "notes": "Cold spring in the Chetwood. Cleaner than the well."
   },
@@ -1822,7 +1822,7 @@
     "region": "Celondim / Ered Luin",
     "rarity": "c",
     "source": "draw",
-    "gatheringMode": "draw",
+    "gatheringMode": "forage",
     "gatherType": "draw",
     "notes": "Seawater from the Gulf of Lhûn. Salt and mineral. Used in curing and preserving."
   },
@@ -1832,7 +1832,7 @@
     "region": "Thorin's Halls",
     "rarity": "c",
     "source": "draw",
-    "gatheringMode": "draw",
+    "gatheringMode": "forage",
     "gatherType": "draw",
     "notes": "Stone-filtered water from the deep hall cisterns. Minerally. Reliable."
   },
@@ -1842,7 +1842,7 @@
     "region": "Thorin's Halls",
     "rarity": "u",
     "source": "draw",
-    "gatheringMode": "draw",
+    "gatheringMode": "forage",
     "gatherType": "draw",
     "hazardTendency": "warmth",
     "notes": "Snowmelt from the Blue Mountain passes. Cold-counter draughts."
@@ -1864,7 +1864,7 @@
     "region": "Bree-land",
     "rarity": "c",
     "source": "fish",
-    "gatheringMode": "fish",
+    "gatheringMode": "forage",
     "gatherType": "fish",
     "notes": "Chetwood rivers. Raw input for smoking."
   },
@@ -1874,7 +1874,7 @@
     "region": "Lone-Lands",
     "rarity": "c",
     "source": "fish",
-    "gatheringMode": "fish",
+    "gatheringMode": "forage",
     "gatherType": "fish",
     "notes": "Bree Wildlands rivers."
   },
@@ -1884,7 +1884,7 @@
     "region": "Lone-Lands",
     "rarity": "u",
     "source": "hunt",
-    "gatheringMode": "hunt",
+    "gatheringMode": "forage",
     "gatherType": "hunt",
     "notes": "Old forest hunting.",
     "primaryStat": "mig",
@@ -1927,7 +1927,7 @@
     "region": "Bree-land",
     "rarity": "c",
     "source": "draw",
-    "gatheringMode": "draw",
+    "gatheringMode": "forage",
     "gatherType": "draw",
     "notes": "Clean spring water. Purifying carrier for tinctures and remedies."
   },
@@ -2025,7 +2025,7 @@
     "region": "Bree-land",
     "rarity": "c",
     "source": "gather",
-    "gatheringMode": "gather",
+    "gatheringMode": "forage",
     "gatherType": "gather",
     "notes": "Dug from stream banks. HoH-exclusive poultice base.",
     "cultivatable": false
