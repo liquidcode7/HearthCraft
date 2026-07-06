@@ -609,9 +609,14 @@ brainstorm → spec → plan → subagent-driven-development cycle, in this orde
    physical/magical split; shield outline, STREAK/HOT badges per member; a banner for
    the four inspiration effects (Horn of Gondor, Red Dawn, Black Arrow, Grace). Merged
    to main.
-4. **Content pass** — NOT STARTED. Inspiration descriptions rewrite, fight narrative/
-   flavor text, victory narrative. Pure writing, no engine dependencies — could be done
-   anytime, sequenced here so copy accurately reflects the now-real damage-type mechanics.
+4. **Content pass** — DONE (06 Jul 2026). Spec:
+   `docs/superpowers/specs/2026-07-06-content-pass-design.md`. Plan:
+   `docs/superpowers/plans/2026-07-06-content-pass.md`. Shipped: Journal's per-role
+   ability cards rewritten (3 of 4 previously described the wrong mechanic entirely),
+   Tolkien-lore-flavored, Fighter branching on ranged/melee build; two stale Inspiration
+   numbers corrected in master-design.md §6.3 (Horn duration, Red Dawn heal/DPS/duration);
+   post-fight recap narrative replaced with outcome-bucketed text (no more encounter name
+   used as a nonsensical grammatical subject). Merged to main.
 5. **Kitchen/Pantry UX** — NOT STARTED. Scroll-jump-to-top fix, collapsible/filterable
    recipe tiers, ingredient filters (quality/type/quantity/alphabetical) in Pantry.
    Independent of combat work.
