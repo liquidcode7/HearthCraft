@@ -680,7 +680,6 @@ private fun CombatReportCard(
         "DEFEAT"   -> MaterialTheme.colorScheme.errorContainer to "Fallen"
         else       -> MaterialTheme.colorScheme.secondaryContainer to "No Result"
     }
-    val narrative = buildCombatNarrative(report)
     val minutesFought = report.endedAtSec / 60
     val secondsFought = report.endedAtSec % 60
     val fightDuration = if (minutesFought > 0) "${minutesFought}m ${secondsFought}s" else "${secondsFought}s"
@@ -704,6 +703,7 @@ private fun CombatReportCard(
             if (parts.size == 2) parts[0] to (parts[1].toIntOrNull() ?: 0) else null
         }.toMap()
     }
+    val narrative = buildCombatNarrative(report, woundsMap.values.sum())
     val maxDamage = dpsMap.values.maxOrNull()?.takeIf { it > 0f } ?: 1f
 
     Card(
@@ -835,20 +835,20 @@ private fun CombatReportCard(
     }
 }
 
-private fun buildCombatNarrative(report: CombatReport): String {
+internal fun buildCombatNarrative(report: CombatReport, totalWounds: Int): String {
     val enc = report.encounterName
     val fullDuration = report.durationSec
+    val isCloseCall = report.rescuesUsed > 0 || report.wardGuardsUsed > 0 || totalWounds >= 3
     return when (report.outcome) {
-        "VICTORY" -> {
-            val timeNote = if (report.endedAtSec < fullDuration / 2)
-                "The fight was swift — the enemy broke in the first half of the engagement."
-            else "A hard-fought victory. The band held until the enemy could hold no longer."
-            "$timeNote The $enc could not withstand them."
+        "VICTORY" -> when {
+            isCloseCall -> "A close call — the band nearly broke before the enemy did. Victory, but a near thing."
+            report.endedAtSec < fullDuration / 2 -> "The fight was swift — victory, and hardly tested."
+            else -> "A hard-fought victory. The band held until the enemy could hold no longer."
         }
         "DEFEAT" -> {
-            val timeNote = if (report.endedAtSec < report.durationSec / 4)
-                "The band collapsed quickly — the enemy overwhelmed them before they found their footing."
-            else "The $enc wore them down, wound by wound, until there was no one left standing."
+            val timeNote = if (report.endedAtSec < fullDuration / 4)
+                "The band fell quickly, overwhelmed before they found their footing."
+            else "Wound by wound, the band was worn down until none remained standing. The party fell."
             val rescueNote = if (report.rescuesUsed > 0)
                 " The Keeper fought to the last, pulling ${report.rescuesUsed} from the edge — but it was not enough."
             else ""
