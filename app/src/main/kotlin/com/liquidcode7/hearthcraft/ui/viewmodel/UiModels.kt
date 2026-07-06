@@ -46,7 +46,8 @@ data class BandMemberWithState(
     val agility: Int = 0,
     val vitality: Int = 0,
     val will: Int = 0,
-    val fate: Int = 0
+    val fate: Int = 0,
+    val fighterBuild: String = "ranged" // "ranged"|"melee" — only meaningful when role == "fighter", drives which Inspiration name/copy JournalScreen shows
 )
 
 data class SeedDetail(

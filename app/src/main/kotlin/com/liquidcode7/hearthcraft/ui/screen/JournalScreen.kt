@@ -241,7 +241,7 @@ private fun CharacterCard(member: BandMemberWithState) {
                 JournalStatBar(label = "WIL", value = member.will)
                 Spacer(modifier = Modifier.height(4.dp))
                 JournalStatBar(label = "FAT", value = member.fate)
-                roleAbility(member.role)?.let { (abilityName, abilityDesc) ->
+                roleAbility(member.role, member.fighterBuild)?.let { (abilityName, abilityDesc) ->
                     Spacer(modifier = Modifier.height(10.dp))
                     Text(abilityName, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
                     Text(abilityDesc, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -263,14 +263,19 @@ private fun JournalStatBar(label: String, value: Int, max: Int = 10) {
     }
 }
 
-private fun roleAbility(role: String): Pair<String, String>? = when (role.lowercase()) {
+internal fun roleAbility(role: String, fighterBuild: String = "ranged"): Pair<String, String>? = when (role.lowercase()) {
     "warden" -> "The Horn of Gondor" to
-        "Can intercept a killing blow aimed at the Keeper, up to three times per engagement. The Warden steps between the blade and the one who cannot fall."
-    "fighter" -> "Black Arrow" to
-        "Deals damage that scales with both Agility and Might, making the fighter the party's primary offensive force. Armor reduces effectiveness — bring a potency draught if the enemy is mailed."
+        "Kept for the direst hour, its call has never gone unanswered. When the company's peril turns to crisis, the horn sounds — and for a time, every blow meant for the fallen turns instead upon the one who blew it. While it sounds, he does not fall."
+    "fighter" -> if (fighterBuild == "melee") {
+        "Bullroarer's Five-Iron" to
+            "A blow swung with everything behind it, spent only when the fight is slipping away. Mail or hide, it makes no difference — it finds its mark clean, the way Bullroarer's swing once found Golfimbul's head and sent it a hundred yards down a rabbit-hole."
+    } else {
+        "Black Arrow" to
+            "An heirloom shot, spent only when the fight is slipping away. It cares nothing for mail or hide, and finds its mark plainly — as the Black Arrow once found the one bare scale."
+    }
     "keeper" -> "Hands of Healing" to
-        "When a companion is downed, the Keeper calls them back with a healing burst. Can be used up to five times per engagement. Without the Keeper, fallen members stay fallen."
+        "Named of old for a healer's hands, which are known by their grace. When a companion's wounds pile past bearing, the Keeper's touch clears them wholly and calls them back into the light — twice in a battle, and no more."
     "captain" -> "Wrath, Ruin, and the Red Dawn" to
-        "When the Captain calls, the entire company fights with renewed fury — all damage output rises by half again for ten strikes. Once per engagement."
+        "Wrath, ruin, and a red dawn ere the sun rises — the Captain's call, and the company surges as one. Blows fall harder, the standing are made whole, the fallen lifted back to their feet. And for that little while, courage comes easier to every hand in the company."
     else -> null
 }

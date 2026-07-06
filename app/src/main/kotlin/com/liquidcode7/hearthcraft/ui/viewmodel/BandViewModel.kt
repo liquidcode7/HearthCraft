@@ -161,7 +161,8 @@ class BandViewModel @Inject constructor(
                     agility = curve?.let { statAtLevel(startAgi, it.agiGrowth, level) }?.roundToInt() ?: startAgi,
                     vitality = curve?.let { statAtLevel(member.startingVitality, it.vitGrowth, level) }?.roundToInt() ?: member.startingVitality,
                     will = curve?.let { statAtLevel(member.startingWill, it.wilGrowth, level) }?.roundToInt() ?: member.startingWill,
-                    fate = curve?.let { statAtLevel(member.startingFate, it.fatGrowth, level) }?.roundToInt() ?: member.startingFate
+                    fate = curve?.let { statAtLevel(member.startingFate, it.fatGrowth, level) }?.roundToInt() ?: member.startingFate,
+                    fighterBuild = fighterBuild
                 )
             }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
