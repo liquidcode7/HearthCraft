@@ -17,6 +17,7 @@ import com.liquidcode7.hearthcraft.data.repository.GameDataRepository
 import com.liquidcode7.hearthcraft.data.repository.InventoryRepository
 import com.liquidcode7.hearthcraft.data.repository.PlayerRepository
 import com.liquidcode7.hearthcraft.data.repository.SessionRepository
+import com.liquidcode7.hearthcraft.data.repository.isRecipeVisible
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import java.util.concurrent.TimeUnit
@@ -54,11 +55,13 @@ class CookingWorker @AssistedInject constructor(
             val bandId = snapshot?.chosenBandId.orEmpty()
             val currentDiscovered = snapshot?.discoveredRecipeIds
                 ?.split(",")?.filter { it.isNotBlank() }?.toSet() ?: emptySet()
+            val foundGrimoires = player.getFoundGrimoireIds()
             val toDiscover = gameData.recipes.filter { recipe ->
                 recipe.cookLevel <= newLevel
                     && recipe.recipeClass != "hoh"
                     && recipe.id !in currentDiscovered
                     && (recipe.band == bandId || recipe.band == "all")
+                    && isRecipeVisible(recipe, foundGrimoires, currentDiscovered)
             }.map { it.id }
             player.discoverRecipes(toDiscover)
         }
