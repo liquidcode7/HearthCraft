@@ -848,7 +848,7 @@ internal fun buildCombatNarrative(report: CombatReport, totalWounds: Int): Strin
         "DEFEAT" -> {
             val timeNote = if (report.endedAtSec < fullDuration / 4)
                 "The band fell quickly, overwhelmed before they found their footing."
-            else "Wound by wound, the band was worn down until none remained standing. The party fell."
+            else "Wound by wound, the band was worn down until none remained standing. The band fell."
             val rescueNote = if (report.rescuesUsed > 0)
                 " The Keeper fought to the last, pulling ${report.rescuesUsed} from the edge — but it was not enough."
             else ""

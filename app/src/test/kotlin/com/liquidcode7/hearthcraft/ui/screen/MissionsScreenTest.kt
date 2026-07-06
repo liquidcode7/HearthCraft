@@ -85,7 +85,7 @@ class MissionsScreenTest {
     fun `worn-down defeat with rescue note`() {
         val r = report(outcome = "DEFEAT", endedAtSec = 600, durationSec = 1000, rescuesUsed = 2)
         assertEquals(
-            "Wound by wound, the band was worn down until none remained standing. The party fell. The Keeper fought to the last, pulling 2 from the edge — but it was not enough.",
+            "Wound by wound, the band was worn down until none remained standing. The band fell. The Keeper fought to the last, pulling 2 from the edge — but it was not enough.",
             buildCombatNarrative(r, totalWounds = 5)
         )
     }
