@@ -78,38 +78,49 @@ the one that was actually tuned, buff Melee up to meet it rather than nerf Range
 Fighter's `physicalFraction` is unaffected by this change — both builds remain 100% physical
 either way (`"warden", "fighter" -> 1f`), this section only touches `rawDps`.
 
-## Section D: Captain's new HoT ability
+## Section D: Captain's new heal — burst-on-cooldown (revised 07 Jul 2026)
 
-**New mechanic:** Captain periodically applies a small heal-over-time to whoever is
-currently the lowest-HP standing ally.
+**Status:** This section supersedes the original "Captain HoT" design (shipped in commit
+`ee49fc7`, then replaced before Task 5 mirrored it into the sim tools). Wes's original ask
+("a little HoT he can apply on the lowest ally") was implemented as a trickle — `will × 0.08`
+per tick for 6 ticks, retargeting every 9 ticks. In review, that shape turned out to be
+mathematically real but perceptually inert: no single tick is ever big enough to notice, so
+it read as ambient number-go-up rather than something the Captain visibly did. Wes's actual
+goal, stated directly: the heal should not compete with Keeper's identity as the party's real
+healer, but should still have flavor — a legible, meaningful moment, not invisible background
+healing.
+
+**New mechanic:** Captain periodically lands one instant, visible burst heal on whoever is
+currently the lowest-HP standing ally, on a fixed cooldown — structurally a smaller sibling of
+Keeper's Triage (`will × TRIAGE_MUL`, fires reactively below a health threshold), except
+Captain's version fires automatically on cooldown regardless of need (Wes's call — simpler
+and more predictable than a reactive-threshold trigger).
 
 | Constant | Value | Rationale |
 |---|---|---|
-| `CAPTAIN_HOT_INTERVAL` | 9 ticks | Fixed cadence, same style as `GROUP_HEAL_IV` (Keeper's group-heal timer, currently 5). Deliberately less frequent than Keeper's kit — this is a minor utility layer, not a second healer. |
-| `CAPTAIN_HOT_DURATION` | 6 ticks | Shorter than Keeper's `HOT_DURATION` (8) — "a little" HoT, not equivalent to Keeper's. |
-| `CAPTAIN_HOT_MUL` | 0.08f | About half Keeper's `HOT_HEAL_MUL` (0.15) — `healPerTick = captain.will × CAPTAIN_HOT_MUL`. At level 5 (~14.8 will): ~1.18/tick × 6 ticks ≈ 7 HP total. |
+| `CAPTAIN_HEAL_INTERVAL` | 12 ticks | Cooldown between casts. Noticeably less frequent than Keeper's group-heal (5 ticks) or reactive triage — stays clearly secondary to Keeper's kit. |
+| `CAPTAIN_HEAL_MUL` | 1.0f | Half of Keeper's `TRIAGE_MUL` (2.0) — `healAmount = captain.will × CAPTAIN_HEAL_MUL`. A real, visible chunk of HP, clearly smaller than Keeper's signature heal. |
 
 **Behavior:**
-- Fires on a fixed interval (decrementing counter, same pattern as `groupHealTimer` in the
-  existing Keeper logic), independent of Captain's DPS/inspiration actions.
-- Retargets fresh each time it fires — always whoever is lowest-HP-fraction among
-  `standing()` at that moment (mirrors the target-selection the Keeper's own HoT-slot-fill
-  logic already uses: `standing().filter { ... }.minByOrNull { it.hp / it.maxHp }`).
-- Scales off Will alone (not the same might/will blend driving Captain's damage) — keeps the
-  HoT legible as "the Will half of Captain," per Wes's call.
-- **Free** — does not consume Captain's DPS action that tick. Captain still deals damage on
-  every tick regardless of whether the HoT proc'd, mirroring the existing precedent that
-  Keeper applying a *new* HoT slot is also free (`actionTaken = false` in that branch — Keeper
-  still DPSes that tick too).
-- **Reuses existing UI plumbing**: `TickSnapshot.hotTargets: Set<String>` (added by the
-  live-combat-visibility work) already renders a generic "HOT" badge per member in
-  `BattleInProgressCard` — Captain's HoT target simply joins that same set. The field's
-  current comment ("member ids currently receiving a Keeper heal-over-time") needs updating
-  to drop the Keeper-only framing; no new UI code needed.
-- No cooldown interaction with Keeper's own two HoT slots — Captain's HoT is a fully separate
-  application, can stack on the same target as one of Keeper's if the lowest-HP ally happens
-  to coincide, exactly as two independent effects would in this engine's existing model
-  (Keeper's own two slots already stack with each other the same way).
+- Fires on a fixed cooldown (decrementing counter, same pattern as `groupHealTimer`),
+  independent of Captain's DPS/inspiration actions — automatic, not conditioned on anyone
+  actually being low (Wes's explicit choice over a reactive Triage-style threshold).
+- Targets whoever is lowest-HP-fraction among `standing()` at the moment it fires (same
+  target-selection Keeper's own kit uses: `standing().minByOrNull { it.hp / it.maxHp }`).
+- Scales off Will alone, consistent with the original design's reasoning (legible as "the Will
+  half of Captain," distinct from the might/will blend driving Captain's damage).
+- **Free** — does not consume Captain's DPS action that tick, same precedent as before.
+- **One-shot, not lingering** — this is a single `applyHeal(...)` call, not a `HoT` slot with a
+  multi-tick duration. No `captainHot`/`captainHotTimer` HoT-slot state; just a cooldown
+  counter and, when it fires, an immediate heal.
+- **UI: a flash, not the HoT badge.** Since there's no lingering effect, this does *not* join
+  `TickSnapshot.hotTargets` (that field's "currently under an ongoing heal-over-time" meaning
+  no longer applies here, and reverts to being Keeper-only again). Instead it follows the
+  existing Black Arrow / Grace precedent — one-shot events that get a few ticks of artificial
+  visual "just fired" flash so they're not imperceptible at playback speed
+  (`BLACK_ARROW_FLASH_TICKS`/`GRACE_FLASH_TICKS`, both 5 ticks). Add a matching
+  `captainHealFlash: Boolean` field to `TickSnapshot`, using the same flash-duration constant
+  style.
 
 ## Explicitly out of scope
 
