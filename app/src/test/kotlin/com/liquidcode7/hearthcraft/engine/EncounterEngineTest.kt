@@ -249,4 +249,70 @@ class EncounterEngineTest {
             "Expected food-boosted band to win more: no-food=$winsNoFood, boosted=$winsBoosted (out of 200)"
         }
     }
+
+    @Test
+    fun `captain HoT fires periodically, heals, and targets the lowest-HP standing ally`() {
+        // Captain + a lower-vitality ally: equal flat drain per standing member makes the
+        // ally's HP fraction fall faster than Captain's, so the lowest-HP target is
+        // unambiguous — no RNG needed to reason about who gets targeted.
+        val captain = MemberInput("captain", "captain", 3f, 2f, 6f, 5f, 4f)
+        val ally = MemberInput("ally", "warden", 4f, 2f, 2f, 3f, 2f)
+        val gentleStage = stage(resolve = 500000, drain = 1f, spike = 0f, spikeIv = 10000)
+        val r = EncounterEngine.resolve(gentleStage, listOf(captain, ally), seed = 1L)
+
+        assert((r.healingByMember["captain"] ?: 0f) > 0f) {
+            "Expected Captain to have delivered some healing via their HoT over the fight"
+        }
+        assert((r.damageByMember["captain"] ?: 0f) > 0f) {
+            "Expected Captain to have also dealt damage — the HoT must not cost their DPS action"
+        }
+        val everTargetedAlly = r.snapshots.any { "ally" in it.hotTargets }
+        assert(everTargetedAlly) {
+            "Expected Captain's HoT to have targeted the lower-vitality ally at some point"
+        }
+    }
+
+    @Test
+    fun `captain HoT and keeper HoT stack on the same target instead of one overriding the other`() {
+        // Keeper (high vitality) + Captain (low vitality), both fully healed up almost
+        // immediately (heal throughput outpaces this drain at this stat scale), which keeps
+        // both of them tied at HP fraction 1.0 for virtually the whole fight. Both Keeper's
+        // own HoT-slot-fill (`standing().filter{...}.minByOrNull{fraction}`) and Captain's
+        // HoT retarget (`standing().minByOrNull{fraction}`) break that fraction tie the same
+        // way — by list order/stability — so both independently and repeatedly converge on
+        // "keeper" (first in the party list) as their target. Keeper's own two HoT slots
+        // never exclude Captain's target (or vice versa), so nothing stops them landing on
+        // the same member at once. Proof: a tick where hotTargets is the *singleton* {keeper}
+        // (no other member is under any HoT that tick) while both Keeper's and Captain's
+        // cumulative healing increase — meaning both of them are actively ticking on keeper
+        // simultaneously, additively, with neither blocking the other.
+        val keeper = MemberInput("keeper", "keeper", 2f, 3f, 8f, 5f, 4f)
+        val captain = MemberInput("captain", "captain", 3f, 2f, 2f, 5f, 4f)
+        val gentleStage = stage(resolve = 500000, drain = 4f, spike = 0f, spikeIv = 10000)
+        val r = EncounterEngine.resolve(gentleStage, listOf(keeper, captain), seed = 1L)
+
+        assert((r.healingByMember["keeper"] ?: 0f) > 0f) {
+            "Expected Keeper to have delivered healing even with Captain's HoT also active"
+        }
+        assert((r.healingByMember["captain"] ?: 0f) > 0f) {
+            "Expected Captain to have delivered healing via their HoT even with Keeper active"
+        }
+
+        var sawStackedHealTick = false
+        for (i in 1 until r.snapshots.size) {
+            val prev = r.snapshots[i - 1]
+            val cur = r.snapshots[i]
+            val keeperDelta = (cur.cumHeal["keeper"] ?: 0f) - (prev.cumHeal["keeper"] ?: 0f)
+            val captainDelta = (cur.cumHeal["captain"] ?: 0f) - (prev.cumHeal["captain"] ?: 0f)
+            if (cur.hotTargets == setOf("keeper") && keeperDelta > 0f && captainDelta > 0f) {
+                sawStackedHealTick = true
+                break
+            }
+        }
+        assert(sawStackedHealTick) {
+            "Expected at least one tick where Keeper's own HoT and Captain's HoT were both " +
+                "landing on the same sole target (keeper) at once, each still delivering heal " +
+                "— i.e. stacking rather than one overriding or blocking the other"
+        }
+    }
 }
