@@ -62,6 +62,23 @@ class EncounterEngineTest {
     }
 
     @Test
+    fun `fighter rawDps is identical for mirror-image might-agility builds`() {
+        val ranged = MemberInput("f1", "fighter", 10f, 20f, 3f, 4f, 4f) // might=10, agility=20
+        val melee  = MemberInput("f2", "fighter", 20f, 10f, 3f, 4f, 4f) // swapped
+        assert(kotlin.math.abs(EncounterEngine.rawDps(ranged) - EncounterEngine.rawDps(melee)) < 0.0001f) {
+            "Expected mirror-image might/agility builds to deal equal DPS (symmetric coefficient)"
+        }
+    }
+
+    @Test
+    fun `fighter rawDps uses the resynced FIGHTER_COEF`() {
+        val fighter = MemberInput("f", "fighter", 3f, 5f, 3f, 4f, 4f) // matches party()'s fighter
+        val expected = 3f * 2.33f + 5f * 2.33f  // FIGHTER_COEF = 2.33f
+        val actual = EncounterEngine.rawDps(fighter)
+        assert(kotlin.math.abs(actual - expected) < 0.0001f) { "Expected $expected, got $actual" }
+    }
+
+    @Test
     fun `physFractionByMember is 1 for warden and fighter, 0 for keeper, regardless of armor`() {
         val armoredStage = stage(resolve = 50000, drain = 4f, spike = 30f, spikeIv = 20, phys = 40f)
         val r = EncounterEngine.resolve(armoredStage, party(), seed = 1L)

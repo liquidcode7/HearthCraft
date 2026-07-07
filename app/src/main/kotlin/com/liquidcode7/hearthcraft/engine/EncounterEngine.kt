@@ -591,9 +591,15 @@ object EncounterEngine {
     private const val CAPTAIN_MIGHT_COEF = 2.0f
     private const val CAPTAIN_WILL_COEF  = 2.0f
 
+    // Fighter damage constant — both builds (Ranged: Agility primary/Fate secondary;
+    // Melee: Might primary/Fate secondary) share this single symmetric coefficient so
+    // their exact stat-mirror-image builds produce identical output. Must match
+    // tools/sim/run_sim.js exactly.
+    private const val FIGHTER_COEF = 2.33f
+
     internal fun rawDps(m: MemberInput): Float = when (m.role) {
         "warden"  -> m.might * 1.5f
-        "fighter" -> m.agility * 3f + m.might * 1.2f
+        "fighter" -> m.might * FIGHTER_COEF + m.agility * FIGHTER_COEF
         "keeper"  -> m.will * 2.7f
         "captain" -> m.might * CAPTAIN_MIGHT_COEF + m.will * CAPTAIN_WILL_COEF
         else      -> 0f
