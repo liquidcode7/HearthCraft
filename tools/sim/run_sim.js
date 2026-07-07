@@ -52,8 +52,8 @@ const HOT_HEAL_MUL    = 0.15; // healPerTick = keeper.wil * HOT_HEAL_MUL
 const TRIAGE_HP       = 0.25; // triage fires when target hp < max * TRIAGE_HP
 const TRIAGE_MUL      = 2.0;  // triageHeal = keeper.wil * TRIAGE_MUL
 const TRIAGE_COOLDOWN = 2;    // ticks between triage uses
-const GROUP_HEAL_IV   = 20;   // ticks between group heals
-const GROUP_HEAL_MUL  = 0.5;  // groupHeal per member = keeper.wil * GROUP_HEAL_MUL
+const GROUP_HEAL_IV   = 5;    // ticks between group heals — resynced to match EncounterEngine.kt (was stale at 20)
+const GROUP_HEAL_MUL  = 1.5;  // groupHeal per member = keeper.wil * GROUP_HEAL_MUL — resynced (was stale at 0.5)
 
 // ── Fate streak constants (must match EncounterEngine.kt Task 7) ───────────
 const STREAK_K          = 0.002; // trigger prob per eligible tick = fat * STREAK_K
@@ -208,10 +208,10 @@ function runFight(cfg, verbose) {
       const isStreaking = streak[k] && streak[k].active > 0;
       const mult = isStreaking ? STREAK_MULT : 1;
       let base = 0;
-      if (k==="keeper")        { if (keeperDealtDps) base = M[k].wil * 0.9; }
-      else if (k==="fighter")  base = M[k].agi + M[k].mig * 0.4;
-      else if (k==="warden")   base = M[k].mig * 0.5;
-      else if (k==="captain")  base = M[k].mig * 0.3 + M[k].wil * 0.2;
+      if (k==="keeper")        { if (keeperDealtDps) base = M[k].wil * 2.7; }
+      else if (k==="fighter")  base = M[k].agi * 3 + M[k].mig * 1.2;
+      else if (k==="warden")   base = M[k].mig * 1.5;
+      else if (k==="captain")  base = M[k].mig * 0.9 + M[k].wil * 0.6;
       const contribution = base * mult;
       rawBy[k] += contribution;
       raw += contribution;
