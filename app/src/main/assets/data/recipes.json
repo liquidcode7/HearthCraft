@@ -731,6 +731,206 @@
     "hazardEffect": "hale"
   },
   {
+    "id": "bree_root_pottage",
+    "name": "Bree Root Pottage",
+    "band": "greycloaks",
+    "class": "food",
+    "method": "cook",
+    "tier": 1,
+    "cookLevel": 1,
+    "heroIngredient": "parsnip",
+    "description": "Boiled roots in well-water, plain and filling. What you eat when there's nothing else.",
+    "ingredients": [
+      { "id": "parsnip",         "qty": 2 },
+      { "id": "turnip",          "qty": 1 },
+      { "id": "bree_well_water", "qty": 1 }
+    ],
+    "primaryStat": "vit",
+    "primaryBoost": 2
+  },
+  {
+    "id": "pipeweed_crumble",
+    "name": "Pipeweed Crumble",
+    "band": "greycloaks",
+    "class": "food",
+    "method": "bake",
+    "tier": 2,
+    "cookLevel": 4,
+    "heroIngredient": "pipeweed_leaf",
+    "description": "Rye crumble laced with dried pipe-leaf. Calms the nerves before a hard road.",
+    "ingredients": [
+      { "id": "pipeweed_leaf",   "qty": 2 },
+      { "id": "rye_stalk",       "qty": 1 },
+      { "id": "brandywine_water", "qty": 1 }
+    ],
+    "primaryStat": "wil",
+    "primaryBoost": 4,
+    "secondaryStat": "vit",
+    "secondaryBoost": 2
+  },
+  {
+    "id": "crabapple_blush_tart",
+    "name": "Crabapple Blush Tart",
+    "band": "greycloaks",
+    "class": "food",
+    "method": "bake",
+    "tier": 1,
+    "cookLevel": 1,
+    "heroIngredient": "crabapple",
+    "description": "Tart crabapple and blushcap, quick to bake, quicker to eat.",
+    "ingredients": [
+      { "id": "crabapple",      "qty": 2 },
+      { "id": "blushcap",       "qty": 1 },
+      { "id": "chetwood_spring", "qty": 1 }
+    ],
+    "primaryStat": "agi",
+    "primaryBoost": 2
+  },
+  {
+    "id": "rendered_hearth_pie",
+    "name": "Rendered Hearth Pie",
+    "band": "greycloaks",
+    "class": "food",
+    "method": "bake",
+    "tier": 2,
+    "cookLevel": 5,
+    "heroIngredient": "rendered_fat",
+    "description": "Cheese and rendered fat baked into a heavy crust. Sits like a stone, in a good way.",
+    "ingredients": [
+      { "id": "rendered_fat", "qty": 2 },
+      { "id": "hard_cheese",  "qty": 1 },
+      { "id": "spring_water", "qty": 1 }
+    ],
+    "primaryStat": "mig",
+    "primaryBoost": 4,
+    "secondaryStat": "vit",
+    "secondaryBoost": 2
+  },
+  {
+    "id": "lone_lands_venison",
+    "name": "Lone-Lands Venison",
+    "band": "greycloaks",
+    "class": "food",
+    "method": "cook",
+    "tier": 3,
+    "cookLevel": 10,
+    "heroIngredient": "deer_haunch_dried",
+    "description": "Cured haunch roasted slow over acorn-wood embers. Lone-Lands fare, built for the long watch.",
+    "ingredients": [
+      { "id": "deer_haunch_dried", "qty": 2 },
+      { "id": "chetwood_acorn",    "qty": 1 }
+    ],
+    "primaryStat": "mig",
+    "primaryBoost": 6,
+    "secondaryStat": "vit",
+    "secondaryBoost": 3
+  },
+  {
+    "id": "old_forest_broth",
+    "name": "Old Forest Broth",
+    "band": "greycloaks",
+    "class": "food",
+    "method": "cook",
+    "tier": 1,
+    "cookLevel": 1,
+    "heroIngredient": "old_forest_mushroom",
+    "description": "Deep-wood mushrooms simmered plain. Quiets the mind more than the tongue.",
+    "ingredients": [
+      { "id": "old_forest_mushroom", "qty": 2 },
+      { "id": "pale_fen_cap",        "qty": 1 }
+    ],
+    "primaryStat": "wil",
+    "primaryBoost": 2
+  },
+  {
+    "id": "roadwise_berry_mix",
+    "name": "Roadwise Berry Mix",
+    "band": "greycloaks",
+    "class": "food",
+    "method": "cook",
+    "tier": 2,
+    "cookLevel": 5,
+    "heroIngredient": "thornberry",
+    "description": "Thornberry and road-herb, chewed on the move. Keeps the legs going.",
+    "ingredients": [
+      { "id": "thornberry",    "qty": 2 },
+      { "id": "road_herb",     "qty": 1 },
+      { "id": "moorgrass_seed", "qty": 1 }
+    ],
+    "primaryStat": "agi",
+    "primaryBoost": 4,
+    "secondaryStat": "vit",
+    "secondaryBoost": 2
+  },
+  {
+    "id": "marshwort_tonic",
+    "name": "Marshwort Tonic",
+    "band": "greycloaks",
+    "class": "draught",
+    "method": "brew",
+    "tier": 2,
+    "cookLevel": 4,
+    "heroIngredient": "marshwort",
+    "description": "Bitter marsh-root, boiled thin. Keeps the fever off the Fen-crossers.",
+    "ingredients": [
+      { "id": "marshwort",       "qty": 2 },
+      { "id": "bree_well_water", "qty": 1 }
+    ],
+    "hazardEffect": "hale"
+  },
+  {
+    "id": "wolf_moss_draught",
+    "name": "Wolf-moss Draught",
+    "band": "greycloaks",
+    "class": "draught",
+    "method": "brew",
+    "tier": 2,
+    "cookLevel": 5,
+    "heroIngredient": "wolf_moss",
+    "description": "Grey moss off the wolf-dens, bitter enough to keep any watchman awake.",
+    "ingredients": [
+      { "id": "wolf_moss",       "qty": 2 },
+      { "id": "mountain_sorrel", "qty": 1 }
+    ],
+    "hazardEffect": "alert"
+  },
+  {
+    "id": "weather_hills_grouse",
+    "name": "Weather Hills Grouse",
+    "band": "greycloaks",
+    "class": "food",
+    "method": "cook",
+    "tier": 3,
+    "cookLevel": 10,
+    "heroIngredient": "peat_smoked_grouse",
+    "description": "Smoked grouse off the Hills, mushroom-stewed. Warms even a North Downs wind.",
+    "ingredients": [
+      { "id": "peat_smoked_grouse", "qty": 2 },
+      { "id": "fell_mushroom",      "qty": 1 },
+      { "id": "hillwort",           "qty": 1 }
+    ],
+    "primaryStat": "mig",
+    "primaryBoost": 6,
+    "secondaryStat": "vit",
+    "secondaryBoost": 3
+  },
+  {
+    "id": "crowberry_warmth_draught",
+    "name": "Crowberry Warmth Draught",
+    "band": "greycloaks",
+    "class": "draught",
+    "method": "brew",
+    "tier": 2,
+    "cookLevel": 5,
+    "heroIngredient": "bitter_crowberry",
+    "description": "Sharp crowberries, boiled down bitter. The old Downs-remedy for a bone-deep chill.",
+    "ingredients": [
+      { "id": "bitter_crowberry", "qty": 2 },
+      { "id": "hillwort",         "qty": 1 }
+    ],
+    "hazardEffect": "warmth"
+  },
+  {
     "id": "athelas_poultice",
     "name": "Athelas Poultice",
     "band": "all",

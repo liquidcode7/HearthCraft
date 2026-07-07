@@ -227,6 +227,17 @@ const FOOD_MODEL = (function () {
     { id:"heartflame_broth",  name:"Heartflame Broth",   levelRequired:6,  primaryStat:null,  secondaryStat:null  },
     { id:"restorative_broth", name:"Restorative Broth",  levelRequired:8,  primaryStat:null,  secondaryStat:null  },
     { id:"athelas_infusion",  name:"Athelas Infusion",   levelRequired:12, primaryStat:null,  secondaryStat:null  },
+    { id:"bree_root_pottage",        name:"Bree Root Pottage",        levelRequired:1,  primaryStat:"vit", secondaryStat:null  },
+    { id:"pipeweed_crumble",         name:"Pipeweed Crumble",         levelRequired:4,  primaryStat:"wil", secondaryStat:"vit" },
+    { id:"crabapple_blush_tart",     name:"Crabapple Blush Tart",     levelRequired:1,  primaryStat:"agi", secondaryStat:null  },
+    { id:"rendered_hearth_pie",      name:"Rendered Hearth Pie",      levelRequired:5,  primaryStat:"mig", secondaryStat:"vit" },
+    { id:"lone_lands_venison",       name:"Lone-Lands Venison",       levelRequired:10, primaryStat:"mig", secondaryStat:"vit" },
+    { id:"old_forest_broth",         name:"Old Forest Broth",         levelRequired:1,  primaryStat:"wil", secondaryStat:null  },
+    { id:"roadwise_berry_mix",       name:"Roadwise Berry Mix",       levelRequired:5,  primaryStat:"agi", secondaryStat:"vit" },
+    { id:"marshwort_tonic",          name:"Marshwort Tonic",          levelRequired:4,  primaryStat:null,  secondaryStat:null  },
+    { id:"wolf_moss_draught",        name:"Wolf-moss Draught",        levelRequired:5,  primaryStat:null,  secondaryStat:null  },
+    { id:"weather_hills_grouse",     name:"Weather Hills Grouse",     levelRequired:10, primaryStat:"mig", secondaryStat:"vit" },
+    { id:"crowberry_warmth_draught", name:"Crowberry Warmth Draught", levelRequired:5,  primaryStat:null,  secondaryStat:null  },
   ];
   function flFromCookLevel(recipeId, cookLevel) {
     const r = RECIPES.find(r => r.id === recipeId);
