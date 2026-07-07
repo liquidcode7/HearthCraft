@@ -251,7 +251,7 @@ class EncounterEngineTest {
     }
 
     @Test
-    fun `captain HoT fires periodically, heals, and targets the lowest-HP standing ally`() {
+    fun `captain's burst heal fires on a cooldown as a single visible chunk, not a multi-tick trickle`() {
         // Captain + a lower-vitality ally: equal flat drain per standing member makes the
         // ally's HP fraction fall faster than Captain's, so the lowest-HP target is
         // unambiguous — no RNG needed to reason about who gets targeted.
@@ -261,58 +261,98 @@ class EncounterEngineTest {
         val r = EncounterEngine.resolve(gentleStage, listOf(captain, ally), seed = 1L)
 
         assert((r.healingByMember["captain"] ?: 0f) > 0f) {
-            "Expected Captain to have delivered some healing via their HoT over the fight"
+            "Expected Captain to have delivered some healing via their burst heal over the fight"
         }
         assert((r.damageByMember["captain"] ?: 0f) > 0f) {
-            "Expected Captain to have also dealt damage — the HoT must not cost their DPS action"
+            "Expected Captain to have also dealt damage — the burst heal must not cost their DPS action"
         }
+
+        // Reconstruct per-tick Captain healing deltas from the cumulative snapshots so we
+        // can see the shape of the healing: one big chunk on a cooldown, not a trickle
+        // spread across several consecutive ticks.
+        val castDeltas = mutableListOf<Pair<Int, Float>>()
+        var prevCum = 0f
+        r.snapshots.forEachIndexed { i, s ->
+            val cum = s.cumHeal["captain"] ?: 0f
+            val delta = cum - prevCum
+            if (delta > 0f) castDeltas.add(i to delta)
+            prevCum = cum
+        }
+        assert(castDeltas.isNotEmpty()) { "Expected Captain's burst heal to have cast at least once" }
+
+        // Casts are separated by a real cooldown gap — never back-to-back ticks, which is
+        // what a multi-tick trickle would look like instead of an instant burst.
+        for (i in 0 until castDeltas.size - 1) {
+            val gap = castDeltas[i + 1].first - castDeltas[i].first
+            assert(gap > 1) {
+                "Expected a cooldown gap between casts, but two landed on consecutive ticks " +
+                    "${castDeltas[i].first} and ${castDeltas[i + 1].first} — that looks like a trickle, not a burst"
+            }
+        }
+
+        // Each cast delivers a real, visible chunk — comfortably above any plausible
+        // per-tick trickle amount (the old shipped trickle was will × 0.08/tick).
+        for ((tick, delta) in castDeltas) {
+            assert(delta > captain.will * 0.3f) {
+                "Expected cast at tick $tick to deliver a visible burst, got $delta (captain.will=${captain.will})"
+            }
+        }
+
         val everTargetedAlly = r.snapshots.any { "ally" in it.hotTargets }
         assert(everTargetedAlly) {
-            "Expected Captain's HoT to have targeted the lower-vitality ally at some point"
+            "Expected Captain's burst heal to have targeted the lower-vitality ally at some point"
         }
     }
 
     @Test
-    fun `captain HoT and keeper HoT stack on the same target instead of one overriding the other`() {
-        // Keeper (high vitality) + Captain (low vitality), both fully healed up almost
-        // immediately (heal throughput outpaces this drain at this stat scale), which keeps
-        // both of them tied at HP fraction 1.0 for virtually the whole fight. Both Keeper's
-        // own HoT-slot-fill (`standing().filter{...}.minByOrNull{fraction}`) and Captain's
-        // HoT retarget (`standing().minByOrNull{fraction}`) break that fraction tie the same
-        // way — by list order/stability — so both independently and repeatedly converge on
-        // "keeper" (first in the party list) as their target. Keeper's own two HoT slots
-        // never exclude Captain's target (or vice versa), so nothing stops them landing on
-        // the same member at once. Proof: a tick where hotTargets is the *singleton* {keeper}
-        // (no other member is under any HoT that tick) while both Keeper's and Captain's
-        // cumulative healing increase — meaning both of them are actively ticking on keeper
-        // simultaneously, additively, with neither blocking the other.
+    fun `captain's burst heal and keeper's HoT stack on the same target instead of one overriding the other`() {
+        // 3-member party: keeper, captain, fighter. Fighter's vitality (1) is far below
+        // keeper's (8) and captain's (7), so under the engine's flat per-standing-member
+        // drain (same absolute HP subtracted from every standing member each tick — see
+        // `drainPerMember`), fighter's much smaller maxHp (30 + vitality×32 = 62, vs 286
+        // and 254) means the same flat drain is a far bigger fractional hit to fighter
+        // every tick. That keeps fighter's HP fraction unambiguously, persistently the
+        // lowest for virtually the whole fight — a real, durable vitality gap, not a
+        // coincidental tie broken by list order (which is what the old 2-member
+        // keeper-only version of this test relied on). Both Keeper's own HoT-slot-fill
+        // (`standing().filter{...}.minByOrNull{fraction}`) and Captain's burst-heal
+        // retarget (`standing().minByOrNull{fraction}`) independently converge on
+        // "fighter" on their own separate cooldowns, giving a wide, robust window of
+        // overlap rather than a rare coincidence.
+        //
+        // Empirically observed (this exact scenario, seed = 1L, 1500-tick fight, party
+        // survives throughout): 112 ticks where "fighter" is in hotTargets and both
+        // Keeper's and Captain's cumulative healing increase in the same tick — i.e.
+        // both are actively landing on fighter simultaneously, additively, with neither
+        // blocking the other. Threshold below (40) leaves a wide margin under that.
         val keeper = MemberInput("keeper", "keeper", 2f, 3f, 8f, 5f, 4f)
-        val captain = MemberInput("captain", "captain", 3f, 2f, 2f, 5f, 4f)
-        val gentleStage = stage(resolve = 500000, drain = 4f, spike = 0f, spikeIv = 10000)
-        val r = EncounterEngine.resolve(gentleStage, listOf(keeper, captain), seed = 1L)
+        val captain = MemberInput("captain", "captain", 3f, 2f, 7f, 5f, 4f)
+        val fighter = MemberInput("fighter", "fighter", 3f, 5f, 1f, 4f, 4f)
+        val gentleStage = stage(resolve = 500000, drain = 9f, spike = 0f, spikeIv = 10000)
+        val r = EncounterEngine.resolve(gentleStage, listOf(keeper, captain, fighter), seed = 1L)
 
         assert((r.healingByMember["keeper"] ?: 0f) > 0f) {
-            "Expected Keeper to have delivered healing even with Captain's HoT also active"
+            "Expected Keeper to have delivered healing even with Captain's burst heal also active"
         }
         assert((r.healingByMember["captain"] ?: 0f) > 0f) {
-            "Expected Captain to have delivered healing via their HoT even with Keeper active"
+            "Expected Captain to have delivered healing via their burst heal even with Keeper active"
         }
 
-        var sawStackedHealTick = false
+        var stackedTicks = 0
         for (i in 1 until r.snapshots.size) {
             val prev = r.snapshots[i - 1]
             val cur = r.snapshots[i]
             val keeperDelta = (cur.cumHeal["keeper"] ?: 0f) - (prev.cumHeal["keeper"] ?: 0f)
             val captainDelta = (cur.cumHeal["captain"] ?: 0f) - (prev.cumHeal["captain"] ?: 0f)
-            if (cur.hotTargets == setOf("keeper") && keeperDelta > 0f && captainDelta > 0f) {
-                sawStackedHealTick = true
-                break
+            if ("fighter" in cur.hotTargets && keeperDelta > 0f && captainDelta > 0f) {
+                stackedTicks++
             }
         }
-        assert(sawStackedHealTick) {
-            "Expected at least one tick where Keeper's own HoT and Captain's HoT were both " +
-                "landing on the same sole target (keeper) at once, each still delivering heal " +
-                "— i.e. stacking rather than one overriding or blocking the other"
+        assert(stackedTicks >= 40) {
+            "Expected a comfortable minimum of ticks where Keeper's own HoT and Captain's " +
+                "burst heal were both landing on the shared target (fighter) at once, each " +
+                "still delivering heal — i.e. stacking rather than one overriding or " +
+                "blocking the other. Got $stackedTicks."
         }
     }
 }

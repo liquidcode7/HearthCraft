@@ -101,12 +101,21 @@ class BalanceHarness {
 
     @Test
     fun `neekerbreekers win rate increases monotonically from Crude to Pristine at level 1`() {
+        // Task 5 (Captain burst-heal-on-cooldown) pushed the top grades on this easy
+        // encounter right up against a 100% win-rate ceiling, where a single trial
+        // flipping win/loss (e.g. 299/300 vs 300/300) trips this strict >= comparison as
+        // statistical noise, not real non-monotonicity -- same reasoning as the higher
+        // trial count already used by the draught-tier variant of the goblins encounter
+        // below. 3000 trials tightens the standard error enough for adjacent near-ceiling
+        // grades to compare reliably. Verified via git stash that this passed before
+        // Task 5's change at trials=300, i.e. this is a real ceiling effect from more
+        // total party healing, not a pre-existing flake.
         println("=== greycloaks_neekerbreekers (easy) @ band level 1 ===")
-        val noFoodRate = winRate("greycloaks_neekerbreekers", buildParty(level = 1))
+        val noFoodRate = winRate("greycloaks_neekerbreekers", buildParty(level = 1), trials = 3000)
         println("  No food: ${(noFoodRate * 100).toInt()}%")
         val rates = Grade.entries.map { grade ->
             val party = applyFood(buildParty(level = 1), grade)
-            val rate = winRate("greycloaks_neekerbreekers", party)
+            val rate = winRate("greycloaks_neekerbreekers", party, trials = 3000)
             println("  ${grade.displayName}: ${(rate * 100).toInt()}%")
             rate
         }
@@ -139,12 +148,18 @@ class BalanceHarness {
 
     @Test
     fun `goblins win rate increases monotonically from Crude to Pristine at level 5`() {
+        // Same ceiling-noise reasoning as the neekerbreekers test above: Task 5's Captain
+        // burst-heal-on-cooldown raised total party healing enough that adjacent grades
+        // near the top of this curve landed within one trial's flip of each other at
+        // trials=300 (e.g. FINE 0.99 vs COMMON 0.99333). 3000 trials tightens the
+        // standard error enough for adjacent near-ceiling grades to compare reliably.
+        // Verified via git stash that this passed pre-Task-5 at trials=300.
         println("=== greycloaks_goblins (hard) @ band level 5, no draught ===")
-        val noFoodRate = winRate("greycloaks_goblins", buildParty(level = 5))
+        val noFoodRate = winRate("greycloaks_goblins", buildParty(level = 5), trials = 3000)
         println("  No food: ${(noFoodRate * 100).toInt()}%")
         val rates = Grade.entries.map { grade ->
             val party = applyFood(buildParty(level = 5), grade)
-            val rate = winRate("greycloaks_goblins", party)
+            val rate = winRate("greycloaks_goblins", party, trials = 3000)
             println("  ${grade.displayName}: ${(rate * 100).toInt()}%")
             rate
         }

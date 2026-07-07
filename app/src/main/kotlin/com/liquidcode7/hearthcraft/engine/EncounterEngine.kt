@@ -26,12 +26,14 @@ private const val TRIAGE_COOLDOWN = 2      // 1-tick minimum gap between triage 
 private const val GROUP_HEAL_IV   = 5      // ticks between group heals
 private const val GROUP_HEAL_MUL  = 1.5f   // groupHeal per member = keeper.will × GROUP_HEAL_MUL
 
-// Captain HoT constants — a minor healing utility layered on top of Captain's DPS,
-// deliberately smaller/rarer than Keeper's kit (not a second healer). Free: firing this
-// does not consume Captain's DPS action for the tick. Must match tools/sim/run_sim.js exactly.
-private const val CAPTAIN_HOT_INTERVAL = 9     // ticks between HoT re-targets
-private const val CAPTAIN_HOT_DURATION = 6     // ticks per HoT application
-private const val CAPTAIN_HOT_MUL      = 0.08f // healPerTick = captain.will × CAPTAIN_HOT_MUL
+// Captain burst-heal constants — a minor healing utility layered on top of Captain's DPS,
+// deliberately smaller/rarer than Keeper's kit (not a second healer). A single instant
+// heal on a cooldown rather than a multi-tick HoT — a per-tick trickle this small is
+// imperceptible, so it's delivered as one visible chunk instead. Free: firing this does
+// not consume Captain's DPS action for the tick. Must match tools/sim/run_sim.js exactly.
+private const val CAPTAIN_HEAL_INTERVAL    = 12    // ticks between casts
+private const val CAPTAIN_HEAL_MUL         = 1.0f  // heal = captain.will × CAPTAIN_HEAL_MUL, delivered as a single burst
+private const val CAPTAIN_HEAL_FLASH_TICKS = 5     // ticks the heal badge stays visible after the instant burst (mirrors BLACK_ARROW_FLASH_TICKS/GRACE_FLASH_TICKS — same "one-shot effect, no natural window" precedent)
 
 // Streak constants — must match tools/sim/run_sim.js exactly
 private const val STREAK_K          = 0.002f // trigger prob per tick = fate × STREAK_K
@@ -210,11 +212,14 @@ object EncounterEngine {
         var triageCooldown = 0
         var groupHealTimer = GROUP_HEAL_IV
 
-        // Captain HoT state — a single independent slot, fully separate from Keeper's
-        // two (can coincide on the same target; that's fine, same as Keeper's own two
-        // slots already being independent of each other).
-        var captainHot: HoT? = null
-        var captainHotTimer = CAPTAIN_HOT_INTERVAL
+        // Captain burst-heal state — fully independent of Keeper's two HoT slots (can
+        // coincide on the same target; that's fine, same as Keeper's own two slots
+        // already being independent of each other). captainHealFlashTargetId/Ticks are
+        // purely cosmetic — they keep the last burst's target visible in hotTargets for
+        // a few ticks after an instant cast, mirroring the Black Arrow/Grace flash precedent.
+        var captainHealCooldown = CAPTAIN_HEAL_INTERVAL
+        var captainHealFlashTargetId: String? = null
+        var captainHealFlashTicks = 0
 
         // Per-member streak state
         data class Streak(var refractory: Int = 0, var active: Int = 0)
@@ -247,7 +252,7 @@ object EncounterEngine {
             cumHeal = healingAcc.toMap(),
             memberReserve = party.associate { it.input.id to it.reserve },
             streakActive = party.filter { (streaks[it.input.id]?.active ?: 0) > 0 }.map { it.input.id }.toSet(),
-            hotTargets = setOfNotNull(hot1?.targetId, hot2?.targetId, captainHot?.targetId),
+            hotTargets = setOfNotNull(hot1?.targetId, hot2?.targetId, if (captainHealFlashTicks > 0) captainHealFlashTargetId else null),
             keeperHealing = keeperHealingThisTick,
             hornActive = hornWindow > 0,
             dawnActive = dawnWindow > 0,
@@ -298,26 +303,23 @@ object EncounterEngine {
                 if (hot2?.ticksLeft == 0) hot2 = null
             }
 
-            // ── Captain HoT (fixed-interval proc, retargets to current lowest-HP standing
-            // member; free — does not cost Captain's DPS action this tick) ────────────────
+            // ── Captain burst heal (instant, fixed-cooldown proc that targets the current
+            // lowest-HP standing member; free — does not cost Captain's DPS action this
+            // tick). A single visible chunk rather than a multi-tick HoT — see constants
+            // comment above. captainHealFlashTicks just keeps the target visible in the
+            // UI badge for a few ticks after the instant cast. ─────────────────────────
+            if (captainHealFlashTicks > 0) captainHealFlashTicks--
             if (captain != null && !captain.grievous && captain.hp > 0) {
-                captainHot?.let { hot ->
-                    val target = party.find { it.input.id == hot.targetId }
-                    if (target != null && !target.grievous && target.hp > 0) {
-                        val delivered = applyHeal(target, hot.healPerTick * target.recoveryBuffMult)
-                        healingAcc[captain.input.id] = (healingAcc[captain.input.id] ?: 0f) + delivered
-                    }
-                    hot.ticksLeft--
-                }
-                if (captainHot?.ticksLeft == 0) captainHot = null
-
-                captainHotTimer--
-                if (captainHotTimer <= 0) {
+                captainHealCooldown--
+                if (captainHealCooldown <= 0) {
                     val target = standing().minByOrNull { it.hp / it.maxHp }
                     if (target != null) {
-                        captainHot = HoT(target.input.id, CAPTAIN_HOT_DURATION, captain.input.will * CAPTAIN_HOT_MUL)
+                        val delivered = applyHeal(target, captain.input.will * CAPTAIN_HEAL_MUL * target.recoveryBuffMult)
+                        healingAcc[captain.input.id] = (healingAcc[captain.input.id] ?: 0f) + delivered
+                        captainHealFlashTargetId = target.input.id
+                        captainHealFlashTicks = CAPTAIN_HEAL_FLASH_TICKS
                     }
-                    captainHotTimer = CAPTAIN_HOT_INTERVAL
+                    captainHealCooldown = CAPTAIN_HEAL_INTERVAL
                 }
             }
 
