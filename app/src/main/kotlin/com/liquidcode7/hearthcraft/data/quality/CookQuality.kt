@@ -5,12 +5,6 @@ import kotlin.math.roundToInt
 
 object CookQuality {
 
-    // TODO(tuning): gradeStep magnitudes s1..s4 are PLACEHOLDERS.
-    // Wes / the sim set the real additive steps. Crude = 0 is invariant.
-    private val GRADE_STEPS = floatArrayOf(0f, 1f, 2f, 3f, 5f)
-
-    fun gradeStep(grade: Int): Float = GRADE_STEPS.getOrElse(grade) { 0f }
-
     // TODO(tuning): cook-ceiling table is a PLACEHOLDER.
     // The exact delta thresholds (levels above unlock needed per grade step) are for Wes/sim.
     fun cookCeiling(cookLevel: Int, unlockLevel: Int): Int {

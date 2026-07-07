@@ -53,24 +53,6 @@ class QualityTest {
         assertTrue("expected >70% Crude+Common at lv1, got $lowGradeShare", lowGradeShare > 0.70)
     }
 
-    // ── gradeStep ────────────────────────────────────────────────────────────
-
-    @Test fun `gradeStep Crude is exactly zero`() {
-        assertEquals(0f, CookQuality.gradeStep(Grade.CRUDE))
-    }
-
-    @Test fun `gradeStep is non-negative for all grades`() {
-        for (g in Grade.CRUDE..Grade.PRISTINE) {
-            assertTrue("gradeStep($g) was negative", CookQuality.gradeStep(g) >= 0f)
-        }
-    }
-
-    @Test fun `gradeStep is monotonically non-decreasing`() {
-        for (g in Grade.CRUDE until Grade.PRISTINE) {
-            assertTrue(CookQuality.gradeStep(g + 1) >= CookQuality.gradeStep(g))
-        }
-    }
-
     // ── cookCeiling ──────────────────────────────────────────────────────────
 
     @Test fun `cookCeiling returns value in grade range`() {
