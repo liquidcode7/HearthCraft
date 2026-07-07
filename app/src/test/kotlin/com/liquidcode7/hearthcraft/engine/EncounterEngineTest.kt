@@ -38,9 +38,26 @@ class EncounterEngineTest {
     @Test
     fun `physicalFraction for captain is stat-weighted between might and will terms`() {
         val captain = MemberInput("c", "captain", 3f, 2f, 4f, 5f, 4f)
-        // physTerm = 3*0.9 = 2.7, magicTerm = 5*0.6 = 3.0, total = 5.7
-        val expected = (3f * 0.9f) / (3f * 0.9f + 5f * 0.6f)
+        // CAPTAIN_MIGHT_COEF = CAPTAIN_WILL_COEF = 2.0f: physTerm = 3*2.0 = 6.0, magicTerm = 5*2.0 = 10.0, total = 16.0
+        val expected = (3f * 2.0f) / (3f * 2.0f + 5f * 2.0f)
         val actual = EncounterEngine.physicalFraction(captain)
+        assert(kotlin.math.abs(actual - expected) < 0.0001f) { "Expected $expected, got $actual" }
+    }
+
+    @Test
+    fun `captain rawDps is symmetric between might and will`() {
+        val mightHeavy = MemberInput("c1", "captain", 10f, 2f, 4f, 3f, 4f)
+        val willHeavy  = MemberInput("c2", "captain", 3f, 2f, 4f, 10f, 4f)
+        assert(kotlin.math.abs(EncounterEngine.rawDps(mightHeavy) - EncounterEngine.rawDps(willHeavy)) < 0.0001f) {
+            "Expected might=10/will=3 and might=3/will=10 captains to deal equal DPS (symmetric coefficients)"
+        }
+    }
+
+    @Test
+    fun `captain rawDps uses the buffed symmetric coefficients`() {
+        val captain = MemberInput("c", "captain", 3f, 2f, 4f, 5f, 4f)
+        val expected = 3f * 2.0f + 5f * 2.0f  // CAPTAIN_MIGHT_COEF = CAPTAIN_WILL_COEF = 2.0f
+        val actual = EncounterEngine.rawDps(captain)
         assert(kotlin.math.abs(actual - expected) < 0.0001f) { "Expected $expected, got $actual" }
     }
 
@@ -165,8 +182,11 @@ class EncounterEngineTest {
     @Test
     fun `high fate band wins more often than low fate band on same encounter`() {
         // Marginal encounter at the current small stat scale, tuned so streak/
-        // Inspiration Fate effects show real differentiation.
-        val midStage = stage(resolve = 70000, drain = 4f, spike = 25f, spikeIv = 12)
+        // Inspiration Fate effects show real differentiation. resolve bumped from
+        // 70000 -> 89000 after Captain's DPS buff (0.9/0.6 -> 2.0/2.0 coefficients)
+        // raised overall party DPS enough that 70000 no longer discriminated
+        // (both fate bands hit the win-rate ceiling).
+        val midStage = stage(resolve = 89000, drain = 4f, spike = 25f, spikeIv = 12)
         // Low fate: all members fate=2
         val lowFate = party().map { it.copy(fate = 2f) }
         // High fate: all members fate=20
@@ -184,8 +204,11 @@ class EncounterEngineTest {
 
     @Test
     fun `food stat boost increases DPS and improves outcome`() {
-        // Marginal encounter where stat boosts make a measurable difference
-        val midStage = stage(resolve = 78000, drain = 4f, spike = 25f, spikeIv = 12)
+        // Marginal encounter where stat boosts make a measurable difference. resolve
+        // bumped from 78000 -> 100000 after Captain's DPS buff (0.9/0.6 -> 2.0/2.0
+        // coefficients) raised overall party DPS enough that 78000 no longer
+        // discriminated (both the boosted and unboosted band hit the win-rate ceiling).
+        val midStage = stage(resolve = 100000, drain = 4f, spike = 25f, spikeIv = 12)
         // No food bonus
         var winsNoFood = 0
         repeat(200) { seed ->

@@ -585,11 +585,17 @@ object EncounterEngine {
 
     private fun morale(m: MemberInput): Float = (30f + m.vitality * 32f).roundToInt().toFloat()
 
-    private fun rawDps(m: MemberInput): Float = when (m.role) {
+    // Captain damage-split constants — equal by design so the physical/magical split
+    // (physicalFraction, below) is purely stat-driven with no fixed lean. Must match
+    // tools/sim/run_sim.js exactly.
+    private const val CAPTAIN_MIGHT_COEF = 2.0f
+    private const val CAPTAIN_WILL_COEF  = 2.0f
+
+    internal fun rawDps(m: MemberInput): Float = when (m.role) {
         "warden"  -> m.might * 1.5f
         "fighter" -> m.agility * 3f + m.might * 1.2f
         "keeper"  -> m.will * 2.7f
-        "captain" -> m.might * 0.9f + m.will * 0.6f
+        "captain" -> m.might * CAPTAIN_MIGHT_COEF + m.will * CAPTAIN_WILL_COEF
         else      -> 0f
     }
 
@@ -601,8 +607,8 @@ object EncounterEngine {
         "warden", "fighter" -> 1f
         "keeper" -> 0f
         "captain" -> {
-            val physTerm = m.might * 0.9f
-            val magicTerm = m.will * 0.6f
+            val physTerm = m.might * CAPTAIN_MIGHT_COEF
+            val magicTerm = m.will * CAPTAIN_WILL_COEF
             val total = physTerm + magicTerm
             if (total > 0f) physTerm / total else 1f
         }
