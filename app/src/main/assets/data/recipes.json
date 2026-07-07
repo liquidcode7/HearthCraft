@@ -123,9 +123,9 @@
       { "id": "onion",        "qty": 1 }
     ],
     "primaryStat": "mig",
-    "primaryBoost": 3,
+    "primaryBoost": 4,
     "secondaryStat": "vit",
-    "secondaryBoost": 1
+    "secondaryBoost": 2
   },
   {
     "id": "chetwood_rabbit_roast",
@@ -143,9 +143,9 @@
       { "id": "common_thyme",   "qty": 1 }
     ],
     "primaryStat": "agi",
-    "primaryBoost": 3,
+    "primaryBoost": 4,
     "secondaryStat": "mig",
-    "secondaryBoost": 1
+    "secondaryBoost": 2
   },
   {
     "id": "field_and_fen_potage",
@@ -164,9 +164,9 @@
       { "id": "pale_cap",        "qty": 1 }
     ],
     "primaryStat": "vit",
-    "primaryBoost": 3,
+    "primaryBoost": 4,
     "secondaryStat": "wil",
-    "secondaryBoost": 1
+    "secondaryBoost": 2
   },
   {
     "id": "honey_oat_cake",
@@ -184,9 +184,9 @@
       { "id": "sorrel",       "qty": 1 }
     ],
     "primaryStat": "wil",
-    "primaryBoost": 3,
+    "primaryBoost": 4,
     "secondaryStat": "agi",
-    "secondaryBoost": 1
+    "secondaryBoost": 2
   },
   {
     "id": "bilberry_tonic",
@@ -238,9 +238,9 @@
       { "id": "leek",               "qty": 1 }
     ],
     "primaryStat": "mig",
-    "primaryBoost": 4,
+    "primaryBoost": 6,
     "secondaryStat": "agi",
-    "secondaryBoost": 2
+    "secondaryBoost": 3
   },
   {
     "id": "ember_porridge",
@@ -273,9 +273,9 @@
       { "id": "pale_cap",  "qty": 1 }
     ],
     "primaryStat": "mig",
-    "primaryBoost": 4,
+    "primaryBoost": 8,
     "secondaryStat": "vit",
-    "secondaryBoost": 2
+    "secondaryBoost": 4
   },
   {
     "id": "heartflame_broth",
@@ -399,9 +399,9 @@
       { "id": "lhun_sage",     "qty": 1 }
     ],
     "primaryStat": "mig",
-    "primaryBoost": 3,
+    "primaryBoost": 4,
     "secondaryStat": "vit",
-    "secondaryBoost": 1
+    "secondaryBoost": 2
   },
   {
     "id": "silver_leek_omelette",
@@ -419,9 +419,9 @@
       { "id": "tidal_cress",  "qty": 1 }
     ],
     "primaryStat": "agi",
-    "primaryBoost": 3,
+    "primaryBoost": 4,
     "secondaryStat": "wil",
-    "secondaryBoost": 1
+    "secondaryBoost": 2
   },
   {
     "id": "fennel_and_cheese_bake",
@@ -439,9 +439,9 @@
       { "id": "pale_waybread_grain",  "qty": 1 }
     ],
     "primaryStat": "vit",
-    "primaryBoost": 3,
+    "primaryBoost": 4,
     "secondaryStat": "wil",
-    "secondaryBoost": 1
+    "secondaryBoost": 2
   },
   {
     "id": "moonpetal_tisane",
@@ -582,9 +582,9 @@
       { "id": "stone_root",        "qty": 1 }
     ],
     "primaryStat": "mig",
-    "primaryBoost": 3,
+    "primaryBoost": 4,
     "secondaryStat": "vit",
-    "secondaryBoost": 1
+    "secondaryBoost": 2
   },
   {
     "id": "goat_and_ironfoot",
@@ -602,9 +602,9 @@
       { "id": "deep_sage",       "qty": 1 }
     ],
     "primaryStat": "agi",
-    "primaryBoost": 3,
+    "primaryBoost": 4,
     "secondaryStat": "mig",
-    "secondaryBoost": 1
+    "secondaryBoost": 2
   },
   {
     "id": "deepcap_and_malt_loaf",
@@ -623,9 +623,9 @@
       { "id": "malt_syrup",    "qty": 1 }
     ],
     "primaryStat": "vit",
-    "primaryBoost": 3,
+    "primaryBoost": 4,
     "secondaryStat": "mig",
-    "secondaryBoost": 1
+    "secondaryBoost": 2
   },
   {
     "id": "stonewort_cure",

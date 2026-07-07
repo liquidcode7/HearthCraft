@@ -34,11 +34,11 @@ private val GATHER_DISTRIBUTION: Array<IntArray> = arrayOf(
  * tuned via the balance harness.
  */
 private val GRADE_MULTIPLIER = floatArrayOf(
-    0.7f,  // CRUDE    (ordinal 0)
-    0.85f, // COMMON   (ordinal 1)
+    0.8f,  // CRUDE    (ordinal 0)
+    0.9f,  // COMMON   (ordinal 1)
     1.0f,  // FINE     (ordinal 2) — baseline
-    1.3f,  // SUPERB   (ordinal 3)
-    1.7f,  // PRISTINE (ordinal 4)
+    1.15f, // SUPERB   (ordinal 3)
+    1.3f,  // PRISTINE (ordinal 4)
 )
 
 /**

@@ -171,9 +171,15 @@ class BalanceHarness {
                 println("    $label draught: ${(rate * 100).toInt()}%")
             }
         }
+        // Higher trial count than the other harness tests: at n=300 this
+        // assertion's margin between adjacent draught tiers can be as little
+        // as 1-2 wins (well within a single standard error, ~1.65pp at
+        // p~0.91, n=300), which is statistical noise rather than a real
+        // non-monotonicity. 3000 trials tightens the standard error enough
+        // (~0.5pp) for the assertion to reflect the true underlying relationship.
         val rates = draughtTiers.map { (potency, label) ->
             val party = applyDraught(applyFood(buildParty(level = 5), Grade.COMMON), potency)
-            val rate = winRate("greycloaks_goblins", party)
+            val rate = winRate("greycloaks_goblins", party, trials = 3000)
             rate
         }
         for (i in 1..rates.lastIndex) {
