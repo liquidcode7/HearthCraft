@@ -54,6 +54,8 @@ const TRIAGE_MUL      = 2.0;  // triageHeal = keeper.wil * TRIAGE_MUL
 const TRIAGE_COOLDOWN = 2;    // ticks between triage uses
 const GROUP_HEAL_IV   = 5;    // ticks between group heals — resynced to match EncounterEngine.kt (was stale at 20)
 const GROUP_HEAL_MUL  = 1.5;  // groupHeal per member = keeper.wil * GROUP_HEAL_MUL — resynced (was stale at 0.5)
+const CAPTAIN_HEAL_INTERVAL = 12;   // ticks between Captain's burst-heal casts — must match EncounterEngine.kt
+const CAPTAIN_HEAL_MUL      = 1.0;  // heal = captain.wil * CAPTAIN_HEAL_MUL, delivered as a single instant burst
 
 // ── Fate streak constants (must match EncounterEngine.kt Task 7) ───────────
 const STREAK_K          = 0.002; // trigger prob per eligible tick = fat * STREAK_K
@@ -180,6 +182,9 @@ function runFight(cfg, verbose) {
   let triageCooldown = 0;
   let groupHealTimer = GROUP_HEAL_IV;
 
+  // Captain burst-heal state — fully independent of Keeper's two HoT slots
+  let captainHealCooldown = CAPTAIN_HEAL_INTERVAL;
+
   const active    = () => ORDER.filter(k => !M[k].grievous && !M[k].broken);
   const standing  = () => active().filter(k => M[k].hp > 0);
   const inTrouble = () => active().filter(k => M[k].hp / M[k].max < 0.35).length;
@@ -187,7 +192,7 @@ function runFight(cfg, verbose) {
 
   // ── metrics accumulators (Task: sim metrics overhaul — observation only) ──
   const dmgByMember       = { warden:0, fighter:0, keeper:0, captain:0 };
-  const healByType        = { hot:0, triage:0, group:0, rescue:0 };
+  const healByType        = { hot:0, triage:0, group:0, rescue:0, captainHeal:0 };
   const streakCount       = { warden:0, fighter:0, keeper:0, captain:0 };
   let streakBonusDmg      = 0;   // extra damage attributable to the streak 1.5x multiplier
   let streakBonusHeal     = 0;   // extra healing attributable to the streak 1.5x multiplier
@@ -209,9 +214,9 @@ function runFight(cfg, verbose) {
       const mult = isStreaking ? STREAK_MULT : 1;
       let base = 0;
       if (k==="keeper")        { if (keeperDealtDps) base = M[k].wil * 2.7; }
-      else if (k==="fighter")  base = M[k].agi * 3 + M[k].mig * 1.2;
+      else if (k==="fighter")  base = M[k].agi * 2.33 + M[k].mig * 2.33;
       else if (k==="warden")   base = M[k].mig * 1.5;
-      else if (k==="captain")  base = M[k].mig * 0.9 + M[k].wil * 0.6;
+      else if (k==="captain")  base = M[k].mig * 2.0 + M[k].wil * 2.0;
       const contribution = base * mult;
       rawBy[k] += contribution;
       raw += contribution;
@@ -265,6 +270,21 @@ function runFight(cfg, verbose) {
       }
       if (hot1 && hot1.ticksLeft <= 0) hot1 = null;
       if (hot2 && hot2.ticksLeft <= 0) hot2 = null;
+    }
+
+    // ── Captain burst heal (instant, fixed-cooldown proc that targets the current
+    // lowest-HP standing member; free — does not cost Captain's DPS action this tick) ──
+    if (!M.captain.grievous && M.captain.hp > 0 && !M.captain.stunned) {
+      captainHealCooldown--;
+      if (captainHealCooldown <= 0) {
+        const healTarget = standing().sort((a,b) => (M[a].hp/M[a].max) - (M[b].hp/M[b].max))[0];
+        if (healTarget) {
+          const healAmt = M.captain.wil * CAPTAIN_HEAL_MUL;
+          M[healTarget].hp = Math.min(M[healTarget].max, M[healTarget].hp + healAmt);
+          healByType.captainHeal += healAmt;
+        }
+        captainHealCooldown = CAPTAIN_HEAL_INTERVAL;
+      }
     }
     if (windows.dawn > 0) windows.dawn--;
     if (windows.horn > 0) { windows.horn--; }
@@ -608,7 +628,7 @@ function runMany(cfg, n, verbose) {
 
   // ── metrics aggregates ────────────────────────────────────────────────────
   const totalDmgByMember   = Object.fromEntries(ORDER.map(k=>[k,0]));
-  const totalHealByType    = { hot:0, triage:0, group:0, rescue:0 };
+  const totalHealByType    = { hot:0, triage:0, group:0, rescue:0, captainHeal:0 };
   const totalStreakCount   = Object.fromEntries(ORDER.map(k=>[k,0]));
   let totalStreakBonusDmg=0, totalStreakBonusHeal=0, totalHotActiveTicks=0;
   let totalInspGraceHeal=0, totalInspHornRedirect=0, totalInspDawnHeal=0, totalInspDawnBonusDps=0;
@@ -634,7 +654,7 @@ function runMany(cfg, n, verbose) {
 
     const m = r.metrics;
     ORDER.forEach(k => { totalDmgByMember[k] += m.dmgByMember[k]; totalStreakCount[k] += m.streakCount[k]; });
-    ["hot","triage","group","rescue"].forEach(t => { totalHealByType[t] += m.healByType[t]; });
+    ["hot","triage","group","rescue","captainHeal"].forEach(t => { totalHealByType[t] += m.healByType[t]; });
     totalStreakBonusDmg   += m.streakBonusDmg;
     totalStreakBonusHeal  += m.streakBonusHeal;
     totalHotActiveTicks   += m.hotActiveTicks;
@@ -736,7 +756,7 @@ function report(cfg, res) {
 
   console.log("\n── Healing by source (avg per fight, outgoing/pre-overheal) ──");
   const totalHeal = Object.values(res.totalHealByType).reduce((s,v)=>s+v,0);
-  const healLabels = { hot:"HoT", triage:"Triage", group:"Group Heal", rescue:"Rescue Burst" };
+  const healLabels = { hot:"HoT", triage:"Triage", group:"Group Heal", rescue:"Rescue Burst", captainHeal:"Captain Heal" };
   Object.entries(res.totalHealByType).forEach(([k,v]) => {
     console.log(`  ${healLabels[k].padEnd(14)} ${avg(v).padStart(9)} hp`);
   });

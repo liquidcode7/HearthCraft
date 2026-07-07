@@ -797,6 +797,8 @@ const TRIAGE_MUL      = 2.0;  // triageHeal = keeper.wil * TRIAGE_MUL
 const TRIAGE_COOLDOWN = 2;    // ticks between triage uses
 const GROUP_HEAL_IV   = 5;    // ticks between group heals — resynced to match EncounterEngine.kt (was stale at 20)
 const GROUP_HEAL_MUL  = 1.5;  // groupHeal per member = keeper.wil * GROUP_HEAL_MUL — resynced (was stale at 0.5)
+const CAPTAIN_HEAL_INTERVAL = 12;   // ticks between Captain's burst-heal casts — must match EncounterEngine.kt
+const CAPTAIN_HEAL_MUL      = 1.0;  // heal = captain.wil * CAPTAIN_HEAL_MUL, delivered as a single instant burst
 const STREAK_K          = 0.002; // trigger prob per eligible tick = fat * STREAK_K
 const STREAK_REFRACTORY = 20;    // ticks before streak can re-trigger
 const STREAK_DURATION   = 5;     // streak active ticks
@@ -829,6 +831,7 @@ function createFightState(cfg) {
     cfg, M,
     streak: Object.fromEntries(ORDER.map(k=>[k,{refractory:0,active:0}])),
     hot1:null, hot2:null, triageCooldown:0, groupHealTimer:GROUP_HEAL_IV,
+    captainHealCooldown:CAPTAIN_HEAL_INTERVAL,
     t:0, boss:cfg.boss, maxT:cfg.duration,
     keeperDealtDps:true, rescuesUsed:0, wardsUsed:0, inspBoost:0, baFired:false,
     nextSpikeAt: Math.round(cfg.spikeiv*(0.5+Math.random())),
@@ -836,7 +839,7 @@ function createFightState(cfg) {
     outcome:null, done:false,
     // metrics (Task: sim metrics overhaul — observation only, no effect on simulation)
     dmgByMember:{warden:0,fighter:0,keeper:0,captain:0},
-    healByType:{hot:0,triage:0,group:0,rescue:0},
+    healByType:{hot:0,triage:0,group:0,rescue:0,captainHeal:0},
     streakCount:{warden:0,fighter:0,keeper:0,captain:0},
     streakBonusDmg:0, streakBonusHeal:0, hotActiveTicks:0,
     inspGraceHeal:0, inspHornRedirect:0, inspDawnHeal:0, inspDawnBonusDps:0, inspBlackArrowAmount:0
@@ -861,13 +864,13 @@ function fightDpsBreakdown(S) {
     const mult = isStreaking ? STREAK_MULT : 1;
     let base = 0;
     if (k==="keeper")        { if (S.keeperDealtDps) base = m.wil * 2.7; }
-    else if (k==="fighter")  base = m.agi * 3 + m.mig * 1.2;
+    else if (k==="fighter")  base = m.agi * 2.33 + m.mig * 2.33;
     else if (k==="warden")   base = m.mig * 1.5;
     else if (k==="captain")  {
       // Captain's damage is a physical (Mig-driven)/magic (Wil-driven) hybrid — armor
       // only mitigates the physical half, so the split must survive into rawBy.
-      rawBy.captain_phys += m.mig*0.9*mult; rawBy.captain_magic += m.wil*0.6*mult;
-      base = m.mig * 0.9 + m.wil * 0.6;
+      rawBy.captain_phys += m.mig*2.0*mult; rawBy.captain_magic += m.wil*2.0*mult;
+      base = m.mig * 2.0 + m.wil * 2.0;
     }
     const contribution = base * mult;
     rawBy[k] += contribution; raw += contribution;
@@ -916,6 +919,21 @@ function fightTick(S) {
     }
     if (S.hot1 && S.hot1.ticksLeft <= 0) S.hot1 = null;
     if (S.hot2 && S.hot2.ticksLeft <= 0) S.hot2 = null;
+  }
+
+  // ── Captain burst heal (instant, fixed-cooldown proc that targets the current
+  // lowest-HP standing member; free — does not cost Captain's DPS action this tick) ──
+  if (!S.M.captain.grievous && S.M.captain.hp > 0 && !S.M.captain.stunned) {
+    S.captainHealCooldown--;
+    if (S.captainHealCooldown <= 0) {
+      const healTarget = fightStanding(S).sort((a,b) => (S.M[a].hp/S.M[a].max) - (S.M[b].hp/S.M[b].max))[0];
+      if (healTarget) {
+        const healAmt = S.M.captain.wil * CAPTAIN_HEAL_MUL;
+        S.M[healTarget].hp = Math.min(S.M[healTarget].max, S.M[healTarget].hp + healAmt);
+        S.healByType.captainHeal += healAmt;
+      }
+      S.captainHealCooldown = CAPTAIN_HEAL_INTERVAL;
+    }
   }
   if (S.windows.dawn > 0) S.windows.dawn--;
   if (S.windows.horn > 0) { S.windows.horn--; if (S.windows.horn === 0) S.M.warden.horn = false; }
@@ -1389,13 +1407,14 @@ function renderResults(){
   ],"dps","Party total");
 
   // Healing by source — HoT / Triage / Group / Rescue
-  const healTotal = FIGHT.healByType.hot + FIGHT.healByType.triage + FIGHT.healByType.group + FIGHT.healByType.rescue;
+  const healTotal = FIGHT.healByType.hot + FIGHT.healByType.triage + FIGHT.healByType.group + FIGHT.healByType.rescue + FIGHT.healByType.captainHeal;
   if (healTotal > 0.01) {
     meterChart("ch_healsource",[
       {name:"HoT",          color:"#5b7f63", value:FIGHT.healByType.hot},
       {name:"Triage",       color:"#7d5a93", value:FIGHT.healByType.triage},
       {name:"Group Heal",   color:"#4a6c93", value:FIGHT.healByType.group},
       {name:"Rescue Burst", color:"#b8843c", value:FIGHT.healByType.rescue},
+      {name:"Captain Heal", color:"#8a7355", value:FIGHT.healByType.captainHeal},
     ],"hp","Total healing");
     const hotUptimePct = FIGHT.t > 0 ? (FIGHT.hotActiveTicks / FIGHT.t * 100).toFixed(1) : "0.0";
     $("ch_healsource").innerHTML += `<div class="meter-footer">HoT uptime: ${hotUptimePct}% of fight duration</div>`;
