@@ -437,9 +437,16 @@
 
 ---
 
-### Task 4: Captain's new HoT ability
+### Task 4: Captain's new HoT ability (SUPERSEDED — see Task 5)
 
-**Context:** Captain gains a small, periodic heal-over-time on top of their (now-buffed) DPS — a minor support layer, deliberately smaller and rarer than Keeper's healing kit, not a second healer. Fires every `CAPTAIN_HOT_INTERVAL` (9) ticks, retargeting fresh each time to whoever is currently the lowest-HP-fraction standing member (mirrors the target-selection Keeper's own HoT-slot-fill logic already uses). Heals `will × CAPTAIN_HOT_MUL` (0.08) per tick for `CAPTAIN_HOT_DURATION` (6) ticks. Free — does not consume Captain's DPS action that tick, mirroring the existing precedent that Keeper applying a *new* HoT slot doesn't cost a DPS tick either. Reuses the existing `TickSnapshot.hotTargets` field (already rendered as a generic "HOT" badge by `BattleInProgressCard` — no UI work needed), whose comment currently says "Keeper heal-over-time" and needs updating since it's no longer Keeper-only.
+**Status:** Shipped as commit `ee49fc7`, then replaced. In review, the trickle shape (small
+heal spread thinly over many ticks) turned out perceptually inert — mathematically real but
+no single tick ever noticeable. Wes's actual goal was a heal with real flavor that still
+doesn't compete with Keeper's identity as the party's real healer. Task 5 replaces this
+task's mechanic with a burst-heal-on-cooldown instead. This section is kept for history —
+do not re-implement it; go to Task 5.
+
+**Original context (historical):** Captain gains a small, periodic heal-over-time on top of their (now-buffed) DPS — a minor support layer, deliberately smaller and rarer than Keeper's healing kit, not a second healer. Fires every `CAPTAIN_HOT_INTERVAL` (9) ticks, retargeting fresh each time to whoever is currently the lowest-HP-fraction standing member (mirrors the target-selection Keeper's own HoT-slot-fill logic already uses). Heals `will × CAPTAIN_HOT_MUL` (0.08) per tick for `CAPTAIN_HOT_DURATION` (6) ticks. Free — does not consume Captain's DPS action that tick, mirroring the existing precedent that Keeper applying a *new* HoT slot doesn't cost a DPS tick either. Reuses the existing `TickSnapshot.hotTargets` field (already rendered as a generic "HOT" badge by `BattleInProgressCard` — no UI work needed), whose comment currently says "Keeper heal-over-time" and needs updating since it's no longer Keeper-only.
 
 **Files:**
 - Modify: `app/src/main/kotlin/com/liquidcode7/hearthcraft/engine/EncounterEngine.kt`
@@ -684,9 +691,201 @@
 
 ---
 
-### Task 5: Mirror the buffed formulas and new Captain HoT into the sim tools
+### Task 5: Replace Captain's trickle HoT with a burst-heal-on-cooldown
 
-**Context:** Tasks 2-4 changed three things in `EncounterEngine.kt`: Captain's coefficients (0.9/0.6 → 2.0/2.0), Fighter's coefficient (asymmetric → symmetric 2.33), and a new Captain HoT. Task 1 already brought the sim tools to a correct *pre-buff* baseline — this task brings them to the correct *post-buff* state, so `run_sim.js`/`hearthcraft_fight_sim.html` reflect the same game Tasks 2-4 shipped.
+**Context:** See `docs/superpowers/specs/2026-07-06-captain-fighter-balance-design.md` Section D
+(revised 07 Jul 2026) for the full rationale. Task 4's shipped trickle (`will × 0.08`/tick for
+6 ticks, retarget every 9) was mathematically real but perceptually inert — no single tick is
+ever large enough to notice. Wes's actual ask: the heal shouldn't compete with Keeper's
+identity as the party's real healer, but should still have flavor — a legible moment, not
+invisible background healing. Replaces this with one instant, visible burst on a cooldown,
+sized `will × CAPTAIN_HEAL_MUL` (1.0 — half of Keeper's `TRIAGE_MUL` of 2.0), firing
+automatically every `CAPTAIN_HEAL_INTERVAL` (12) ticks regardless of need (Wes's explicit
+choice over a reactive threshold), landing on whoever is currently lowest-HP-fraction among
+`standing()`. One-shot, not lingering — no more `captainHot`/`captainHotTimer` HoT-slot state,
+just a cooldown counter and an instant `applyHeal(...)` call when it fires. Follows the
+existing Black Arrow/Grace one-shot "flash" precedent for UI visibility instead of joining the
+ongoing-HoT-only `hotTargets` semantics as a lingering member.
+
+**Files:**
+- Modify: `app/src/main/kotlin/com/liquidcode7/hearthcraft/engine/EncounterEngine.kt`
+- Modify: `app/src/main/kotlin/com/liquidcode7/hearthcraft/engine/TickSnapshot.kt`
+- Test: `app/src/test/kotlin/com/liquidcode7/hearthcraft/engine/EncounterEngineTest.kt`
+
+**Interfaces:** Removes `CAPTAIN_HOT_INTERVAL`/`CAPTAIN_HOT_DURATION`/`CAPTAIN_HOT_MUL` and the
+`captainHot: HoT?`/`captainHotTimer` state Task 4 introduced. Produces
+`CAPTAIN_HEAL_INTERVAL`/`CAPTAIN_HEAL_MUL` constants and `captainHealCooldown` /
+`captainHealFlashTargetId` / `captainHealFlashTicks` state instead. `TickSnapshot.hotTargets`
+keeps its existing type (`Set<String>`) and existing UI consumer unchanged — Captain's target
+joins it only for `CAPTAIN_HEAL_FLASH_TICKS` ticks after casting (mirroring
+`BLACK_ARROW_FLASH_TICKS`/`GRACE_FLASH_TICKS`, both 5), not for a lingering duration.
+
+- [ ] **Step 1: Remove the old Captain-HoT constants and add the new burst-heal ones**
+
+  Find:
+  ```kotlin
+  // Captain HoT constants — a minor healing utility layered on top of Captain's DPS,
+  // deliberately smaller/rarer than Keeper's kit (not a second healer). Free: firing this
+  // does not consume Captain's DPS action for the tick. Must match tools/sim/run_sim.js exactly.
+  private const val CAPTAIN_HOT_INTERVAL = 9     // ticks between HoT re-targets
+  private const val CAPTAIN_HOT_DURATION = 6     // ticks per HoT application
+  private const val CAPTAIN_HOT_MUL      = 0.08f // healPerTick = captain.will × CAPTAIN_HOT_MUL
+  ```
+  Replace with:
+  ```kotlin
+  // Captain burst-heal constants — a minor healing utility layered on top of Captain's DPS,
+  // deliberately smaller/rarer than Keeper's kit (not a second healer). A single instant
+  // heal on a cooldown rather than a multi-tick HoT — a per-tick trickle this small is
+  // imperceptible, so it's delivered as one visible chunk instead. Free: firing this does
+  // not consume Captain's DPS action for the tick. Must match tools/sim/run_sim.js exactly.
+  private const val CAPTAIN_HEAL_INTERVAL    = 12    // ticks between casts
+  private const val CAPTAIN_HEAL_MUL         = 1.0f  // heal = captain.will × CAPTAIN_HEAL_MUL, delivered as a single burst
+  private const val CAPTAIN_HEAL_FLASH_TICKS = 5     // ticks the heal badge stays visible after the instant burst (mirrors BLACK_ARROW_FLASH_TICKS/GRACE_FLASH_TICKS — same "one-shot effect, no natural window" precedent)
+  ```
+
+- [ ] **Step 2: Replace the captainHot state with burst-heal state**
+
+  Find:
+  ```kotlin
+          // Captain HoT state — a single independent slot, fully separate from Keeper's
+          // two (can coincide on the same target; that's fine, same as Keeper's own two
+          // slots already being independent of each other).
+          var captainHot: HoT? = null
+          var captainHotTimer = CAPTAIN_HOT_INTERVAL
+  ```
+  Replace with:
+  ```kotlin
+          // Captain burst-heal state — fully independent of Keeper's two HoT slots (can
+          // coincide on the same target; that's fine, same as Keeper's own two slots
+          // already being independent of each other). captainHealFlashTargetId/Ticks are
+          // purely cosmetic — they keep the last burst's target visible in hotTargets for
+          // a few ticks after an instant cast, mirroring the Black Arrow/Grace flash precedent.
+          var captainHealCooldown = CAPTAIN_HEAL_INTERVAL
+          var captainHealFlashTargetId: String? = null
+          var captainHealFlashTicks = 0
+  ```
+
+- [ ] **Step 3: Update buildSnapshot's hotTargets to use the flash window instead of a lingering slot**
+
+  Find:
+  ```kotlin
+              hotTargets = setOfNotNull(hot1?.targetId, hot2?.targetId, captainHot?.targetId),
+  ```
+  Replace with:
+  ```kotlin
+              hotTargets = setOfNotNull(hot1?.targetId, hot2?.targetId, if (captainHealFlashTicks > 0) captainHealFlashTargetId else null),
+  ```
+
+- [ ] **Step 4: Replace the Captain HoT tick block with the burst-heal block**
+
+  Find:
+  ```kotlin
+              // ── Captain HoT (fixed-interval proc, retargets to current lowest-HP standing
+              // member; free — does not cost Captain's DPS action this tick) ────────────────
+              if (captain != null && !captain.grievous && captain.hp > 0) {
+                  captainHot?.let { hot ->
+                      val target = party.find { it.input.id == hot.targetId }
+                      if (target != null && !target.grievous && target.hp > 0) {
+                          val delivered = applyHeal(target, hot.healPerTick * target.recoveryBuffMult)
+                          healingAcc[captain.input.id] = (healingAcc[captain.input.id] ?: 0f) + delivered
+                      }
+                      hot.ticksLeft--
+                  }
+                  if (captainHot?.ticksLeft == 0) captainHot = null
+
+                  captainHotTimer--
+                  if (captainHotTimer <= 0) {
+                      val target = standing().minByOrNull { it.hp / it.maxHp }
+                      if (target != null) {
+                          captainHot = HoT(target.input.id, CAPTAIN_HOT_DURATION, captain.input.will * CAPTAIN_HOT_MUL)
+                      }
+                      captainHotTimer = CAPTAIN_HOT_INTERVAL
+                  }
+              }
+  ```
+  Replace with:
+  ```kotlin
+              // ── Captain burst heal (instant, fixed-cooldown proc that targets the current
+              // lowest-HP standing member; free — does not cost Captain's DPS action this
+              // tick). A single visible chunk rather than a multi-tick HoT — see constants
+              // comment above. captainHealFlashTicks just keeps the target visible in the
+              // UI badge for a few ticks after the instant cast. ─────────────────────────
+              if (captainHealFlashTicks > 0) captainHealFlashTicks--
+              if (captain != null && !captain.grievous && captain.hp > 0) {
+                  captainHealCooldown--
+                  if (captainHealCooldown <= 0) {
+                      val target = standing().minByOrNull { it.hp / it.maxHp }
+                      if (target != null) {
+                          val delivered = applyHeal(target, captain.input.will * CAPTAIN_HEAL_MUL * target.recoveryBuffMult)
+                          healingAcc[captain.input.id] = (healingAcc[captain.input.id] ?: 0f) + delivered
+                          captainHealFlashTargetId = target.input.id
+                          captainHealFlashTicks = CAPTAIN_HEAL_FLASH_TICKS
+                      }
+                      captainHealCooldown = CAPTAIN_HEAL_INTERVAL
+                  }
+              }
+  ```
+
+- [ ] **Step 5: Update TickSnapshot's hotTargets comment**
+
+  Find:
+  ```kotlin
+      val hotTargets: Set<String> = emptySet(),         // member ids currently receiving a heal-over-time (Keeper's two HoT slots and/or Captain's HoT)
+  ```
+  Replace with:
+  ```kotlin
+      val hotTargets: Set<String> = emptySet(),         // member ids currently receiving a Keeper heal-over-time, and/or briefly flashing after Captain's instant burst heal (see Black Arrow/Grace flash precedent)
+  ```
+
+- [ ] **Step 6: Rewrite the two Task-4 tests for the burst-heal shape**
+
+  Find the existing `captain HoT fires periodically, heals, and targets the lowest-HP standing ally` test and replace it with one that proves the burst lands as a single visible chunk on a real cooldown (not spread across consecutive ticks like the old trickle) — reconstruct per-tick Captain healing deltas from `r.snapshots`' cumulative `cumHeal["captain"]`, assert at least one cast happened, assert consecutive casts are separated by a cooldown gap (not back-to-back ticks), and assert the single cast's delta is a real, visible chunk (e.g. `> captain.will * 0.3f`, comfortably above any plausible trickle-per-tick amount) rather than a per-tick trickle amount. Keep the existing "Captain still deals damage" and "targeted the lower-vitality ally" assertions.
+
+  Find the existing `captain HoT and keeper HoT stack on the same target instead of one overriding the other` test. Per Wes's explicit request, this must specifically use a **fighter** as the shared target Keeper and Captain's heal both land on — not Keeper healing itself. Build a 3-member party (keeper, captain, fighter) where the fighter has deliberately much lower vitality than keeper/captain, so the fighter's HP fraction stays unambiguously, persistently the lowest under the engine's flat per-standing-member drain — not a coincidental tie decided by list order. This should make both Keeper's own HoT-slot-fill and Captain's burst-heal retarget reliably and repeatedly converge on the fighter, giving a wide, robust window (not a rare coincidence) rather than the original test's ~4%-of-ticks fragility. Assert a comfortable minimum count of ticks (not just "any tick") where `hotTargets` contains the fighter and both Keeper's and Captain's cumulative healing increase in the same tick — pick exact stat/drain values and the count threshold empirically (run it, observe the real count, set the threshold with clear margin below the observed count), the same way the original test's parameters were derived. Document in the test's comment why the fighter reliably ends up as the shared target (the vitality gap, not tie-breaking).
+
+- [ ] **Step 7: Run tests to verify they pass**
+
+  ```bash
+  export JAVA_HOME=/usr/share/pycharm/jbr
+  ./gradlew :app:testDebugUnitTest --tests "*.EncounterEngineTest"
+  ```
+  Expected: PASS, all tests including the two rewritten ones.
+
+- [ ] **Step 8: Run the full test suite to confirm no regressions**
+
+  ```bash
+  ./gradlew build
+  ```
+  Expected: BUILD SUCCESSFUL. If any pre-existing win-rate/statistical test now fails because this change altered total party healing meaningfully, apply the same kind of fix Task 2 used: verify via `git stash` whether the failure is a genuine consequence of this change, and if so retune the stage parameters (not the assertion) to restore a meaningful comparison, documenting the reasoning.
+
+- [ ] **Step 9: Commit**
+
+  ```bash
+  git add app/src/main/kotlin/com/liquidcode7/hearthcraft/engine/EncounterEngine.kt app/src/main/kotlin/com/liquidcode7/hearthcraft/engine/TickSnapshot.kt app/src/test/kotlin/com/liquidcode7/hearthcraft/engine/EncounterEngineTest.kt
+  git commit -m "$(cat <<'EOF'
+  [hc] Replace Captain's trickle HoT with a burst-heal-on-cooldown
+
+  The Task 4 trickle (will x 0.08/tick for 6 ticks, retarget every 9)
+  was perceptually inert -- no single tick ever noticeable. Replaces
+  it with one instant, visible burst (will x 1.0, half Keeper's
+  Triage) on a fixed 12-tick cooldown, firing automatically regardless
+  of need. One-shot rather than lingering: no more captainHot/
+  captainHotTimer HoT-slot state, just a cooldown counter. Follows the
+  existing Black Arrow/Grace one-shot flash precedent for UI
+  visibility rather than the ongoing-HoT hotTargets semantics.
+
+  Approved by Wes, 07 Jul 2026, after the shipped trickle (commit
+  ee49fc7) read as invisible ambient healing rather than something the
+  Captain visibly did.
+  EOF
+  )"
+  ```
+
+---
+
+### Task 6: Mirror the buffed formulas and new Captain burst heal into the sim tools
+
+**Context:** Tasks 2-3 and 5 changed three things in `EncounterEngine.kt`: Captain's coefficients (0.9/0.6 → 2.0/2.0), Fighter's coefficient (asymmetric → symmetric 2.33), and a new Captain burst-heal-on-cooldown (replacing Task 4's trickle HoT, which never made it to a sim mirror). Task 1 already brought the sim tools to a correct *pre-buff* baseline — this task brings them to the correct *post-buff* state, so `run_sim.js`/`hearthcraft_fight_sim.html` reflect the same game Tasks 2, 3, and 5 shipped.
 
 **Files:**
 - Modify: `tools/sim/run_sim.js`
@@ -711,7 +910,7 @@
       else if (k==="captain")  base = M[k].mig * 2.0 + M[k].wil * 2.0;
   ```
 
-- [ ] **Step 2: Add Captain HoT constants to run_sim.js**
+- [ ] **Step 2: Add Captain burst-heal constants to run_sim.js**
 
   Find (this is Task 1's Step 1 output):
   ```js
@@ -722,12 +921,11 @@
   ```js
   const GROUP_HEAL_IV   = 5;    // ticks between group heals — resynced to match EncounterEngine.kt (was stale at 20)
   const GROUP_HEAL_MUL  = 1.5;  // groupHeal per member = keeper.wil * GROUP_HEAL_MUL — resynced (was stale at 0.5)
-  const CAPTAIN_HOT_INTERVAL = 9;    // ticks between Captain HoT re-targets — must match EncounterEngine.kt
-  const CAPTAIN_HOT_DURATION = 6;    // ticks per Captain HoT application
-  const CAPTAIN_HOT_MUL      = 0.08; // healPerTick = captain.wil * CAPTAIN_HOT_MUL
+  const CAPTAIN_HEAL_INTERVAL = 12;   // ticks between Captain's burst-heal casts — must match EncounterEngine.kt
+  const CAPTAIN_HEAL_MUL      = 1.0;  // heal = captain.wil * CAPTAIN_HEAL_MUL, delivered as a single instant burst
   ```
 
-- [ ] **Step 3: Declare Captain HoT state alongside Keeper's in run_sim.js**
+- [ ] **Step 3: Declare Captain burst-heal state alongside Keeper's in run_sim.js**
 
   Find (around line 178-181):
   ```js
@@ -743,12 +941,11 @@
     let triageCooldown = 0;
     let groupHealTimer = GROUP_HEAL_IV;
 
-    // Captain HoT state — a single independent slot, fully separate from Keeper's two
-    let captainHot = null; // { targetKey, ticksLeft, healPerTick }
-    let captainHotTimer = CAPTAIN_HOT_INTERVAL;
+    // Captain burst-heal state — fully independent of Keeper's two HoT slots
+    let captainHealCooldown = CAPTAIN_HEAL_INTERVAL;
   ```
 
-- [ ] **Step 4: Add a `captainHot` heal-metric bucket in run_sim.js**
+- [ ] **Step 4: Add a `captainHeal` heal-metric bucket in run_sim.js**
 
   Find (around line 190):
   ```js
@@ -756,7 +953,7 @@
   ```
   Replace with:
   ```js
-    const healByType        = { hot:0, triage:0, group:0, rescue:0, captainHot:0 };
+    const healByType        = { hot:0, triage:0, group:0, rescue:0, captainHeal:0 };
   ```
 
   Find (around line 611):
@@ -765,7 +962,7 @@
   ```
   Replace with:
   ```js
-    const totalHealByType    = { hot:0, triage:0, group:0, rescue:0, captainHot:0 };
+    const totalHealByType    = { hot:0, triage:0, group:0, rescue:0, captainHeal:0 };
   ```
 
   Find (around line 637):
@@ -774,7 +971,7 @@
   ```
   Replace with:
   ```js
-      ["hot","triage","group","rescue","captainHot"].forEach(t => { totalHealByType[t] += m.healByType[t]; });
+      ["hot","triage","group","rescue","captainHeal"].forEach(t => { totalHealByType[t] += m.healByType[t]; });
   ```
 
   Find (around line 739):
@@ -783,10 +980,10 @@
   ```
   Replace with:
   ```js
-    const healLabels = { hot:"HoT", triage:"Triage", group:"Group Heal", rescue:"Rescue Burst", captainHot:"Captain HoT" };
+    const healLabels = { hot:"HoT", triage:"Triage", group:"Group Heal", rescue:"Rescue Burst", captainHeal:"Captain Heal" };
   ```
 
-- [ ] **Step 5: Add the Captain HoT tick block to run_sim.js**
+- [ ] **Step 5: Add the Captain burst-heal tick block to run_sim.js**
 
   Find (right after the existing "Keeper HoT ticks" block, around line 251-269 — the block ends with the two `hot1`/`hot2` nulling lines, immediately followed by the Dawn/Horn window decrements):
   ```js
@@ -801,33 +998,24 @@
       if (hot2 && hot2.ticksLeft <= 0) hot2 = null;
     }
 
-    // ── Captain HoT (fixed-interval proc, retargets to current lowest-HP standing member;
-    // free — does not cost Captain's DPS action this tick) ─────────────────────────────
+    // ── Captain burst heal (instant, fixed-cooldown proc that targets the current
+    // lowest-HP standing member; free — does not cost Captain's DPS action this tick) ──
     if (!M.captain.grievous && M.captain.hp > 0 && !M.captain.stunned) {
-      if (captainHot) {
-        const tgt = M[captainHot.targetKey];
-        if (tgt && !tgt.grievous) {
-          const healAmt = captainHot.healPerTick;
-          tgt.hp = Math.min(tgt.max, tgt.hp + healAmt);
-          healByType.captainHot += healAmt;
+      captainHealCooldown--;
+      if (captainHealCooldown <= 0) {
+        const healTarget = standing().sort((a,b) => (M[a].hp/M[a].max) - (M[b].hp/M[b].max))[0];
+        if (healTarget) {
+          const healAmt = M.captain.wil * CAPTAIN_HEAL_MUL;
+          M[healTarget].hp = Math.min(M[healTarget].max, M[healTarget].hp + healAmt);
+          healByType.captainHeal += healAmt;
         }
-        captainHot.ticksLeft--;
-      }
-      if (captainHot && captainHot.ticksLeft <= 0) captainHot = null;
-
-      captainHotTimer--;
-      if (captainHotTimer <= 0) {
-        const hotTarget = standing().sort((a,b) => (M[a].hp/M[a].max) - (M[b].hp/M[b].max))[0];
-        if (hotTarget) {
-          captainHot = { targetKey: hotTarget, ticksLeft: CAPTAIN_HOT_DURATION, healPerTick: M.captain.wil * CAPTAIN_HOT_MUL };
-        }
-        captainHotTimer = CAPTAIN_HOT_INTERVAL;
+        captainHealCooldown = CAPTAIN_HEAL_INTERVAL;
       }
     }
     if (windows.dawn > 0) windows.dawn--;
   ```
 
-  Note: `standing()` (defined at line 184 as `const standing = () => active().filter(k => M[k].hp > 0);`) is a plain function with no memoization — calling it fresh here is correct and matches how the Keeper's own retarget logic further down the tick calls `live` (a cached copy of the same function, computed later in the tick — calling `standing()` directly here, earlier in the tick, is equivalent and simpler than restructuring cache timing).
+  Note: `standing()` (defined at line 184 as `const standing = () => active().filter(k => M[k].hp > 0);`) is a plain function with no memoization — calling it fresh here is correct.
 
 - [ ] **Step 6: Repeat Steps 1-5 for hearthcraft_fight_sim.html**
 
@@ -867,9 +1055,8 @@
   ```js
   const GROUP_HEAL_IV   = 5;    // ticks between group heals — resynced to match EncounterEngine.kt (was stale at 20)
   const GROUP_HEAL_MUL  = 1.5;  // groupHeal per member = keeper.wil * GROUP_HEAL_MUL — resynced (was stale at 0.5)
-  const CAPTAIN_HOT_INTERVAL = 9;    // ticks between Captain HoT re-targets — must match EncounterEngine.kt
-  const CAPTAIN_HOT_DURATION = 6;    // ticks per Captain HoT application
-  const CAPTAIN_HOT_MUL      = 0.08; // healPerTick = captain.wil * CAPTAIN_HOT_MUL
+  const CAPTAIN_HEAL_INTERVAL = 12;   // ticks between Captain's burst-heal casts — must match EncounterEngine.kt
+  const CAPTAIN_HEAL_MUL      = 1.0;  // heal = captain.wil * CAPTAIN_HEAL_MUL, delivered as a single instant burst
   ```
 
   State init — find (around line 809-823, the object returned by `createFightState()`):
@@ -897,7 +1084,7 @@
       cfg, M,
       streak: Object.fromEntries(ORDER.map(k=>[k,{refractory:0,active:0}])),
       hot1:null, hot2:null, triageCooldown:0, groupHealTimer:GROUP_HEAL_IV,
-      captainHot:null, captainHotTimer:CAPTAIN_HOT_INTERVAL,
+      captainHealCooldown:CAPTAIN_HEAL_INTERVAL,
       t:0, boss:cfg.boss, maxT:cfg.duration,
       keeperDealtDps:true, rescuesUsed:0, wardsUsed:0, inspBoost:0, baFired:false,
       nextSpikeAt: Math.round(cfg.spikeiv*(0.5+Math.random())),
@@ -905,7 +1092,7 @@
       outcome:null, done:false,
       // metrics (Task: sim metrics overhaul — observation only, no effect on simulation)
       dmgByMember:{warden:0,fighter:0,keeper:0,captain:0},
-      healByType:{hot:0,triage:0,group:0,rescue:0,captainHot:0},
+      healByType:{hot:0,triage:0,group:0,rescue:0,captainHeal:0},
       streakCount:{warden:0,fighter:0,keeper:0,captain:0},
       streakBonusDmg:0, streakBonusHeal:0, hotActiveTicks:0,
       inspGraceHeal:0, inspHornRedirect:0, inspDawnHeal:0, inspDawnBonusDps:0, inspBlackArrowAmount:0
@@ -955,27 +1142,18 @@
       if (S.hot2 && S.hot2.ticksLeft <= 0) S.hot2 = null;
     }
 
-    // ── Captain HoT (fixed-interval proc, retargets to current lowest-HP standing member;
-    // free — does not cost Captain's DPS action this tick) ─────────────────────────────
+    // ── Captain burst heal (instant, fixed-cooldown proc that targets the current
+    // lowest-HP standing member; free — does not cost Captain's DPS action this tick) ──
     if (!S.M.captain.grievous && S.M.captain.hp > 0 && !S.M.captain.stunned) {
-      if (S.captainHot) {
-        const tgt = S.M[S.captainHot.targetKey];
-        if (tgt && !tgt.grievous) {
-          const healAmt = S.captainHot.healPerTick;
-          tgt.hp = Math.min(tgt.max, tgt.hp + healAmt);
-          S.healByType.captainHot += healAmt;
+      S.captainHealCooldown--;
+      if (S.captainHealCooldown <= 0) {
+        const healTarget = fightStanding(S).sort((a,b) => (S.M[a].hp/S.M[a].max) - (S.M[b].hp/S.M[b].max))[0];
+        if (healTarget) {
+          const healAmt = S.M.captain.wil * CAPTAIN_HEAL_MUL;
+          S.M[healTarget].hp = Math.min(S.M[healTarget].max, S.M[healTarget].hp + healAmt);
+          S.healByType.captainHeal += healAmt;
         }
-        S.captainHot.ticksLeft--;
-      }
-      if (S.captainHot && S.captainHot.ticksLeft <= 0) S.captainHot = null;
-
-      S.captainHotTimer--;
-      if (S.captainHotTimer <= 0) {
-        const hotTarget = fightStanding(S).sort((a,b) => (S.M[a].hp/S.M[a].max) - (S.M[b].hp/S.M[b].max))[0];
-        if (hotTarget) {
-          S.captainHot = { targetKey: hotTarget, ticksLeft: CAPTAIN_HOT_DURATION, healPerTick: S.M.captain.wil * CAPTAIN_HOT_MUL };
-        }
-        S.captainHotTimer = CAPTAIN_HOT_INTERVAL;
+        S.captainHealCooldown = CAPTAIN_HEAL_INTERVAL;
       }
     }
     if (S.windows.dawn > 0) S.windows.dawn--;
@@ -987,7 +1165,7 @@
   ```
   Replace with:
   ```js
-    const healTotal = FIGHT.healByType.hot + FIGHT.healByType.triage + FIGHT.healByType.group + FIGHT.healByType.rescue + FIGHT.healByType.captainHot;
+    const healTotal = FIGHT.healByType.hot + FIGHT.healByType.triage + FIGHT.healByType.group + FIGHT.healByType.rescue + FIGHT.healByType.captainHeal;
   ```
 
 - [ ] **Step 7: Sanity-check with a manual run**
@@ -995,20 +1173,20 @@
   ```bash
   node tools/sim/run_sim.js --duration 300 --boss 20000 --drain 4 --spike 25 --spikeiv 12 --verbose
   ```
-  Expected: script runs without error; Captain's DPS share visibly increases relative to a pre-Task-5 run; the printed heal-by-type breakdown (using the new `healLabels.captainHot = "Captain HoT"` entry from Step 4) shows a nonzero "Captain HoT" total for a long-enough fight.
+  Expected: script runs without error; Captain's DPS share visibly increases relative to a pre-buff run; the printed heal-by-type breakdown (using the new `healLabels.captainHeal = "Captain Heal"` entry from Step 4) shows a nonzero "Captain Heal" total for a long-enough fight, arriving in occasional chunks rather than every tick (confirm by checking the cadence roughly matches once per `CAPTAIN_HEAL_INTERVAL` ticks, not continuously).
 
 - [ ] **Step 8: Commit**
 
   ```bash
   git add tools/sim/run_sim.js tools/sim/hearthcraft_fight_sim.html
   git commit -m "$(cat <<'EOF'
-  [hc] Sim: mirror Captain/Fighter DPS buff and new Captain HoT
+  [hc] Sim: mirror Captain/Fighter DPS buff and Captain's burst heal
 
-  Brings both sim tools in line with the EncounterEngine.kt changes
-  from the last three commits: Captain's coefficients (0.9/0.6 ->
-  2.0/2.0), Fighter's coefficient (asymmetric -> symmetric 2.33), and
-  the new Captain HoT (9-tick interval, will x 0.08/tick for 6 ticks,
-  free). Completes the captain-fighter-balance plan.
+  Brings both sim tools in line with the EncounterEngine.kt changes:
+  Captain's coefficients (0.9/0.6 -> 2.0/2.0), Fighter's coefficient
+  (asymmetric -> symmetric 2.33), and Captain's burst-heal-on-cooldown
+  (will x 1.0 every 12 ticks, replacing the never-mirrored Task 4
+  trickle). Completes the captain-fighter-balance plan.
   EOF
   )"
   ```
