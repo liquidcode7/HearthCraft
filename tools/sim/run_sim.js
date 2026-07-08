@@ -246,11 +246,29 @@ function runFight(cfg, verbose) {
   let inspDawnBonusDps    = 0;   // bonus effective damage from Red Dawn's DPS window
   let inspBlackArrowAmount= 0;   // resolve burned (kill fights) or seconds cut (survival fights)
 
+  // Fraction of a member's raw damage that is physical (armor-mitigated) vs
+  // magical (bypasses armor) -- must match EncounterEngine.kt's physicalFraction
+  // exactly. Warden/Fighter are pure physical, Keeper is pure magical, Captain
+  // splits proportionally between the might-driven and will-driven terms of
+  // their own rawDps formula (currently equal coefficients, so this reduces to
+  // mig/(mig+wil), but computed from the same coefficients as dpsBreakdown's
+  // own captain base so the two never drift independently).
+  function physicalFraction(k, m) {
+    if (k === "warden" || k === "fighter") return 1;
+    if (k === "keeper") return 0;
+    // captain
+    const physTerm = m.mig * 2.0, magicTerm = m.wil * 2.0;
+    const total = physTerm + magicTerm;
+    return total > 0 ? physTerm / total : 1;
+  }
+
   function dpsBreakdown() {
     if (cfg.survival) return { raw:0, eff:0, physAfter:0, layerADrag:0, potency:0, rawBy:{warden:0,fighter:0,keeper:0,captain:0}, streakBonus:0, dawnBonus:0 };
     let raw = 0;
+    let eff = 0;
     let streakBonus = 0;
     const rawBy = { warden:0, fighter:0, keeper:0, captain:0 };
+    const physAfter = Math.max(0, cfg.phys * (1 - Math.min(1, cfg.potency/PEN_SCALE)));
     ORDER.forEach(k => {
       if (M[k].grievous || M[k].hp <= 0 || M[k].stunned || M[k].broken) return;
       const isStreaking = streak[k] && streak[k].active > 0;
@@ -263,21 +281,25 @@ function runFight(cfg, verbose) {
       const contribution = base * mult;
       rawBy[k] += contribution;
       raw += contribution;
+      // Armor only mitigates the physical share of this member's damage --
+      // the magical share bypasses it entirely (see damage-types design).
+      const physFrac = physicalFraction(k, M[k]);
+      eff += contribution * physFrac * (1 - physAfter) + contribution * (1 - physFrac);
       if (isStreaking) streakBonus += base * (STREAK_MULT - 1);
     });
     let dawnBonus = 0;
     if (windows.dawn > 0) {
       dawnBonus = raw * 0.5; // the extra half of the 1.5x Red Dawn multiplier
       raw *= 1.5;
+      eff *= 1.5;
       streakBonus *= 1.5; // Dawn's multiplier stacks on top of whatever streak already added
       ORDER.forEach(k => { rawBy[k] *= 1.5; });
     }
-    const physAfter = Math.max(0, cfg.phys * (1 - Math.min(1, cfg.potency/PEN_SCALE)));
     const capWil = (!M.captain.grievous && !M.captain.stunned) ? M.captain.wil : 0;
     const willCut = Math.min(1, capWil/100), hopeCut = Math.min(1, cfg.hope/100);
     const effectiveDread = cfg.dread * (1 - Math.min(1, willCut + hopeCut));
     const layerADrag = Math.min(1, effectiveDread * DREAD_VAR_COEF + cfg.dread * DREAD_FLOOR_COEF);
-    const eff = Math.max(0, raw * (1-physAfter) * (1-layerADrag));
+    eff = Math.max(0, eff * (1-layerADrag));
     return { raw, eff, physAfter, layerADrag, potency: cfg.potency, rawBy, streakBonus, dawnBonus };
   }
 
