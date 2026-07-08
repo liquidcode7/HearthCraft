@@ -2,7 +2,9 @@
 // HearthCraft headless combat simulator
 // Same math as hearthcraft_fight_sim.html — no DOM required.
 // Usage:
-//   node run_sim.js [--runs N] [--level L] [--duration S]
+//   node run_sim.js [--runs N] [--level L] [--band ID] [--duration S]
+//                   (--band selects which band's real band_members.json stats
+//                    to use -- greycloaks (default), mithlost, or undermarch)
 //                   [--recipe ID]        (same recipe stat bonuses for all members)
 //                   [--recipes W,F,K,C]  (per-member recipe IDs)
 //                   [--statbonus N]      (flat bonus added to all recipe stat outputs; simulates grade step)
@@ -24,14 +26,48 @@
 
 const FM = require('./food_model');
 
-// ── constants (mirrored from the browser sim) ──────────────────────────────
-const TPL = {
-  warden:  { name:"Borin", role:"Warden",  soak:true,  start:{mig:13,agi:6, vit:15,wil:7, fat:6 }, grow:{mig:0.50,agi:0.15,vit:0.55,wil:0.20,fat:0.15} },
-  fighterA:{ name:"Mira",  role:"Fighter", soak:false, start:{mig:9, agi:15,vit:7, wil:5, fat:9 }, grow:{mig:0.30,agi:0.55,vit:0.20,wil:0.15,fat:0.35} },
-  fighterM:{ name:"Mira",  role:"Fighter", soak:false, start:{mig:15,agi:9, vit:8, wil:5, fat:7 }, grow:{mig:0.55,agi:0.30,vit:0.25,wil:0.15,fat:0.25} },
-  keeper:  { name:"Cael",  role:"Keeper",  soak:false, start:{mig:5, agi:7, vit:9, wil:15,fat:12}, grow:{mig:0.15,agi:0.20,vit:0.30,wil:0.55,fat:0.45} },
-  captain: { name:"Aelin", role:"Captain", soak:true,  start:{mig:8, agi:7, vit:12,wil:13,fat:13}, grow:{mig:0.20,agi:0.20,vit:0.40,wil:0.45,fat:0.45} },
-};
+// ── party templates — loaded from the real shipped data, not hand-copied ───
+// (Found 08 Jul 2026: this file previously hardcoded a full legacy pre-rescale
+// stat block here, e.g. warden vit=15/growth=0.55. The real game rescaled
+// band_members.json/growth_curves.json on 2026-07-03 -- smaller starting
+// stats, compound %/level growth (see CombatLeveling.kt) instead of flat
+// linear -- but this hardcoded copy was never updated, so every sim result
+// run against it was describing a party far stronger than the real game's.
+// Loading directly from the real data files closes that drift class for good.)
+const BAND_MEMBERS   = require('../../app/src/main/assets/data/band_members.json');
+const GROWTH_CURVES  = require('../../app/src/main/assets/data/growth_curves.json');
+
+function curveFor(roleKey) {
+  const curve = GROWTH_CURVES.find(c => c.role === roleKey);
+  if (!curve) throw new Error(`No growth curve for role "${roleKey}"`);
+  return { mig: curve.migGrowth, agi: curve.agiGrowth, vit: curve.vitGrowth, wil: curve.wilGrowth, fat: curve.fatGrowth };
+}
+
+function startFor(member) {
+  return { mig: member.startingMight, agi: member.startingAgility, vit: member.startingVitality, wil: member.startingWill, fat: member.startingFate };
+}
+
+// Builds the TPL structure (same shape the rest of this file already expects:
+// {warden, fighterA, fighterM, keeper, captain}, each {name, role, soak, start, grow})
+// from the real band_members.json for the given band.
+function buildTpl(bandId) {
+  const members = BAND_MEMBERS.filter(m => m.bandId === bandId);
+  const byRole = role => members.find(m => m.role === role);
+  const warden  = byRole("warden");
+  const fighter = byRole("fighter");
+  const keeper  = byRole("keeper");
+  const captain = byRole("captain");
+  if (!warden || !fighter || !keeper || !captain) {
+    throw new Error(`band "${bandId}" is missing one or more of warden/fighter/keeper/captain in band_members.json`);
+  }
+  return {
+    warden:  { name: warden.id,  role: "Warden",  soak: true,  start: startFor(warden),  grow: curveFor("warden") },
+    fighterA:{ name: fighter.id, role: "Fighter", soak: false, start: startFor(fighter), grow: curveFor("fighter_ranged") },
+    fighterM:{ name: fighter.id, role: "Fighter", soak: false, start: startFor(fighter), grow: curveFor("fighter_melee") },
+    keeper:  { name: keeper.id,  role: "Keeper",  soak: false, start: startFor(keeper),  grow: curveFor("keeper") },
+    captain: { name: captain.id, role: "Captain", soak: true,  start: startFor(captain), grow: curveFor("captain") },
+  };
+}
 const ORDER        = ["warden","fighter","keeper","captain"];
 const PEN_SCALE    = 80;  // must match hearthcraft_fight_sim.html
 const SHADOW_FLOOR = 0.55;
@@ -64,7 +100,11 @@ const STREAK_REFRACTORY = 20;    // ticks before streak can re-trigger
 const STREAK_DURATION   = 5;     // streak active ticks
 const STREAK_MULT       = 1.5;   // DPS/heal multiplier during streak
 
-const statAt  = (tpl, k, lvl) => tpl.start[k] + tpl.grow[k] * (lvl - 1);
+// Compound %/level growth, matching CombatLeveling.kt's statAtLevel exactly
+// (startingStat * (1 + growthRate)^(level-1)) -- NOT flat-linear. This file
+// used a flat-linear formula until 08 Jul 2026, another silent drift from
+// the real game's 2026-07-03 compound-growth rewrite.
+const statAt  = (tpl, k, lvl) => tpl.start[k] * Math.pow(1 + tpl.grow[k], lvl - 1);
 const moraleOf= (tpl, lvl)    => Math.round(30 + statAt(tpl,"vit",lvl) * 32);
 const fmtT    = s => `${Math.floor(s/60)}:${String(Math.max(0,s)%60).padStart(2,"0")}`;
 const clamp   = (v,lo,hi)     => Math.max(lo, Math.min(hi, v));
@@ -96,6 +136,7 @@ function parseArgs() {
   return {
     runs:      parseInt(get("--runs", "1000")),
     level:     num("--level",    10),
+    band:      get("--band",    "greycloaks"),
     duration:  num("--duration", 1800),
     memberStatBonuses,
     memberRecipes,
@@ -145,6 +186,7 @@ function parseArgs() {
 // ── single fight ───────────────────────────────────────────────────────────
 function runFight(cfg, verbose) {
   const lvl   = cfg.level;
+  const TPL   = buildTpl(cfg.band);
   const fTpl  = cfg.fighterMight ? TPL.fighterM : TPL.fighterA;
   const tpls  = { warden:TPL.warden, fighter:fTpl, keeper:TPL.keeper, captain:TPL.captain };
 
