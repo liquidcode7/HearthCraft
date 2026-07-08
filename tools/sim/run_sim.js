@@ -11,7 +11,8 @@
 //                   [--disease V] [--wake V] [--hope V] [--radiance V]
 //                   [--hale V] [--warmth V] [--heatease V] [--alert V]
 //                   [--survival] [--fighter might] [--burstmul F] [--verbose]
-//                   [--beta B]      (cascade exponent: 1=cascade/current, 0=neutral, <0=last-stand; default 1)
+//                   [--beta B]      (cascade exponent: 1=cascade, 0=neutral/default (matches EncounterEngine.kt's
+//                                    flat drain/4 -- cascade was explicitly removed there by design), <0=last-stand)
 //                   [--decouple]    (independent per-member spikes instead of one global spike)
 //                   [--sink]        (replace 40% softcap with a reserve pool that absorbs spikes first)
 //                   [--rmax R]      (reserve pool cap for --sink mode; default 50)
@@ -64,7 +65,7 @@ const STREAK_DURATION   = 5;     // streak active ticks
 const STREAK_MULT       = 1.5;   // DPS/heal multiplier during streak
 
 const statAt  = (tpl, k, lvl) => tpl.start[k] + tpl.grow[k] * (lvl - 1);
-const moraleOf= (tpl, lvl)    => Math.round(30 + statAt(tpl,"vit",lvl) * 16);
+const moraleOf= (tpl, lvl)    => Math.round(30 + statAt(tpl,"vit",lvl) * 32);
 const fmtT    = s => `${Math.floor(s/60)}:${String(Math.max(0,s)%60).padStart(2,"0")}`;
 const clamp   = (v,lo,hi)     => Math.max(lo, Math.min(hi, v));
 
@@ -126,7 +127,7 @@ function parseArgs() {
     fighterMight: get("--fighter","agility") === "might",
     burstmul:  num("--burstmul", 1.0),
     verbose:   a.includes("--verbose"),
-    beta:      num("--beta",    1.0),
+    beta:      num("--beta",    0),
     decouple:  a.includes("--decouple"),
     sink:      a.includes("--sink"),
     rmax:      num("--rmax",    50),
@@ -163,7 +164,7 @@ function runFight(cfg, verbose) {
     const baseVit = statAt(tpl,"vit",lvl) + vitBonus;
     const baseWil = statAt(tpl,"wil",lvl) + wilBonus;
     const baseFat = statAt(tpl,"fat",lvl) + (sb.fat||0);
-    const max = Math.round(30 + baseVit * 16);
+    const max = Math.round(30 + baseVit * 32);
     M[k] = {
       key:k, tpl, max, hp:max, wounds:0, grievous:false, atZero:false,
       mig:baseMig, agi:baseAgi, vit:baseVit, wil:baseWil, fat:baseFat,
