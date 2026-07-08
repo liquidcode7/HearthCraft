@@ -294,7 +294,7 @@
         "drain": 7,
         "spike": 60,
         "spikeIntervalSec": 14,
-        "physMitPct": 35,
+        "physMitPct": 90,
         "dread": 0, "shadow": 0, "disease": 0,
         "cold": 0, "heat": 0, "wakefulness": 0
       }
