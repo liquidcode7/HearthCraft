@@ -269,17 +269,27 @@ broad, since it assumed all three recipe classes needed changes):
   recipe does today, until/unless someone updates them separately). Not required by
   this spec.
 
-## 5. T2 migration
+## 5. Existing content: ranks are authored onto it, not consolidated
 
-T2's current recipes are **not** consolidated by this spec. Checking the actual
-current data (not the earlier draft's assumption of a clean per-stat "ladder"):
-Greycloaks' T2 food recipes are mostly distinct dishes at different cook levels with
-different stat pairs (a Will dish at level 4, four different dishes at level 5, one
-at level 6) — there isn't a ladder shape to consolidate, except one near-duplicate
-pair ("Hearth and Hops" and "Rendered Hearth Pie," both Might+4/Vitality+2 at the same
-level 5) that's left alone rather than folded in as a special case. **All existing
-recipes stay single-rank as-is.** New recipes authored going forward use the rank
-ladder from the start.
+Two different questions here, worth keeping separate:
+
+**Should existing recipes get a `ranks` list authored?** Yes — this is the whole
+point, and matches Wes's own worked example directly ("brookcress bannock becomes
+insightful brookcress bannock"). `ranks` gets authored onto the eligible existing
+food recipes for the one live band, Greycloaks (see the implementation plan for the
+exact list and numbers). Mithlost and Undermarch recipes are left unranked for now,
+since neither band has missions yet — not blocked from getting ranks later, just not
+part of this pass (same reasoning as the draught/HoH exclusion in §2).
+
+**Should near-duplicate existing recipes be merged into one family?** No. Checking
+the actual current data (not the earlier draft's assumption of a clean per-stat
+"ladder"): Greycloaks' T2 food recipes are mostly distinct dishes at different cook
+levels with different stat pairs (a Will dish at level 4, four different dishes at
+level 5, one at level 6) — there isn't a ladder shape to consolidate, except one
+near-duplicate pair ("Hearth and Hops" and "Rendered Hearth Pie," both
+Might+4/Vitality+2 at the same level 5). That pair is left alone rather than folded
+into one recipe as a special case — each keeps its own identity and gets its own
+independent `ranks` list.
 
 ## Explicitly out of scope
 
