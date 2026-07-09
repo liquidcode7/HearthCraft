@@ -73,7 +73,8 @@ data class IngredientStock(
     val ingredientId: String,
     val name: String,
     val quantity: Int,
-    val grade: Int = 0   // ordinal of Grade enum; one IngredientStock per (id, grade) pair
+    val grade: Int = 0,   // ordinal of Grade enum; one IngredientStock per (id, grade) pair
+    val primaryStat: String? = null   // "mig"/"agi"/"vit"/"wil", from Ingredient.primaryStat -- used by Pantry's stat filter
 )
 
 data class EncounterDetail(
