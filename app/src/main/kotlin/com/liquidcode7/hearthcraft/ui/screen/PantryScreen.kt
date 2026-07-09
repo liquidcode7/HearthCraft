@@ -28,14 +28,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.liquidcode7.hearthcraft.ui.viewmodel.InventoryViewModel
+import com.liquidcode7.hearthcraft.data.model.Grade
+import com.liquidcode7.hearthcraft.ui.viewmodel.PantrySortMode
+import com.liquidcode7.hearthcraft.ui.viewmodel.PantryViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PantryScreen(onBack: () -> Unit = {}, viewModel: InventoryViewModel = hiltViewModel()) {
-    val namedIngredients by viewModel.namedIngredients.collectAsState()
+fun PantryScreen(onBack: () -> Unit = {}, viewModel: PantryViewModel = hiltViewModel()) {
+    val displayedIngredients by viewModel.displayedIngredients.collectAsState()
     val preparedFood by viewModel.preparedFood.collectAsState()
     val money by viewModel.money.collectAsState()
+    val filters by viewModel.filters.collectAsState()
+    val sortMode by viewModel.sortMode.collectAsState()
 
     Scaffold(
         topBar = {
@@ -67,16 +71,47 @@ fun PantryScreen(onBack: () -> Unit = {}, viewModel: InventoryViewModel = hiltVi
         Text("Ingredients", style = MaterialTheme.typography.titleSmall)
         Spacer(modifier = Modifier.height(8.dp))
 
-        if (namedIngredients.isEmpty()) {
+        Text("Filter by grade", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Spacer(modifier = Modifier.height(4.dp))
+        FilterChipRow(
+            options = Grade.entries.map { it.ordinal to it.displayName },
+            selected = filters.gradeFilter,
+            onToggle = { g -> viewModel.setFilters(filters.copy(gradeFilter = toggledSet(filters.gradeFilter, g))) },
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(modifier = Modifier.height(10.dp))
+
+        Text("Filter by stat", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Spacer(modifier = Modifier.height(4.dp))
+        FilterChipRow(
+            options = listOf("mig" to "Might", "agi" to "Agility", "vit" to "Vitality", "wil" to "Will"),
+            selected = filters.statFilter,
+            onToggle = { s -> viewModel.setFilters(filters.copy(statFilter = toggledSet(filters.statFilter, s))) },
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(modifier = Modifier.height(10.dp))
+
+        Text("Sort", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Spacer(modifier = Modifier.height(4.dp))
+        SortSelector(
+            options = listOf(PantrySortMode.QUANTITY to "Quantity", PantrySortMode.ALPHABETICAL to "Alphabetical"),
+            selectedOption = sortMode,
+            onSelect = { viewModel.setSortMode(it) },
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+
+        if (displayedIngredients.isEmpty()) {
             Text(
-                "No ingredients gathered yet.",
+                if (filters.gradeFilter.isEmpty() && filters.statFilter.isEmpty()) "No ingredients gathered yet."
+                else "No ingredients match the current filters.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         } else {
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(12.dp)) {
-                    namedIngredients.forEachIndexed { i, stock ->
+                    displayedIngredients.forEachIndexed { i, stock ->
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically
@@ -90,7 +125,7 @@ fun PantryScreen(onBack: () -> Unit = {}, viewModel: InventoryViewModel = hiltVi
                             Spacer(modifier = Modifier.width(8.dp))
                             Text("×${stock.quantity}", style = MaterialTheme.typography.bodyMedium)
                         }
-                        if (i < namedIngredients.lastIndex) {
+                        if (i < displayedIngredients.lastIndex) {
                             HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
                         }
                     }
