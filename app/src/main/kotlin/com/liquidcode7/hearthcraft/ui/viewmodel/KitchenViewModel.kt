@@ -37,6 +37,50 @@ import javax.inject.Inject
 
 data class RecipeTier(val label: String, val minLevel: Int, val recipes: List<Recipe>)
 
+enum class RecipeSortMode { TIER, ALPHABETICAL, LEVEL }
+
+data class RecipeFilterState(
+    val cookableOnly: Boolean = false,
+    val classFilter: Set<String> = emptySet(),   // "food" | "draught"
+    val statFilter: Set<String> = emptySet()     // "mig" | "agi" | "vit" | "wil"
+)
+
+/** True if [recipe] passes every active filter in [filters]. [isCookable] is the caller's
+ *  already-computed KitchenViewModel.canCook result for this recipe. */
+fun matchesRecipeFilters(recipe: Recipe, filters: RecipeFilterState, isCookable: Boolean): Boolean {
+    if (filters.cookableOnly && !isCookable) return false
+    if (filters.classFilter.isNotEmpty() && recipe.recipeClass !in filters.classFilter) return false
+    if (filters.statFilter.isNotEmpty()) {
+        val recipeStats = setOfNotNull(recipe.primaryStat, recipe.secondaryStat)
+        if (recipeStats.none { it in filters.statFilter }) return false
+    }
+    return true
+}
+
+/** Reorders [recipes] according to [mode]. TIER performs no reorder -- callers pass recipes
+ *  already in tier-default order (cookable-first, then cookLevel ascending). */
+fun sortRecipesForDisplay(recipes: List<Recipe>, mode: RecipeSortMode): List<Recipe> = when (mode) {
+    RecipeSortMode.TIER -> recipes
+    RecipeSortMode.ALPHABETICAL -> recipes.sortedBy { it.name }
+    RecipeSortMode.LEVEL -> recipes.sortedBy { it.cookLevel }
+}
+
+/** Effective expanded state for a tier: an explicit user override if one exists, else
+ *  [isUnlocked] (unlocked tiers default open, locked tiers default collapsed). */
+fun expandedStateFor(overrides: Map<String, Boolean>, tierLabel: String, isUnlocked: Boolean): Boolean =
+    overrides[tierLabel] ?: isUnlocked
+
+/** Returns [overrides] with [tierLabel]'s effective state flipped. */
+fun withToggledTier(overrides: Map<String, Boolean>, tierLabel: String, isUnlocked: Boolean): Map<String, Boolean> {
+    val current = expandedStateFor(overrides, tierLabel, isUnlocked)
+    return overrides + (tierLabel to !current)
+}
+
+/** Returns an override map that expands only [tierLabel] and collapses every other label in
+ *  [allLabels] -- used by the tier quick-jump chips. */
+fun withOnlyTierExpanded(tierLabel: String, allLabels: List<String>): Map<String, Boolean> =
+    allLabels.associateWith { it == tierLabel }
+
 @HiltViewModel
 class KitchenViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
@@ -165,6 +209,49 @@ class KitchenViewModel @Inject constructor(
         val actual    = resolveDishGrade(heroGrade, supportGrades, cookLevel, recipe.cookLevel)
         actual to (actual < unclamped)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
+
+    private val _recipeFilters = MutableStateFlow(RecipeFilterState())
+    val recipeFilters: StateFlow<RecipeFilterState> = _recipeFilters.asStateFlow()
+
+    fun setRecipeFilters(filters: RecipeFilterState) {
+        _recipeFilters.value = filters
+    }
+
+    private val _recipeSort = MutableStateFlow(RecipeSortMode.TIER)
+    val recipeSort: StateFlow<RecipeSortMode> = _recipeSort.asStateFlow()
+
+    fun setRecipeSort(mode: RecipeSortMode) {
+        _recipeSort.value = mode
+    }
+
+    // Explicit user overrides only; a tier with no entry here defaults per expandedStateFor().
+    private val _expandedTierOverrides = MutableStateFlow<Map<String, Boolean>>(emptyMap())
+    val expandedTierOverrides: StateFlow<Map<String, Boolean>> = _expandedTierOverrides.asStateFlow()
+
+    fun isTierExpanded(tierLabel: String, isUnlocked: Boolean): Boolean =
+        expandedStateFor(_expandedTierOverrides.value, tierLabel, isUnlocked)
+
+    fun toggleTierExpanded(tierLabel: String, isUnlocked: Boolean) {
+        _expandedTierOverrides.value = withToggledTier(_expandedTierOverrides.value, tierLabel, isUnlocked)
+    }
+
+    fun expandTierOnly(tierLabel: String, allLabels: List<String>) {
+        _expandedTierOverrides.value = withOnlyTierExpanded(tierLabel, allLabels)
+    }
+
+    // _selectedIngredientGrades is included as a combine input (unused in the lambda body)
+    // solely to force recomputation when it changes -- canCook() reads it internally, so the
+    // "cookable now" filter would otherwise go stale after selecting a different recipe.
+    val displayedTieredRecipes: StateFlow<List<RecipeTier>> = combine(
+        tieredRecipes, inventoryItems, _recipeFilters, _recipeSort, _selectedIngredientGrades
+    ) { tiers, items, filters, sort, _ ->
+        tiers.map { tier ->
+            val filtered = tier.recipes.filter { recipe ->
+                matchesRecipeFilters(recipe, filters, canCook(recipe, items))
+            }
+            tier.copy(recipes = sortRecipesForDisplay(filtered, sort))
+        }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     // ── Tab selection ─────────────────────────────────────────────────────────
 
