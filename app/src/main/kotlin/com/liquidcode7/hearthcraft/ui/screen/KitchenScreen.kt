@@ -33,10 +33,10 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -57,9 +57,9 @@ import com.liquidcode7.hearthcraft.ui.viewmodel.KitchenViewModel
 import com.liquidcode7.hearthcraft.ui.viewmodel.RecipeFilterState
 import com.liquidcode7.hearthcraft.ui.viewmodel.RecipeSortMode
 import com.liquidcode7.hearthcraft.ui.viewmodel.RecipeTier
+import com.liquidcode7.hearthcraft.ui.viewmodel.expandedStateFor
 import com.liquidcode7.hearthcraft.ui.util.formatMs
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -164,6 +164,7 @@ private fun RecipesTabContent(
     recipeSort: RecipeSortMode,
     viewModel: KitchenViewModel
 ) {
+    val expandedTierOverrides by viewModel.expandedTierOverrides.collectAsState()
     Column(modifier = Modifier.fillMaxSize()) {
 
         // ── Pinned: nav buttons, kilns, recipe detail panel ─────────────────
@@ -215,7 +216,6 @@ private fun RecipesTabContent(
         // ── Scrolls independently: tier quick-jump, filters, sort, recipe list ──
         val listScrollState = rememberScrollState()
         val tierPositions = remember { mutableStateMapOf<String, Int>() }
-        val coroutineScope = rememberCoroutineScope()
 
         Column(
             modifier = Modifier
@@ -228,14 +228,18 @@ private fun RecipesTabContent(
             if (tieredRecipes.isNotEmpty()) {
                 Text("Jump to tier", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Spacer(modifier = Modifier.height(4.dp))
+                var pendingJumpTarget by remember { mutableStateOf<String?>(null) }
+                LaunchedEffect(pendingJumpTarget, tierPositions[pendingJumpTarget]) {
+                    val target = pendingJumpTarget ?: return@LaunchedEffect
+                    tierPositions[target]?.let { y -> listScrollState.animateScrollTo(y) }
+                    pendingJumpTarget = null
+                }
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     tieredRecipes.forEach { tier ->
                         AssistChip(
                             onClick = {
                                 viewModel.expandTierOnly(tier.label, tieredRecipes.map { it.label })
-                                tierPositions[tier.label]?.let { y ->
-                                    coroutineScope.launch { listScrollState.animateScrollTo(y) }
-                                }
+                                pendingJumpTarget = tier.label
                             },
                             label = { Text(tier.label, style = MaterialTheme.typography.labelSmall) }
                         )
@@ -299,7 +303,7 @@ private fun RecipesTabContent(
             } else {
                 displayedTieredRecipes.forEach { tier ->
                     val isUnlocked = cookingLevel >= tier.minLevel
-                    val isExpanded = viewModel.isTierExpanded(tier.label, isUnlocked)
+                    val isExpanded = expandedStateFor(expandedTierOverrides, tier.label, isUnlocked)
                     Spacer(modifier = Modifier.height(8.dp))
                     Row(
                         modifier = Modifier
