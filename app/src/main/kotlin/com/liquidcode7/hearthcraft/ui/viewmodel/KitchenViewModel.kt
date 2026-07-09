@@ -228,9 +228,6 @@ class KitchenViewModel @Inject constructor(
     private val _expandedTierOverrides = MutableStateFlow<Map<String, Boolean>>(emptyMap())
     val expandedTierOverrides: StateFlow<Map<String, Boolean>> = _expandedTierOverrides.asStateFlow()
 
-    fun isTierExpanded(tierLabel: String, isUnlocked: Boolean): Boolean =
-        expandedStateFor(_expandedTierOverrides.value, tierLabel, isUnlocked)
-
     fun toggleTierExpanded(tierLabel: String, isUnlocked: Boolean) {
         _expandedTierOverrides.value = withToggledTier(_expandedTierOverrides.value, tierLabel, isUnlocked)
     }
