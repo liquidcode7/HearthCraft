@@ -48,9 +48,19 @@ since Recipe Rank's breakpoints need a stable, predictable tier width to hang of
 
 ## 2. Recipe Rank mechanic
 
-**Data model.** `Recipe` (`data/model/Recipe.kt`) currently stores a flat
-`primaryBoost: Int` / `secondaryBoost: Int` per recipe. Replace with an embedded list
-of ranks:
+**Data model — additive, not a replacement.** An audit of the current codebase
+before writing the plan found that a straight "replace `primaryBoost`/
+`secondaryBoost` with a `ranks` list" schema change would break more than it needs
+to: 4 test files construct `Recipe(...)` fixtures directly (none of them currently
+pass `primaryBoost`/`secondaryBoost`, relying on the 0 default — removing the flat
+fields breaks all four), `BalanceHarness.kt` reads `recipe.primaryBoost` directly for
+food-boost simulation, and two dev tools (`tools/recipe-browser/format.js`,
+`tools/sim/food_model.js` + `tier_grade_sweep.js`) read `primaryBoost` straight out of
+`recipes.json`. None of that needs to break.
+
+Instead, `ranks` is a **new, optional field** — `primaryBoost`/`secondaryBoost` stay
+exactly as they are today (the recipe's Base-rank values, same JSON keys, same
+default of 0):
 
 ```kotlin
 @Serializable
@@ -66,17 +76,35 @@ data class RecipeRank(
 data class Recipe(
     val id: String,
     val name: String,
+    val primaryBoost: Int = 0,     // unchanged — also IS the Base rank's value
+    val secondaryBoost: Int = 0,   // unchanged
     // ...unchanged fields (band, recipeClass, method, tier, cookLevel, ingredients,
     // heroIngredient, hazardEffect, description, penalty, etc.)...
-    val ranks: List<RecipeRank>   // always at least one entry (the base rank)
+    val ranks: List<RecipeRank> = emptyList()   // NEW, optional. Empty = single-rank,
+                                                 // unchanged behavior from today.
 )
 ```
 
-A recipe is not required to define more than one rank — minor/utility dishes can stay
-single-rank. Resolving "what does this recipe do at cook level L" is: take
-`tierRelative = L - recipe.cookLevel` (the recipe's own tier-entry threshold, already
-its `cookLevel` field), then pick the highest rank in `ranks` whose `cookLevelOffset`
-is `<=` that value (clamped to 0 minimum).
+A recipe with an empty `ranks` list behaves exactly as it does today — nothing about
+it changes unless content is explicitly authored for it. Add a resolver:
+
+```kotlin
+// Returns the ordinal into `ranks` (or 0 for an empty/single-rank recipe) — the
+// index, not the RecipeRank itself, since CookingWorker needs to persist exactly
+// this value onto PreparedFood (see §3).
+fun Recipe.resolvedRankOrdinal(playerCookLevel: Int): Int {
+    if (ranks.isEmpty()) return 0
+    val tierRelative = (playerCookLevel - cookLevel).coerceAtLeast(0)
+    return ranks.indices.filter { ranks[it].cookLevelOffset <= tierRelative }
+        .maxOrNull() ?: 0
+}
+```
+
+Only consumers that need rank-aware behavior call `resolvedRankOrdinal(...)`;
+everything else keeps reading `recipe.primaryBoost` directly and keeps working, just
+without reflecting ranks above Base until (if ever) it's updated. `BalanceHarness.kt`
+and the two dev tools fall into this category — not required by this spec, may be
+updated later as a separate, optional follow-up.
 
 **Breakpoints.** 3 rank-up intervals per 20-level tier, roughly evenly spaced:
 `cookLevelOffset` values of **0 / 7 / 14 / 20** (4 total ranks: base + 3 upgrades).
@@ -116,8 +144,30 @@ dish cooked with Crude ingredients is still held back; a Base-rank dish cooked w
 Pristine ingredients doesn't hit the ceiling either. Rank rewards staying in a tier
 and leveling cooking skill; Grade rewards the ingredient-quality chase.
 
-**Scope.** Applies to all three recipe classes — food, draught, and HoH — since they
-already share the same `Recipe` data class and the same tier-gating concept.
+**Scope — food recipes only, corrected from the earlier draft.** The 03 Jul draft
+assumed this applies uniformly to food, draught, and HoH since they share the
+`Recipe` class. Checking how each class's boost actually gets used in the live game
+found that's not true:
+
+- **Draughts** (15 recipes) — their gameplay effect (armor penetration, etc.) comes
+  from a flat player-selected potency slider in `MissionsScreen`
+  (`BandViewModel.setDraught(potency)`, values None/45/65), entirely independent of
+  which specific draught recipe was cooked. `primaryBoost` is 0 for 14 of 15 draughts
+  already (the one exception, "Contemplative Tea" at `wil 2`, looks like a data
+  artifact, not an intentional mechanic — left alone, out of scope here).
+- **HoH** (20 recipes) — healing is entirely `treatsWoundTypes`-based (which wound
+  categories a preparation treats); none of them have a nonzero `primaryBoost` at
+  all.
+- **Food** (36 recipes) — the only class where `primaryBoost`/`secondaryBoost`
+  actually flows into combat, via `BandRepository.memberInputsForBand`'s
+  `statBonusFor(...)` call. Of these, 35 have a real `primaryStat` to scale; one
+  ("Ember Porridge") is a hazard-effect utility dish like the draughts above and
+  is a natural candidate to simply never get a `ranks` list authored for it — the
+  additive schema handles that with zero special-casing.
+
+Recipe Rank content is authored for **food recipes with a primaryStat** only.
+Draughts, HoH, and hazard-only/penalty food recipes are unaffected — not blocked
+from ever getting ranks later if their mechanics change, just not part of this pass.
 
 ## 3. Rank is locked in at cook time (like Grade)
 
@@ -159,41 +209,65 @@ data class PreparedFood(
 )
 ```
 
-This needs a Room DB migration (current version 21 → 22) adding the `rank` column and
-updating the primary key. Existing prepared-food rows get `rank = 0` (Base) by
-default on migration — pragmatically fine, since Recipe Rank doesn't exist in any
-build those rows could have come from.
+This needs a **manual** Room `Migration` (current version 21 → 22, not an
+`AutoMigration`) — confirmed against the real schema
+(`app/schemas/.../21.json`), `prepared_food`'s primary key is
+`PRIMARY KEY(recipeId, grade)`; SQLite has no `ALTER TABLE` support for changing a
+primary key, so the migration has to follow the same recreate-table pattern already
+used elsewhere in this codebase (e.g. `Migration16To17.kt`): create a new table with
+the 3-column primary key, copy existing rows across with `rank` defaulted to `0`
+(Base), drop the old table, rename. Existing prepared-food rows becoming Base-rank on
+migration is pragmatically fine — Recipe Rank doesn't exist in any build those rows
+could have come from.
+
+A second small helper distinguishes the two ways `ranks` gets read:
+`resolvedRankOrdinal(playerCookLevel)` (above) is used exactly once, at
+cook-completion time, to decide what to *store*. Reading it back later must use the
+*stored* ordinal directly, not re-resolve against the player's current (possibly
+higher) cook level:
+
+```kotlin
+fun Recipe.rankAt(ordinal: Int): RecipeRank =
+    ranks.getOrNull(ordinal) ?: RecipeRank(cookLevelOffset = 0, primaryBoost, secondaryBoost)
+```
 
 ## 4. Consumers that need updating
 
 Found via `grep -rln "\.primaryBoost\|\.secondaryBoost\|\.cookLevel\b"` against the
-current codebase (the 03 Jul draft's consumer list is stale — several of these files
-didn't exist yet):
+current codebase, then narrowed to the food-only call sites (the 03 Jul draft's
+consumer list is both stale — several of these files didn't exist yet — and too
+broad, since it assumed all three recipe classes needed changes):
 
-- **`CookingWorker.kt`** — at cook-completion time, resolve the player's current rank
-  for the recipe (`tierRelative = playerCookLevel - recipe.cookLevel`, pick the
-  matching `RecipeRank`) and pass its ordinal to `inventory.addPreparedFood(recipeId,
-  dishGrade, rank)` (signature gains a `rank` parameter).
+- **`CookingWorker.kt`** — at cook-completion time, for food recipes only, call
+  `recipe.resolvedRankOrdinal(playerCookLevel)` and pass it to
+  `inventory.addPreparedFood(recipeId, dishGrade, rankOrdinal)` (signature gains a
+  `rank` parameter, default 0 — draught/HoH call sites are unaffected and keep
+  passing nothing extra).
 - **`InventoryRepository`** (wherever `addPreparedFood`/`observePreparedFood`/
-  `preparedFoodQty` live) — these need the new `rank` parameter threaded through.
+  `preparedFoodQty` live) — needs the new `rank` parameter threaded through.
 - **`PantryViewModel.kt` / `InventoryViewModel.kt`** — `preparedFood` mapping needs to
   resolve `PreparedFoodDetail`'s displayed name (prefix + recipe name) and boost
-  values from `recipe.ranks[pf.rank]` instead of `recipe.primaryBoost` directly.
-  `PreparedFoodDetail` (`UiModels.kt`) needs a `rank: Int` field so screens can render
-  the prefix.
+  values via `recipe.rankAt(pf.rank)` instead of reading `recipe.primaryBoost`
+  directly. `PreparedFoodDetail` (`UiModels.kt`) needs a `rank: Int` field so screens
+  can render the prefix.
 - **`BandRepository.kt`** (`statBonusFor(...)` call site, line ~128) — combat stat
-  application must read the boost from the specific prepared-food batch's resolved
-  rank, not a flat `recipe.primaryBoost`.
+  application must read the boost via `recipe.rankAt(food.rank)`, not a flat
+  `food.primaryBoost`, for the food this member has equipped.
 - **`RecipeBookScreen.kt`**, **`KitchenScreen.kt`** / **`KitchenViewModel.kt`**,
-  **`MissionsScreen.kt`** — anywhere a recipe's or prepared-food's boost/name is
-  displayed needs to resolve and show the current rank's prefix + boost, not the base
-  values. Kitchen's recipe detail panel (`RecipeDetailPanel`) is the natural place to
-  also preview the *next* rank-up (a stretch goal, not required for this spec — see
-  Out of Scope).
+  **`MissionsScreen.kt`** — anywhere a food recipe's or prepared-food's boost/name is
+  displayed needs to resolve and show the current rank's prefix + boost. Draught/HoH
+  display branches in these same files (hazard-effect labels, wound-type labels) are
+  untouched. Kitchen's recipe detail panel (`RecipeDetailPanel`) is the natural place
+  to also preview the *next* rank-up (a stretch goal, not required for this spec —
+  see Out of Scope).
 - **`JournalViewModel.kt`** (`sortedWith(compareBy({ it.tier }, { it.cookLevel }, ...
   ))`) — sorts by the recipe's base `cookLevel` (tier-entry threshold), which is
-  unchanged by this spec; no functional change needed here, just confirming it still
-  compiles against the new `Recipe` shape.
+  unchanged by this spec; no functional change needed here.
+- **`BalanceHarness.kt`, `tools/recipe-browser/format.js`, `tools/sim/food_model.js`,
+  `tools/sim/tier_grade_sweep.js`** — all read `primaryBoost` directly and keep
+  compiling/working unchanged (they'll just reflect Base rank only, same as every
+  recipe does today, until/unless someone updates them separately). Not required by
+  this spec.
 
 ## 5. T2 migration
 
@@ -223,10 +297,10 @@ ladder from the start.
 
 ## Testing
 
-- Unit tests for the pure rank-resolution function (given a recipe's `ranks` list, a
-  player cook level, and the recipe's own `cookLevel`, return the correct
+- Unit tests for `resolvedRankOrdinal` and `rankAt` (given a recipe's `ranks` list, a
+  player cook level, and the recipe's own `cookLevel`, return the correct ordinal/
   `RecipeRank`) — boundary cases at exactly a breakpoint, below the first breakpoint,
-  above the last one.
+  above the last one, and the empty-`ranks` fallback.
 - Unit tests for the cook-level/XP curve changes (`PlayerRepository`'s
   `totalXpForLevel`/`levelForTotalXp` for the COOKING track) confirming tier
   boundaries land at 20/40/60/80 and `MAX_LEVEL` behaves correctly at the new cap.
