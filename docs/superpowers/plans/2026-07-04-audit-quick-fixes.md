@@ -617,9 +617,14 @@ brainstorm → spec → plan → subagent-driven-development cycle, in this orde
    numbers corrected in master-design.md §6.3 (Horn duration, Red Dawn heal/DPS/duration);
    post-fight recap narrative replaced with outcome-bucketed text (no more encounter name
    used as a nonsensical grammatical subject). Merged to main.
-5. **Kitchen/Pantry UX** — NOT STARTED. Scroll-jump-to-top fix, collapsible/filterable
-   recipe tiers, ingredient filters (quality/type/quantity/alphabetical) in Pantry.
-   Independent of combat work.
+5. **Kitchen/Pantry UX** — DONE (09 Jul 2026). Spec:
+   `docs/superpowers/specs/2026-07-09-kitchen-pantry-ux-design.md`. Plan:
+   `docs/superpowers/plans/2026-07-09-kitchen-pantry-ux.md`. Shipped: Kitchen Recipes tab
+   got a sticky detail panel (replacing the old scroll-jump-to-top bug), collapsible
+   tiers with a quick-jump row, and combinable cookable/class/stat filter chips plus a
+   within-tier sort selector; Pantry got grade/stat filter chips and a sort selector for
+   ingredients via a new dedicated `PantryViewModel` (kept isolated from the shared
+   `InventoryViewModel`). Merged to main.
 6. **Economy pass** — NOT STARTED. Recipe Rank (recipes get more potent per cook level
    within a tier — deferred spec already exists per memory), the too-many-ingredients-
    too-few-recipes imbalance, prepared-ingredients sitting unused, drop-rate curve tuning
