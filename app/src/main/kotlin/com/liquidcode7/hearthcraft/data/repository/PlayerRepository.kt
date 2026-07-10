@@ -171,8 +171,10 @@ class PlayerRepository @Inject constructor(
 
     companion object {
 
-        // Tier boundaries for cooking — these match TIER_TABLE in the sim/food_model.js
-        private val COOK_TIER_BOUNDARIES = setOf(5, 10, 16, 23, 31, 41)
+        // Tier boundaries for cooking: every cook tier is a flat 20 levels wide.
+        // NOTE: tools/sim/food_model.js's TIER_TABLE still reflects the old boundaries
+        // and is intentionally not updated by this change (see Global Constraints).
+        private val COOK_TIER_BOUNDARIES = setOf(20, 40, 60, 80)
 
         // Tier boundaries for Houses of Healing — curveType=tierWall, A=22, P=1.2, wallMultiplier=2.0
         private val HOH_TIER_BOUNDARIES = setOf(5, 10, 16, 23, 31, 41)
@@ -251,7 +253,7 @@ class PlayerRepository @Inject constructor(
         const val XP_HOH_APPLY       = 35   // base XP for any successful HoH treatment
         const val XP_HOH_CLEAR_BONUS = 20   // bonus XP when a wound is fully cleared
 
-        const val MAX_LEVEL = 50
+        const val MAX_LEVEL = 100
 
         // Legacy shim — kept so any callsite that hasn't been updated yet still compiles.
         // Delegates to the new formula using the cooking track.
