@@ -10,6 +10,15 @@ data class RecipeIngredient(
 )
 
 @Serializable
+data class RecipeRank(
+    val cookLevelOffset: Int,   // 0 = base rank. Positive values are cook levels
+                                // above the recipe's own tier-entry threshold
+                                // (Recipe.cookLevel).
+    val primaryBoost: Int,
+    val secondaryBoost: Int = 0
+)
+
+@Serializable
 data class Recipe(
     val id: String,
     val name: String,
@@ -29,7 +38,9 @@ data class Recipe(
     val heroIngredient: String = "",   // id of the hero ingredient (counts double in grade resolution)
     val hohLevel: Int = 0,             // minimum HoH level to craft (only relevant when recipeClass == "hoh")
     val treatsWoundTypes: List<String> = emptyList(), // wound type ids this recipe treats, e.g. ["physical", "will"]
-    val penalty: Boolean = false
+    val penalty: Boolean = false,
+    val ranks: List<RecipeRank> = emptyList()   // optional. Empty = single-rank,
+                                                 // behaves exactly like today.
 ) {
     // Derived properties used by existing UI code.
     // buffType maps the primary stat to a human-readable buff category.
@@ -55,4 +66,32 @@ data class Recipe(
 
     // levelRequired maps to cookLevel for backwards compat with KitchenViewModel tier sorting.
     val levelRequired: Int get() = cookLevel
+}
+
+// Rank name prefixes, shared across every recipe family — index 0 (Base) has no
+// prefix. The single source of truth for rank naming; never author these per-recipe.
+val RANK_PREFIXES = listOf("", "Insightful", "Inspired", "Inimitable")
+
+/**
+ * Ordinal into [Recipe.ranks] for the given [playerCookLevel] — 0 (Base) if [Recipe.ranks]
+ * is empty or the player hasn't reached the first breakpoint yet.
+ */
+fun Recipe.resolvedRankOrdinal(playerCookLevel: Int): Int {
+    if (ranks.isEmpty()) return 0
+    val tierRelative = (playerCookLevel - cookLevel).coerceAtLeast(0)
+    return ranks.indices.filter { ranks[it].cookLevelOffset <= tierRelative }.maxOrNull() ?: 0
+}
+
+/**
+ * The [RecipeRank] at a specific, already-resolved [ordinal] (e.g. one stored on a
+ * PreparedFood row). Falls back to a synthesized Base rank from [Recipe.primaryBoost]/
+ * [Recipe.secondaryBoost] when [Recipe.ranks] is empty or [ordinal] is out of range.
+ */
+fun Recipe.rankAt(ordinal: Int): RecipeRank =
+    ranks.getOrNull(ordinal) ?: RecipeRank(cookLevelOffset = 0, primaryBoost = primaryBoost, secondaryBoost = secondaryBoost)
+
+/** [Recipe.name] with the rank prefix for [ordinal] applied (no prefix at ordinal 0). */
+fun Recipe.rankedDisplayName(ordinal: Int): String {
+    val prefix = RANK_PREFIXES.getOrNull(ordinal)?.takeIf { it.isNotEmpty() }
+    return if (prefix != null) "$prefix $name" else name
 }
