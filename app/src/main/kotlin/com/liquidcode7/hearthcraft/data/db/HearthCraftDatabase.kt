@@ -35,7 +35,7 @@ import com.liquidcode7.hearthcraft.data.db.dao.SeedStockDao
         EncounterTicks::class,
         HohCookingSession::class,
     ],
-    version = 21,
+    version = 22,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 5, to = 6),

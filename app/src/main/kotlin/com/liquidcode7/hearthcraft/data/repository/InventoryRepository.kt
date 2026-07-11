@@ -68,29 +68,29 @@ class InventoryRepository @Inject constructor(
 
     // ── Prepared food ─────────────────────────────────────────────────────────
 
-    suspend fun addPreparedFood(recipeId: String, grade: Int = 0) {
-        val existing = preparedFoodDao.get(recipeId, grade)
+    suspend fun addPreparedFood(recipeId: String, grade: Int = 0, rank: Int = 0) {
+        val existing = preparedFoodDao.get(recipeId, grade, rank)
         if (existing == null) {
-            preparedFoodDao.upsert(PreparedFood(recipeId = recipeId, grade = grade, quantity = 1))
+            preparedFoodDao.upsert(PreparedFood(recipeId = recipeId, grade = grade, rank = rank, quantity = 1))
         } else {
-            preparedFoodDao.addOne(recipeId, grade)
+            preparedFoodDao.addOne(recipeId, grade, rank)
         }
     }
 
-    /** Removes one serving, consuming lowest grade first. */
+    /** Removes one serving, consuming lowest grade first, then lowest rank. */
     suspend fun removePreparedFood(recipeId: String) {
         val rows = preparedFoodDao.getAllGradesOf(recipeId)
         val target = rows.firstOrNull { it.quantity > 0 } ?: return
-        preparedFoodDao.removeOne(target.recipeId, target.grade)
-        preparedFoodDao.deleteIfEmpty(target.recipeId, target.grade)
+        preparedFoodDao.removeOne(target.recipeId, target.grade, target.rank)
+        preparedFoodDao.deleteIfEmpty(target.recipeId, target.grade, target.rank)
     }
 
-    /** Removes one serving of [recipeId] at the explicit [grade]. */
-    suspend fun removePreparedFood(recipeId: String, grade: Int) {
-        preparedFoodDao.removeOne(recipeId, grade)
+    /** Removes one serving of [recipeId] at the explicit [grade] (and [rank], default Base). */
+    suspend fun removePreparedFood(recipeId: String, grade: Int, rank: Int = 0) {
+        preparedFoodDao.removeOne(recipeId, grade, rank)
     }
 
-    /** Total quantity of [recipeId] across all grades. */
+    /** Total quantity of [recipeId] across all grades and ranks. */
     suspend fun preparedFoodQty(recipeId: String): Int = preparedFoodDao.totalQuantity(recipeId)
 
     // ── Seeds (unchanged) ─────────────────────────────────────────────────────
