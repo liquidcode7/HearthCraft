@@ -15,7 +15,13 @@
       { "id": "chetwood_browncap","qty": 1 }
     ],
     "primaryStat": "mig",
-    "primaryBoost": 2
+    "primaryBoost": 2,
+    "ranks": [
+      { "cookLevelOffset": 0, "primaryBoost": 2 },
+      { "cookLevelOffset": 7, "primaryBoost": 2 },
+      { "cookLevelOffset": 14, "primaryBoost": 3 },
+      { "cookLevelOffset": 20, "primaryBoost": 3 }
+    ]
   },
   {
     "id": "fernys_treacle",
@@ -51,7 +57,13 @@
       { "id": "brookcress",     "qty": 1 }
     ],
     "primaryStat": "agi",
-    "primaryBoost": 2
+    "primaryBoost": 2,
+    "ranks": [
+      { "cookLevelOffset": 0, "primaryBoost": 2 },
+      { "cookLevelOffset": 7, "primaryBoost": 2 },
+      { "cookLevelOffset": 14, "primaryBoost": 3 },
+      { "cookLevelOffset": 20, "primaryBoost": 3 }
+    ]
   },
   {
     "id": "goodmans_stew",
@@ -69,7 +81,13 @@
       { "id": "hearthgrain",     "qty": 1 }
     ],
     "primaryStat": "vit",
-    "primaryBoost": 2
+    "primaryBoost": 2,
+    "ranks": [
+      { "cookLevelOffset": 0, "primaryBoost": 2 },
+      { "cookLevelOffset": 7, "primaryBoost": 2 },
+      { "cookLevelOffset": 14, "primaryBoost": 3 },
+      { "cookLevelOffset": 20, "primaryBoost": 3 }
+    ]
   },
   {
     "id": "brookcress_bannock",
@@ -87,7 +105,13 @@
       { "id": "forest_honey",  "qty": 1 }
     ],
     "primaryStat": "wil",
-    "primaryBoost": 2
+    "primaryBoost": 2,
+    "ranks": [
+      { "cookLevelOffset": 0, "primaryBoost": 2 },
+      { "cookLevelOffset": 7, "primaryBoost": 2 },
+      { "cookLevelOffset": 14, "primaryBoost": 3 },
+      { "cookLevelOffset": 20, "primaryBoost": 3 }
+    ]
   },
   {
     "id": "sloe_bitters",
@@ -125,7 +149,13 @@
     "primaryStat": "mig",
     "primaryBoost": 4,
     "secondaryStat": "vit",
-    "secondaryBoost": 2
+    "secondaryBoost": 2,
+    "ranks": [
+      { "cookLevelOffset": 0, "primaryBoost": 4, "secondaryBoost": 2 },
+      { "cookLevelOffset": 7, "primaryBoost": 5, "secondaryBoost": 2 },
+      { "cookLevelOffset": 14, "primaryBoost": 5, "secondaryBoost": 3 },
+      { "cookLevelOffset": 20, "primaryBoost": 6, "secondaryBoost": 3 }
+    ]
   },
   {
     "id": "chetwood_rabbit_roast",
@@ -145,7 +175,13 @@
     "primaryStat": "agi",
     "primaryBoost": 4,
     "secondaryStat": "mig",
-    "secondaryBoost": 2
+    "secondaryBoost": 2,
+    "ranks": [
+      { "cookLevelOffset": 0, "primaryBoost": 4, "secondaryBoost": 2 },
+      { "cookLevelOffset": 7, "primaryBoost": 5, "secondaryBoost": 2 },
+      { "cookLevelOffset": 14, "primaryBoost": 5, "secondaryBoost": 3 },
+      { "cookLevelOffset": 20, "primaryBoost": 6, "secondaryBoost": 3 }
+    ]
   },
   {
     "id": "field_and_fen_potage",
@@ -166,7 +202,13 @@
     "primaryStat": "vit",
     "primaryBoost": 4,
     "secondaryStat": "wil",
-    "secondaryBoost": 2
+    "secondaryBoost": 2,
+    "ranks": [
+      { "cookLevelOffset": 0, "primaryBoost": 4, "secondaryBoost": 2 },
+      { "cookLevelOffset": 7, "primaryBoost": 5, "secondaryBoost": 2 },
+      { "cookLevelOffset": 14, "primaryBoost": 5, "secondaryBoost": 3 },
+      { "cookLevelOffset": 20, "primaryBoost": 6, "secondaryBoost": 3 }
+    ]
   },
   {
     "id": "honey_oat_cake",
@@ -186,7 +228,13 @@
     "primaryStat": "wil",
     "primaryBoost": 4,
     "secondaryStat": "agi",
-    "secondaryBoost": 2
+    "secondaryBoost": 2,
+    "ranks": [
+      { "cookLevelOffset": 0, "primaryBoost": 4, "secondaryBoost": 2 },
+      { "cookLevelOffset": 7, "primaryBoost": 5, "secondaryBoost": 2 },
+      { "cookLevelOffset": 14, "primaryBoost": 5, "secondaryBoost": 3 },
+      { "cookLevelOffset": 20, "primaryBoost": 6, "secondaryBoost": 3 }
+    ]
   },
   {
     "id": "bilberry_tonic",
@@ -240,7 +288,13 @@
     "primaryStat": "mig",
     "primaryBoost": 6,
     "secondaryStat": "agi",
-    "secondaryBoost": 3
+    "secondaryBoost": 3,
+    "ranks": [
+      { "cookLevelOffset": 0, "primaryBoost": 6, "secondaryBoost": 3 },
+      { "cookLevelOffset": 7, "primaryBoost": 7, "secondaryBoost": 3 },
+      { "cookLevelOffset": 14, "primaryBoost": 8, "secondaryBoost": 4 },
+      { "cookLevelOffset": 20, "primaryBoost": 9, "secondaryBoost": 4 }
+    ]
   },
   {
     "id": "ember_porridge",
@@ -275,7 +329,13 @@
     "primaryStat": "mig",
     "primaryBoost": 8,
     "secondaryStat": "vit",
-    "secondaryBoost": 4
+    "secondaryBoost": 4,
+    "ranks": [
+      { "cookLevelOffset": 0, "primaryBoost": 8, "secondaryBoost": 4 },
+      { "cookLevelOffset": 7, "primaryBoost": 9, "secondaryBoost": 5 },
+      { "cookLevelOffset": 14, "primaryBoost": 10, "secondaryBoost": 5 },
+      { "cookLevelOffset": 20, "primaryBoost": 12, "secondaryBoost": 6 }
+    ]
   },
   {
     "id": "heartflame_broth",
@@ -676,7 +736,13 @@
       { "id": "forest_honey", "qty": 1 }
     ],
     "primaryStat": "vit",
-    "primaryBoost": 2
+    "primaryBoost": 2,
+    "ranks": [
+      { "cookLevelOffset": 0, "primaryBoost": 2 },
+      { "cookLevelOffset": 7, "primaryBoost": 2 },
+      { "cookLevelOffset": 14, "primaryBoost": 3 },
+      { "cookLevelOffset": 20, "primaryBoost": 3 }
+    ]
   },
   {
     "id": "wanderers_supper",
@@ -693,7 +759,13 @@
       { "id": "duskberry",    "qty": 1 }
     ],
     "primaryStat": "agi",
-    "primaryBoost": 2
+    "primaryBoost": 2,
+    "ranks": [
+      { "cookLevelOffset": 0, "primaryBoost": 2 },
+      { "cookLevelOffset": 7, "primaryBoost": 2 },
+      { "cookLevelOffset": 14, "primaryBoost": 3 },
+      { "cookLevelOffset": 20, "primaryBoost": 3 }
+    ]
   },
   {
     "id": "contemplative_tea",
@@ -746,7 +818,13 @@
       { "id": "bree_well_water", "qty": 1 }
     ],
     "primaryStat": "vit",
-    "primaryBoost": 2
+    "primaryBoost": 2,
+    "ranks": [
+      { "cookLevelOffset": 0, "primaryBoost": 2 },
+      { "cookLevelOffset": 7, "primaryBoost": 2 },
+      { "cookLevelOffset": 14, "primaryBoost": 3 },
+      { "cookLevelOffset": 20, "primaryBoost": 3 }
+    ]
   },
   {
     "id": "pipeweed_crumble",
@@ -766,7 +844,13 @@
     "primaryStat": "wil",
     "primaryBoost": 4,
     "secondaryStat": "vit",
-    "secondaryBoost": 2
+    "secondaryBoost": 2,
+    "ranks": [
+      { "cookLevelOffset": 0, "primaryBoost": 4, "secondaryBoost": 2 },
+      { "cookLevelOffset": 7, "primaryBoost": 5, "secondaryBoost": 2 },
+      { "cookLevelOffset": 14, "primaryBoost": 5, "secondaryBoost": 3 },
+      { "cookLevelOffset": 20, "primaryBoost": 6, "secondaryBoost": 3 }
+    ]
   },
   {
     "id": "crabapple_blush_tart",
@@ -784,7 +868,13 @@
       { "id": "chetwood_spring", "qty": 1 }
     ],
     "primaryStat": "agi",
-    "primaryBoost": 2
+    "primaryBoost": 2,
+    "ranks": [
+      { "cookLevelOffset": 0, "primaryBoost": 2 },
+      { "cookLevelOffset": 7, "primaryBoost": 2 },
+      { "cookLevelOffset": 14, "primaryBoost": 3 },
+      { "cookLevelOffset": 20, "primaryBoost": 3 }
+    ]
   },
   {
     "id": "rendered_hearth_pie",
@@ -804,7 +894,13 @@
     "primaryStat": "mig",
     "primaryBoost": 4,
     "secondaryStat": "vit",
-    "secondaryBoost": 2
+    "secondaryBoost": 2,
+    "ranks": [
+      { "cookLevelOffset": 0, "primaryBoost": 4, "secondaryBoost": 2 },
+      { "cookLevelOffset": 7, "primaryBoost": 5, "secondaryBoost": 2 },
+      { "cookLevelOffset": 14, "primaryBoost": 5, "secondaryBoost": 3 },
+      { "cookLevelOffset": 20, "primaryBoost": 6, "secondaryBoost": 3 }
+    ]
   },
   {
     "id": "lone_lands_venison",
@@ -823,7 +919,13 @@
     "primaryStat": "mig",
     "primaryBoost": 6,
     "secondaryStat": "vit",
-    "secondaryBoost": 3
+    "secondaryBoost": 3,
+    "ranks": [
+      { "cookLevelOffset": 0, "primaryBoost": 6, "secondaryBoost": 3 },
+      { "cookLevelOffset": 7, "primaryBoost": 7, "secondaryBoost": 3 },
+      { "cookLevelOffset": 14, "primaryBoost": 8, "secondaryBoost": 4 },
+      { "cookLevelOffset": 20, "primaryBoost": 9, "secondaryBoost": 4 }
+    ]
   },
   {
     "id": "old_forest_broth",
@@ -840,7 +942,13 @@
       { "id": "pale_fen_cap",        "qty": 1 }
     ],
     "primaryStat": "wil",
-    "primaryBoost": 2
+    "primaryBoost": 2,
+    "ranks": [
+      { "cookLevelOffset": 0, "primaryBoost": 2 },
+      { "cookLevelOffset": 7, "primaryBoost": 2 },
+      { "cookLevelOffset": 14, "primaryBoost": 3 },
+      { "cookLevelOffset": 20, "primaryBoost": 3 }
+    ]
   },
   {
     "id": "roadwise_berry_mix",
@@ -860,7 +968,13 @@
     "primaryStat": "agi",
     "primaryBoost": 4,
     "secondaryStat": "vit",
-    "secondaryBoost": 2
+    "secondaryBoost": 2,
+    "ranks": [
+      { "cookLevelOffset": 0, "primaryBoost": 4, "secondaryBoost": 2 },
+      { "cookLevelOffset": 7, "primaryBoost": 5, "secondaryBoost": 2 },
+      { "cookLevelOffset": 14, "primaryBoost": 5, "secondaryBoost": 3 },
+      { "cookLevelOffset": 20, "primaryBoost": 6, "secondaryBoost": 3 }
+    ]
   },
   {
     "id": "marshwort_tonic",
@@ -912,7 +1026,13 @@
     "primaryStat": "mig",
     "primaryBoost": 6,
     "secondaryStat": "vit",
-    "secondaryBoost": 3
+    "secondaryBoost": 3,
+    "ranks": [
+      { "cookLevelOffset": 0, "primaryBoost": 6, "secondaryBoost": 3 },
+      { "cookLevelOffset": 7, "primaryBoost": 7, "secondaryBoost": 3 },
+      { "cookLevelOffset": 14, "primaryBoost": 8, "secondaryBoost": 4 },
+      { "cookLevelOffset": 20, "primaryBoost": 9, "secondaryBoost": 4 }
+    ]
   },
   {
     "id": "crowberry_warmth_draught",
