@@ -53,6 +53,9 @@ import com.liquidcode7.hearthcraft.data.model.Grade
 import com.liquidcode7.hearthcraft.data.model.Ingredient
 import com.liquidcode7.hearthcraft.data.model.Recipe
 import com.liquidcode7.hearthcraft.data.model.gradeMultiplier
+import com.liquidcode7.hearthcraft.data.model.rankAt
+import com.liquidcode7.hearthcraft.data.model.rankedDisplayName
+import com.liquidcode7.hearthcraft.data.model.resolvedRankOrdinal
 import com.liquidcode7.hearthcraft.ui.viewmodel.KitchenViewModel
 import com.liquidcode7.hearthcraft.ui.viewmodel.RecipeFilterState
 import com.liquidcode7.hearthcraft.ui.viewmodel.RecipeSortMode
@@ -430,8 +433,9 @@ private fun RecipeDetailPanel(
         "vit" -> "Vitality"; "wil" -> "Will"
         else -> recipe.primaryStat
     }
+    val currentRank = recipe.rankAt(recipe.resolvedRankOrdinal(cookingLevel))
     val gradeToUse = predictedGrade?.first ?: Grade.FINE
-    val scaledBoost = (recipe.primaryBoost * gradeMultiplier(gradeToUse)).roundToInt()
+    val scaledBoost = (currentRank.primaryBoost * gradeMultiplier(gradeToUse)).roundToInt()
     val effectLine = when {
         recipe.penalty && statName != null -> "$statName $scaledBoost"
         recipe.primaryStat != null && statName != null -> "$statName +$scaledBoost"
@@ -451,7 +455,10 @@ private fun RecipeDetailPanel(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
-            Text(recipe.name, style = MaterialTheme.typography.titleSmall)
+            Text(
+                recipe.rankedDisplayName(recipe.resolvedRankOrdinal(cookingLevel)),
+                style = MaterialTheme.typography.titleSmall
+            )
             Text(recipe.description, style = MaterialTheme.typography.bodySmall)
             Spacer(modifier = Modifier.height(8.dp))
             Text(
