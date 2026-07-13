@@ -625,12 +625,24 @@ brainstorm → spec → plan → subagent-driven-development cycle, in this orde
    within-tier sort selector; Pantry got grade/stat filter chips and a sort selector for
    ingredients via a new dedicated `PantryViewModel` (kept isolated from the shared
    `InventoryViewModel`). Merged to main.
-6. **Economy pass** — NOT STARTED. Recipe Rank (recipes get more potent per cook level
-   within a tier — deferred spec already exists per memory), the too-many-ingredients-
-   too-few-recipes imbalance, prepared-ingredients sitting unused, drop-rate curve tuning
-   (`QualityUtils.kt`'s `GATHER_DISTRIBUTION`, currently marked `TODO:TUNE`). Use the
-   recipe-browser tool (`tools/recipe-browser/`) to help diagnose the ingredient/recipe
-   imbalance.
+6. **Economy pass** — IN PROGRESS. Three sub-items, proposed order: Recipe Rank, then
+   drop-rate/gather-timer pacing, then a prepared-ingredients/imbalance investigation.
+   - **Recipe Rank — DONE (13 Jul 2026).** Spec:
+     `docs/superpowers/specs/2026-07-09-recipe-rank-system-design.md`. Plan:
+     `docs/superpowers/plans/2026-07-09-recipe-rank-system.md`. Shipped: food recipes
+     scale in place (Base → Insightful → Inspired → Inimitable) as cook level rises
+     within a tier, additive `Recipe.ranks` schema (empty = unchanged behavior), rank
+     locked in at cook time like Grade (new `PreparedFood.rank` column, DB v21→v22),
+     cook-level tiers widened to a flat 20 levels (cap raised 50→100), ranks authored
+     onto Greycloaks' 20 stat-boost food recipes. Draughts/HoH explicitly out of scope
+     (they don't use `primaryBoost` for anything live). Merged to main.
+   - **Drop-rate/gather-timer pacing** — NOT STARTED. Tune `QualityUtils.kt`'s
+     `GATHER_DISTRIBUTION` (currently marked `TODO:TUNE`) together with gathering-session
+     timers — directly addresses the standing concern that grade mastery ramps too fast
+     (see memory: cook-pacing-concern).
+   - **Prepared-ingredients / imbalance investigation** — NOT STARTED, deliberately last
+     (may partially resolve once the pacing pass lands). Use the recipe-browser tool
+     (`tools/recipe-browser/`) to help diagnose.
 7. **Gear system** — NOT STARTED, deliberately last. Needs its own dedicated brainstorm
    session, not folded into any other group — Wes has explicitly said he doesn't yet
    know the scope he wants (minimal weapon+cloak vs. full itemization). This is also
