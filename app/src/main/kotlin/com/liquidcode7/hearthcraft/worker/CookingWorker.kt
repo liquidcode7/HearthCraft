@@ -13,6 +13,7 @@ import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import com.liquidcode7.hearthcraft.HearthCraftApp
 import com.liquidcode7.hearthcraft.MainActivity
+import com.liquidcode7.hearthcraft.data.model.resolvedRankOrdinal
 import com.liquidcode7.hearthcraft.data.repository.GameDataRepository
 import com.liquidcode7.hearthcraft.data.repository.InventoryRepository
 import com.liquidcode7.hearthcraft.data.repository.PlayerRepository
@@ -39,9 +40,10 @@ class CookingWorker @AssistedInject constructor(
         val dishGrade = inputData.getInt(KEY_DISH_GRADE, 0)
 
         val oldLevel = player.get()?.cookingLevel ?: 1
+        val rankOrdinal = if (recipe.recipeClass == "food") recipe.resolvedRankOrdinal(oldLevel) else 0
 
         val isFirstCook = inventory.preparedFoodQty(recipeId) == 0
-        inventory.addPreparedFood(recipeId, dishGrade)
+        inventory.addPreparedFood(recipeId, dishGrade, rankOrdinal)
         val cookingXp = if (isFirstCook) PlayerRepository.XP_COOK_FIRST else PlayerRepository.XP_COOK_REPEAT
         player.addCookingXp(cookingXp)
 
