@@ -26,6 +26,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.liquidcode7.hearthcraft.data.model.Recipe
+import com.liquidcode7.hearthcraft.data.model.rankAt
+import com.liquidcode7.hearthcraft.data.model.rankedDisplayName
+import com.liquidcode7.hearthcraft.data.model.resolvedRankOrdinal
 import com.liquidcode7.hearthcraft.ui.viewmodel.KitchenViewModel
 import com.liquidcode7.hearthcraft.ui.viewmodel.PlayerViewModel
 
@@ -110,11 +113,12 @@ private fun RecipeEntry(recipe: Recipe, cookingLevel: Int, kitchenViewModel: Kit
         "mig" -> "Might"; "agi" -> "Agility"; "vit" -> "Vitality"; "wil" -> "Will"
         else  -> recipe.primaryStat
     }
+    val currentRank = recipe.rankAt(recipe.resolvedRankOrdinal(cookingLevel))
     val effectLine = when {
         recipe.penalty && statName != null ->
-            "$statName ${recipe.primaryBoost}"
+            "$statName ${currentRank.primaryBoost}"
         recipe.primaryStat != null && statName != null ->
-            "$statName +${recipe.primaryBoost}"
+            "$statName +${currentRank.primaryBoost}"
         recipe.hazardEffect != null -> {
             val hazardLabel = when (recipe.hazardEffect) {
                 "warmth"   -> "Warmth (cold resist)"
@@ -133,7 +137,7 @@ private fun RecipeEntry(recipe: Recipe, cookingLevel: Int, kitchenViewModel: Kit
         Column(modifier = Modifier.padding(12.dp)) {
             Row {
                 Text(
-                    recipe.name,
+                    recipe.rankedDisplayName(recipe.resolvedRankOrdinal(cookingLevel)),
                     style = MaterialTheme.typography.titleSmall,
                     modifier = Modifier.weight(1f)
                 )
