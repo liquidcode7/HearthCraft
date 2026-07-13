@@ -15,6 +15,7 @@ data class PreparedFoodDetail(
     val buffStrength: Int,
     val quantity: Int,
     val grade: Int = 0,            // ordinal of Grade enum; 0=Crude
+    val rank: Int = 0,             // ordinal into Recipe.ranks; 0=Base
     val primaryStat: String? = null,
     val primaryBoost: Int = 0,
     val secondaryStat: String? = null,

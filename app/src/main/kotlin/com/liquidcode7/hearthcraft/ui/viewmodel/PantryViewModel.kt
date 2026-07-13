@@ -2,6 +2,8 @@ package com.liquidcode7.hearthcraft.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.liquidcode7.hearthcraft.data.model.rankAt
+import com.liquidcode7.hearthcraft.data.model.rankedDisplayName
 import com.liquidcode7.hearthcraft.data.repository.GameDataRepository
 import com.liquidcode7.hearthcraft.data.repository.InventoryRepository
 import com.liquidcode7.hearthcraft.data.repository.PlayerRepository
@@ -50,17 +52,19 @@ class PantryViewModel @Inject constructor(
         .map { foods ->
             foods.mapNotNull { pf ->
                 val recipe = gameData.recipes.find { it.id == pf.recipeId && it.recipeClass != "hoh" } ?: return@mapNotNull null
+                val rank = recipe.rankAt(pf.rank)
                 PreparedFoodDetail(
                     recipeId = pf.recipeId,
-                    name = recipe.name,
+                    name = recipe.rankedDisplayName(pf.rank),
                     buffType = recipe.buffType,
-                    buffStrength = recipe.primaryBoost,
+                    buffStrength = rank.primaryBoost,
                     quantity = pf.quantity,
                     grade = pf.grade,
+                    rank = pf.rank,
                     primaryStat = recipe.primaryStat,
-                    primaryBoost = recipe.primaryBoost,
+                    primaryBoost = rank.primaryBoost,
                     secondaryStat = recipe.secondaryStat,
-                    secondaryBoost = recipe.secondaryBoost
+                    secondaryBoost = rank.secondaryBoost
                 )
             }
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
